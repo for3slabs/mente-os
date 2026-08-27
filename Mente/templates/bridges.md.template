@@ -1,0 +1,101 @@
+<!-- ⚠️ TEMPLATE — `bin/init` copies this to `connection/bridges/`. It ships with NO entries:
+     nobody inherits somebody else's neighbours. ⭐ What follows is the shape of a bridge and the
+     rule that governs opening one. -->
+# BRIDGES — the registry of other Mente OS installations
+
+**Status:** current · **Type:** entry-point · **Updated:** {{date}} · **Owner:** {{owner}}
+**Scope:** ⚠️ INSTANCE document — it describes THIS machine's neighbours. It never travels.
+
+---
+
+## Purpose
+
+Which other Mente OS installations exist, why they are separate, and what opening one requires.
+
+> ## ⛔ THE HARD RULE
+> **Never read another Mente OS unless a person explicitly asks, with a stated reason.**
+> Not "for context". Not "to understand better". Not "just in case".
+
+---
+
+## ⭐ WHY THE RULE IS THIS STRICT — two costs, and the second is worse
+
+| Cost | What happens |
+|---|---|
+| **Consumption** | a full installation is expensive to read, and the expense is immediate while the benefit is speculative |
+| ⭐ **Contamination** | its rules and its state are true **there**. Loaded here, they get applied here — and nothing marks which half of the context came from elsewhere |
+
+⚠️ **Contamination is the one that is hard to notice.** An expensive read is visible on the bill.
+An agent quietly applying another project's constraints to yours produces confident, well-reasoned,
+wrong work — and the reasoning *is* sound, just for the other project.
+
+---
+
+## ⛔ THIS DOCUMENT IS NOT THE LOCK
+
+```
+this file    documents WHICH installations exist and why      📖 a document
+config       declares which trees are gated                   📋 a declaration
+the harness  actually refuses to read them                    🔒 the lock
+```
+
+⭐ **Only the third one stops anything.** An entry here with no gate declared in
+`mente.config.yml` documents a limit that does not exist — and it reads exactly like one that
+does. ⚠️ **If the two disagree, the configuration is what happens and this file is a claim.**
+
+---
+
+## How a bridge opens and closes
+
+```
+CLOSED ──── a person states the access phrase + WHY ────► OPEN
+   ▲                                                       │
+   │                       read-only · report back         │
+   └─── explicit close, OR the task ends, whichever first ◄─┘
+```
+
+| Property | Why |
+|---|---|
+| a **person** opens it | ⛔ never the agent, never "it seemed useful" |
+| ⭐ a stated **WHY** | forces the question *do I actually need this?* — most of the time, no |
+| **read-only** | you are a guest in a tree with its own rules |
+| **auto-closes** with the task | ⭐ an access that outlives its reason becomes a permanent one nobody granted |
+
+---
+
+## The shape of an entry
+
+```markdown
+### <name>
+
+- **Where:** the path on this machine
+- **Why separate:** ⭐ if there is no good answer, they may be one installation
+- **Opens with:** the phrase, and who may say it
+- **Closes with:** the phrase, or the end of the task
+- **Gate declared in config:** yes | ⛔ no — then this entry protects nothing
+```
+
+---
+
+## ⬜ YOUR BRIDGES GO BELOW
+
+Empty on purpose — a fresh install has no neighbours declared.
+
+⚠️ **Each entry you add must have a matching `gates:` entry in `mente.config.yml`.** Writing it
+only here is writing a rule with nothing behind it.
+
+---
+
+## ⛔ IF YOU ARE THE AGENT READING THIS
+
+You may **know** these exist. You may **point** at them. You may **not** read them until asked.
+
+⭐ **If you think you need one: say so and stop.** Explain what you would look for and why. The
+person decides. Reading first and reporting afterwards is not initiative — it is spending somebody
+else's resources on a guess, and there is no way to take it back.
+
+---
+
+Related: `README.md` (the folder this lives in) · `../README.md` (why reaching outside needs its
+own folder) · `../../mente.config.yml` (`gates:` — the declaration that becomes the lock) ·
+`../../CAPABILITIES.md`.
