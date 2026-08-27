@@ -1,0 +1,92 @@
+<!-- ⚠️ TEMPLATE — `bin/init` copies this to `memory/RETOMAR.md`. It ships EMPTY on purpose:
+     nothing has been closed yet on a fresh install, and inventing a state would be worse than
+     having none. ⭐ You never write this file by hand — the session-closing routine writes it.
+     What follows is the shape it takes, plus the explanation a first-time reader needs. -->
+# RETOMAR — where we left off
+
+**Status:** current · **Type:** entry-point · **Updated:** {{date}} · **Owner:** {{owner}}
+**Scope:** ⚠️ INSTANCE document — it describes THIS installation's work. It never travels.
+
+---
+
+## Purpose
+
+⭐ **The single file to read when resuming work.** Where we stopped, the next step, and pointers
+to everything else. Small on purpose: its whole value is being short enough that it always gets
+read in full.
+
+> ## ⛔ THE PROBLEM THIS FILE EXISTS TO SOLVE
+> A context reset destroys the conversation. The code survives on disk; **the reasoning behind it
+> does not.** Without this file, the next session reconstructs your scope by inference — and
+> **sounds exactly as confident** as if it knew. A wrong answer delivered with certainty is worse
+> than no answer.
+
+---
+
+## ⭐ HOW THIS FILE WORKS — read this once, then delete this section
+
+**You do not write it by hand.** The cycle is:
+
+```
+you work  →  you close the session  →  the closing routine ASKS what happened
+                                              ↓
+                                    it writes THIS file
+                                              ↓
+                            tomorrow: the AI reads THIS first — not your whole repo
+```
+
+⛔ **There is a hard size ceiling, enforced by a script.** When this file grows past it, the
+history moves to the logbook and only the *state* stays here. A brief that becomes a history stops
+being read in full — and **a brief read halfway is worse than none: it looks complete.**
+
+⚠️ **The pre-reset check refuses while this file is out of date.** That refusal is the point: a
+reset is a cut, not a save.
+
+---
+
+## 1 · WHERE WE ARE
+
+⬜ Empty on purpose — nothing has been closed yet.
+
+*After your first session this holds: what is being worked on, what phase it is in, and anything
+currently blocking.*
+
+---
+
+## 2 · 👉 THE NEXT STEP
+
+⬜ **Your first step, if you have not taken it yet:**
+
+```bash
+bin/new-block my-first-task --type docs
+```
+
+*From then on, this section holds exactly ONE next action — the one you would take if you sat
+down right now. ⭐ Not a list: a list is a plan, and a plan belongs in `docs/plans/`.*
+
+---
+
+## 3 · POINTERS — where to look for more
+
+| You need… | Read it from… |
+|---|---|
+| what is open and what it is blocked on | the active block's first sections |
+| any live number | 🤖 the generated metrics file — ⛔ never write a number here |
+| what is pending but not urgent | the pending-items file |
+| the history of how we got here | the logbook |
+
+---
+
+## ⚠️ THE RULES OF THIS FILE
+
+1. ⛔ **No live numbers.** They belong in the generated metrics file. A number copied here is
+   correct exactly once, and this is the file people trust most.
+2. ⭐ **One date, in the header.** Two dates in one document is how a file starts contradicting
+   itself.
+3. **State, not history.** What is true *now*. What happened goes to the logbook.
+4. **One next step.** If there are three, the other two are pending items.
+
+---
+
+Related: `../README.md` (what memory holds) · the pending-items file · the logbook ·
+the session-closing rule in `rules/` · `../../CAPABILITIES.md`.

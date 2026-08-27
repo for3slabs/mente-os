@@ -1,0 +1,84 @@
+<!-- ⚠️ TEMPLATE — `bin/init` copies this to `memory/PENDIENTES.md`. It ships EMPTY: a fresh
+     install owes nothing yet. ⭐ What follows is the shape an entry takes and the rules that
+     keep this file from becoming a graveyard nobody reads. -->
+# PENDING — what is not urgent, and must not be lost
+
+**Status:** current · **Type:** entry-point · **Updated:** {{date}} · **Owner:** {{owner}}
+**Scope:** ⚠️ INSTANCE document — it lists THIS installation's debt. It never travels.
+
+---
+
+## Purpose
+
+Findings, debts and decisions that are **real but not blocking**. Without a home, these live in
+somebody's head and die with the session that noticed them.
+
+> ## ⭐ THE FAILURE THIS PREVENTS
+> The most expensive thing lost in a session is not the code — it is **the thing someone noticed
+> and did not have time to fix.** It gets rediscovered months later as an incident, and the second
+> discovery costs far more than writing it down would have.
+
+---
+
+## ⛔ THE RULE THAT KEEPS THIS FILE ALIVE
+
+> ## Rotate the FILE, not the item.
+
+An item opened in January may still be open in December. What rotates is **the file that contains
+it**, on a fixed period; the item is carried forward until it actually closes.
+
+⛔ **A rotation that closes items by date is a rotation that hides debt.** The item does not stop
+being true because a month ended — it just stops being visible, which is worse: now nobody knows
+it exists and nobody decided to drop it.
+
+⚠️ **Two lists of pending items always diverge.** If a second one appears anywhere, one of them is
+already lying. Keep one, and point at it from everywhere else.
+
+---
+
+## The shape of an entry
+
+```markdown
+### <ID> · <one line saying what it is>
+
+- **Priority:** 🔴 urgent · 🟠 medium · 🟢 no rush
+- **Status:** open | paused | closed
+- **Created:** <date> · **Updated:** <date> · **Closed:** —
+- **Files:** where it lives, if it has a place yet
+- **Depends on:** what has to happen first, or `—`
+
+**Description.** What was found, and ⭐ **why it matters** — the consequence if it is never
+addressed. A pending item with no stated consequence gets read as a preference and never
+gets prioritised.
+```
+
+⭐ **The `Depends on` field is the one people skip and the one that saves the most time.** An item
+that cannot move until something else happens is not "pending" — it is *waiting*, and mixing the
+two makes the list look longer than the work actually is.
+
+---
+
+## What goes here, and what does not
+
+| ✅ Belongs here | ⛔ Does not |
+|---|---|
+| something real you found and cannot fix now | work in progress — that is a block |
+| a decision you are deliberately deferring | ⭐ a decision already taken — that is a decision record |
+| debt a closed block did not resolve | an idea with no evidence behind it |
+| an item waiting on someone else | anything urgent — ⚠️ if it is urgent it is not pending, it is the next step |
+
+⚠️ **The line against a block:** a pending item is something *nobody is working on*. The moment
+someone starts, it becomes a block and leaves this list. An item that stays here while being
+worked on is how two people do the same thing twice.
+
+---
+
+## ⬜ YOUR ITEMS GO BELOW
+
+Empty on purpose — a fresh install owes nothing yet.
+
+---
+
+Related: `../README.md` (what memory holds) · `RETOMAR.md` (the state, as opposed to the debt) ·
+`../../work/blocks/README.md` (what a pending item becomes when someone starts it) ·
+the rotation rule in `rules/`.
