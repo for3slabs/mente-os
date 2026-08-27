@@ -23,33 +23,33 @@ which command answers which question.
 
 ## 1 · THE REPOS — which is which
 
-⬜ **Llénalo con los repos de ESTA máquina.** Cada fila: dónde vive, qué es, y qué regla lo
-gobierna. Un repo sin la regla que lo gobierna es un repo que alguien va a tocar por error.
+⬜ **Fill this in with the repos on THIS machine.** One row each: where it lives, what it is, and
+which rule governs it. ⭐ A repo with no governing rule is a repo someone will touch by mistake.
 
 | Path | What it is | Rule that governs it |
 |---|---|---|
-| `~/<tu-repo>/` | ⭐ **THE repo** — aquí vive el `.git` | `CLAUDE.md` (the router) |
-| `~/<tu-repo>/Mente/` | 🧠 the engine + this instance | `PROJECT-RULES.md` |
+| `~/<your-repo>/` | ⭐ **THE repo** — where the `.git` lives | `CLAUDE.md` (the router) |
+| `~/<your-repo>/Mente/` | 🧠 the engine + this instance | `PROJECT-RULES.md` |
 
 ## 2 · WHAT IS OFF-LIMITS
 
-⬜ Los árboles que la IA **no** puede leer sin permiso. Deben coincidir con `gates:` de
-`mente.config.yml` — si divergen, el documento miente y la puerta manda.
+⬜ The trees the AI may **not** read without permission. They must match `gates:` in
+`mente.config.yml` — ⭐ if they diverge, this document is the claim and the gate is the fact.
 
 ## 3 · WHERE THE CREDENTIALS LIVE
 
-⬜ La CARPETA, nunca el valor. Por defecto `secrets/`, que está en `.gitignore`.
+⬜ The FOLDER, never the value. Defaults to `secrets/`, which is gitignored.
 
 ## 4 · WHICH COMMAND ANSWERS WHICH QUESTION
 
-| Necesitas… | Comando |
+| You need… | Command |
 |---|---|
-| ¿está sano el sistema? | `bin/check-health` |
-| ¿los bloques cumplen su contrato? | `bin/check-blocks` |
-| ⭐ la verificación completa | `bin/test-f0-f6` — *lo único que importa es `failed: 0`* |
+| is the system healthy? | `bin/check-health` |
+| do the blocks meet their contract? | `bin/check-blocks` |
+| ⭐ the full verification | `bin/test-f0-f6` — *the only thing that matters is `failed: 0`* |
 
 ---
 
-Related: `mente.config.yml` (la declaración que este documento explica en prosa) ·
-`rules/rule-config-hygiene.md` §1.1 (por qué aquí nunca va un valor) ·
-`CAPABILITIES.md` (qué puede ejecutarse y qué está prohibido).
+Related: `mente.config.yml` (the declaration this document explains in prose) ·
+`rules/rule-config-hygiene.md` (why a value never goes here) ·
+`CAPABILITIES.md` (what may run and what is forbidden).
