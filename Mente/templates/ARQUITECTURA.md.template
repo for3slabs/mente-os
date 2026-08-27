@@ -1,0 +1,86 @@
+<!-- ⚠️ PLANTILLA — el pilar de arquitectura. `bin/init` la copia a la ruta que declares en
+     `mente.config.yml` (`pillars.architecture`). NACE VACÍA: la llenas TÚ conforme tu proyecto
+     toma forma, no de una sola vez.
+     ⭐ Este es el archivo que CLAUDE.md y PROJECT-RULES apuntan como "la fuente de verdad
+     arquitectónica". Si está vacío, el AI construye por inferencia — y suena igual de seguro
+     haciéndolo. Llénalo antes de que eso pase. -->
+# {{project}} — Arquitectura · fuente de verdad
+
+**Status:** draft · **Type:** pillar · **Updated:** {{date}} · **Owner:** {{owner}}
+**Scope:** ⚠️ documento de INSTANCIA — describe la arquitectura de ESTE proyecto, no del motor.
+
+> ## ⛔ ESTO ES EL SUELO SOBRE EL QUE SE CONSTRUYE
+> Cuando algo aquí y el código no coinciden, **uno de los dos es un bug** — y hay que decidir
+> cuál. Este archivo no describe lo que *quisieras*; describe lo que **es**, medido. Un pilar que
+> miente es peor que no tener pilar: da confianza falsa.
+
+---
+
+## Purpose
+
+⬜ **En una o dos líneas: ¿qué es este proyecto, a nivel arquitectónico?** No el pitch de
+producto — la forma técnica. Ejemplo del tipo de respuesta (bórralo): *"un bot conversacional
+contenerizado, multi-instancia, con un núcleo de reglas y adaptadores por canal."*
+
+---
+
+## 1 · LOS COMPONENTES — las piezas y qué hace cada una
+
+⬜ **Lista las piezas grandes del sistema y la responsabilidad de cada una.** Una pieza sin
+responsabilidad declarada es una pieza que alguien va a usar para algo que no le toca.
+Exprésalo como te sirva —grafo de nodos, capas, servicios, módulos—; el sistema no impone la
+forma, solo pide que esté declarada.
+
+| Pieza | Qué hace | De qué depende |
+|---|---|---|
+| ⬜ … | ⬜ … | ⬜ … |
+
+---
+
+## 2 · LAS REGLAS INVARIANTES — lo que NUNCA debe romperse
+
+⬜ **Las verdades que deben cumplirse siempre, pase lo que pase.** Son las que, si se rompen,
+el sistema deja de ser lo que es. Ejemplo del tipo (bórralo): *"un mensaje nunca se procesa dos
+veces", "el estado siempre se lee de la base, nunca de memoria."* Cada una, si se puede, con
+cómo se verifica.
+
+- ⬜ …
+- ⬜ …
+
+---
+
+## 3 · LOS LÍMITES — lo que este sistema NO es
+
+⬜ **Qué queda deliberadamente fuera.** Un límite declarado evita que alguien "extienda" el
+sistema hacia donde no debe. Ejemplo del tipo: *"no persiste datos de usuario más de 30 días",
+"no habla con servicios externos sin cola de reintentos."*
+
+- ⬜ …
+- ⬜ …
+
+---
+
+## 4 · LAS DECISIONES QUE CARGAN PESO — y su porqué
+
+⬜ **Las decisiones arquitectónicas de las que cuelga el resto, cada una con su razón.** El
+porqué es lo que evita que una sesión futura las vuelva a discutir o las rompa sin saberlo.
+Si una decisión tiene un ADR, enlázalo (`Mente/rules/decisions/`).
+
+| Decisión | Por qué | ADR |
+|---|---|---|
+| ⬜ … | ⬜ … | ⬜ … |
+
+---
+
+## 5 · CÓMO SE VE "SANO" — cómo saber que la arquitectura se respeta
+
+⬜ **Qué comando, prueba o señal confirma que lo de arriba sigue siendo verdad.** Coherente con
+la ley del sistema: la arquitectura que solo vive en este documento se cumple al 40-60%; la que
+un script verifica, al 100%. Apunta aquí a lo que la mide.
+
+- ⬜ …
+
+---
+
+Related: `mente.config.yml` (`pillars.architecture`, que apunta aquí) · `CLAUDE.md` (el router
+que declara este pilar) · `Mente/rules/decisions/` (los ADRs que respaldan el §4).

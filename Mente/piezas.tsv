@@ -1,0 +1,91 @@
+# ══════════════════════════════════════════════════════════════════════════
+# piezas.tsv — the single source of truth for WHERE each key piece lives.
+# Read by bin/check-structure; verified by bin/test-f0-f6.
+#
+# ⭐ Moving a piece costs ONE line here. Do not hardcode a location in prose —
+#    point at this table. A piece written but not declared here is a piece that
+#    check-structure goes SILENT about when it disappears.
+#
+# Format (TAB-separated):  pieza <TAB> ruta <TAB> governance <TAB> clase <TAB> que_es
+#
+#   governance — WHO decides over this piece (authority, never a person's name):
+#     engine   the engine governs it · universal · travels identical to every clone
+#     owner    whoever installs the instance governs it · their criterion · NEVER a name
+#     shared   the engine defines the FORM, the owner fills the CONTENT
+#
+#   clase — HOW the piece is born:
+#     canonical  written by hand · the source of truth
+#     generated  produced by a script (bin/generate-*)
+#     fossil     historical · kept for reference · not live
+#
+# ⛔ governance answers a DIFFERENT question than clase. Do not merge them.
+# ⛔ No instance data in any row: no owner name, no real repo/project name in que_es.
+#    A person's name was never a governance value — it was a leak. The value is
+#    the ROLE ("owner"), never who currently holds it.
+#
+# ⭐ HOW TO TELL engine FROM owner — the test that settles it:
+#    ask "would a different installation edit this file?"  No  → engine.
+#    A file the owner READS but never rewrites is engine (base-rules.md, the
+#    four architects): doctrine ships identical, and mislabelling it as owner
+#    would hide it from any check that verifies engine files carry no instance
+#    data. The frontier in mente.config.yml is the authority; this column must
+#    agree with it.
+# ══════════════════════════════════════════════════════════════════════════
+pieza	ruta	governance	clase	que_es
+# ── engine · the validators — the motor, nobody edits per instance ──
+bateria	bin/test-f0-f6	engine	canonical	la prueba viva — lo unico que importa es failed: 0
+val-salud	bin/check-health	engine	canonical	esta sano el sistema
+val-citas	bin/check-links	engine	canonical	toda cita interna resuelve a algo que existe
+val-estructura	bin/check-structure	engine	canonical	el arbol es el declarado en esta tabla
+val-bloques	bin/check-blocks	engine	canonical	los bloques cumplen su contrato
+val-suficiencia	bin/check-sufficiency	engine	canonical	un bloque se puede retomar solo desde disco
+val-clear	bin/check-clear-ready	engine	canonical	se niega al /clear si algo se perderia
+grada-bloque	bin/grade-block	engine	canonical	producto o MVP — medido, no opinion
+gen-indice	bin/generate-index	engine	canonical	produce INDEX.md y STATES.md desde el arbol
+gen-metricas	bin/generate-metrics	engine	canonical	re-mide y republica METRICS.md
+instalador	bin/init	engine	canonical	genera los archivos de instancia desde templates/
+# ── engine · the gates + hooks ──
+puerta-critica	hooks/gate-critical.py	engine	canonical	bloquea BD sin rollback y cierres de bloque insuficientes
+pre-edit	hooks/pre-edit-standards.py	engine	canonical	inyecta los estandares del bloque antes de editar
+pre-commit	hooks/pre-commit.sh	engine	canonical	bloquea un commit que viola el contrato del bloque
+session-start	hooks/session-start.sh	engine	canonical	salud + estructura + indices al iniciar sesion
+# ── engine · the contracts + inheritance model ──
+contrato-bloque	rules/contract-block.md	engine	canonical	que campos lleva un bloque (§A-K)
+contrato-doc	rules/contract-document.md	engine	canonical	la forma de todo documento del sistema
+contrato-adr	rules/contract-adr.md	engine	canonical	la forma de una decision registrada
+herencia	rules/rule-inheritance.md	engine	canonical	los 3 niveles y como se suman las reglas
+metodo-fases	rules/ESTANDAR_Metodo_Fases_F.md	engine	canonical	el metodo de fases F para trabajo grande
+ciclo-bloque	rules/block-lifecycle.md	engine	canonical	como se abre y se cierra un bloque
+regla-cierre	rules/rule-session-close.md	engine	canonical	registrar la sesion antes del /clear
+convencion-nombres	rules/NAMING_CONVENTION.md	engine	canonical	como se nombran las piezas
+# ── engine · the reference docs ──
+capacidades	CAPABILITIES.md	engine	canonical	que se puede ejecutar y que no tocar — motor vs instancia
+readme-motor	README.md	engine	canonical	portada del motor — de clon a funcionando
+quickstart	QUICKSTART.md	engine	canonical	de clon a funcionando en 3 pasos — para quien no conoce el sistema
+changelog	CHANGELOG.md	engine	canonical	historial de cambios del motor
+version	VERSION	engine	generated	numero de version del motor
+gitignore	.gitignore	engine	canonical	que NO viaja — secretos, config viva, per-maquina
+# ── engine · the rule levels + the four architects ──
+reglas-universal	base-rules.md	engine	canonical	nivel 1 — conducta en cualquier proyecto
+reglas-proyecto	PROJECT-RULES.md	owner	canonical	nivel 2 — las reglas de este proyecto
+enrutador	CLAUDE-MENTE-OS.md	engine	canonical	el router — se importa con @Mente/CLAUDE-MENTE-OS.md desde el CLAUDE.md del usuario
+voz	memory/principles/owner-0-voice.md	engine	canonical	como se comunica el sistema
+arquitecto-docs	memory/principles/owner-1-docs.md	engine	canonical	criterio de documentacion
+arquitecto-dev	memory/principles/owner-2-dev.md	engine	canonical	criterio de desarrollo
+arquitecto-val	memory/principles/owner-3-validation.md	engine	canonical	criterio de validacion
+# ── owner · whoever installs governs these · ⚠️ they do NOT exist on a fresh
+#    clone — check-structure reports them red until the owner writes each one.
+#    That red is the install checklist, not a fault (see QUICKSTART §3).
+cold-start	memory/RETOMAR.md	owner	canonical	donde quedamos — se lee primero al arrancar
+pendientes	memory/PENDIENTES.md	owner	canonical	hallazgos no urgentes que no deben perderse
+gate	connection/bridges/Puentes_Mente_OS.md	owner	canonical	a que otros Mente OS se accede y con que permiso
+config-instancia	mente.config.yml	owner	canonical	la declaracion de instancia — gitignored, NO viaja
+pilar-arquitectura	Cerebro/ARQUITECTURA.md	owner	canonical	la fuente de verdad arquitectonica — la llena el owner
+# ── shared · engine gives the form, owner writes the content ──
+piezas	piezas.tsv	shared	canonical	esta tabla — donde vive cada pieza clave
+registro-cuentas	cuentas.tsv	shared	canonical	que cuenta gobierna cada repo — ⛔ nunca un token
+indice	docs/INDEX.md	shared	generated	todos los documentos — bin/generate-index
+estados	docs/STATES.md	shared	generated	bloques + salud — bin/generate-index
+metricas	docs/METRICS.md	shared	generated	todos los numeros vivos — bin/generate-metrics
+decisiones	docs/DECISIONS.md	shared	generated	todos los ADR — bin/generate-index
+workspace	docs/WORKSPACE.md	owner	canonical	que repo es cual en ESTA maquina — gitignored, NO viaja
