@@ -1,8 +1,8 @@
-<!-- ⚠️ PLANTILLA — la genera `bin/init`, no se edita a mano en una instancia.
-     🔴 SE REGENERA desde los archivos VIVOS. Estaba desfasada y `bin/init --force`
-     DEGRADABA un clon: los fallos subían de 10 a 14 porque perdía `Server-first`, `KEK`, el
-     aviso de licencia y los matchers de los hooks — reglas que los checks exigen hoy.
-     ⭐ Una plantilla que va por detrás del sistema convierte al instalador en un destructor. -->
+<!-- ⚠️ TEMPLATE — `bin/init` generates the real file from this. Do not edit the
+     generated copy by hand in an instance: the next `bin/init --force` overwrites it.
+     ⭐ KEEP THIS FILE IN SYNC WITH THE LIVE ONE. A template that lags behind the engine
+     turns the installer into a destroyer: it regenerates an older file that the current
+     checks reject, and the clone degrades without anyone touching it. -->
 # PROJECT RULES · {{project}}
 
 **Status:** current · **Type:** entry-point · **Updated:** {{date}} · **Owner:** {{owner}}
@@ -11,16 +11,12 @@
 ---
 
 ## Purpose
+The rules that apply **while working on this project** — and nowhere else. They exist as a separate file because of a measured problem: they used to live in `CLAUDE.md`, which meant every block and every future project inherited them.
 
-The rules that apply **while working on {{project}}** — and nowhere else. They exist as a separate file
-because of a measured problem: they used to live in `CLAUDE.md`, which meant every block and every
-future project inherited them.
+> **The reason, in the owner's words:** the system will not be used only for a demo, so
+> everything else built afterward would end up contaminated with these rules.
 
-> **The reason, in the owner's words:** the system will not be used only for a demo, so everything
-> else built afterward would end up contaminated with these rules.
-
-**Whoever clones Mente OS for other work must NOT inherit this instance's neighbors —**
-a rule about a project that is not theirs. That is the contamination this file prevents.
+**Whoever clones Mente OS for other work must NOT inherit this instance's neighbors —** a rule about a project that is not theirs. That is the contamination this file prevents.
 
 ---
 
@@ -33,11 +29,11 @@ a rule about a project that is not theirs. That is the contamination this file p
 🏢 PROJECT     PROJECT-RULES.md  ← YOU ARE HERE
       │ inherits
       ▼
-📦 BLOCK       Mente/blocks/active/<name>/BLOCK.md §B
+📦 BLOCK       Mente/work/blocks/active/<name>/BLOCK.md §B
 ```
 
-⛔ **A lower level can never grant itself what a higher level forbids.** Exceptions are {{owner}}'s
-only, and become a **new rule at the parent's level** with its own ADR.
+⛔ **A lower level can never grant itself what a higher level forbids.** Exceptions are the
+owner's only, and become a **new rule at the parent's level** with its own ADR.
 
 ---
 
@@ -51,12 +47,12 @@ only, and become a **new rule at the parent's level** with its own ADR.
 
 | Rule | Enforced by | Level |
 |---|---|---|
-| §2 sibling `/Mente` out of scope | `deny` rules, both settings files | 🔒 **lock** |
-| §3 the inter-instance gate | `deny` rules, both settings files | 🔒 **lock** |
+| §2 `<sibling-project>/Mente` out of scope | 4 `deny` rules, both settings files | 🔒 **lock** |
+| §3 the inter-instance gate | 6 `deny` rules, both settings files | 🔒 **lock** |
 | §5 `secrets/` 700 · files 600 | `bin/test-f0-f6` §F0 measures the real modes | 🔒 **lock** |
-| §4 server-first (`git push`) | `ask` on all three push forms — {{owner}} confirms each one | 🟡 **prompt** |
+| §4 server-first (`git push`) | `ask` on all three push forms — the owner confirms each one | 🟡 **prompt** |
 | §5 Master KEK offline | ⛔ **nothing can verify it** — it lives off this machine | 📖 **discipline** |
-| §5 server credential rotation | tracked in the private security file, with its trigger conditions | 📖 **discipline** |
+| §5 server password rotation | deliberately deferred by the owner, with its three trigger conditions | 📖 **discipline** |
 | §6 reading · §7 F-method | conduct — not mechanically verifiable by design | 📖 **discipline** |
 
 ⭐ **Why the distinction matters:** this project's own measured law is that a rule in code is
@@ -64,48 +60,44 @@ obeyed 100% and a rule in a document 40-60%. **The 📖 rows are the 40-60%.** T
 rules — they are rules whose compliance nobody can prove, and that is worth knowing before
 trusting them.
 
+
 ---
 
 ## 2 · SCOPE — what this project is, and is not
 
-| | |
-|---|---|
-| **This project IS** | {{project}}. Its documentary brain is `Mente/` = **"Mente OS"** |
-| **Architectural source of truth** | the architecture pillar declared in `mente.config.yml` (`pillars.architecture`) |
-
 ⬜ **Declare below what is NOT this project** — sibling repos, separate branches, or other trees
-the work must never mix into. There may be none, or several. Anything that also needs a hard lock
-must match a `gate` in `mente.config.yml`. Delete the examples and put your own (or remove the
-table if you have none):
+that must not be touched. Each row: what it is, and what makes it off-limits.
 
 | | |
 |---|---|
-| ⛔ **NOT this project** | `<sibling>/Mente/` — a separate project's engine. **Technically locked** by a `deny` rule |
+| **This project IS** | this project. Its documentary brain is `Mente/` = **"Mente OS"** |
+| **Architectural source of truth** | the architecture pillar declared in `mente.config.yml` |
+| ⛔ **NOT this project** | `<sibling-project>/Mente/` — public site, separate project. **Technically locked** by a `deny` rule |
 | ⛔ **NOT this project** | this project's QA — separate working branch, never mixed in |
-| ⚠️ **Ask first** | any modification outside the declared internal working dir |
+| ⚠️ **Ask first** | any modification outside `<internal-dir>/` |
 
-> A sibling project's own directory **may** be in scope (e.g. where a demo lives), but its
-> `/Mente/` is not. The distinction is the `/Mente/` suffix, and it is enforced by the harness,
-> not by trust.
+> `<sibling-project>/` (the site) **is** in scope — the demo lives there. `<sibling-project>/Mente/`
+> is not. The distinction is the `/Mente/` suffix, and it is enforced by the harness, not by trust.
+
 
 ---
 
 ## 3 · 🌉 THE GATE — other Mente OS instances
 
-Other projects have their own Mente OS (declare yours in `mente.config.yml` under `gates`). This one
-**points at them but does not integrate them** — integrating burns tokens with no request behind it.
+Other projects have their own Mente OS (declare yours below). This one **points at them but does
+not integrate them** — integrating burns tokens with no request behind it.
 
 | | |
 |---|---|
-| ⛔ **Never read** another project's Mente OS without {{owner}} using the access phrase | not "for context", not "just in case" |
-| **Open** | {{owner}} writes `acceder mente <project>` → confirm the WHY → **read-only + report** |
+| ⛔ **Never read** another project's Mente OS without the owner using the access phrase | not "for context", not "just in case" |
+| **Open** | the owner writes `acceder mente <project>` → confirm the WHY → **read-only + report** |
 | **Close** | `cerrar mente <project>` **or** auto-close when the task ends, whichever comes first |
 | **Enforcement** | 🔒 `deny` on Read/Edit/Write in **both** `.claude/settings.json` and `settings.local.json` |
 
 ⭐ **The gate is a technical lock, not a promise.** It was doctrine once, and got violated
 6 times in one session. Now the harness refuses. **Never propose lifting a deny for convenience.**
 
-Registry and full rules: `Mente/bridges/Puentes_Mente_OS.md`.
+Registry and full rules: `Mente/connection/bridges/`.
 
 ---
 
@@ -115,37 +107,44 @@ Registry and full rules: `Mente/bridges/Puentes_Mente_OS.md`.
 > Flow: `server → local → GitHub`.
 
 ⚠️ **Why this is project-level and not universal:** it only matters in repos with auto-deploy.
-**If your host deploys from `main`, any push to `main` is a production deploy.**
+**A repo with auto-deploy publishes on push to its release branch** — declare below which one that is.
+
+> ## ⛔ NEVER NAME A REPO FROM MEMORY
+> Declare each one below and read it from there. ⭐ **A repository named from memory is the kind
+> of claim that stays wrong for weeks**: a repo can be renamed, moved between organisations, or
+> archived, and the old address usually keeps redirecting — so both names resolve and look like
+> two live repos. Point at the declaration, and let a command answer which is current.
 
 ⬜ **Declare your repos below** — where the workshop lives, where the verified backup goes, where
-the site publishes from. Delete the examples and put your own, or point at
-the repos declared in `Mente/cuentas.tsv`. **Do not name a repo from memory.**
+publishing happens. A repo not declared here is a repo someone will push to by mistake.
 
-| Repo | Role |
-|---|---|
-| `github.com/<org>/<workshop-repo>` | ⭐ the **workshop's remote** — the server pushes here daily (`origin`) |
-| `github.com/<org>/<product-repo>` | the **verified product's backup** (AGPL, GPG-signed by {{owner}}) (`backup`) |
-| server `~/<workshop-dir>` | the workshop itself — **the source** |
-| `<site-project>` | the site — **pushing to `main` publishes** |
+| Repo | Role | Remote name on the server |
+|---|---|---|
+| `github.com/<org>/<workshop-repo>` | ⭐ **the workshop's remote** — where the server pushes daily | `origin` |
+| `github.com/<org>/<product-repo>` | **the verified product's backup** (AGPL, GPG-signed by the owner) | `backup` |
+| server `~/<workshop-dir>` | the workshop itself — **the source** | — |
+| `<site-project>` | the site — **pushing to `main` publishes** | — |
+
+⚠️ **If two remotes are declared, they are not a duplicate by accident.** Verify with
+`git remote -v`, not from the table above: the table is a claim, the remote is the fact. Pushing
+verified work goes to **all of them** — pushing to only one leaves them divergent, and nothing
+announces it.
+
+⛔ **An old repository URL usually keeps redirecting after a move.** Both names resolve and look
+like separate repos, so a stale table can cite a dead address and still appear to work.
+⭐ **A hand-written repo name is correct exactly once** — re-measure it instead of trusting it.
 
 ---
-
 ## 5 · 🔒 IDENTITY AND SECURITY
-
-> ## ⛔ THIS SECTION NEVER CARRIES A VALUE
-> No passwords, no tokens, no keys, no emails, no connection strings. **It says WHERE, never WHAT.**
-> Operational details (rotation state, network surface, trigger conditions) live in the private
-> security file, never in this public template. A leaked secret is **ROTATED, not deleted**
-> (`rules/rule-config-hygiene.md` §1.1).
 
 | | |
 |---|---|
-| Founder | **{{owner}}** — full identity in the private config, never hardcoded here |
+| Founder | **the owner** — full identity in the private config, never hardcoded here |
 | Master KEK | **always offline.** Never on the server |
-| Plaintext secrets | **{{owner}} never sees them** |
+| Plaintext secrets | **the owner never sees them** |
 | Audit trail | immutable — no `UPDATE`, no `DELETE` |
 | `Mente/secrets/` | 700, files 600, gitignored, **no `!README.md` exception** |
-| Server credential rotation | ⚠️ **policy, mitigant and trigger conditions tracked in the private security file** — not here |
+| Server / infra password | ⚠️ **declare your rotation policy here** — and the conditions that force a rotation before schedule (exposing a private network publicly, granting access to a new person, publishing any repo that could carry a transcript or a local settings file) 
 
 ---
 
@@ -154,9 +153,9 @@ the repos declared in `Mente/cuentas.tsv`. **Do not name a repo from memory.**
 | | |
 |---|---|
 | **First, always** | `Mente/memory/RETOMAR.md` (~5 KB) — the cold-start brief. **~90% of the time it is enough** |
-| ⛔ **Do NOT read** | any large historical file unless a pointer in RETOMAR sends you there explicitly |
+| ⛔ **Do NOT read** | any large historical file, unless a pointer in the cold-start brief sends you there explicitly 
 | **Why** | reading it "just in case" burns tokens for nothing — measured |
-| **Open block** | load Tier 1 (§A-E) of `Mente/blocks/active/*/BLOCK.md`. If §A-E do not suffice → **say so, do not infer** |
+| **Open block** | load Tier 1 (§A-E) of `Mente/work/blocks/active/*/BLOCK.md`. If §A-E do not suffice → **say so, do not infer** |
 
 ---
 
@@ -188,4 +187,4 @@ not invent criterion", "no `/clear` without registering" hold in **any** project
 ---
 
 Related: `Mente/base-rules.md` (🌐 universal) · `Mente/rules/rule-inheritance.md` (the model) ·
-`CLAUDE.md` (the router that loads this) · `Mente/bridges/Puentes_Mente_OS.md` (the gate).
+`CLAUDE.md` (the router that loads this) · `Mente/connection/bridges/` (the gate).

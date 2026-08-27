@@ -1,10 +1,10 @@
-# ⚠️ ESTA ES LA PLANTILLA — no la configuración viva.
-# `bin/init` la copia a `mente.config.yml` y PREGUNTA lo que falta. Ese archivo NO se publica:
-# lleva el nombre del dueño y su máquina, que son de la INSTANCIA, no del motor.
+# ⚠️ THIS IS THE TEMPLATE — not the live configuration.
+# `bin/init` copies it to `mente.config.yml` and ASKS for what is missing. That file is never
+# published: it carries the owner's name and their machine — INSTANCE data, not the engine's.
 #
-# 🔴 Por qué existe, medido: la config viajaba en el repo con el nombre del dueño anterior
-# dentro, así que `bin/init` en un clon ajeno **nunca preguntaba el owner** — lo encontraba ya
-# escrito y lo daba por bueno. Un dato personal viajando como si fuera del motor.
+# 🔴 Why it exists, measured: the config used to travel inside the repo with the previous
+# owner's name in it, so `bin/init` on someone else's clone **never asked for the owner** — it
+# found the value already written and took it as truth. Personal data shipping as an engine default.
 
 # ══ MENTE OS · INSTANCE CONFIG ══════════════════════════════════════════════
 #
@@ -108,19 +108,19 @@ secrets:
   # Never in git. Referenced, never pasted (rules/rule-config-hygiene.md §1.1).
   dir: "secrets"
 
-# ── LA FRONTERA MOTOR / INSTANCIA ───────────────────────────────────────────
-# ⭐ El MOTOR es universal y se clona tal cual; la INSTANCIA es tuya y se declara una vez.
-# Esa línea llegó a vivir SOLO en el docstring de `bin/mente_config.py`: una
-# frontera que únicamente existe en un comentario de código es una frontera que ningún validador
-# puede consultar y que ningún dueño nuevo puede ver.
+# ── THE ENGINE / INSTANCE FRONTIER ──────────────────────────────────────────
+# ⭐ The ENGINE is universal and cloned as-is; the INSTANCE is yours, declared once.
+# That line once lived ONLY inside a code docstring: a frontier that exists only in a
+# comment is a frontier no validator can consult and no new owner can ever see. Declaring
+# it here is what makes it checkable.
 #
-# ⚠️ Tres claves planas y no un bloque anidado: el parser de este archivo maneja DOS niveles a
-# propósito (su docstring: "un parser general escrito a mano es un generador de bugs"), y un
-# tercer nivel aplanaba los grupos en una sola lista, perdiendo justo lo que se quiere declarar.
+# ⚠️ Three flat keys instead of one nested block: this file's parser handles TWO levels on
+# purpose (a hand-written general parser is a bug generator), and a third level flattened the
+# groups into a single list — losing exactly what is being declared.
 #
-# ⛔ El motor no se edita en una instancia. La instancia no viaja al publicar el motor.
+# ⛔ The engine is not edited inside an instance. The instance never travels when the engine ships.
 
-# universal · se clona tal cual · NO se edita aquí
+# universal · cloned as-is · ⛔ NOT edited here
 frontier_engine:
   - "bin"
   - "hooks"
@@ -128,18 +128,18 @@ frontier_engine:
   - "principles"
   - "templates"
 
-# tuyo · nace vacío o se genera · NO viaja al publicar el motor
+# yours · born empty or generated · ⛔ never travels when the engine ships
 frontier_instance:
   - "Cerebro"
-  - "cache"          # datos locales de los validadores · nunca viaja
+  - "cache"          # the validators' local state · never travels
   - "memory"
   - "secrets"
   - "work"
   - "vision"
   - "blocks"
-  - "campaigns"   # agrupan bloques bajo una misión — instancia, no motor
+  - "campaigns"   # they group blocks under a mission — instance, not engine
   - "bridges"
 
-# ⚠️ contiene ambos — contratos del motor y bitácoras de la instancia
+# ⚠️ contains both — engine contracts and the instance's own logs
 frontier_mixed:
   - "docs"

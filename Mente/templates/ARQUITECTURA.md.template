@@ -1,86 +1,86 @@
-<!-- ⚠️ PLANTILLA — el pilar de arquitectura. `bin/init` la copia a la ruta que declares en
-     `mente.config.yml` (`pillars.architecture`). NACE VACÍA: la llenas TÚ conforme tu proyecto
-     toma forma, no de una sola vez.
-     ⭐ Este es el archivo que CLAUDE.md y PROJECT-RULES apuntan como "la fuente de verdad
-     arquitectónica". Si está vacío, el AI construye por inferencia — y suena igual de seguro
-     haciéndolo. Llénalo antes de que eso pase. -->
-# {{project}} — Arquitectura · fuente de verdad
+<!-- ⚠️ TEMPLATE — the architecture pillar. `bin/init` copies it to the path you declare in
+     `mente.config.yml` (`pillars.architecture`). IT IS BORN EMPTY: you fill it in as your
+     project takes shape, not in one sitting.
+     ⭐ This is the file the router and the project rules point at as "the architectural source
+     of truth". If it is empty, the AI builds by inference — and sounds exactly as confident
+     doing it. Fill it before that happens. -->
+# {{project}} — Architecture · source of truth
 
 **Status:** draft · **Type:** pillar · **Updated:** {{date}} · **Owner:** {{owner}}
-**Scope:** ⚠️ documento de INSTANCIA — describe la arquitectura de ESTE proyecto, no del motor.
+**Scope:** ⚠️ INSTANCE document — it describes THIS project's architecture, not the engine's.
 
-> ## ⛔ ESTO ES EL SUELO SOBRE EL QUE SE CONSTRUYE
-> Cuando algo aquí y el código no coinciden, **uno de los dos es un bug** — y hay que decidir
-> cuál. Este archivo no describe lo que *quisieras*; describe lo que **es**, medido. Un pilar que
-> miente es peor que no tener pilar: da confianza falsa.
+> ## ⛔ THIS IS THE GROUND EVERYTHING IS BUILT ON
+> When this file and the code disagree, **one of the two is a bug** — and you have to decide
+> which. This file does not describe what you *wish*; it describes what **is**, measured. A pillar
+> that lies is worse than no pillar: it gives false confidence.
 
 ---
 
 ## Purpose
 
-⬜ **En una o dos líneas: ¿qué es este proyecto, a nivel arquitectónico?** No el pitch de
-producto — la forma técnica. Ejemplo del tipo de respuesta (bórralo): *"un bot conversacional
-contenerizado, multi-instancia, con un núcleo de reglas y adaptadores por canal."*
+⬜ **In one or two lines: what is this project, architecturally?** Not the product pitch — the
+technical shape. Example of the kind of answer (delete it): *"a containerised conversational bot,
+multi-instance, with a rules core and one adapter per channel."*
 
 ---
 
-## 1 · LOS COMPONENTES — las piezas y qué hace cada una
+## 1 · THE COMPONENTS — the pieces and what each one does
 
-⬜ **Lista las piezas grandes del sistema y la responsabilidad de cada una.** Una pieza sin
-responsabilidad declarada es una pieza que alguien va a usar para algo que no le toca.
-Exprésalo como te sirva —grafo de nodos, capas, servicios, módulos—; el sistema no impone la
-forma, solo pide que esté declarada.
+⬜ **List the system's large pieces and the responsibility of each.** A piece with no declared
+responsibility is a piece someone will use for something it was not meant for. Express it however
+serves you — a node graph, layers, services, modules; the system imposes no shape, it only asks
+that the shape be declared.
 
-| Pieza | Qué hace | De qué depende |
+| Piece | What it does | What it depends on |
 |---|---|---|
 | ⬜ … | ⬜ … | ⬜ … |
 
 ---
 
-## 2 · LAS REGLAS INVARIANTES — lo que NUNCA debe romperse
+## 2 · THE INVARIANTS — what must NEVER break
 
-⬜ **Las verdades que deben cumplirse siempre, pase lo que pase.** Son las que, si se rompen,
-el sistema deja de ser lo que es. Ejemplo del tipo (bórralo): *"un mensaje nunca se procesa dos
-veces", "el estado siempre se lee de la base, nunca de memoria."* Cada una, si se puede, con
-cómo se verifica.
-
-- ⬜ …
-- ⬜ …
-
----
-
-## 3 · LOS LÍMITES — lo que este sistema NO es
-
-⬜ **Qué queda deliberadamente fuera.** Un límite declarado evita que alguien "extienda" el
-sistema hacia donde no debe. Ejemplo del tipo: *"no persiste datos de usuario más de 30 días",
-"no habla con servicios externos sin cola de reintentos."*
+⬜ **The truths that must hold no matter what.** These are the ones that, if broken, make the
+system stop being what it is. Example of the kind (delete it): *"a message is never processed
+twice", "state is always read from the database, never from memory."* Each one, where possible,
+with how it is verified.
 
 - ⬜ …
 - ⬜ …
 
 ---
 
-## 4 · LAS DECISIONES QUE CARGAN PESO — y su porqué
+## 3 · THE LIMITS — what this system is NOT
 
-⬜ **Las decisiones arquitectónicas de las que cuelga el resto, cada una con su razón.** El
-porqué es lo que evita que una sesión futura las vuelva a discutir o las rompa sin saberlo.
-Si una decisión tiene un ADR, enlázalo (`Mente/rules/decisions/`).
+⬜ **What is deliberately out of scope.** A declared limit stops someone from "extending" the
+system where it should not go. Example of the kind: *"does not retain user data beyond 30 days",
+"does not call external services without a retry queue."*
 
-| Decisión | Por qué | ADR |
+- ⬜ …
+- ⬜ …
+
+---
+
+## 4 · THE LOAD-BEARING DECISIONS — and why
+
+⬜ **The architectural decisions everything else hangs from, each with its reason.** ⭐ The reason
+is what stops a future session from re-arguing them, or breaking one without knowing. If a
+decision has a recorded ADR, link it.
+
+| Decision | Why | ADR |
 |---|---|---|
 | ⬜ … | ⬜ … | ⬜ … |
 
 ---
 
-## 5 · CÓMO SE VE "SANO" — cómo saber que la arquitectura se respeta
+## 5 · WHAT "HEALTHY" LOOKS LIKE — how you know the architecture still holds
 
-⬜ **Qué comando, prueba o señal confirma que lo de arriba sigue siendo verdad.** Coherente con
-la ley del sistema: la arquitectura que solo vive en este documento se cumple al 40-60%; la que
-un script verifica, al 100%. Apunta aquí a lo que la mide.
+⬜ **Which command, test or signal confirms the above is still true.** Consistent with the
+system's own law: architecture that lives only in this document is followed 40-60%; architecture
+a script verifies, 100%. Point here at whatever measures it.
 
 - ⬜ …
 
 ---
 
-Related: `mente.config.yml` (`pillars.architecture`, que apunta aquí) · `CLAUDE.md` (el router
-que declara este pilar) · `Mente/rules/decisions/` (los ADRs que respaldan el §4).
+Related: `mente.config.yml` (`pillars.architecture`, which points here) · `CLAUDE.md` (the router
+that declares this pillar) · `Mente/rules/decisions/` (the ADRs behind §4).
