@@ -1,0 +1,133 @@
+# BASE RULES · Mente OS
+**Status:** current · **Type:** entry-point · **Updated:** {{date}} · **Owner:** {{owner}}
+**Ticket:** F2-5 · **Language:** US English
+---
+
+## Purpose
+
+The **minimum any AI needs to operate Mente OS.** Written to be tool-agnostic: if you are not Claude
+Code, this file plus the pointers below is enough to work correctly.
+
+> **Why it exists:** everything else in v1 assumed Claude Code. `output-styles/` and hooks are
+> **acceleration, not foundation** — without them the protocol still works, with less guarantee.
+
+---
+
+## 1 · STARTUP — in this order
+
+```
+1 · BASE RULES               ← this file
+2 · CONTEXT                  ← what was being worked on
+3 · LAST STATE               ← memory/RETOMAR.md
+4 · WHICH ARCHITECT?         ← what profile does this task need
+5 · TOOLS
+6 · OPEN or LOAD the BLOCK
+```
+
+**Transversal rule:** *functions and actions always happen inside a block.* Nothing runs outside one.
+
+---
+
+## 2 · THE NON-NEGOTIABLES — by level
+
+> ⚠️ **3 of these 8 are NOT universal** (marked 🏢). They belong in `PROJECT-RULES.md` and are
+> pending migration — see `rules/rule-inheritance.md` §6. Listed here meanwhile so nothing is lost.
+> **A rule at the wrong level contaminates every block that inherits it.**
+
+| # | Rule | Pointer |
+|---|---|---|
+| 1 | **Explain → approve → build.** Never build a milestone without explicit approval | `rules/ESTANDAR_Metodo_Fases_F.md` |
+| 2 | **The AI does not invent criterion.** Criterion is the owner's; the AI gives it form | ADR-003 |
+| 3 | **Do not state — report the measurement.** An unverified claim is banned | `principles/owner-0-voice.md` |
+| 4 | **Secrets are referenced, never pasted** | architecture §12-S.1 |
+| 5 | **Scope is declared, never inferred.** No match → **stop and ask** | `rules/rule-isolation.md` |
+| 6 | 🏢 **Never read another Mente OS without the gate** | `bridges/Puentes_Mente_OS.md` — **project-level** |
+| 7 | 🏢 **Server-first.** Push to GitHub only on explicit order | `feedback_flujo_server_primero` — **project-level** |
+| 8 | ⭐ **No `/clear` without registering the session first** | `rules/rule-session-close.md` |
+
+> 🌐 = universal (any project, any block) · 🏢 = specific to this project
+> **The inheritance rule:** a lower level may only ADD or TIGHTEN — **never loosen**
+> (`rules/rule-inheritance.md`).
+
+---
+
+## 3 · EVERY INSTANCE DECLARES ITS IDENTITY
+
+> An instance is not ready to operate until it has declared, in `mente.config.yml`, **who owns it**
+> and **what its architectural ground is.** The engine reads these; it never hardcodes them.
+
+| Declared in config | Key | Why it is universal |
+|---|---|---|
+| **Owner** — how the person is referred to, and the identity checks that protect it | `owner.name` | every instance is operated by someone; the engine must not guess or inherit a previous owner |
+| **Architectural pillar(s)** — the file(s) treated as the ground the work builds on | `pillars.architecture` | every project has a source of truth for its shape; docs point at *what config declares*, never at a hardcoded filename |
+
+> 🔴 **Why this is a rule and not a convenience:** when identity travelled hardcoded inside shipped
+> files, a clone owned by someone else inherited the previous owner and the previous project's
+> architecture — and `bin/init` never asked, because it found the values already written. Identity
+> hardcoded is identity leaked.
+
+---
+
+## 4 · WHERE THINGS LIVE
+
+| Need | Path |
+|---|---|
+| Where we left off | `memory/RETOMAR.md` |
+| The voice | `principles/owner-0-voice.md` |
+| The three owners | `principles/owner-1-docs.md` · `principles/owner-2-dev.md` · `principles/owner-3-validation.md` |
+| Expert criterion | `principles/expertise/{database,backend,frontend}.md` |
+| Contracts | `rules/contract-block.md` · `rules/contract-document.md` · `rules/contract-adr.md` |
+| Rules | `rules/rule-{lanes,fix-not-patch,friction,isolation,session-close}.md` |
+| Decisions | `docs/DECISIONS.md` (generated) + `rules/decisions/ADR-*.md` |
+| Naming | `rules/NAMING_CONVENTION.md` |
+| Architectural truth | the architecture pillar declared in `mente.config.yml` (`pillars.architecture`) |
+| Active blocks | `blocks/active/<name>/BLOCK.md` |
+| Open criterion the owner still owes | `docs/PENDING-{{owner}}.md` |
+| Secrets | `secrets/` — ⛔ never in git |
+
+---
+
+## 5 · LANGUAGE
+
+| What | Language |
+|---|---|
+| Conversation with the owner | **Spanish** |
+| Anything read as an INSTRUCTION (this file, contracts, rules, `BLOCK.md`) | **US English** |
+| Code, identifiers, commits | **US English** |
+
+**Do not suggest switching.** Spanish is where the owner's nuance lives (ADR-023).
+
+---
+
+## 6 · THE LAW BEHIND THE WHOLE DESIGN
+
+| Form of a rule | Measured compliance |
+|---|---|
+| **Code** (gate, fail-closed permissions) | ✅ **100%** |
+| **Document** (Método F, pre-`/clear` registration, index) | 🔴 **fails 40-60%** |
+
+> ## The doctrine is a document. The VERIFICATION is a script.
+> A script decides nothing — it checks what is checkable: the file exists · has the field · fits its
+> limit · the id is unique · it is not stale.
+
+**This is why the validators exist**, and why a rule with no validator should be assumed unenforced.
+
+---
+
+## 7 · IF YOU ARE NOT CLAUDE CODE
+
+What you lose and what you keep:
+
+| Piece | Without Claude Code |
+|---|---|
+| `output-styles/` (the voice) | 🔴 not injected → **read `principles/owner-0-voice.md` and apply it** |
+| Hooks (inject / block) | 🔴 do not fire → **read §D of the block manually before editing** |
+| Auto-injected `CLAUDE.md` | 🔴 → **read this file first** |
+| Everything else | ✅ works — it is plain markdown and scripts |
+
+> **The protocol is portable. The hooks are the turbo when they exist** (ADR-011).
+
+---
+
+Related: `memory/RETOMAR.md` · `principles/owner-0-voice.md` · `rules/contract-block.md` ·
+`docs/DECISIONS.md` · `mente.config.yml` (identity: owner + pillars) · `CLAUDE.md` (Claude Code entry point).

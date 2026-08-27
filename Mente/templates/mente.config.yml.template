@@ -1,0 +1,145 @@
+# ⚠️ ESTA ES LA PLANTILLA — no la configuración viva.
+# `bin/init` la copia a `mente.config.yml` y PREGUNTA lo que falta. Ese archivo NO se publica:
+# lleva el nombre del dueño y su máquina, que son de la INSTANCIA, no del motor.
+#
+# 🔴 Por qué existe, medido: la config viajaba en el repo con el nombre del dueño anterior
+# dentro, así que `bin/init` en un clon ajeno **nunca preguntaba el owner** — lo encontraba ya
+# escrito y lo daba por bueno. Un dato personal viajando como si fuera del motor.
+
+# ══ MENTE OS · INSTANCE CONFIG ══════════════════════════════════════════════
+#
+# ⭐ THE LINE THIS FILE DRAWS:
+#
+#   If you ever want other people to use Mente OS, this kind of thing is not something a normal
+#   user should have to do — their focus is using the tool, not wiring it.
+#
+#   THE ENGINE      universal · cloned as-is · nobody edits it
+#                   bin/ · hooks/ · rules/ · principles/ · the contracts
+#
+#   THE INSTANCE    yours · declared ONCE, here
+#                   who you are · which projects are gated · which repos are siblings
+#
+# A new user edits THIS FILE and nothing else. If they ever have to touch bin/ to make the
+# system work, this separation failed.
+#
+# ── WHY IT IS A FILE AND NOT HARDCODED ──────────────────────────────────────
+# Measured, not assumed: four validators carried a hardcoded machine path, and every one of them
+# failed SILENTLY when the path did not resolve (`if not js: return`). On any other machine the
+# session watch — the guard that exists BECAUSE of a past incident — would simply go quiet.
+# A guard aimed at a path that does not exist is not a guard; it is a green light.
+#
+# ── HOW TO ADAPT THIS FOR YOUR OWN INSTANCE ─────────────────────────────────
+# Every ⬜ below is yours to fill. Everything without a ⬜ has a working default — leave it.
+# 1. `owner.name`   — how you are referred to in the docs. `bin/init` asks for this.
+# 2. `pillars`      — your project's architectural source(s) of truth.
+# 3. `gates`        — trees the AI must NOT read without permission. Zero, one, or many.
+# 4. `siblings`     — repos next to Mente/ whose uncommitted state is worth reporting.
+# 5. `session.project_dir` is COMPUTED from the working directory (Claude Code derives it the
+#    same way), so you normally leave it unset.
+# ════════════════════════════════════════════════════════════════════════════
+
+schema: v1
+
+# ── WHO ─────────────────────────────────────────────────────────────────────
+owner:
+  # ⬜ REQUIRED. How you are referred to in the generated docs and in the checks that verify
+  #    identity is not lost. `bin/init` asks for this.
+  name: "{{owner}}"
+  # ⬜ OPTIONAL. Names you must NEVER be called (known mistakes). Leave [] if none.
+  #    Example (delete and put your own, or leave empty):  never_called: ["Jon Doe"]
+  never_called: []
+
+# ── PILLARS · your project's architectural sources of truth ──────────────────
+# ⬜ The file(s) the AI treats as the ground it builds on. CLAUDE.md and PROJECT-RULES point
+#    here instead of hardcoding a filename. Start from templates/ARQUITECTURA.md.template,
+#    fill it in, then point at it. Leave null until the file exists.
+#    Example:  architecture: "Cerebro/ARQUITECTURA.md"
+pillars:
+  architecture: null
+
+# ── WHERE THE SESSION TRANSCRIPTS LIVE ──────────────────────────────────────
+session:
+  # Claude Code stores transcripts at ~/.claude/projects/<slug>, where <slug> is the working
+  # directory with every "/" turned into "-". COMPUTED by default — do not hardcode it, or the
+  # session watch goes silent on any other machine.
+  #
+  #   project_dir: -home-someone-myproject     # only to override the computed value
+  project_dir: null
+
+  # Thresholds calibrated against real data (rules/rule-session-close.md §4).
+  size_warn_mb: 15
+  size_red_mb: 50
+  # A session is "heavy enough that losing it costs something" past this. A past incident came
+  # from one of these.
+  heavy_mb: 2
+
+# ── GATES · other trees the AI must not read without explicit permission ────
+# ⬜ Declare the trees the AI must NOT read without permission. There may be ZERO, one, or many
+#    — add as many entries as you need, or leave the list empty [].
+#    Each becomes a deny rule + a battery check. It is cost control as much as privacy: reading
+#    another Mente OS blows up token consumption (bridges/Puentes_Mente_OS.md).
+#
+#    Copy this shape for each one (delete the example, it is not a real path):
+#      - path: "~/another-project"
+#        why: "a different project with its own Mente OS · opening it needs explicit approval"
+gates: []
+
+# ── SIBLINGS · repos beside Mente/ whose state is worth reporting ───────────
+# ⬜ Repos next to Mente/ whose uncommitted state matters. ZERO, one, or many. Leave [] if none.
+#    check-clear-ready reports uncommitted work here: the files survive a /clear, the REASON for
+#    the change does not.
+#    Copy this shape for each (delete the example):
+#      - "my-app"
+siblings: []
+
+# ── PATHS TREATED AS OUTSIDE THIS TREE ──────────────────────────────────────
+# check-links will not chase pointers into these. The tooling entries below are safe defaults
+# that apply to almost everyone — keep them. Add your own repos/dirs under the ⬜ line.
+outside:
+  - ".claude/"
+  - ".codeviz"          # generated code diagrams, sibling of Mente/
+  - "workspace"
+  - "node_modules"
+  # ⬜ add your own repos/dirs to ignore below, one per line:
+  # - "my-other-repo"
+
+# ── SECRETS ─────────────────────────────────────────────────────────────────
+secrets:
+  # Never in git. Referenced, never pasted (rules/rule-config-hygiene.md §1.1).
+  dir: "secrets"
+
+# ── LA FRONTERA MOTOR / INSTANCIA ───────────────────────────────────────────
+# ⭐ El MOTOR es universal y se clona tal cual; la INSTANCIA es tuya y se declara una vez.
+# Esa línea llegó a vivir SOLO en el docstring de `bin/mente_config.py`: una
+# frontera que únicamente existe en un comentario de código es una frontera que ningún validador
+# puede consultar y que ningún dueño nuevo puede ver.
+#
+# ⚠️ Tres claves planas y no un bloque anidado: el parser de este archivo maneja DOS niveles a
+# propósito (su docstring: "un parser general escrito a mano es un generador de bugs"), y un
+# tercer nivel aplanaba los grupos en una sola lista, perdiendo justo lo que se quiere declarar.
+#
+# ⛔ El motor no se edita en una instancia. La instancia no viaja al publicar el motor.
+
+# universal · se clona tal cual · NO se edita aquí
+frontier_engine:
+  - "bin"
+  - "hooks"
+  - "rules"
+  - "principles"
+  - "templates"
+
+# tuyo · nace vacío o se genera · NO viaja al publicar el motor
+frontier_instance:
+  - "Cerebro"
+  - "cache"          # datos locales de los validadores · nunca viaja
+  - "memory"
+  - "secrets"
+  - "work"
+  - "vision"
+  - "blocks"
+  - "campaigns"   # agrupan bloques bajo una misión — instancia, no motor
+  - "bridges"
+
+# ⚠️ contiene ambos — contratos del motor y bitácoras de la instancia
+frontier_mixed:
+  - "docs"

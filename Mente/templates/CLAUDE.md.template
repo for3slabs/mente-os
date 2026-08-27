@@ -1,0 +1,147 @@
+<!-- ⚠️ PLANTILLA — la genera `bin/init`, no se edita a mano en una instancia.
+     🔴 SE REGENERA desde los archivos VIVOS. Estaba desfasada y `bin/init --force`
+     DEGRADABA un clon: los fallos subían de 10 a 14 porque perdía `Server-first`, `KEK`, el
+     aviso de licencia y los matchers de los hooks — reglas que los checks exigen hoy.
+     ⭐ Una plantilla que va por detrás del sistema convierte al instalador en un destructor. -->
+# {{project}} — arranque
+
+**Status:** current · **Type:** entry-point · **Updated:** {{date}} · **Owner:** {{owner}}
+**Level:** 🚪 el ARRANQUE — lo carga Claude Code solo; no hereda ni es heredado (no lleva reglas)
+**Verified by:** `Mente/bin/check-links` · `Mente/bin/test-f0-f6` (§F6 · router + métricas)
+**Scope:** ⚠️ documento de INSTANCIA, no del motor — el motor publicado es `mente-os` (MIT)
+**Licencia:** este repositorio es **AGPL-3.0** (ver `LICENSE`). ⚠️ Distinta a la del motor
+publicado a propósito: aquí vive también la INSTANCIA (`Cerebro/`, `memory/`), y AGPL obliga
+a que quien lo use —incluso como servicio— publique sus cambios.
+
+## Purpose
+
+Enrutar el arranque de una sesión: **a dónde ir a leer**, qué corre solo y qué regla manda.
+No guarda reglas ni estado — los apunta, para que el valor se lea de donde se mide.
+
+> Claude Code lee este archivo automáticamente al iniciar cada sesión.
+> **Es un ENRUTADOR, no un almacén de reglas.** Apunta a dónde viven; no las repite.
+> Una regla escrita aquí no tiene nivel declarado — y ese era el bug (`Mente/rules/rule-inheritance.md`).
+
+---
+
+## 🚀 ARRANQUE (hacer SIEMPRE, sin que {{owner}} lo pida)
+
+1. **LEER PRIMERO** `Mente/memory/RETOMAR.md` (~5 KB) — el cold-start brief: dónde quedamos + próximo
+   paso + flags + punteros. **En ~90% de los casos es TODO lo que necesitas.**
+2. ⛔ **NO leer** cualquier archivo histórico grande salvo que un puntero de RETOMAR
+   lo mande explícitamente. Leerlo "por si acaso" gasta tokens — medido.
+3. **Si hay un bloque activo** → cargar su Tier 1 (`§A-E` de `Mente/blocks/active/*/BLOCK.md`).
+   ⭐ **Y si ese bloque pertenece a una CAMPAÑA** (`Mente/campaigns/*/CAMPAIGN.md` lo lista en su
+   `§E`) → cargar también el **`§F Shared context`** de la campaña. Es el contexto GRANDE, igual
+   para todos sus bloques: sin él, cambiar de bloque **reinicia el porqué**.
+   Si `§A-E` no alcanza → **decirlo, no inferir.**
+4. Si {{owner}} dice "lee RETOMAR" → ese archivo + sus punteros.
+
+**Por qué:** retomar tras una pausa reenvía la conversación completa (cache miss) = caro. Mente OS
+guarda todo en disco, así que `/clear` es seguro **cuando la sesión está registrada** (§ regla abajo).
+
+---
+
+## 🧭 ENRUTADOR DE REGLAS — 3 niveles, se heredan hacia abajo
+
+```
+🌐 UNIVERSAL   Mente/base-rules.md        cualquier proyecto · desde la primera respuesta
+      │ hereda (puede AÑADIR o ENDURECER — nunca RELAJAR)
+      ▼
+🏢 PROYECTO    PROJECT-RULES.md           esto es {{project}}: el gate, server-first, el scope
+      │ hereda
+      ▼
+📦 BLOQUE      Mente/blocks/active/<n>/BLOCK.md §B    solo mientras ese bloque esté abierto
+```
+
+| Qué necesitas | Dónde está |
+|---|---|
+| **Conducta** — no afirmar sin medir · no inventar criterio · explicar antes de construir | `Mente/base-rules.md` |
+| **Este proyecto** — scope, el gate a otros Mente OS, server-first, seguridad, identidad | **`PROJECT-RULES.md`** |
+| **La voz** — cómo se comunica Mente OS | `Mente/principles/owner-0-voice.md` (vehículo: `outputStyle: "{{project}}"`) |
+| **Trabajo grande** — método de fases F | `Mente/rules/ESTANDAR_Metodo_Fases_F.md` |
+| **Abrir/cerrar un bloque** | `Mente/rules/block-lifecycle.md` |
+| **Qué estándar aplica al código que voy a tocar** | 🤖 el hook `Mente/hooks/pre-edit-standards.py` lo inyecta solo |
+| **Arquitectura del sistema** | el pilar de arquitectura declarado en `mente.config.yml` (`pillars.architecture`) |
+| 🤖 **QUÉ PUEDO EJECUTAR y qué NO puedo tocar** — los validadores, las puertas, la línea motor/instancia | ⭐ `Mente/CAPABILITIES.md` |
+| 🗺️ **Dónde está cada cosa de ESTA máquina** — repos, qué está cerrado, dónde viven los secretos (nunca su valor) | `Mente/docs/WORKSPACE.md` |
+| 🚢 **Cómo se sube un PR** — rama → verificar → PR → ⛔ no mergear (cualquier disciplina) | `Mente/rules/rule-shipping-flow.md` |
+| ⭐ **A QUÉ REPO va este trabajo y quién lo gobierna** | `Mente/cuentas.tsv` |
+
+> ⭐ **Las reglas se SUMAN, nunca se relajan.** Dos bloques comparten reglas solo si uno declara al
+> otro en su `§C`. En conflicto, **gana la más estricta.**
+
+---
+
+## 🤖 LO QUE EL SISTEMA VERIFICA SOLO (no hay que pedirlo)
+
+| Cuándo | Qué corre |
+|---|---|
+| al iniciar sesión | `Mente/hooks/session-start.sh` → salud + estructura + índices + bloques a la deriva. **Habla solo en 🔴** |
+| antes de editar | `Mente/hooks/pre-edit-standards.py` → inyecta los `§D` del bloque dueño |
+| antes de editar | `Mente/hooks/gate-critical.py` → 🔴 BD sin rollback · 🔴 cerrar bloque insuficiente · ⚠️ pieza con dependientes |
+| antes de un commit | `Mente/hooks/pre-commit.sh` → 🔴 **BLOQUEA** un bloque que viola su contrato |
+| ¿esto es producto o MVP? | `Mente/bin/grade-block <bloque>` → veredicto **medido**, nunca opinión |
+| ¿el árbol es el declarado? | `Mente/bin/check-structure` → lee `Mente/piezas.tsv` |
+| regenerar los índices | `Mente/bin/generate-index` → 🤖 `docs/INDEX.md` + `docs/STATES.md` |
+| antes de `/clear` | `Mente/bin/check-clear-ready` → 🔴 se niega si algo se perdería |
+| **el sistema completo** | `Mente/bin/test-f0-f6` → lo único que importa es `failed: 0` · el conteo vive en `Mente/docs/METRICS.md` (`battery.checks`) |
+
+⭐ **La ley medida de este sistema:** una regla en código se cumple 100%; una regla solo en documento
+se cumple 40-60%. **Por eso la doctrina es un documento y la VERIFICACIÓN es un script.**
+
+---
+
+## ⛔ REGLA `/clear` — registrar ANTES de cerrar
+
+Cuando {{owner}} avise que va a dar `/clear` (o yo lo proponga), **antes** hay que registrar la sesión
+que muere en el registro de sesiones que tu instancia declare: fila en el índice + su autopsia.
+
+**Verificarlo con `Mente/bin/check-clear-ready`** — se niega si falta.
+Regla completa: `Mente/rules/rule-session-close.md`. Origen: una sesión enorme y desbocada que hubo
+que recuperar desde disco.
+
+> `/clear` es un **corte, no un guardado.** Lo que no está en disco se pierde sin aviso.
+> Ese es el origen de *"antes del clear me dijo todo perfecto, después me dijo sigue roto"*.
+
+---
+
+## 🗂️ DÓNDE VIVE CADA COSA
+
+| Carpeta | Qué |
+|---|---|
+| `Mente/base-rules.md` · `PROJECT-RULES.md` | 🌐 y 🏢 las reglas, por nivel |
+| `Mente/blocks/` | 📦 el trabajo — `active/` `blocked/` `archive/` |
+| `Mente/rules/` | contratos + reglas + `decisions/` (los ADRs) |
+| `Mente/principles/` | los dueños (owner-0..3) + `expertise/` |
+| `Mente/bin/` · `Mente/hooks/` | 🤖 los validadores y las puertas |
+| `Mente/docs/` | planes, análisis, bitácoras de fase · 🤖 `Mente/docs/INDEX.md` y `Mente/docs/STATES.md` generados |
+| `Mente/piezas.tsv` | ⭐ **dónde vive cada pieza clave** — mover algo cuesta 1 línea |
+| `Mente/vision/` `work/` `memory/` `bridges/` | 🆕 visión · trabajo cerrado · memoria viva · el gate |
+| `Mente/Cerebro/` | el grafo del producto — NO se migra |
+
+---
+
+## 📌 ESTADO
+
+> ⚠️ **Esta sección NO lleva números.** Un enrutador que declara estado se desfasa: una vez se
+> congelaron aquí el conteo de la batería, la versión del producto y el avance de la última fase —
+> los tres ya eran falsos. Un número copiado es correcto **exactamente una vez**. Aquí solo van
+> punteros: el valor se lee del archivo que lo mide, así que no puede quedar desfasado.
+
+⬜ **Describe en UNA línea el estado de tu proyecto** — o borra esta línea y deja solo la tabla
+de punteros de abajo. NUNCA pongas números aquí (van en `docs/METRICS.md`).
+
+**Mente OS v2** = el sistema de bloques que gobierna este repo: validadores + hooks + 3 niveles de
+reglas. **La prueba viva es `Mente/bin/test-f0-f6`; lo único que importa es `failed: 0`.**
+
+| Necesitas… | Léelo de… |
+|---|---|
+| ⭐ **estado real + próximo paso** | `Mente/memory/RETOMAR.md` |
+| cualquier **número vivo** (batería, huecos, permisos, citas) | 🤖 `Mente/docs/METRICS.md` |
+| versión del producto · fases cerradas · qué bloques hay | `Mente/memory/RETOMAR.md` §5 |
+| pendientes abiertos | `Mente/memory/PENDIENTES.md` |
+
+---
+
+Related: `PROJECT-RULES.md` (🏢 el nivel de proyecto que este enrutador declara) · `Mente/base-rules.md` (🌐 universal) · `Mente/memory/RETOMAR.md` (el estado real) · `Mente/rules/rule-inheritance.md` (por qué aquí NO van reglas) · `Mente/rules/contract-document.md` (la forma que este archivo cumple).
