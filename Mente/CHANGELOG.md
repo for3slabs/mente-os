@@ -1,7 +1,7 @@
 # CHANGELOG — Mente OS
 
-**Status:** current · **Type:** append-only · **Updated:** {{date}}
-**Verified by:** `bin/test-f0-f6` — the top entry here and the `VERSION` file must match.
+**Status:** current · **Type:** append-only · **Updated:** {{date}} · **Owner:** {{owner}}
+**Rule:** the top entry here and the `VERSION` file must match.
 **Scope:** ⚠️ ENGINE document — the history of the **tool**, not of any project built with it.
 
 ---

@@ -1,8 +1,8 @@
 # hooks/ — the gates · what fires on its own, without being asked
 
-**Status:** current · **Type:** folder-readme · **Scope:** ⚠️ ENGINE — travels identical to every
+**Status:** current · **Type:** folder-readme · **Updated:** {{date}} · **Owner:** {{owner}} · **Scope:** ⚠️ ENGINE — travels identical to every
 clone. Nothing here is edited per instance.
-**Governance:** `engine` in `piezas.tsv` · **Verified by:** `bin/test-f0-f6`
+**Governance:** `engine` in `piezas.tsv`
 
 ---
 

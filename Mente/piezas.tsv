@@ -1,6 +1,6 @@
 # ══════════════════════════════════════════════════════════════════════════
 # piezas.tsv — the single source of truth for WHERE each key piece lives.
-# Read by bin/check-structure; verified by bin/test-f0-f6.
+# Read by bin/check-structure and bin/check-declared.
 #
 # ⭐ Moving a piece costs ONE line here. Do not hardcode a location in prose —
 #    point at this table. A piece written but not declared here is a piece that
@@ -33,7 +33,6 @@
 # ══════════════════════════════════════════════════════════════════════════
 pieza	ruta	governance	clase	que_es
 # ── engine · the validators — the motor, nobody edits per instance ──
-bateria	bin/test-f0-f6	engine	canonical	the living proof — the only thing that matters is failed: 0
 val-salud	bin/check-health	engine	canonical	is the system healthy
 val-citas	bin/check-links	engine	canonical	every internal pointer resolves to something that exists
 val-estructura	bin/check-structure	engine	canonical	the tree is the one this table declares
@@ -114,3 +113,5 @@ estados	docs/STATES.md	shared	generated	blocks + health — bin/generate-index
 metricas	docs/METRICS.md	shared	generated	every live number — bin/generate-metrics
 decisiones	docs/DECISIONS.md	shared	generated	every ADR — bin/generate-index
 workspace	docs/WORKSPACE.md	owner	canonical	which repo is which on THIS machine — gitignored, never travels
+check-document	bin/check-document	engine	executable	enforces the lock rules of the document contract
+contract-document	rules/contract-document.md	engine	canonical	the shape a document must have — header, ceilings, names, moving

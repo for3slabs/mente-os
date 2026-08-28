@@ -1,0 +1,169 @@
+#!/usr/bin/env python3
+"""check-document — enforces the 🔒 rows of rules/contract-document.md
+
+Every rule it checks names the contract ID it comes from, so a failure is
+actionable without opening the code.
+
+Exit: 0 clean · 1 violations · 2 the contract itself is missing
+"""
+import os, re, sys
+
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+CONTRACT = os.path.join(ROOT, "rules", "contract-document.md")
+
+STATUSES = {"draft", "current", "superseded", "fossil"}
+
+# DOC-SIZ-001 · the ceiling table of contract-document §3.
+# Read from the contract itself, never duplicated here — a copy would diverge.
+FALLBACK_CEILINGS = {}
+
+SKIP_DIRS = {".git", "__pycache__", "node_modules", ".venv", "cache"}
+SKIP_NAMES = {"CHANGELOG.md"}
+
+HDR = re.compile(r"^\*\*(Status|Type|Updated|Owner):\*\*\s*(.+?)\s*(?:·|$)", re.M)
+FIELD = re.compile(r"\*\*(Status|Type|Updated|Owner):\*\*\s*([^·\n]+)")
+ISO = re.compile(r"^\d{4}-\d{2}-\d{2}$")
+BIS = re.compile(r"^#{2,4}\s+\d+-(bis|ter|quater)\b", re.M | re.I)
+BADNAME = re.compile(r"[_ ]|-(v\d+|final|new|old|copy)\.|^\d{4}-\d{2}-\d{2}-", re.I)
+LIVENUM = re.compile(r"\b\d+\s*/\s*\d+\b|\b\d+\s+checks?\b", re.I)
+
+
+def read_ceilings(text):
+    """DOC-SIZ-001 · the ceilings live in the contract, and are read from it."""
+    out = {}
+    for line in text.splitlines():
+        m = re.match(r"^\|\s*`([a-z-]+)`\s*\|\s*\*{0,2}(?:⭐\s*)?\*{0,2}(\d+|none)", line)
+        if m:
+            out[m.group(1)] = None if m.group(2) == "none" else int(m.group(2))
+    return out
+
+
+def check(path, rel, ceilings, quiet):
+    bad = []
+    try:
+        text = open(path, encoding="utf-8").read()
+    except Exception as e:
+        return [("DOC-HDR-001", rel, 0, "unreadable: %s" % e)]
+    lines = text.splitlines()
+    head = "\n".join(lines[:12])
+    f = dict(FIELD.findall(head))
+    f = {k: v.strip() for k, v in f.items()}
+
+    # DOC-HDR-001 · all four fields
+    missing = [k for k in ("Status", "Type", "Updated", "Owner") if k not in f]
+    if missing:
+        bad.append(("DOC-HDR-001", rel, 1,
+                    "header missing %s · expected: all four · got: %d of 4"
+                    % (", ".join(missing), 4 - len(missing))))
+        return bad  # nothing else can be judged without them
+
+    st = f["Status"].strip("*` ")
+    ty = f["Type"].strip("*` ")
+
+    # DOC-HDR-002 · Status in the allowed set
+    if st not in STATUSES:
+        bad.append(("DOC-HDR-002", rel, 1,
+                    "Status not allowed · expected one of %s · got: %r"
+                    % ("|".join(sorted(STATUSES)), st)))
+
+    # DOC-HDR-003 · Type declared in the contract's ceiling table
+    if ceilings and ty not in ceilings:
+        bad.append(("DOC-HDR-003", rel, 1,
+                    "Type not in the contract's table · got: %r · "
+                    "no ceiling can be applied" % ty))
+
+    # DOC-HDR-004 · ISO date
+    upd = f["Updated"].strip("*` ")
+    if not ISO.match(upd) and "{{" not in upd:
+        bad.append(("DOC-HDR-004", rel, 1,
+                    "Updated not ISO · expected YYYY-MM-DD · got: %r" % upd))
+
+    # DOC-HDR-005 · superseded names its replacement
+    if st == "superseded" and "superseded by" not in text.lower():
+        bad.append(("DOC-HDR-005", rel, 1,
+                    "superseded with no replacement named · a dead end"))
+
+    # DOC-SIZ-001 · the ceiling for its type
+    cap = ceilings.get(ty)
+    if cap and len(lines) > cap:
+        bad.append(("DOC-SIZ-001", rel, len(lines),
+                    "over its ceiling · type %s allows %d · got: %d · "
+                    "pending split (see doc-structure.md §2.1)" % (ty, cap, len(lines))))
+
+    # DOC-BOD-001 · Purpose and Related
+    if not re.search(r"^#{2,3}.*\b(Purpose|WHAT THIS FILE IS|What (this|a|an) )\b", text, re.M | re.I):
+        bad.append(("DOC-BOD-001", rel, 1, "no Purpose section"))
+    if not re.search(r"^Related:", text, re.M):
+        bad.append(("DOC-BOD-001", rel, len(lines), "no Related line"))
+
+    # DOC-BOD-002 · no -bis / -ter / -quater numbering
+    m = BIS.search(text)
+    if m:
+        ln = text[:m.start()].count("\n") + 1
+        bad.append(("DOC-BOD-002", rel, ln,
+                    "section numbered -bis/-ter/-quater · the split signal"))
+
+    # DOC-CNT-002 · no live number in prose
+    for i, line in enumerate(lines, 1):
+        if line.lstrip().startswith(("|", ">", "```", "#")):
+            continue
+        m = LIVENUM.search(line)
+        if m and "20" not in m.group(0):
+            bad.append(("DOC-CNT-002", rel, i,
+                        "live number in prose: %r · cite its source instead"
+                        % m.group(0)))
+            break
+
+    # DOC-NAM-001 / 003 / 004 / 007 · the filename
+    base = os.path.basename(rel)
+    if base not in SKIP_NAMES and base != base.lower() and not base.isupper():
+        if not re.match(r"^[A-Z][A-Z0-9_.-]*$", base.split(".")[0]):
+            bad.append(("DOC-NAM-006", rel, 0,
+                        "mixed case in a non entry-point name: %r" % base))
+    if "_" in base.split(".")[0] and not base.isupper():
+        bad.append(("DOC-NAM-001", rel, 0, "underscore in name · use hyphens: %r" % base))
+    if re.search(r"-(v\d+|final|new|old|copy)(\.|$)", base, re.I):
+        bad.append(("DOC-NAM-004", rel, 0,
+                    "version suffix in name: %r · two documents for one subject" % base))
+    if re.search(r"\d{4}-\d{2}-\d{2}", base):
+        bad.append(("DOC-NAM-003", rel, 0, "date in filename: %r" % base))
+
+    return bad
+
+
+def main():
+    quiet = "--quiet" in sys.argv
+    if not os.path.exists(CONTRACT):
+        print("🔴 the contract itself is missing: rules/contract-document.md")
+        return 2
+    ceilings = read_ceilings(open(CONTRACT, encoding="utf-8").read())
+    if not ceilings:
+        print("🔴 no ceiling table found in the contract · DOC-SIZ-001 cannot be checked")
+        return 2
+
+    findings = []
+    checked = 0
+    for dirpath, dirnames, filenames in os.walk(ROOT):
+        dirnames[:] = [d for d in dirnames if d not in SKIP_DIRS]
+        for name in sorted(filenames):
+            if not name.endswith(".md"):
+                continue
+            path = os.path.join(dirpath, name)
+            rel = os.path.relpath(path, ROOT)
+            checked += 1
+            findings += check(path, rel, ceilings, quiet)
+
+    if not quiet:
+        print("check-document · %d documents · %d ceilings declared" % (checked, len(ceilings)))
+    if findings:
+        for cid, rel, ln, msg in findings:
+            print("🔴 %s:%d · %s · %s" % (rel, ln, cid, msg))
+        print("\n%d violations · rule: rules/contract-document.md" % len(findings))
+        return 1
+    if not quiet:
+        print("✅ 0 violations")
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

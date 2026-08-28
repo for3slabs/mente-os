@@ -37,7 +37,7 @@ Code, this file plus the pointers below is enough to work correctly.
 | # | Rule | Pointer |
 |---|---|---|
 | 1 | **Explain → approve → build.** Never build a milestone without explicit approval | `rules/ESTANDAR_Metodo_Fases_F.md` |
-| 2 | **The AI does not invent criterion.** Criterion is the owner's; the AI gives it form | ADR-003 |
+| 2 | **The AI does not invent criterion.** Criterion is the owner's; the AI gives it form | the decision record that settles it |
 | 3 | **Do not state — report the measurement.** An unverified claim is banned | `principles/owner-0-voice.md` |
 | 4 | **Secrets are referenced, never pasted** | architecture §12-S.1 |
 | 5 | **Scope is declared, never inferred.** No match → **stop and ask** | `rules/rule-isolation.md` |
@@ -91,11 +91,12 @@ Code, this file plus the pointers below is enough to work correctly.
 
 | What | Language |
 |---|---|
-| Conversation with the owner | **Spanish** |
+| Conversation with the owner | ⬜ **the owner's language** — declared at install |
 | Anything read as an INSTRUCTION (this file, contracts, rules, `BLOCK.md`) | **US English** |
 | Code, identifiers, commits | **US English** |
 
-**Do not suggest switching.** Spanish is where the owner's nuance lives (ADR-023).
+**Do not suggest switching.** ⬜ The owner's own language is where their nuance lives — the
+engine never assumes which it is.
 
 ---
 
@@ -125,7 +126,7 @@ What you lose and what you keep:
 | Auto-injected `CLAUDE.md` | 🔴 → **read this file first** |
 | Everything else | ✅ works — it is plain markdown and scripts |
 
-> **The protocol is portable. The hooks are the turbo when they exist** (ADR-011).
+> **The protocol is portable. The hooks are the turbo when they exist.**
 
 ---
 

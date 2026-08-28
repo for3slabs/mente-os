@@ -46,7 +46,7 @@ which rule governs it. ⭐ A repo with no governing rule is a repo someone will 
 |---|---|
 | is the system healthy? | `bin/check-health` |
 | do the blocks meet their contract? | `bin/check-blocks` |
-| ⭐ the full verification | `bin/test-f0-f6` — *the only thing that matters is `failed: 0`* |
+| ⭐ the full verification | `bin/check-all` — *the only thing that matters is `failed: 0`* |
 
 ---
 

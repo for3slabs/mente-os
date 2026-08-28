@@ -1,6 +1,6 @@
 # memory/ — what the system must not forget
 
-**Status:** current · **Type:** folder-readme
+**Status:** current · **Type:** folder-readme · **Updated:** {{date}} · **Owner:** {{owner}}
 **Scope:** ⚠️ **INSTANCE** — the folder and its README travel; ⛔ **the content never does.**
 Exception: `principles/`, which is engine doctrine and ships whole.
 **Governance:** `owner` in `piezas.tsv`

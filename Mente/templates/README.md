@@ -1,6 +1,6 @@
 # templates/ — the blueprints `bin/init` stamps into a new instance
 
-**Status:** current · **Type:** folder-readme · **Scope:** ⚠️ ENGINE — travels with the repo.
+**Status:** current · **Type:** folder-readme · **Updated:** {{date}} · **Owner:** {{owner}} · **Scope:** ⚠️ ENGINE — travels with the repo.
 
 ## What this folder is
 

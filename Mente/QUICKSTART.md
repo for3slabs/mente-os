@@ -46,7 +46,7 @@ cd Mente
 bin/init
 ```
 
-It will **ask for your name**. That is deliberate: `ADR-003` says criteria are asked, never
+It will **ask for your name**. That is deliberate: the engine's rule says criteria are asked, never
 guessed, and who decides in an instance is criteria.
 
 > 🔴 **If you launch it through a pipe or from a script, it refuses:**
@@ -59,7 +59,7 @@ guessed, and who decides in an instance is criteria.
 ### ③ Check
 
 ```bash
-bin/test-f0-f6
+bin/check-all
 ```
 
 ---
@@ -120,7 +120,7 @@ in full.
 | is the system healthy? | `bin/check-health` |
 | does everything point to something that exists? | `bin/check-links` |
 | do the blocks meet their contract? | `bin/check-blocks` |
-| ⭐ the full verification | `bin/test-f0-f6` — *the only thing that matters is `failed: 0`* |
+| ⭐ the full verification | `bin/check-all` — *the only thing that matters is `failed: 0`* |
 | the pre-release review | `bin/verify-all` (`--rapido` skips clone and demo) |
 | what can I run and what not? | `Mente/CAPABILITIES.md` |
 
