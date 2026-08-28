@@ -24,6 +24,13 @@ The criterion that decides whether backend work is **well built** — not whethe
 ⛔ **This file does not say HOW to implement anything.** It says what makes an implementation
 acceptable, and what evidence proves it.
 
+### ⭐ The failure this discipline prevents
+
+⚠️ **Backend defects do not announce themselves.** A wrong page is seen immediately; ⭐ **a guard
+that was never applied, a value written twice, an error swallowed on the way out — those keep
+working, visibly, while being wrong.** The cost is paid later, by someone who trusted the part
+that looked fine.
+
 ---
 
 ## 1 · THE CRITERION MODEL
@@ -68,7 +75,8 @@ with no observation behind it is an opinion with an ID.
 | `BE-ARC-004` | **A piece can fail without taking the rest down** | 🟠 | name what stops working when this piece stops |
 
 ⭐ **Why `BE-ARC-001` is the strongest:** a duplicated guard does not fail loudly, it fails
-**partially**. Eleven copies check correctly and the twelfth does not, so the system looks right
+**partially** — ⚠️ and *fail loudly* itself is owned by `val-integration.md` §2.5, which this
+criterion depends on. Eleven copies check correctly and the twelfth does not, so the system looks right
 until somebody finds the one door that was never locked.
 
 ### 2.2 · Data design — what does the store guarantee, and what does code guarantee?
@@ -115,9 +123,14 @@ someone who never had reason to doubt it. An ugly name only costs a second.
 | `BE-CON-002` | ⛔ **An internal error never leaks outward** — no stack trace, no query, no path | 🔴 | trigger the failure and read what comes back |
 | `BE-CON-003` | **Before changing an existing contract, its consumers are identified** | 🟠 | ⭐ name them, measured — *"probably nobody uses it"* is not an answer |
 | `BE-CON-004` | **An unhandled failure is logged with enough context to diagnose it** | 🟠 | can the failure be reconstructed from the log alone? |
+| `BE-CON-005` | ⛔ **Authorisation reads the VERIFIED session, never an argument the caller supplied** | 🔴 | ⭐ trace where the acting identity comes from |
 
 ⭐ **`BE-CON-001` is the one that separates a service from a script.** *"It fails"* is not a
 contract; *"it returns this when the input is invalid, and this when the dependency is down"* is.
+
+⛔ **`BE-CON-005` is where identity is decided for the whole system.** An identifier arriving in a
+request does not prove who is making it — ⭐ **it proves someone typed it.** `val-integration.md`
+§2.3 applies the same rule at every seam; ⚠️ **this is where it is enforced.**
 
 ### 2.6 · Necessity — should this exist at all?
 
@@ -209,7 +222,8 @@ questions decide what to build. ⛔ **An unanswered question here is a decision 
 ### Consequences
 
 22. Who consumes what this changes, and does the change break them?
-23. How is it verified — and ⭐ **has the check been seen to fail**?
+23. How is it verified — and ⭐ **has the check been seen to fail**? (`val-functional.md` §4 owns
+    the procedure for proving it can)
 24. If it goes wrong in production, what is the way back?
 
 ---

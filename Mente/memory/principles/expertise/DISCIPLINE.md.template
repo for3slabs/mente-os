@@ -1,0 +1,218 @@
+# EXPERTISE · {{DISCIPLINE}}
+
+**Status:** current · **Type:** contract · **Updated:** {{date}} · **Owner:** {{owner}}
+**Branch of:** `../owner-{{n}}-{{area}}.md` — ⬜ the owner this discipline belongs to
+**Level:** ⚖️ criterion · ⬜ **this installation's standard**
+**Scope:** ⚠️ INSTANCE document — ⭐ written by the owner, not shipped with the engine.
+
+---
+
+> ## 📍 THIS IS A TEMPLATE — copy it, do not edit it
+>
+> ```
+> cp DISCIPLINE.md.template <your-discipline>.md
+> ```
+>
+> ⭐ **Read one of the seven first.** They are the same form, filled in — the form is easier to
+> follow with an example beside it than from a description.
+
+---
+
+## 0 · WHAT THIS FILE IS
+
+⬜ **One sentence: what does this discipline decide?**
+
+> ## ⬜ The criterion that decides whether {{DISCIPLINE}} work is …
+
+⭐ **Say what it decides, not what it is about.** *"About testing"* names a topic; *"decides
+whether something is proven to work"* names a judgement — ⛔ **and only the second can reject
+anything.**
+
+### ⬜ Why this discipline exists — the failure it prevents
+
+⚠️ **Name the failure, not the subject.** ⭐ A discipline with no failure behind it is a topic
+someone found interesting, and it will not survive its first inconvenient verdict.
+
+⬜ **Write it here, and keep it general** — the shape of the failure, never a case that only makes
+sense to whoever lived it.
+
+---
+
+## 1 · THE CRITERION MODEL
+
+⭐ **This section ships as-is. Do not rewrite it** — it is what lets a checker, a gate, or a person
+with thirty seconds read every discipline the same way.
+
+| Field | States |
+|---|---|
+| **ID** | ⭐ permanent — `{{XX}}-<area>-<nnn>` · ⛔ never renumbered |
+| **Criterion** | what must be true |
+| **Severity** | 🔴 mandatory · 🟠 expert · 🟢 guidance |
+| **Verify** | ⭐ **how it is checked** — the observation, not the opinion |
+
+### The three severities
+
+| | Means | On violation |
+|---|---|---|
+| 🔴 **mandatory** | ⭐ security, money, or silent data loss | ⛔ **blocks** — never a matter of taste |
+| 🟠 **expert** | the criterion of whoever owns this system | ⬜ its shipping effect is declared by the owner |
+| 🟢 **guidance** | a preference with a reason | informs |
+
+> ## ⛔ AN ID IS AN ADDRESS, NOT A POSITION
+> ⭐ Something will cite `{{XX}}-AAA-003` from another file, a commit, or a review. **Renumbering
+> breaks every one of those silently** — the citation still resolves, to the wrong criterion.
+> **Deprecate an ID; never reuse it.**
+
+⬜ **Pick your two-letter prefix** and check it against the seven that exist —
+`BE` `DB` `FE` `PL` `DS` `VF` `VI`. ⛔ **A collision makes two criteria share one address.**
+
+---
+
+## 2 · THE BASE STANDARD
+
+⬜ **Your criteria go here.** ⭐ Group them by dimension — ⛔ never one flat list of thirty rows:
+grouping is what makes a criterion findable when someone needs it, not when they read the file.
+
+⭐ **The six dimensions the seven use** — they generalise, but ⬜ **rename or drop any that do not
+fit your discipline**, and say why in one line:
+
+| Dimension | Asks |
+|---|---|
+| **architecture** | is each piece in the right place, with one responsibility? |
+| **data** | ⭐ what is guaranteed, and by whom? |
+| **abstraction** | one problem, one solution — ⛔ or copied three times? |
+| **naming** | does the name say what it does? |
+| **contracts** | ⭐ what is promised, and what happens when it cannot be kept? |
+| **necessity** | ⛔ does this have to exist at all? |
+
+### 2.1 · ⬜ {{dimension}}
+
+| ID | Criterion | Sev | Verify |
+|---|---|---|---|
+| ⬜ `{{XX}}-AAA-001` | ⬜ … | ⬜ … | ⬜ … |
+
+⬜ **Below each table, one paragraph on the criterion that matters most in it, and why.**
+⭐ **This is the part that gets read.** A table is scanned; the paragraph is what makes someone
+understand a rule well enough to apply it to a case the table never anticipated.
+
+### 2.2 · ⬜ {{dimension}}
+
+⬜ …
+
+---
+
+### ⭐ WHEN A CRITERION IS ALREADY OWNED SOMEWHERE ELSE
+
+> ## ⛔ CITE IT. NEVER RESTATE IT.
+
+⚠️ **Two copies of one rule diverge, and neither looks wrong on its own** — the defect exists only
+between them, and nothing reads *between* files. (`doc-structure.md` §2.3 owns this rule.)
+
+| Instead of | Write |
+|---|---|
+| ⛔ repeating the rule in your words | ⭐ ⬜ *`<the file that owns it>` §N owns this — here it applies as …* |
+
+⭐ **Name what YOUR discipline adds to it.** A citation with nothing added is a pointer with extra
+steps; **a citation plus the local consequence is what makes two files one system.**
+
+⬜ **Before shipping: for every rule you wrote, ask whether one of the seven already owns it.**
+
+---
+
+## 3 · ⬜ THIS INSTALLATION'S CRITERIA
+
+⭐ **In the seven engine files, §2 is fixed and §3 is where the owner extends.** ⛔ **In a
+discipline you wrote yourself, that split does not exist** — §2 is already yours.
+
+⬜ **Either delete this section, or use it for criteria that came from somewhere else** — a
+standard you adopted, a client's requirement, a regulation — ⭐ **so their origin stays visible.**
+
+> ⛔ **Do not let an AI write a criterion.** ⚠️ **An invented one reads exactly like a real one**
+> and silently becomes the bar everything is measured against. ⭐ **The method: the AI asks, you
+> answer with real cases, the AI structures.** Never the reverse.
+
+**⬜ The questions that elicit criteria — answer with cases, not principles:**
+
+1. ⬜ What is the last {{DISCIPLINE}} defect that reached production, and what would have caught it?
+2. ⬜ What do you look at first when reviewing someone else's work here?
+3. ⬜ What have you had to rebuild because it was built wrong the first time?
+4. ⭐ ⬜ What would make you refuse, without discussion?
+5. ⭐ ⬜ What does your way of working make easy that is usually a mistake?
+
+---
+
+## 4 · ⬜ THE DECISION PROTOCOL — before doing {{DISCIPLINE}} work
+
+⭐ **§2 judges what was built; this decides what to build** — ⛔ and an unanswered question here is
+a decision made by accident.
+
+⚠️ **Not all apply to every change. The ones that do not apply are stated as not applying** —
+⭐ **skipping silently and not applying are indistinguishable afterwards.**
+
+⬜ **Group the questions.** ⭐ A flat list of twenty is skimmed; five groups of four are worked
+through — and the group names tell the reader which ones to skip honestly.
+
+### ⬜ {{group}}
+
+1. ⬜ …
+2. ⬜ …
+
+---
+
+## 5 · ⛔ NEVER — ⬜ optional, and worth having
+
+⬜ **The things that are never acceptable in this discipline, whatever the argument.**
+
+| # | Never | ⭐ Why |
+|---|---|---|
+| ⬜ 1 | ⬜ … | ⬜ … |
+
+⭐ **A NEVER is not a strong preference.** ⛔ If you can imagine agreeing to it under pressure, it
+is a 🔴 criterion in §2 — **not a never.**
+
+---
+
+## 6 · WHO GOVERNS THIS FILE
+
+| Change | Who |
+|---|---|
+| the criteria in §2 | ⬜ the owner named in the header |
+| ⛔ lowering a 🔴 to 🟠 for one case | **nobody** — ⚠️ ⭐ log the friction and propose the change |
+
+⭐ **A 🔴 that can be downgraded where it is inconvenient stops being mandatory** — and the places
+where it is inconvenient are exactly the places it was written for.
+
+---
+
+## ⭐ BEFORE YOU SHIP IT — the checks the seven had to pass
+
+| # | Check | ⛔ If it fails |
+|---|---|---|
+| 1 | **no `⬜` left as a BLANK** | ⭐ a blank that shipped is a criterion nobody wrote |
+| 2 | **every criterion has a `Verify`** | ⛔ a criterion with no observation is an opinion with an ID |
+| 3 | ⭐ **your prefix collides with none of the seven** | two criteria at one address |
+| 4 | **no rule restated that another file owns** | ⚠️ cite it instead — see §2 |
+| 5 | ⭐ **at least one citation into another discipline** | ⛔ a file citing nobody is not part of a system |
+| 6 | **the header carries all five fields** | it fails its own document contract |
+| 7 | ⭐ **§0 names a failure, not a topic** | ⛔ it will not survive its first inconvenient verdict |
+| 8 | **declared in the piece table** (`../../../piezas.tsv`) | ⭐ undeclared is invisible to every check |
+
+> ## ⚠️ `⬜` HAS TWO USES — check 1 only covers the first
+> | Use | Example | Check 1 |
+> |---|---|---|
+> | ⭐ **a BLANK you must fill** | `⬜ …` in a table cell | ⛔ **must not ship** |
+> | **a legitimate STATE** | ⬜ `UNKNOWN` · ⬜ `NOT_MEASURED` · ⬜ `pending` | ✅ ships |
+>
+> ⭐ **A search for the glyph alone cannot tell them apart** — read what it marks. ⚠️ **Anything
+> that counts markers automatically will count both**, and report a filled file as unfinished.
+
+⭐ **Check 5 is the one that is easiest to skip and hardest to add later.** A discipline written in
+isolation duplicates what its neighbours already decided — ⚠️ **and the duplication is only found
+when the two copies have already diverged.**
+
+---
+
+Related: `README.md` (⭐ **the parent — what a discipline is, and why an AI must not invent one**) ·
+the seven that exist — `dev-backend.md` · `dev-database.md` · `dev-frontend.md` ·
+`doc-planning.md` · `doc-structure.md` · `val-functional.md` · `val-integration.md` ·
+`doc-structure.md` (⭐ the form every document here must hold).

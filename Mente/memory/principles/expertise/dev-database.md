@@ -30,6 +30,12 @@
 ⛔ **Never infer completion.** *"It probably works"* and *"it works"* are different claims, and
 only one of them was measured.
 
+### ⭐ The failure this discipline prevents
+
+⚠️ **A data defect is the only kind that cannot be fixed by fixing the code.** ⭐ **A wrong record
+written today stays wrong after the bug is gone** — the deploy is reversible, the row is not. That
+asymmetry is why so many criteria here are 🔴 while their equivalents elsewhere are not.
+
 ---
 
 ## 1 · THE CRITERION MODEL
@@ -91,6 +97,10 @@ default becomes the policy, and it is discovered the day a parent is deleted in 
 ⚠️ **`DB-INT-002` is the one that looks handled and is not.** *"The code checks it does not
 exist"* fails the moment two requests check at the same time: both read absent, both write.
 ⭐ **A constraint refuses the second one; a prior read cannot.**
+
+⚠️ **This is what `val-integration.md` §2.3 delegates to.** ⭐ **A guarantee enforced here is not
+re-checked at every seam** — that would be re-deriving, not validating. **What crosses a seam with
+no constraint behind it is validated there, every time.**
 
 ### 2.3 · Where a value lives — the store or the code
 
