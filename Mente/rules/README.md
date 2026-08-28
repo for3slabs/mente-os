@@ -125,6 +125,28 @@ a stale number teaches the reader to distrust the rest of it.
 
 ---
 
+## ⭐ RULES EVOLVE — an immutable standard becomes a fossil
+
+⛔ **A rule that can never change is a rule people route around.** The friction does not disappear;
+it moves out of sight, and the rule keeps looking obeyed while nothing follows it.
+
+**So the mechanism is: comply → log the friction → keep going → propose the change at close.**
+
+| Step | Why |
+|---|---|
+| **comply** | ⛔ never break a rule in the moment because it is inconvenient |
+| **log the friction** | one line: what the rule blocked, and what it cost |
+| **keep going** | the work does not stop for a rule dispute |
+| ⭐ **propose at close** | with the friction record as evidence, not as an opinion |
+
+⭐ **A rule changes when the friction is measured, never when it is felt.** One person annoyed once
+is not evidence; the same rule obstructing distinct pieces of work repeatedly is.
+
+⚠️ **The single exception is real damage.** If following the rule would break something, stop and
+raise it immediately — that is not friction, it is a defect in the rule.
+
+---
+
 ## ⚠️ Before you add a document here — the five questions
 
 1. **Which of the three types is it?** If it does not fit one, it is probably a document for

@@ -284,5 +284,25 @@ happens to remember them, which is the compliance rate the whole system was buil
 
 ---
 
+## E-21 · ⭐ The engine is designed further ahead than it is validated
+
+- **Surfaced by:** the pattern this engine was built to escape, applied to itself
+- **Affects:** everything in this list
+- **Closes when:** ⭐ the ratio inverts — more of this backlog is **enforced** than is **written**
+
+**Why it matters.** ⛔ **Designing a lot and validating a little is the failure mode that produces
+systems nobody can trust** — and a governance engine is the easiest place in the world to commit
+it, because writing a rule feels like solving the problem.
+
+⚠️ **Measure it against this repository, not in the abstract.** Count what is written: the
+principles, the folder contracts, the entries in this file. Then count what actually runs. ⭐ **If
+the first number keeps growing while the second does not, the engine is proving its own diagnosis
+right** — a document cannot refuse, and neither can a backlog.
+
+**The test, stated plainly:** *how much of what this engine declares can it check?* Any answer
+that has to be argued rather than measured is the answer.
+
+---
+
 Related: `README.md` (folder) · `../memory/principles/README.md` (where the owners live) ·
 `../rules/README.md` (where a closed entry usually lands) · `../CAPABILITIES.md`.
