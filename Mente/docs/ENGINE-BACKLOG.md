@@ -258,5 +258,31 @@ the installer of an engine reads exactly once, with less attention than a review
 
 ---
 
+## E-19 · Failure patterns have no regression fixtures
+
+- **Surfaced by:** external review of the absorbed-patterns catalogue
+- **Affects:** the pattern catalogue · the quality verdict
+- **Closes when:** each pattern ships a failing example and a passing one, and a check runs both
+
+**Why it matters.** ⭐ A pattern nobody can detect is a sentence, not a rule. Fixtures turn the
+catalogue into something executable: the failing example proves the detection actually fires, and
+the passing one proves it does not fire on correct code. ⚠️ **Without the second, a detector that
+flags everything scores perfectly** — and a rule that always triggers is a rule that gets disabled.
+
+---
+
+## E-20 · Absorbed patterns are catalogued but not detected
+
+- **Surfaced by:** the absorbed-patterns catalogue — each entry declares HOW it is found, and
+  nothing performs the finding
+- **Affects:** the quality verdict · the gate that fires before a commit
+- **Closes when:** the statically-detectable patterns are checked by something that runs
+
+**Why it matters.** ⭐ The catalogue now states detection, evidence and severity for each pattern —
+which is exactly the shape a checker needs. Until one exists, these are rules followed by whoever
+happens to remember them, which is the compliance rate the whole system was built to escape.
+
+---
+
 Related: `README.md` (folder) · `../memory/principles/README.md` (where the owners live) ·
 `../rules/README.md` (where a closed entry usually lands) · `../CAPABILITIES.md`.
