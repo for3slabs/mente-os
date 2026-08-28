@@ -105,9 +105,9 @@ receiver checks shape and content, every time.
 | `VI-DAT-002` | ⛔ **Identity is verified, never assumed** | 🔴 | ⭐ see below |
 | `VI-DAT-003` | **State what the receiver validates and what it delegates** | 🟠 | for each seam, both halves |
 
-⭐ **On identity:** an identifier arriving in a request does not prove who is making it.
-**Authorisation reads the verified session, never an argument** — otherwise anyone holding a
-credential can act as someone else.
+⭐ **On identity:** the rule is owned by `dev-backend.md` §2.5 (`BE-CON-005`) — **authorisation
+reads the verified session, never an argument.** ⚠️ **`VI-DAT-002` is that same rule applied at a
+seam:** an identifier that crossed a boundary is an argument, however trustworthy the sender looks.
 
 ⚠️ **The distinction that keeps this from becoming paranoia — validating is not re-deriving.**
 
@@ -185,6 +185,9 @@ paying maintenance forever for something whose correct fix is deletion.
 |---|---|
 | **the SAME owner** | ⭐ duplication — unify it, and fix every copy, never one |
 | ⛔ **DIFFERENT owners** | ⭐ **legitimate coincidence — keep them apart**, however alike they look |
+
+⭐ **This decides WHETHER to unify; `dev-backend.md` §2.1 (`BE-ARC-001`) decides what unification
+must achieve** — exactly one implementation of a rule, never a copy.
 
 ⚠️ **Why ownership and not shape:** two pieces can look identical today and diverge tomorrow,
 because nothing says they must evolve together. ⭐ **Unifying by resemblance couples two rules that
@@ -272,7 +275,7 @@ seam whose failure mode is a guess.**
 | 2 | ⛔ **Change the receiver before the senders** | ⭐ a strict receiver first breaks everything not yet sending |
 | 3 | **Call a seam good without REAL DATA** | ⭐ a substitute returns what you expect; real data returns what exists |
 | 4 | ⛔ **Remove a piece without measuring who imports it** | ⚠️ importers, never mentions — §2.2 |
-| 5 | ⭐ **A default that points at something with an owner** | ⛔ a default is a neutral slot, never a reserved name |
+| 5 | ⭐ **A default that points at something with an owner** | ⛔ owned by `dev-database.md` §2.2 — a default is a neutral slot, never a reserved name |
 | 6 | ⛔ **Treat a test from your environment as a test of production** | ⭐ §4 |
 
 ### ⭐ FOUR SIGNS IT WAS ONLY TESTED IN ISOLATION — any one is enough

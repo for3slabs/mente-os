@@ -136,6 +136,10 @@ changes how everything else is judged.**
 wrong one: ⭐ **a table of things that can no longer change may be copied; a two-line list of live
 values may not.** The axis is **who owns the value**, not how the content looks.
 
+⚠️ **This is the rule the other expertise files lean on.** ⭐ When a criterion lives in one of them
+and is needed in another, the second **cites it** — `dev-backend.md`, `dev-database.md` and
+`val-integration.md` all do exactly that, and none of them restates the rule it borrowed.
+
 ⭐ **Why duplication is the worst failure in this discipline:** two copies of one truth diverge, and
 **neither looks wrong on its own.** Each reads as correct in isolation. The defect exists only
 between them — and nothing reads *between* documents.

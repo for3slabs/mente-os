@@ -83,6 +83,7 @@ exp-doc-structure	memory/principles/expertise/doc-structure.md	engine	canonical	
 exp-doc-planning	memory/principles/expertise/doc-planning.md	engine	canonical	the base criterion for planning — extensible per instance
 exp-dev-frontend	memory/principles/expertise/dev-frontend.md	engine	canonical	the base criterion for interface work — extensible per instance
 exp-dev-database	memory/principles/expertise/dev-database.md	engine	canonical	the base criterion for data work — extensible per instance
+exp-template	memory/principles/expertise/DISCIPLINE.md.template	engine	template	the form for creating an eighth discipline — extracted from the seven
 exp-dev-backend	memory/principles/expertise/dev-backend.md	engine	canonical	the base criterion for backend work — extensible per instance
 arquitecto-val	memory/principles/owner-3-validation.md	engine	canonical	the criterion for validation
 # ── owner · whoever installs governs these · ⚠️ they do NOT exist on a fresh

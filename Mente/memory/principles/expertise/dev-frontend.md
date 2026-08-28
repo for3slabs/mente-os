@@ -256,7 +256,8 @@ apply are stated as not applying — ⭐ skipping silently and not applying look
 ### Proof
 
 22. How is each of the above demonstrated, rather than asserted?
-23. ⭐ **Has the failure path been seen to fail**, or only assumed to work?
+23. ⭐ **Has the failure path been seen to fail**, or only assumed to work? (`val-functional.md`
+    §4 owns how that is proven)
 
 ---
 

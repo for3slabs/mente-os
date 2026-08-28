@@ -32,6 +32,10 @@ verdict — it is a mood.** This file is what makes a verdict reproducible.
 ⭐ **The second matters more in a system that runs unattended.** A validation that passes today
 with nothing watching tomorrow is a photograph, not a guarantee.
 
+⚠️ **And what is validated here was written elsewhere:** ⭐ **the success criterion comes from
+`doc-planning.md` §2.5.** A criterion that was never made measurable cannot be proven here — ⛔ the
+failure belongs to planning, and it surfaces at closing time.
+
 ---
 
 ## 1 · ⭐ THE THREE VERDICTS

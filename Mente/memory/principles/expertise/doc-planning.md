@@ -128,6 +128,10 @@ that phase arrived without one.
 
 ### 2.5 · The contract — a success criterion carries four things
 
+⭐ **This is the handover point of the whole system.** What is written here is what
+`val-functional.md` will later be asked to prove — ⛔ **a criterion that cannot be measured cannot
+be validated**, and the gap only becomes visible at closing time, when it is expensive.
+
 ⛔ **Fewer than four and the phase is not planned, only named.**
 
 | # | Must state | ⛔ Not enough |
