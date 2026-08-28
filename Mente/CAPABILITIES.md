@@ -56,6 +56,7 @@ answers exactly one question. None of them decides anything: they check what is 
 | `bin/check-health` | is anything wrong right now — ⭐ **start here** |
 | `bin/check-links` | does every internal pointer resolve to something that exists |
 | `bin/check-structure` | is the tree the one `piezas.tsv` declares |
+| `bin/check-declared` | ⭐ does every engine file have its row in `piezas.tsv` — the disk-side check |
 | `bin/check-blocks` | do the open blocks meet their contract |
 | `bin/check-sufficiency <block>` | can this block be resumed from disk alone (§A-E) |
 | `bin/grade-block <block>` | product or MVP — **measured**, never opinion |
