@@ -1,0 +1,104 @@
+#!/usr/bin/env python3
+"""check-declared — every engine file must be declared in piezas.tsv.
+
+check-structure walks the TABLE and verifies each row has its file. This walks
+the DISK and verifies each file has its row. Without it, a piece that is built
+and never declared is invisible: nothing reports it when it disappears.
+
+Usage:
+  bin/check-declared            report undeclared files
+  bin/check-declared --quiet    exit code only
+
+Exit codes: 0 clean · 1 undeclared files found · 2 piezas.tsv missing
+"""
+import os
+import sys
+
+MENTE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+os.chdir(MENTE)
+
+TABLE = "piezas.tsv"
+
+# Folders walked, and which file extensions count as a declarable piece there.
+# An empty tuple means every file counts.
+SCAN = {
+    "bin": (),
+    "hooks": (),
+    "rules": (".md",),
+    "templates": (".template",),
+    "memory/principles": (".md",),
+    "memory/principles/expertise": (".md",),
+    "docs/architecture": (".md",),
+}
+
+# Never a declarable piece: runtime artefacts, folder documentation, and the
+# per-folder READMEs, which are declared as a group rather than one by one.
+SKIP_NAMES = {"README.md", "__pycache__", ".gitkeep", ".DS_Store"}
+SKIP_SUFFIX = (".pyc", ".pyo", ".swp", "~")
+
+
+def declared_paths():
+    """Every path the table declares, normalised."""
+    if not os.path.exists(TABLE):
+        return None
+    out = set()
+    for line in open(TABLE, encoding="utf-8", errors="replace"):
+        if line.startswith("#") or not line.strip():
+            continue
+        f = [c.strip() for c in line.rstrip("\n").split("\t")]
+        if len(f) >= 2 and f[0] != "pieza":
+            out.add(f[1].replace("repo:", "").lstrip("./"))
+    return out
+
+
+def is_declarable(name, exts):
+    if name in SKIP_NAMES or name.startswith("."):
+        return False
+    if name.endswith(SKIP_SUFFIX):
+        return False
+    return not exts or name.endswith(exts)
+
+
+def main():
+    quiet = "--quiet" in sys.argv
+
+    declared = declared_paths()
+    if declared is None:
+        if not quiet:
+            print(f"🔴 {TABLE} not found — nothing can tell a declared piece "
+                  f"from an undeclared one.", file=sys.stderr)
+        return 2
+
+    missing = []
+    for folder, exts in SCAN.items():
+        if not os.path.isdir(folder):
+            continue
+        for name in sorted(os.listdir(folder)):
+            path = os.path.join(folder, name)
+            if not os.path.isfile(path):
+                continue
+            if not is_declarable(name, exts):
+                continue
+            if path not in declared:
+                missing.append(path)
+
+    if not missing:
+        if not quiet:
+            print(f"✅ every engine file is declared in {TABLE}")
+        return 0
+
+    if quiet:
+        return 1
+
+    print(f"🟡 {len(missing)} file(s) exist and {TABLE} does not declare them.\n")
+    print("   An undeclared piece is one that check-structure stays silent about")
+    print("   the day it disappears, and that a fresh clone cannot verify it received.\n")
+    for p in missing:
+        print(f"   ⬜ {p}")
+    print(f"\n   Add one row per file to {TABLE}: "
+          f"pieza <TAB> ruta <TAB> governance <TAB> clase <TAB> que_es")
+    return 1
+
+
+if __name__ == "__main__":
+    sys.exit(main())
