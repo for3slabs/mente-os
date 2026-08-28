@@ -194,5 +194,69 @@ level, both close on whichever was cheaper to produce.
 
 ---
 
+## E-14 · ⭐ The delivery contract is a data model printed as a template
+
+- **Surfaced by:** external review of the voice contract
+- **Affects:** the voice · every response the agent produces
+- **Closes when:** what must EXIST in a response is declared separately from how it is SHOWN
+
+**Why it matters.** ⭐ **Rigidity for the machine, naturalness for the human.** The contract should
+govern the information; the presentation layer should decide how it reaches the reader. Today they
+are the same thing, so the agent exposes its internal model — printing every field of the closing
+block whether or not the reader needed it. ⚠️ A protocol that feels like a protocol gets skimmed,
+and a skimmed delivery is a delivery that did not land.
+
+---
+
+## E-15 · No progressive disclosure in a response
+
+- **Surfaced by:** external review of the voice contract
+- **Affects:** the voice · the delivery block
+- **Closes when:** a response leads with orientation, and depth is available rather than imposed
+
+**Why it matters.** A document says *read top to bottom*; ⭐ an interface says *look → identify →
+go deeper only if you want to*. The engine already tiers a block's sections by reading cost — the
+same idea has never been applied to a response, so every reader pays the deepest reader's price.
+
+---
+
+## E-16 · Emphasis is not rationed
+
+- **Surfaced by:** external review of the voice contract
+- **Affects:** the voice's graphics rules
+- **Closes when:** a cap exists on how many emphasis devices one response may use
+
+**Why it matters.** ⭐ **When everything is emphasised, nothing is.** The rules already say a
+graphic replaces text rather than accompanying it, and that each one carries the prose saying why
+— but nothing limits how many appear at once. A response using headings, bold, emoji, tables,
+boxes, bars, quotes and rules simultaneously has no hierarchy left to signal with.
+
+---
+
+## E-17 · A decision is a field, not a response type
+
+- **Surfaced by:** external review of the voice contract
+- **Affects:** the response modes
+- **Closes when:** *"you must choose"* is a shape of its own, not a section inside a larger one
+
+**Why it matters.** ⭐ When the only thing that matters is that the reader chooses, everything
+around the choice is noise — and burying it in a closing block is how a decision waits a turn
+longer than it had to.
+
+---
+
+## E-18 · A rule that is read and not understood is a rule that communicates badly
+
+- **Surfaced by:** ⭐ external review — two rules were reported as gaps and both already existed,
+  stated correctly, in the file being read
+- **Affects:** the voice · every contract
+- **Closes when:** a rule's mechanics are visible on first read, not inferable on close reading
+
+**Why it matters.** ⚠️ Being right is not the same as being understood. ⭐ A careful reader missing
+a rule that is present and correct is evidence about the rule's form, not about the reader — and
+the installer of an engine reads exactly once, with less attention than a reviewer.
+
+---
+
 Related: `README.md` (folder) · `../memory/principles/README.md` (where the owners live) ·
 `../rules/README.md` (where a closed entry usually lands) · `../CAPABILITIES.md`.
