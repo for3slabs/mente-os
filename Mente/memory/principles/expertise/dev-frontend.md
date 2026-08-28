@@ -87,6 +87,8 @@ behind the visible one.
 
 ---
 
+⭐ **Applied by `../owner-2-dev.md`** — which sequences the work. ⛔ **This file judges; the owner acts on the judgement.**
+
 ## 2 · THE BASE STANDARD
 
 ### 2.1 · ⭐ Where state lives — four kinds, not one

@@ -35,11 +35,15 @@ prevents the argument *"that is not Documentation's business"* from ever being v
 
 | Responsibility | Contract |
 |---|---|
-| The shape of every document | `rules/contract-document.md` |
-| The shape of every block | `rules/contract-block.md` |
-| The shape of every decision record | `rules/contract-adr.md` |
-| Naming of files and folders | `rules/NAMING_CONVENTION.md` |
-| Size limits per type | ⬜ declared in the size table of `contract-document.md` |
+| The shape of every document | ⬜ the document contract, in `rules/` |
+| The shape of every block | ⬜ the block contract, in `rules/` |
+| The shape of every decision record | ⬜ the decision-record contract, in `rules/` |
+| Naming of files and folders | ⬜ the naming convention, in `rules/` |
+
+⚠️ **These four are not written yet** — ⛔ **and this owner cannot enforce a shape nobody declared.**
+⭐ Until they exist, owner-1 rejects on the criteria in §5a and its two disciplines; the shapes
+themselves are ⬜ **UNKNOWN, which is not PASS.** See `../../docs/ENGINE-BACKLOG.md`.
+| Size limits per type | ⬜ **not declared anywhere yet** — ⛔ see below |
 
 ---
 
@@ -84,7 +88,8 @@ go to be forgotten politely.
 ## 4 · WHAT EACH STATUS CLAIMS
 
 `Status:` is not a label — each value is a claim someone can be held to. The values themselves and
-their transitions live in `rules/contract-document.md`; what follows is what this owner verifies
+their transitions will live in the document contract (⬜ `rules/`); what follows is what this
+owner verifies
 before accepting one.
 
 | To claim | The document must |
@@ -102,6 +107,10 @@ word that tells a reader *"act on this"*.
 ## 5 · WHAT IT REJECTS
 
 ### 5a · Structural — ship with the engine
+
+⭐ **Owner-1 rejects; its two disciplines say on what basis.** `expertise/doc-planning.md` owns
+whether a plan can be executed; `expertise/doc-structure.md` owns where knowledge lives. ⛔ **A
+rejection with no discipline behind it is a preference** — see §9.
 
 These do not depend on anybody's taste: each is a consequence of a contract that travels with the
 engine, and each names what verifies it.
@@ -198,4 +207,4 @@ acceptance criteria, "acceptable" would converge on "whatever it already does".
 
 Related: `README.md` (⭐ **the parent — read it for context**) · `owner-0-voice.md` (transversal) ·
 `owner-2-dev.md` · `owner-3-validation.md` · `expertise/doc-planning.md` ·
-`expertise/doc-structure.md` · `../../rules/contract-document.md` · `../../rules/README.md`.
+`expertise/doc-structure.md` · `../../rules/README.md` (⬜ where its four contracts will live).

@@ -48,6 +48,8 @@ that could have proceeded, or proceeds on something nobody decided.
 
 ---
 
+⭐ **Applied by `../owner-1-docs.md`** — which rejects on this basis. ⛔ **This file judges; the owner acts on the judgement.**
+
 ## 2 · THE BASE STANDARD
 
 ### 2.1 · ⭐ When a plan is needed at all

@@ -185,6 +185,11 @@ happened and never says whether the system is better for it.
 
 🔴 **A red health line is never buried at the bottom — it moves to the top of the response.**
 
+⭐ **The closing block reports; it does not judge.** What it states as done was measured by
+`owner-3-validation.md`, and the four conditions that make a datum count as evidence live in
+`expertise/val-functional.md` §2.1. ⛔ **A block claiming a result owner-3 never verified is a
+voice defect and a validation defect at once.**
+
 ### ⭐ Before → after → bridge
 
 Anything measurable states all three:

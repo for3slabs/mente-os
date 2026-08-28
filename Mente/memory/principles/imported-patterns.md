@@ -86,6 +86,29 @@ describes what this installation does about it — and that is the owner's call.
 
 ---
 
+## ⭐ 2b · WHEN A PATTERN AND A CRITERION SAY THE SAME THING
+
+⚠️ **Several patterns here restate a criterion that lives in `expertise/`.** That is not
+duplication to remove — ⭐ **they are different layers, and the difference decides what you do.**
+
+| | Says | ⛔ Cannot |
+|---|---|---|
+| **a criterion** in `expertise/` | ⭐ **what must be true** — it is judged | be run |
+| **a pattern** here | ⭐ **what the defect looks like** — it is detected | judge a design |
+
+⭐ **A criterion rejects a design; a pattern finds an instance.** `FP-SEC-001` is the detectable
+shape of `expertise/dev-backend.md` §2.5 (`BE-CON-005`); `FP-SEC-002` is the shape of
+`expertise/dev-frontend.md` §2.5 (`FE-SEC-002`).
+
+> ## ⛔ THE CRITERION IS THE AUTHORITY. THE PATTERN IS THE DETECTOR.
+> ⚠️ **On disagreement, the criterion wins** — a pattern is an absorbed observation, and
+> `expertise/val-integration.md` §7 already says a precedent does not outrank a rule.
+
+⭐ **When a pattern has no criterion behind it, that is the finding**: either the criterion is
+missing from a discipline, or the pattern was never criterion at all.
+
+---
+
 ## 3 · THE PATTERNS
 
 ### FP-SEC-001 · Authorisation from a client-supplied identity

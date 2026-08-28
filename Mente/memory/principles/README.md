@@ -2,7 +2,7 @@
 
 **Status:** current · **Type:** folder-readme
 **Scope:** ⚠️ **ENGINE inside an instance folder** — read the box below before anything else.
-**Governance:** `engine` in `piezas.tsv` · ✅ ships whole to every clone
+**Governance:** declared as `engine` in the piece table · ✅ ships whole to every clone
 
 ---
 
@@ -70,7 +70,7 @@ person's taste; shipping them empty leaves the reader with no idea what they are
 | `owner-2-dev.md` | the **construction** — and whether it may start at all | doctrine + ⬜ |
 | `owner-3-validation.md` | ⭐ the **closure authority** — may a block close? | doctrine + ⬜ |
 | `imported-patterns.md` | ⚠️ absorbed failure patterns — ⛔ **not the owner's criterion** | doctrine + ⬜ |
-| `expertise/` | ⬜ the disciplines each owner branches into | ⬜ owner's |
+| ⭐ `expertise/` | the disciplines each owner branches into — **7 ship written** | doctrine + ⬜ |
 
 ### The four owners
 
@@ -139,8 +139,14 @@ rejects on its basis, or when it is meant to be read.
 **The prefix is the parent.** ⛔ A file whose prefix does not match its declared parent is a
 defect — the gate that injects standards uses this to decide what to hand the editor.
 
-⬜ **Which disciplines exist is the owner's declaration**, not the engine's. A project with no
-interface needs no frontend discipline; one with several storage layers may need more than one.
+⭐ **Seven disciplines ship written, and they are doctrine** — `dev-backend` · `dev-database` ·
+`dev-frontend` · `doc-planning` · `doc-structure` · `val-functional` · `val-integration`. Their §2
+is the engine's base standard; ⬜ **§3 of each is where the installation adds its own criteria.**
+
+⬜ **An eighth is the owner's declaration.** A project with a second storage layer, or an
+infrastructure concern, adds one — ⭐ using `expertise/DISCIPLINE.md.template`, which carries the
+eight checks it must pass. ⛔ **The seven are not deleted when they do not apply**: what is not
+relevant today may be next quarter, and a discipline nobody reads costs nothing.
 
 ⭐ **Load only what the change touches.** Reading every discipline for a change that touches one
 spends the scarce resource — and lets one discipline's criterion bleed into a decision belonging

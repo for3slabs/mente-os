@@ -97,7 +97,11 @@ here by hand is correct exactly once, and this is the folder people trust most.
 | `principles/` | ⭐ the voice and the three architects — **engine doctrine** | ✅ **yes**, whole |
 | `archive/` | closed material, kept for consultation | ⛔ instance |
 
-⭐ **`principles/` is the exception inside this folder, and it is deliberate.** Those files are
+⭐ **`principles/` is the exception inside this folder, and it is deliberate.**
+
+It holds the voice (`principles/owner-0-voice.md`), the three architects who judge
+(`principles/owner-1-docs.md`, `principles/owner-2-dev.md`, `principles/owner-3-validation.md`),
+and the seven disciplines their judgements are made of (`principles/expertise/`). Those files are
 doctrine: how the system communicates and with what criterion it judges. They ship identical to
 every clone. They live under `memory/` because criterion **is** what must not be forgotten — but
 they are governed by the engine, not by the installer. See its own README.

@@ -43,6 +43,10 @@ it is, so every unmarked claim borrows the credibility of the measured ones.
 
 ---
 
+⭐ **This rule is where the voice meets validation.** Owner-0 governs how the claim is phrased;
+`owner-3-validation.md` is what decides whether the evidence behind it exists. ⛔ **A well-phrased
+unmeasured claim passes this file and fails there** — which is the correct order.
+
 ## 1-bis · ⭐ IT EMITS NO VERDICT — and that is deliberate
 
 The other three owners approve or reject. **This one does not**, and saying so prevents a real
