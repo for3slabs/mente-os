@@ -155,5 +155,44 @@ files now declare *when* they act; nothing yet acts on that declaration.
 
 ---
 
+## E-11 · Closing produces no artefact
+
+- **Surfaced by:** `owner-3-validation.md`
+- **Affects:** the closing procedure · the quality verdict
+- **Closes when:** a close writes a machine-readable record — verdict, level, which dimensions
+  passed, which are UNKNOWN, and the evidence behind each
+
+**Why it matters.** ⭐ Today a close is a sentence somebody wrote. With an artefact it becomes
+**state the system holds**, and a later disagreement can be settled by reading it instead of
+re-arguing it. It also makes the UNKNOWN list survive the session that produced it.
+
+---
+
+## E-12 · Evidence production and closure authority are the same actor
+
+- **Surfaced by:** external review · `owner-3-validation.md` §1
+- **Affects:** the validation owner · the quality dimensions
+- **Closes when:** the layer that **runs** the checks is separate from the one that **decides**
+  what they authorise
+
+**Why it matters.** ⭐ Whoever produces the evidence should not be the one who decides what it
+proves. A separate evidence layer answers *"this is what I observed"*; the closure authority
+answers *"with this, it closes or it does not"*. ⚠️ Merged, an agent can satisfy the bar by
+choosing what to measure — and the bar was the only thing stopping it from declaring itself done.
+
+---
+
+## E-13 · No level is declared for the evidence a block needs
+
+- **Surfaced by:** `owner-3-validation.md` §5b
+- **Affects:** the block contract · the quality verdict
+- **Closes when:** a block declares the evidence level its risk requires, and closing checks it
+
+**Why it matters.** *"Tested"* means whatever the last person had time for. ⭐ A change that can
+break a live flow needs end-to-end proof; one that renames a variable does not. Without a declared
+level, both close on whichever was cheaper to produce.
+
+---
+
 Related: `README.md` (folder) · `../memory/principles/README.md` (where the owners live) ·
 `../rules/README.md` (where a closed entry usually lands) · `../CAPABILITIES.md`.
