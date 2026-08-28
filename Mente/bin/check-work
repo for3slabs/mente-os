@@ -1,0 +1,134 @@
+#!/usr/bin/env python3
+"""check-work — enforces the 🔒 rows of rules/rule-working-in-a-block.md
+
+Most of that rule is 📖 discipline: a script can check that a friction was
+logged, never that the work stopped to think. This checks only what is
+mechanically observable, and says so.
+
+Exit: 0 clean · 1 violations · 2 the rule itself is missing
+"""
+import os, re, sys, collections
+
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+RULE = os.path.join(ROOT, "rules", "rule-working-in-a-block.md")
+BLOCKS = os.path.join(ROOT, "work", "blocks")
+
+LANES = {"direct", "task", "full-block"}
+FRICTION_THRESHOLD = 3          # WRK-FRI-003 · distinct blocks, never repetitions
+
+SEC = re.compile(r"^##\s*([A-K])\s*[·.:-]", re.M)
+FIELD = re.compile(r"\b(id|lane|status):\s*([^\n·]+?)\s*(?=·|$)", re.M)
+# WRK-FRI-002 · a friction line carries its four fields
+FRICTION = re.compile(r"^\s*[-*]?\s*(\d{4}-\d{2}-\d{2})\s*·\s*rule:\s*([^·\n]+?)\s*·"
+                      r".*?reason:\s*(\S.*)$", re.M | re.I)
+FRICTION_LOOSE = re.compile(r"^\s*[-*]?\s*\d{4}-\d{2}-\d{2}\s*·", re.M)
+DEPENDS = re.compile(r"^\s*[-*]\s*(?:DEPENDS ON|depends on|requires):\s*(\S+)", re.M)
+
+
+def body_of(text, letter):
+    m = re.search(r"^##\s*%s\s*[·.:-].*?$" % letter, text, re.M)
+    if not m:
+        return ""
+    nxt = re.search(r"^##\s*[A-K]\s*[·.:-]", text[m.end():], re.M)
+    return text[m.end(): m.end() + nxt.start()] if nxt else text[m.end():]
+
+
+def main():
+    quiet = "--quiet" in sys.argv
+    if not os.path.exists(RULE):
+        print("🔴 the rule itself is missing: rules/rule-working-in-a-block.md")
+        return 2
+    if not os.path.isdir(BLOCKS):
+        if not quiet:
+            print("check-work · no work/blocks directory · nothing to check")
+        return 0
+
+    blocks = []
+    for dirpath, _, filenames in os.walk(BLOCKS):
+        for name in sorted(filenames):
+            if name == "BLOCK.md":
+                blocks.append(os.path.join(dirpath, name))
+
+    findings = []
+    ids = set()
+    # rule name -> set of distinct block ids that logged friction against it
+    friction = collections.defaultdict(set)
+
+    for path in blocks:
+        rel = os.path.relpath(path, ROOT)
+        text = open(path, encoding="utf-8").read()
+        f = dict(FIELD.findall(text))
+        bid = f.get("id", "").strip("`* ") or rel
+        ids.add(bid)
+        lane = f.get("lane", "").strip("`* ")
+
+        # WRK-LAN-003 · the lane is declared and valid
+        if not lane:
+            findings.append(("WRK-LAN-003", rel,
+                             "no lane declared · expected one of %s"
+                             % "|".join(sorted(LANES))))
+        elif lane not in LANES:
+            findings.append(("WRK-LAN-003", rel,
+                             "lane unknown · expected one of %s · got: %r"
+                             % ("|".join(sorted(LANES)), lane)))
+
+        # WRK-LAN-002 · declared dependents force full-block
+        deps = DEPENDS.findall(body_of(text, "C"))
+        if deps and lane and lane != "full-block":
+            findings.append(("WRK-LAN-002", rel,
+                             "%d declared dependent(s) but lane is %r · "
+                             "expected: full-block · the lane comes from the graph"
+                             % (len(deps), lane)))
+
+        # WRK-ISO-002 · every declared connection resolves to a block that exists
+        for d in deps:
+            d = d.strip("`,. ")
+            findings.append(("__dep__", rel, d))
+
+        # WRK-FRI-002 · each friction line carries its four fields
+        h = body_of(text, "H")
+        loose = FRICTION_LOOSE.findall(h)
+        full = FRICTION.findall(h)
+        if len(loose) > len(full):
+            findings.append(("WRK-FRI-002", rel,
+                             "%d friction entr(ies) missing a field · expected "
+                             "date · rule · block · reason · got %d complete of %d"
+                             % (len(loose) - len(full), len(full), len(loose))))
+        for _, rname, _ in full:
+            friction[rname.strip().strip("`")].add(bid)
+
+    # resolve the deferred dependency checks now that every id is known
+    real = []
+    for cid, rel, payload in findings:
+        if cid != "__dep__":
+            real.append((cid, rel, payload))
+            continue
+        if payload not in ids:
+            real.append(("WRK-ISO-002", rel,
+                         "connection points at a block that does not exist: %r · "
+                         "resolution is exact, no fuzzy match" % payload))
+    findings = real
+
+    # WRK-FRI-003 · a rule chafing in N distinct blocks is flagged for review
+    flagged = [(r, bs) for r, bs in friction.items() if len(bs) >= FRICTION_THRESHOLD]
+
+    if not quiet:
+        print("check-work · %d block(s) · %d rule(s) with logged friction"
+              % (len(blocks), len(friction)))
+    for r, bs in sorted(flagged):
+        print("🔔 RULE REVIEW · %r · friction in %d distinct blocks: %s · "
+              "WRK-FRI-003 · the owner decides, never the agent"
+              % (r, len(bs), ", ".join(sorted(bs))))
+
+    if findings:
+        for cid, rel, msg in findings:
+            print("🔴 %s · %s · %s" % (rel, cid, msg))
+        print("\n%d violations · rule: rules/rule-working-in-a-block.md" % len(findings))
+        return 1
+    if not quiet:
+        print("✅ 0 violations")
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())
