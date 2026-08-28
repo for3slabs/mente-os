@@ -107,7 +107,7 @@ possible failure**: it looks like it is protecting you and it is not.
 |---|---|---|
 | `check-` | reads · reports · **never writes** | `check-health`, `check-links` |
 | `generate-` | ⚠️ **writes** a file that is rebuilt, never hand-edited | `generate-index` |
-| `grade-` | reads · emits a **measured verdict** (product vs MVP) | `grade-block` |
+| `grade-` | reads · emits a **measured verdict** | ⬜ none yet |
 | `new-` | ⚠️ **creates** something from a contract | `new-block` |
 | `test-` | runs the whole battery | `check-all` |
 | `verify-` | a composite pre-release pass | `verify-all` |

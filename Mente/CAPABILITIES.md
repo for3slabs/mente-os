@@ -67,7 +67,7 @@ answers exactly one question. None of them decides anything: they check what is 
 | `bin/check-declared` | ⭐ does every engine file have its row in `piezas.tsv` — the disk-side check |
 ⬜ | `bin/check-blocks` | do the open blocks meet their contract |
 ⬜ | `bin/check-sufficiency <block>` | can this block be resumed from disk alone (§A-E) |
-⬜ | `bin/grade-block <block>` | product or MVP — **measured**, never opinion |
+⬜ | ⬜ a block grader | product or MVP — **measured**, never opinion |
 ⬜ | `bin/check-clear-ready` | would a `/clear` lose anything |
 ⬜ | `bin/check-all` | ⭐ the whole system · *the only thing that matters is `failed: 0`* |
 
@@ -140,7 +140,7 @@ open a block  →  work inside it  →  the gates check as you go
       │                          🔴 blocked → fix, or declare the exception
       ▼
 bin/check-sufficiency   can it be resumed from disk alone?
-bin/grade-block         product or MVP — measured
+⬜ a block grader       product or MVP — measured
       ▼
 close it  →  the block moves to archive/ · never deleted
 ```

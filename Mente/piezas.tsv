@@ -40,7 +40,6 @@ val-bloques	bin/check-blocks	engine	canonical	the blocks meet their contract
 val-campanas	bin/check-campaigns	engine	canonical	the campaigns meet their contract, and their blocks declare them back
 val-suficiencia	bin/check-sufficiency	engine	canonical	a block can be resumed from disk alone
 val-clear	bin/check-clear-ready	engine	canonical	refuses a reset if anything would be lost
-grada-bloque	bin/grade-block	engine	canonical	product or MVP — measured, never opinion
 gen-indice	bin/generate-index	engine	canonical	produces INDEX.md and STATES.md from the tree
 gen-metricas	bin/generate-metrics	engine	canonical	re-measures and republishes METRICS.md
 instalador	bin/init	engine	canonical	generates the instance files from templates/
@@ -115,3 +114,5 @@ decisiones	docs/DECISIONS.md	shared	generated	every ADR — bin/generate-index
 workspace	docs/WORKSPACE.md	owner	canonical	which repo is which on THIS machine — gitignored, never travels
 check-document	bin/check-document	engine	executable	enforces the lock rules of the document contract
 contract-document	rules/contract-document.md	engine	canonical	the shape a document must have — header, ceilings, names, moving
+check-block	bin/check-block	engine	executable	enforces the lock rules of the block contract
+contract-block	rules/contract-block.md	engine	canonical	one unit of work, one file — shape, opening, blocked, closing, archive

@@ -172,7 +172,7 @@ bin/new-block <name> --type <code|docs|data>
 bin/check-sufficiency <b>    # can it restart from disk alone
 bin/check-blocks             # do the open blocks meet their contract
 bin/check-campaigns          # do the campaigns, and do their blocks declare them back
-bin/grade-block <b>          # product or MVP — measured, not opinion
+⬜ a block grader           # product or MVP — measured, not opinion
 bin/check-clear-ready        # safe to reset context?
 bin/check-all               # the whole system, end to end
 bin/generate-index           # 🤖 rebuild the indexes
@@ -190,7 +190,7 @@ on purpose, because both would corrupt each other's probe blocks.
 
 ## 7 · The one thing only you can write
 
-The quality verdict has two layers. Layer 1 (`bin/grade-block`) is measurable and works out of
+The quality verdict has two layers. Layer 1 (⬜ a block grader) is measurable and works out of
 the box: dead code, duplication, tests, the import graph.
 
 **Layer 2 is your criterion**, and no AI can write it:
