@@ -1,7 +1,7 @@
 # Mente OS v2
 
 **Status:** current · **Type:** entry-point · **Updated:** {{date}} · **Owner:** {{owner}}
-**Licencia:** AGPL-3.0 — ver `LICENSE` en la raíz del repositorio
+**License:** AGPL-3.0 — see `LICENSE` at the repository root
 
 ## Purpose
 
@@ -10,8 +10,9 @@ Start here if you just cloned this. Five minutes to a working system.
 ---
 
 A work system for building with an AI without losing the thread. It does not document what you
-did — it **governs how it gets done**: three gates that block, ten validators that measure, and
-a quality verdict that answers *is this a product or an MVP?*
+did — it **governs how it gets done**: gates that block, validators that measure, and a quality
+verdict that answers *is this a product or an MVP?* ⭐ The counts live in the generated metrics
+file, never in prose — a number written here is correct exactly once.
 
 > **The law it is built on, measured:** a rule enforced by code complies 100%; a rule that lives
 > only in a document complies 40-60%. **So the doctrine is a document and the verification is a
@@ -167,10 +168,10 @@ the box: dead code, duplication, tests, the import graph.
 
 | File | What goes in it |
 |---|---|
-| `rules/qa-dimensions.md` | the six dimensions, and what each demands |
-| `principles/expertise/dev-*.md` | database · backend · frontend |
-| `principles/expertise/doc-*.md` | planning · structure |
-| `principles/expertise/val-*.md` | functional · integration |
+| `rules/qa-dimensions.md` | the quality dimensions, and what each demands |
+| `memory/principles/expertise/dev-*.md` | database · backend · frontend |
+| `memory/principles/expertise/doc-*.md` | planning · structure |
+| `memory/principles/expertise/val-*.md` | functional · integration |
 
 Each ships with the interview questions already written. **The method is: the AI asks, you
 answer with real cases, the AI structures.** Never the reverse — a draft written first comes out
@@ -187,11 +188,16 @@ Open holes: `docs/PENDING-{{owner}}.md` (count in `docs/METRICS.md` · `criterio
 | `bin/` | the validators — executables |
 | `hooks/` | the gates that fire automatically |
 | `rules/` | contracts · rules · ADRs |
-| `principles/` | the three owners and their disciplines |
-| `blocks/` | the work — `active/` `archive/` |
+| `memory/principles/` | the voice and the three architects — their criterion |
+| `work/blocks/` · `work/campaigns/` | the work — `active/` `blocked/` `archive/` |
 | `docs/` | architecture · 🤖 generated indexes |
-| `memory/` | `RETOMAR.md` (read first when resuming) · pending · logbook |
+| `memory/` | where you left off · pending items · the logbook |
+| `Cerebro/` | your project's own thinking — the pillar and the vision |
+| `connection/` | the gate to other installations |
 | `secrets/` | ⚠️ never in git |
+
+⭐ **Every folder carries its own README** explaining what goes in it, what does not, and why.
+Read that one before adding a file — it is the shortest path to getting the placement right.
 
 ---
 
@@ -206,5 +212,6 @@ lost with no warning. `bin/check-clear-ready` refuses while something would be l
 
 ---
 
-Related: `docs/architecture/how-it-runs.md` (what fires when, with diagrams) ·
-`rules/contract-block.md` · `principles/owner-*.md` · `docs/METRICS.md`.
+Related: `CAPABILITIES.md` (what may run and what must not be touched) · `QUICKSTART.md`
+(from clone to working) · `rules/README.md` (the contracts) · `memory/principles/README.md`
+(the criterion) · `piezas.tsv` (where every piece is declared).

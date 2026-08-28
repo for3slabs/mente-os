@@ -41,8 +41,8 @@ Code, this file plus the pointers below is enough to work correctly.
 | 3 | **Do not state — report the measurement.** An unverified claim is banned | `principles/owner-0-voice.md` |
 | 4 | **Secrets are referenced, never pasted** | architecture §12-S.1 |
 | 5 | **Scope is declared, never inferred.** No match → **stop and ask** | `rules/rule-isolation.md` |
-| 6 | 🏢 **Never read another Mente OS without the gate** | `bridges/Puentes_Mente_OS.md` — **project-level** |
-| 7 | 🏢 **Server-first.** Push to GitHub only on explicit order | `feedback_flujo_server_primero` — **project-level** |
+| 6 | 🏢 **Never read another Mente OS without the gate** | `connection/bridges/` — **project-level** |
+| 7 | 🏢 **Server-first.** Push to GitHub only on explicit order | `PROJECT-RULES.md` §4 — **project-level** |
 | 8 | ⭐ **No `/clear` without registering the session first** | `rules/rule-session-close.md` |
 
 > 🌐 = universal (any project, any block) · 🏢 = specific to this project
@@ -104,7 +104,7 @@ Code, this file plus the pointers below is enough to work correctly.
 | Form of a rule | Measured compliance |
 |---|---|
 | **Code** (gate, fail-closed permissions) | ✅ **100%** |
-| **Document** (Método F, pre-`/clear` registration, index) | 🔴 **fails 40-60%** |
+| **Document** (the phase method, pre-reset registration, the index) | 🔴 **fails 40-60%** |
 
 > ## The doctrine is a document. The VERIFICATION is a script.
 > A script decides nothing — it checks what is checkable: the file exists · has the field · fits its

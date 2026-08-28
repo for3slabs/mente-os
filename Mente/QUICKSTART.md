@@ -54,7 +54,7 @@ guessed, and who decides in an instance is criteria.
 > It is not a failure — it is the refusal to invent a piece of data only you have.
 
 `bin/init` does three things: it creates your `mente.config.yml`, generates `CLAUDE.md` and
-`PROJECT-RULES.md` with your name, and wires **7 hooks** with portable paths.
+`PROJECT-RULES.md` with your name, and wires the hooks with portable paths.
 
 ### ③ Check
 
@@ -88,7 +88,7 @@ system reporting accurately. A check that turned green there would be lying. It 
 moment you register your first session.
 
 **Everything else runs clean on your clone:** `check-blocks` (0 errors · 0 warnings),
-`check-links` (every file, zero broken pointers), `check-health`, and the **3 gates block**.
+`check-links` (every file, zero broken pointers), `check-health`, and **the gates block**.
 
 ---
 

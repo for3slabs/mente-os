@@ -1,0 +1,87 @@
+{
+  "$comment": [
+    "Mente OS — hook wiring for Claude Code.",
+    "",
+    "⚠️ THIS FILE IS A STARTING POINT, NOT A FINISHED CONFIGURATION.",
+    "It wires the engine's gates so they actually fire. Everything here uses",
+    "$CLAUDE_PROJECT_DIR so it works on any machine — never a home path.",
+    "",
+    "⭐ IF YOU ALREADY HAVE A .claude/settings.json, DO NOT REPLACE IT.",
+    "Merge the 'hooks' block below into yours. Claude Code combines settings",
+    "across levels, but two files at the SAME level do not merge — the one that",
+    "wins silently drops the other's rules.",
+    "",
+    "⛔ EVERY PreToolUse GROUP NEEDS ITS 'matcher'. Without one, the hook fires",
+    "on every single tool call: a narrow gate becomes a system-wide stop, and the",
+    "first thing anyone does with an unusable guard is switch it off.",
+    "",
+    "The scripts referenced here live in Mente/hooks/ and Mente/bin/. Until they",
+    "exist, these entries are inert — a missing hook script is skipped, it does",
+    "not break the session."
+  ],
+
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"$CLAUDE_PROJECT_DIR/Mente/hooks/session-start.sh\"",
+            "$comment": "health + structure. ⛔ Must NEVER block the session: it reports and exits 0."
+          }
+        ]
+      }
+    ],
+
+    "PreToolUse": [
+      {
+        "matcher": "Edit|Write|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$CLAUDE_PROJECT_DIR/Mente/hooks/pre-edit-standards.py\"",
+            "$comment": "injects the owning block's required standards before an edit. Informs, never blocks."
+          },
+          {
+            "type": "command",
+            "command": "python3 \"$CLAUDE_PROJECT_DIR/Mente/hooks/gate-critical.py\"",
+            "$comment": "🔴 BLOCKS (exit 2): destructive change with no rollback · closing an insufficient block."
+          }
+        ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$CLAUDE_PROJECT_DIR/Mente/hooks/gate-critical.py\"",
+            "$comment": "the same gate on the command path — an edit is not the only way to do damage."
+          }
+        ]
+      },
+      {
+        "matcher": "Read|Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$CLAUDE_PROJECT_DIR/Mente/hooks/gate-secrets.py\"",
+            "$comment": "reading secrets/ asks; writing there ALWAYS asks. Every access is logged."
+          }
+        ]
+      }
+    ]
+  },
+
+  "permissions": {
+    "$comment": [
+      "⬜ DECLARE YOUR OWN GATES HERE — the trees the AI must not read.",
+      "They must match 'gates:' in Mente/mente.config.yml: if the two disagree,",
+      "⭐ THIS FILE is what actually happens and the config is only a claim.",
+      "",
+      "Copy this shape for each one (delete the example, it is not a real path):",
+      "  \"deny\": [\"Read(~/another-project/**)\", \"Edit(~/another-project/**)\"]"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
