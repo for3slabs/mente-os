@@ -1,8 +1,8 @@
 # bin/ — the validators · every executable the engine offers
 
-**Status:** current · **Type:** folder-readme · **Scope:** ⚠️ ENGINE — travels identical to every
+**Status:** current · **Type:** folder-readme · **Updated:** {{date}} · **Owner:** {{owner}} · **Scope:** ⚠️ ENGINE — travels identical to every
 clone. Nothing here is edited per instance.
-**Governance:** `engine` in `piezas.tsv` · **Verified by:** `bin/test-f0-f6`
+**Governance:** declared as `engine` in the piece table
 
 ---
 
@@ -109,7 +109,7 @@ possible failure**: it looks like it is protecting you and it is not.
 | `generate-` | ⚠️ **writes** a file that is rebuilt, never hand-edited | `generate-index` |
 | `grade-` | reads · emits a **measured verdict** (product vs MVP) | `grade-block` |
 | `new-` | ⚠️ **creates** something from a contract | `new-block` |
-| `test-` | runs the whole battery | `test-f0-f6` |
+| `test-` | runs the whole battery | `check-all` |
 | `verify-` | a composite pre-release pass | `verify-all` |
 
 ⛔ **Do not invent a prefix.** Someone reading `piezas.tsv` must be able to tell whether a command

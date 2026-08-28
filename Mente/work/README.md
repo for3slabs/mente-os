@@ -1,6 +1,6 @@
 # work/ — where the work lives
 
-**Status:** current · **Type:** folder-readme
+**Status:** current · **Type:** folder-readme · **Updated:** {{date}} · **Owner:** {{owner}}
 **Scope:** ⚠️ **INSTANCE** — the folders and their READMEs travel; ⛔ the work inside never does.
 **Governance:** `owner` in `piezas.tsv`
 

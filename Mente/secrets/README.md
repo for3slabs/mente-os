@@ -1,6 +1,6 @@
 # secrets/ — where credentials live · ⛔ never their values, never in git
 
-**Status:** current · **Type:** folder-readme
+**Status:** current · **Type:** folder-readme · **Updated:** {{date}} · **Owner:** {{owner}}
 **Scope:** ⚠️ **INSTANCE** — the folder ships empty. Everything you put here stays on your machine.
 **Governance:** `owner` in `piezas.tsv` · **Permissions:** the folder `700`, every file `600`
 

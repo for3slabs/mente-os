@@ -1,6 +1,6 @@
 # Cerebro/vision/ — where the project is going
 
-**Status:** current · **Type:** folder-readme
+**Status:** current · **Type:** folder-readme · **Updated:** {{date}} · **Owner:** {{owner}}
 **Scope:** ⚠️ **INSTANCE** — the folder and this README travel; ⛔ the content never does.
 **Governance:** `owner` in `piezas.tsv`
 

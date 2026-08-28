@@ -1,6 +1,6 @@
 # work/campaigns/ — 🎯 the mission that orders several blocks
 
-**Status:** current · **Type:** folder-readme
+**Status:** current · **Type:** folder-readme · **Updated:** {{date}} · **Owner:** {{owner}}
 **Scope:** ⚠️ **INSTANCE** — the folder and this README travel; ⛔ the campaigns inside never do.
 **Governance:** `owner` in `piezas.tsv` · **Contract:** the campaign contract in `rules/`
 

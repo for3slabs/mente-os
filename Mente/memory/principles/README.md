@@ -1,6 +1,6 @@
 # memory/principles/ — the criterion · how the system speaks and how it judges
 
-**Status:** current · **Type:** folder-readme
+**Status:** current · **Type:** folder-readme · **Updated:** {{date}} · **Owner:** {{owner}}
 **Scope:** ⚠️ **ENGINE inside an instance folder** — read the box below before anything else.
 **Governance:** declared as `engine` in the piece table · ✅ ships whole to every clone
 

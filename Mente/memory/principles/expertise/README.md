@@ -1,6 +1,6 @@
 # memory/principles/expertise/ — the disciplines · where criterion becomes concrete
 
-**Status:** current · **Type:** folder-readme
+**Status:** current · **Type:** folder-readme · **Updated:** {{date}} · **Owner:** {{owner}}
 **Scope:** ⚠️ **ENGINE** — ⭐ seven disciplines ship written; an eighth is yours.
 **Governance:** declared as `engine` in the piece table · ✅ ships whole to every clone
 

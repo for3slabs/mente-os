@@ -2,7 +2,7 @@
 
 **Status:** current · **Type:** entry-point · **Updated:** {{date}} · **Owner:** {{owner}}
 **Level:** 🚪 the STARTUP — it neither inherits nor is inherited (carries no rules)
-**Verified by:** `Mente/bin/check-links` · `Mente/bin/test-f0-f6` (§F6 · router + metrics)
+**Verified by:** `Mente/bin/check-links`
 **Scope:** ⚠️ ENGINE document — it ships with the tool and says nothing about your project.
 
 > ## 🔌 HOW THIS FILE IS LOADED — one line in YOUR CLAUDE.md
@@ -91,7 +91,7 @@ stores everything on disk, so `/clear` is safe **when the session is registered*
 | is the tree the declared one? | `Mente/bin/check-structure` → reads `Mente/piezas.tsv` |
 | regenerate the indexes | `Mente/bin/generate-index` → 🤖 `docs/INDEX.md` + `docs/STATES.md` |
 | before `/clear` | `Mente/bin/check-clear-ready` → 🔴 refuses if something would be lost |
-| **the whole system** | `Mente/bin/test-f0-f6` → the only thing that matters is `failed: 0` · the count lives in `Mente/docs/METRICS.md` (`battery.checks`) |
+| **the whole system** | `Mente/bin/check-all` → the only thing that matters is `failed: 0` · the count lives in the generated metrics file |
 
 ⭐ **This system's measured law:** a rule in code is followed 100%; a rule only in a document is
 followed 40-60%. **That is why doctrine is a document and VERIFICATION is a script.**
@@ -139,7 +139,7 @@ be recovered from disk.
 table below. NEVER put numbers here (they belong in `Mente/docs/METRICS.md`).
 
 **Mente OS v2** = the block system that governs this repo: validators + hooks + 3 rule levels.
-**The living proof is `Mente/bin/test-f0-f6`; the only thing that matters is `failed: 0`.**
+**The living proof is `Mente/bin/check-all`; the only thing that matters is `failed: 0`.**
 
 | You need… | Read it from… |
 |---|---|

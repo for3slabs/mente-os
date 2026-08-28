@@ -1,6 +1,6 @@
 # cache/ — what the validators remember between runs
 
-**Status:** current · **Type:** folder-readme
+**Status:** current · **Type:** folder-readme · **Updated:** {{date}} · **Owner:** {{owner}}
 **Scope:** ⚠️ **INSTANCE** — the folder ships empty. Everything written here belongs to one
 machine and never travels.
 **Governance:** `owner` in `piezas.tsv` · **Gitignored:** in full

@@ -5,6 +5,14 @@
 gates already enforce, so nobody has to discover a limit by hitting it.
 **Scope:** ⚠️ ENGINE document — it ships identical to every clone and names no machine.
 
+> ## ⛔ MOST OF WHAT THIS FILE NAMES DOES NOT EXIST YET
+> ⚠️ **Rows marked ⬜ are planned, not built.** This document is the map of what the engine will
+> enforce; ⭐ **`bin/` is the record of what it enforces today.**
+>
+> ⭐ **A capability map that reads as a promise of working code is the worst kind of leak** — the
+> reader trusts it, runs the command, and finds nothing. **Check `bin/` before relying on a row.**
+
+
 ---
 
 ## Purpose
@@ -53,26 +61,26 @@ answers exactly one question. None of them decides anything: they check what is 
 
 | Command | The question it answers |
 |---|---|
-| `bin/check-health` | is anything wrong right now — ⭐ **start here** |
-| `bin/check-links` | does every internal pointer resolve to something that exists |
-| `bin/check-structure` | is the tree the one `piezas.tsv` declares |
+⬜ | `bin/check-health` | is anything wrong right now — ⭐ **start here** |
+⬜ | `bin/check-links` | does every internal pointer resolve to something that exists |
+⬜ | `bin/check-structure` | is the tree the one `piezas.tsv` declares |
 | `bin/check-declared` | ⭐ does every engine file have its row in `piezas.tsv` — the disk-side check |
-| `bin/check-blocks` | do the open blocks meet their contract |
-| `bin/check-sufficiency <block>` | can this block be resumed from disk alone (§A-E) |
-| `bin/grade-block <block>` | product or MVP — **measured**, never opinion |
-| `bin/check-clear-ready` | would a `/clear` lose anything |
-| `bin/test-f0-f6` | ⭐ the whole system · *the only thing that matters is `failed: 0`* |
+⬜ | `bin/check-blocks` | do the open blocks meet their contract |
+⬜ | `bin/check-sufficiency <block>` | can this block be resumed from disk alone (§A-E) |
+⬜ | `bin/grade-block <block>` | product or MVP — **measured**, never opinion |
+⬜ | `bin/check-clear-ready` | would a `/clear` lose anything |
+⬜ | `bin/check-all` | ⭐ the whole system · *the only thing that matters is `failed: 0`* |
 
 ### The ones that WRITE — they change files on disk
 
 | Command | What it writes | Watch out for |
 |---|---|---|
-| `bin/init` | the instance files, from `templates/` | ⭐ **refuses to overwrite** what already exists |
-| `bin/new-block <name>` | a new block with its §A-K contract | — |
-| `bin/generate-index` | 🤖 `docs/INDEX.md` · `docs/STATES.md` | regenerated, never hand-edited |
-| `bin/generate-metrics` | 🤖 `docs/METRICS.md` | ⭐ **the only place a live number belongs** |
+⬜ | `bin/init` | the instance files, from `templates/` | ⭐ **refuses to overwrite** what already exists |
+⬜ | `bin/new-block <name>` | a new block with its §A-K contract | — |
+⬜ | `bin/generate-index` | 🤖 `docs/INDEX.md` · `docs/STATES.md` | regenerated, never hand-edited |
+⬜ | `bin/generate-metrics` | 🤖 `docs/METRICS.md` | ⭐ **the only place a live number belongs** |
 
-> ⚠️ **`bin/test-f0-f6` takes a lock.** A second run is refused on purpose: both would corrupt
+> ⚠️ **`bin/check-all` takes a lock.** A second run is refused on purpose: both would corrupt
 > each other's probe blocks. If it dies badly the lock survives — remove it and run again.
 
 ---

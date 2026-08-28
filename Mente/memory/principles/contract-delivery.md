@@ -38,7 +38,7 @@ say "I don't know" when you do not · never omit the WHY of what was delivered.
 
 ---
 
-## 1-bis · ⭐ WHEN IT APPLIES
+## 2 · ⭐ WHEN IT APPLIES
 
 ⭐ **On every response, without exception** — and that is what makes it different from the owner
 contracts, which fire at specific events.
@@ -46,12 +46,12 @@ contracts, which fire at specific events.
 ⛔ **There is no such thing as a response too small for §1.** A one-line answer still carries its
 why; the mode changes how much shape it gets, never whether the rule holds.
 
-⚠️ **The only thing that varies is which fields a response must be able to answer** (§7) — and
+⚠️ **The only thing that varies is which fields a response must be able to answer** (§8) — and
 that varies by type, not by how busy the writer is.
 
 ---
 
-## 2 · THE FIVE RESPONSE TYPES
+## 3 · THE FIVE RESPONSE TYPES
 
 ⭐ **The question is not "which template do I use?" — it is "what kind of exchange is this?"**
 
@@ -85,7 +85,7 @@ the second is cheap once.**
 
 ---
 
-## 3 · ⭐ ORIENTATION BEFORE EXPLANATION
+## 4 · ⭐ ORIENTATION BEFORE EXPLANATION
 
 A document says *read top to bottom*. **An interface says: look → identify → go deeper if you
 want.** A response is an interface.
@@ -109,7 +109,7 @@ next), and the full block at the bottom. **The top three must be enough to decid
 
 ---
 
-## 4 · WHO IS READING
+## 5 · WHO IS READING
 
 The same work needs three different depths. ⭐ **The role belongs to the question, never to the
 person** — the same reader asks as an executor in the morning and as an owner in the afternoon.
@@ -125,7 +125,7 @@ this?"* → owner; *"why does it fail?"* → executor) · ③ default → execut
 
 ---
 
-## 5 · WHAT EVERY SECTION CARRIES
+## 6 · WHAT EVERY SECTION CARRIES
 
 Four parts, in order:
 
@@ -143,7 +143,7 @@ end — by then the reader has already decided the text is not for them.
 
 ---
 
-## 6 · GRAPHICS EXPLAIN, THEY DO NOT DECORATE
+## 7 · GRAPHICS EXPLAIN, THEY DO NOT DECORATE
 
 | Element | Use for |
 |---|---|
@@ -164,7 +164,7 @@ one response leaves nothing to signal with — **when everything is emphasised, 
 
 ---
 
-## 7 · THE CLOSING BLOCK — a data model, not a form
+## 8 · THE CLOSING BLOCK — a data model, not a form
 
 ⭐ **What follows is what a delivery must be able to answer.** It is not a template to print
 whole: ⛔ **an empty field is deleted, never filled with "none"** — except the decision field,
@@ -210,7 +210,7 @@ it removes the boundary.
 
 ---
 
-## 8 · WHEN A DECISION IS THE RESPONSE
+## 9 · WHEN A DECISION IS THE RESPONSE
 
 ⚖️ **Shape:** the question in one line · a table (Option · what it means · cost) · then
 *"My recommendation: X. Reason: Y. The trade-off: Z."*
@@ -224,7 +224,7 @@ the reader holds, and then say **that** is why.
 
 ---
 
-## 9 · PROGRESS IS SHOWN, NOT PROMISED
+## 10 · PROGRESS IS SHOWN, NOT PROMISED
 
 Any task over one step shows its state as it happens. ⭐ **The reader should never have to ask
 "did it actually get done?"**
@@ -238,7 +238,7 @@ The difference:
 
 ---
 
-## 10 · ⬜ SIZE CEILINGS
+## 11 · ⬜ SIZE CEILINGS
 
 ⬜ **Declare the ceiling for each response type, and its unit.** ⭐ A ceiling with no unit is an
 opinion, not a limit.
@@ -255,11 +255,11 @@ title: a bare list of names is a table of contents, not an index.
 
 ---
 
-## 11 · ⭐ WHO GOVERNS THIS FILE
+## 12 · ⭐ WHO GOVERNS THIS FILE
 
 | Change | Who may make it |
 |---|---|
-| the ceilings in §10 | ⭐ the owner of the instance |
+| the ceilings in §11 | ⭐ the owner of the instance |
 | the structure and the required fields | whoever maintains the engine — through a recorded decision |
 | ⛔ dropping §1 (nothing without its WHY) | **nobody** |
 

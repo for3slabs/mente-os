@@ -1,6 +1,6 @@
 # work/blocks/ — 📦 the unit of work
 
-**Status:** current · **Type:** folder-readme
+**Status:** current · **Type:** folder-readme · **Updated:** {{date}} · **Owner:** {{owner}}
 **Scope:** ⚠️ **INSTANCE** — the folder and this README travel; ⛔ the blocks inside never do.
 **Governance:** `owner` in `piezas.tsv` · **Contract:** the block contract in `rules/`
 

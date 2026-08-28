@@ -1,8 +1,8 @@
 # rules/ — the law · contracts, rules, and the decisions behind them
 
-**Status:** current · **Type:** folder-readme · **Scope:** ⚠️ ENGINE — travels identical to every
+**Status:** current · **Type:** folder-readme · **Updated:** {{date}} · **Owner:** {{owner}} · **Scope:** ⚠️ ENGINE — travels identical to every
 clone. Nothing here is edited per instance.
-**Governance:** `engine` in `piezas.tsv` · **Verified by:** `bin/test-f0-f6`
+**Governance:** declared as `engine` in the piece table · **Enforcement:** 🔒 per document, see below
 
 ---
 

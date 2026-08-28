@@ -1,6 +1,6 @@
 # connection/bridges/ — 🌉 the gate to other Mente OS installations
 
-**Status:** current · **Type:** folder-readme
+**Status:** current · **Type:** folder-readme · **Updated:** {{date}} · **Owner:** {{owner}}
 **Scope:** ⚠️ **INSTANCE** — the folder and this README travel; ⛔ the registry never does.
 **Governance:** `owner` in `piezas.tsv`
 

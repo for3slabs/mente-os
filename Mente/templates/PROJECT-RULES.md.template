@@ -49,7 +49,7 @@ owner's only, and become a **new rule at the parent's level** with its own ADR.
 |---|---|---|
 | §2 `<sibling-project>/Mente` out of scope | 4 `deny` rules, both settings files | 🔒 **lock** |
 | §3 the inter-instance gate | 6 `deny` rules, both settings files | 🔒 **lock** |
-| §5 `secrets/` 700 · files 600 | `bin/test-f0-f6` §F0 measures the real modes | 🔒 **lock** |
+| §5 `secrets/` 700 · files 600 | `bin/check-all`  measures the real modes | 🔒 **lock** |
 | §4 server-first (`git push`) | `ask` on all three push forms — the owner confirms each one | 🟡 **prompt** |
 | §5 Master KEK offline | ⛔ **nothing can verify it** — it lives off this machine | 📖 **discipline** |
 | §5 server password rotation | deliberately deferred by the owner, with its three trigger conditions | 📖 **discipline** |

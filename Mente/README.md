@@ -174,12 +174,12 @@ bin/check-blocks             # do the open blocks meet their contract
 bin/check-campaigns          # do the campaigns, and do their blocks declare them back
 bin/grade-block <b>          # product or MVP — measured, not opinion
 bin/check-clear-ready        # safe to reset context?
-bin/test-f0-f6               # the whole system, end to end
+bin/check-all               # the whole system, end to end
 bin/generate-index           # 🤖 rebuild the indexes
 bin/generate-metrics         # 🤖 republish the live numbers
 ```
 
-`bin/test-f0-f6` is the truth. It takes a lock, so **one run at a time** — a second is refused
+`bin/check-all` is the truth. It takes a lock, so **one run at a time** — a second is refused
 on purpose, because both would corrupt each other's probe blocks.
 
 > ⚠️ **Never write a count into a document.** Live numbers live in `docs/METRICS.md`, regenerated.

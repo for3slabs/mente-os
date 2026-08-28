@@ -1,6 +1,6 @@
 # ENGINE BACKLOG — improvements the engine owes itself
 
-**Status:** current · **Type:** entry-point · **Updated:** {{date}}
+**Status:** current · **Type:** append-only · **Updated:** {{date}} · **Owner:** {{owner}}
 **Scope:** ⚠️ ENGINE document — it lists what the **tool** still lacks, never what a project lacks.
 
 ---
@@ -342,6 +342,22 @@ rule in the system is unenforceable by construction.
 ⚠️ **And it is worse than a missing number.** Without a declared ceiling, whoever notices a file is
 "long" applies their own threshold — which is the definition of a rule followed about half the
 time. ⭐ **A ceiling nobody can measure is indistinguishable from no ceiling at all.**
+
+---
+
+## E-24 · Three template filenames are not in English
+
+- **Surfaced by:** the leak scan of the rules step
+- **Affects:** `templates/RETOMAR.md.template` · `templates/PENDIENTES.md.template` ·
+  `templates/ARQUITECTURA.md.template` · and `piezas.tsv` itself
+- **Closes when:** the owner decides — rename, or declare the names deliberate
+
+**Why it matters.** ⭐ Every rule in this engine is written in one language, and every filename
+follows it — except four. ⚠️ **A clone in another country receives file names it cannot read**,
+and the naming rule this engine ships says a name must state its subject to a stranger.
+
+⛔ **This is not decided here.** Renaming touches the piece table, every pointer, and the
+installer — ⭐ **and the names may be deliberate.** The finding is that nothing declares which.
 
 ---
 

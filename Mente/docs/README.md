@@ -1,9 +1,9 @@
 # docs/ — analysis, architecture, plans, and every generated number
 
-**Status:** current · **Type:** folder-readme
+**Status:** current · **Type:** folder-readme · **Updated:** {{date}} · **Owner:** {{owner}}
 **Scope:** ⚠️ **MIXED** — the only folder in the engine that holds both engine documents and
 instance content. Read §"What travels" before adding anything.
-**Governance:** `shared` in `piezas.tsv` · **Verified by:** `bin/test-f0-f6`
+**Governance:** `shared` in `piezas.tsv`
 
 ---
 
