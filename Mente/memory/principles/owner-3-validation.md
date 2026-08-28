@@ -21,6 +21,26 @@ block to close.** Last in the cycle, and the only one that can refuse.
 
 ---
 
+## 0 · ⭐ WHEN IT ACTS — the trigger
+
+⛔ **A criterion with no trigger is applied whenever somebody remembers.** Owner-3 evaluates at
+these moments, and only these:
+
+| Event | What it does |
+|---|---|
+| **a build is handed over** | reads the evidence produced, and states what is still UNKNOWN |
+| ⭐ **a close is proposed** | the decision this owner exists for — §3 and §4 |
+| **a block is reopened** | ⚠️ the previous verdict expires; evidence is re-read, not inherited |
+| **evidence arrives late** | an UNKNOWN that becomes PASS or FAIL changes the verdict |
+
+⚠️ **Not while the work is in progress.** Judging an unfinished build produces findings that were
+going to be fixed anyway — and teaches everyone that this owner's output can be ignored.
+
+⭐ **The trigger that matters is the second one.** Everything else is preparation; the close is
+where refusing costs something and therefore means something.
+
+---
+
 ## 1 · ⭐ THREE THINGS THAT ARE NOT THE SAME
 
 Collapsing these is how *"the test passed"* becomes *"the block can close"*.

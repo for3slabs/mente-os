@@ -43,6 +43,25 @@ it is, so every unmarked claim borrows the credibility of the measured ones.
 
 ---
 
+## 1-bis · ⭐ IT EMITS NO VERDICT — and that is deliberate
+
+The other three owners approve or reject. **This one does not**, and saying so prevents a real
+misreading: that a badly written delivery could be *rejected* by owner-0.
+
+| | What it does |
+|---|---|
+| **owner-1 · 2 · 3** | judge an artefact — a document, a build, a close |
+| ⭐ **owner-0** | judges **nothing**. It governs how the other three are expressed |
+
+⛔ **A response is not "rejected" for its voice.** These rules are applied while writing, not
+scored afterwards — §9 is a self-check, not a review by somebody else.
+
+⚠️ **The one place it does bite:** rule 7 (no unverified claim) is the same doctrine the closure
+authority enforces with evidence. ⭐ **Breaking it is not a style problem — it is a claim that
+cannot be trusted**, and there it stops being this file's business and becomes owner-3's.
+
+---
+
 ## 2 · THE EIGHT RULES
 
 **1 · Never open by validating.**

@@ -22,7 +22,25 @@ reason. ⭐ Second of three owners, with **no hierarchy** over the other two.
 
 ---
 
-## 0 · PRECONDITIONS — the gate before anything is built
+## 0 · ⭐ WHEN IT ACTS — the trigger
+
+⛔ **A criterion with no trigger is applied whenever somebody remembers.** Owner-2 evaluates at
+these moments, and only these:
+
+| Event | What it does |
+|---|---|
+| **a plan arrives** | runs §1 — accept it, or return it naming which precondition failed |
+| **before the first line is written** | ⭐ freezes the scope (§3) |
+| **a dependency appears mid-build** | checks it against the frozen scope — ⛔ stop if outside |
+| **each iteration ends** | writes the checkpoint (§7) |
+| **the build is finished** | runs the technical check (§6), then hands over |
+
+⚠️ **Not on every edit.** A gate that fires constantly gets switched off; one that fires only at
+handover finds the problem when it is most expensive to fix.
+
+---
+
+## 1 · PRECONDITIONS — the gate before anything is built
 
 ⛔ **Owner-2 may build only when all of these hold.** Not *"does this look good enough?"* —
 **does it meet the preconditions?** The difference is that the second question has an answer
@@ -32,7 +50,7 @@ someone else can check.
 |---|---|---|
 | 1 | the objective is stated | building toward a guess |
 | 2 | ⭐ what MUST be touched is declared | scope invented while working |
-| 3 | ⭐ what must **NOT** be touched is declared | ⚠️ see §2 — this is the half that gets skipped |
+| 3 | ⭐ what must **NOT** be touched is declared | ⚠️ see §3 — this is the half that gets skipped |
 | 4 | the affected pieces are named | what depends on this cannot be computed |
 | 5 | the success criterion is verifiable | *"it works"* is not a criterion |
 | 6 | the required standards are identifiable and loadable | built to nobody's bar |
@@ -42,26 +60,26 @@ someone else can check.
 
 ---
 
-## 1 · THE SEQUENCE
+## 2 · THE SEQUENCE
 
 ```
 RECEIVE
    ↓
 UNDERSTAND ─── confirm what is being asked, in your own words
    ↓
-VALIDATE ───── against §0
+VALIDATE ───── against §1
    ├─ fails ─▶ ⟲ BACK TO OWNER-1 with the reason
    └─ passes ─▶ continue
    ↓
-LOAD ───────── only the disciplines this change actually touches (§4)
+LOAD ───────── only the disciplines this change actually touches (§5)
    ↓
-SCOPE LOCK ─── ⭐ freeze ALLOW and DENY before the first line (§2)
+SCOPE LOCK ─── ⭐ freeze ALLOW and DENY before the first line (§3)
    ↓
 BUILD ──────── ONE discipline at a time, finish it, then the next
    ↓
-TECHNICAL CHECK ── it builds, it runs, it fails as expected (§5)
+TECHNICAL CHECK ── it builds, it runs, it fails as expected (§6)
    ↓
-CHECKPOINT ─── evidence, not a note (§6)
+CHECKPOINT ─── evidence, not a note (§7)
    ↓
 HAND OVER to owner-3
 ```
@@ -71,7 +89,7 @@ half-applied on each side, with neither half complete enough to notice.
 
 ---
 
-## 2 · ⭐ SCOPE IS BIDIRECTIONAL, AND IT LOCKS
+## 3 · ⭐ SCOPE IS BIDIRECTIONAL, AND IT LOCKS
 
 Every plan declares two lists, and the second is the one that controls an agent:
 
@@ -86,7 +104,7 @@ where the accidents are.
 
 ### The lock
 
-⭐ **Once the plan passes §0, the scope is frozen.** During construction:
+⭐ **Once the plan passes §1, the scope is frozen.** During construction:
 
 ```
 new dependency discovered
@@ -102,7 +120,7 @@ building is scope nobody approved.**
 
 ---
 
-## 3 · ⛔ NO SILENT DECISIONS
+## 4 · ⛔ NO SILENT DECISIONS
 
 Owner-2 must never, without saying so:
 
@@ -122,7 +140,7 @@ a return to owner-1 · a logged friction · a checkpoint entry · or a recorded 
 
 ---
 
-## 4 · THE CRITERION IT APPLIES
+## 5 · THE CRITERION IT APPLIES
 
 ⛔ **Owner-2 carries no criterion of its own — it loads the owner's.** Its disciplines are the
 branches where that criterion lives.
@@ -160,7 +178,7 @@ real one and becomes the bar everything is measured against. Empty is visible; i
 
 ---
 
-## 5 · TECHNICAL CHECK vs FUNCTIONAL VALIDATION
+## 6 · TECHNICAL CHECK vs FUNCTIONAL VALIDATION
 
 ⚠️ **"owner-3 validates" is not a reason to hand over something that does not build.**
 
@@ -176,7 +194,7 @@ real one and becomes the bar everything is measured against. Empty is visible; i
 
 ---
 
-## 6 · THE CHECKPOINT CONTRACT
+## 7 · THE CHECKPOINT CONTRACT
 
 ⛔ **A checkpoint is evidence, not a note.** *"backend done"* records nothing anybody can act on.
 
@@ -195,7 +213,7 @@ Every checkpoint states:
 
 ---
 
-## 7 · HARD RULES WHILE BUILDING
+## 8 · HARD RULES WHILE BUILDING
 
 These do not depend on anybody's pending criterion — they are settled.
 
@@ -221,7 +239,7 @@ legitimate is shipping one under the other name: the next person reads "fixed" a
 
 ---
 
-## 8 · FAILURE MODES — when to stop instead of improvising
+## 9 · FAILURE MODES — when to stop instead of improvising
 
 ⭐ **A contract for an agent must say how it fails.** *"Be careful"* is not an instruction; this is.
 
@@ -242,7 +260,7 @@ everyone that guessing works.
 
 ---
 
-## 9 · WHAT IT DOES NOT DO
+## 10 · WHAT IT DOES NOT DO
 
 | Not this owner | Whose |
 |---|---|
@@ -253,7 +271,7 @@ everyone that guessing works.
 
 ---
 
-## 10 · ⭐ WHO GOVERNS THIS FILE
+## 11 · ⭐ WHO GOVERNS THIS FILE
 
 ⚠️ **An owner that writes its own acceptance criteria is a circular authority.**
 
