@@ -112,6 +112,30 @@ bin/check-sufficiency my-feature     # can this restart from disk alone?
 > **If §A-E do not answer those seven, the block does not close** — even if the code works.
 > The next session would rebuild your scope by inference and sound just as confident doing it.
 
+### And when several blocks serve one mission: the CAMPAIGN
+
+A **campaign** is the figure above a block. Same shape — one file, lettered sections — one level up.
+
+> ## ⛔ A campaign does not execute. It ORDERS.
+> No work happens inside one. It holds the mission, the order of attack, and the context its
+> blocks share. **The work always happens in the blocks.**
+
+⭐ **The problem it solves:** without it, several blocks serving one mission each carry their own
+copy of the background — why the work exists, what was already measured, what was decided across
+all of them. Two things then go wrong: the copies **drift** until they disagree and none is marked
+wrong, and **switching blocks resets the why** — an agent picking up the fourth block knows what
+that block does and nothing about what the whole thing is for.
+
+A campaign writes that background **once**. Its blocks point at it instead of repeating it — the
+same rule that governs live numbers, applied to context: *name the source, never copy the value.*
+
+⭐ **The link is declared from both sides:** the campaign lists its blocks, and each block names
+its campaign. ⛔ A link declared from one side only is a link that silently never loads.
+
+⚠️ **You do not start with a campaign.** Open a block. A campaign appears when a *second* block
+turns out to serve the same mission and would otherwise repeat its whole context. Creating one
+first is building structure for work nobody has started.
+
 ---
 
 ## 5 · What runs on its own
@@ -125,15 +149,18 @@ You do not invoke these. They fire at the moment they matter.
 | Before an edit | 🔴 **blocks** destructive SQL with no rollback · closing an insufficient block |
 | Before a subagent | 🔴 **blocks** a specialist that can write and has no declared scope |
 | Before a commit | 🔴 **blocks** a block that violates its contract |
+| Reading `secrets/` | ⚠️ **asks** — and writing there asks every time |
 
 **Only three actions block. Everything else informs.** That ratio is deliberate: a gate that
 obstructs more than it protects gets switched off, and a switched-off gate protects nothing.
 
 Every gate prints how to bypass it. **A gate with no escape hatch gets deleted.**
 
-To wire the hooks into Claude Code, copy the `hooks` block from
-`.claude/settings.json` in the parent repo — the four entries under `PreToolUse` and
-`SessionStart`.
+**To wire the gates into Claude Code**, merge the `hooks` block from `.claude/settings.json` into
+your own. ⭐ **Merge — never replace.** Settings combine across levels, but two files at the same
+level do not: the one that wins silently drops the other's rules, and you would lose whatever you
+had configured. ⛔ Every `PreToolUse` group needs its `matcher`; without one the hook fires on
+every tool call, and a narrow gate becomes a system-wide stop.
 
 ---
 
@@ -143,6 +170,8 @@ To wire the hooks into Claude Code, copy the `hooks` block from
 bin/check-health             # is anything wrong                    ← start here
 bin/new-block <name> --type <code|docs|data>
 bin/check-sufficiency <b>    # can it restart from disk alone
+bin/check-blocks             # do the open blocks meet their contract
+bin/check-campaigns          # do the campaigns, and do their blocks declare them back
 bin/grade-block <b>          # product or MVP — measured, not opinion
 bin/check-clear-ready        # safe to reset context?
 bin/test-f0-f6               # the whole system, end to end
@@ -189,7 +218,8 @@ Open holes: `docs/PENDING-{{owner}}.md` (count in `docs/METRICS.md` · `criterio
 | `hooks/` | the gates that fire automatically |
 | `rules/` | contracts · rules · ADRs |
 | `memory/principles/` | the voice and the three architects — their criterion |
-| `work/blocks/` · `work/campaigns/` | the work — `active/` `blocked/` `archive/` |
+| `work/blocks/` | 📦 the work — `active/` `blocked/` `archive/` · one unit each |
+| `work/campaigns/` | 🎯 the mission above several blocks — it orders, it never executes |
 | `docs/` | architecture · 🤖 generated indexes |
 | `memory/` | where you left off · pending items · the logbook |
 | `Cerebro/` | your project's own thinking — the pillar and the vision |

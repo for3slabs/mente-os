@@ -38,6 +38,7 @@ val-salud	bin/check-health	engine	canonical	is the system healthy
 val-citas	bin/check-links	engine	canonical	every internal pointer resolves to something that exists
 val-estructura	bin/check-structure	engine	canonical	the tree is the one this table declares
 val-bloques	bin/check-blocks	engine	canonical	the blocks meet their contract
+val-campanas	bin/check-campaigns	engine	canonical	the campaigns meet their contract, and their blocks declare them back
 val-suficiencia	bin/check-sufficiency	engine	canonical	a block can be resumed from disk alone
 val-clear	bin/check-clear-ready	engine	canonical	refuses a reset if anything would be lost
 grada-bloque	bin/grade-block	engine	canonical	product or MVP — measured, never opinion
@@ -51,6 +52,7 @@ pre-commit	hooks/pre-commit.sh	engine	canonical	blocks a commit that violates th
 session-start	hooks/session-start.sh	engine	canonical	health + structure + indexes at session start
 # ── engine · the contracts + inheritance model ──
 contrato-bloque	rules/contract-block.md	engine	canonical	which fields a block carries (§A-K)
+contrato-campana	rules/contract-campaign.md	engine	canonical	which fields a campaign carries, and its lower ceiling
 contrato-doc	rules/contract-document.md	engine	canonical	the shape every document in the system follows
 contrato-adr	rules/contract-adr.md	engine	canonical	the shape of a recorded decision
 herencia	rules/rule-inheritance.md	engine	canonical	the 3 levels and how rules add up
