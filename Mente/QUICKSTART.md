@@ -97,7 +97,7 @@ moment you register your first session.
 ```bash
 bin/new-block my-first-task --type docs   # creates it with its §A-K contract
 bin/check-sufficiency my-first-task       # can it be resumed by reading §A-E alone?
-bin/grade-block my-first-task             # 🟢 product or 🔴 MVP — MEASURED, not opinion
+⬜ a block grader                          # 🟢 product or 🔴 MVP — MEASURED, not opinion
 ```
 
 A **block** is a unit of work with a contract: what goes in, what does not, what it  depends on,

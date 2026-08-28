@@ -87,7 +87,7 @@ stores everything on disk, so `/clear` is safe **when the session is registered*
 | before editing | `Mente/hooks/pre-edit-standards.py` → injects the owning block's `§D` |
 | before editing | `Mente/hooks/gate-critical.py` → 🔴 DB with no rollback · 🔴 closing an insufficient block · ⚠️ a piece with dependents |
 | before a commit | `Mente/hooks/pre-commit.sh` → 🔴 **BLOCKS** a block that violates its contract |
-| is this product or MVP? | `Mente/bin/grade-block <block>` → **measured** verdict, never opinion |
+| is this product or MVP? | ⬜ a block grader → **measured** verdict, never opinion |
 | is the tree the declared one? | `Mente/bin/check-structure` → reads `Mente/piezas.tsv` |
 | regenerate the indexes | `Mente/bin/generate-index` → 🤖 `docs/INDEX.md` + `docs/STATES.md` |
 | before `/clear` | `Mente/bin/check-clear-ready` → 🔴 refuses if something would be lost |

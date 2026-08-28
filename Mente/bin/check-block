@@ -1,0 +1,188 @@
+#!/usr/bin/env python3
+"""check-block — enforces the 🔒 rows of rules/contract-block.md
+
+Every finding names the contract ID it comes from, the expected value and
+the one found, so it is actionable without opening this file.
+
+Exit: 0 clean · 1 violations · 2 the contract itself is missing
+"""
+import os, re, sys, datetime
+
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+CONTRACT = os.path.join(ROOT, "rules", "contract-block.md")
+BLOCKS = os.path.join(ROOT, "work", "blocks")
+
+STATUSES = {"active", "blocked", "closed"}
+TYPES = {"code", "docs", "infra", "data"}
+LANES = {"direct", "task", "full-block"}
+OPEN_SECTIONS = ["A", "B", "C", "D"]
+STALE_DAYS = 14
+
+SEC = re.compile(r"^##\s*([A-K])\s*[·.:-]", re.M)
+# fields may share a line separated by · — match each one wherever it appears
+FIELD = re.compile(r"\b(id|type|intent|status|lane|owner|created|updated):\s*([^\n·]+?)\s*(?=·|$)", re.M)
+ISO = re.compile(r"\d{4}-\d{2}-\d{2}")
+
+
+def sections(text):
+    return {m.group(1) for m in SEC.finditer(text)}
+
+
+def body_of(text, letter):
+    m = re.search(r"^##\s*%s\s*[·.:-].*?$" % letter, text, re.M)
+    if not m:
+        return ""
+    nxt = re.search(r"^##\s*[A-K]\s*[·.:-]", text[m.end():], re.M)
+    return text[m.end(): m.end() + nxt.start()] if nxt else text[m.end():]
+
+
+def check(path, rel, ids):
+    bad = []
+    text = open(path, encoding="utf-8").read()
+    f = dict(FIELD.findall(text))
+    have = sections(text)
+
+    # BLK-OPN-001 · the four opening sections
+    missing = [s for s in OPEN_SECTIONS if s not in have]
+    if missing:
+        bad.append(("BLK-OPN-001", rel,
+                    "missing opening section(s) %s · expected: A B C D · got: %s"
+                    % (" ".join(missing), " ".join(sorted(have)) or "none")))
+
+    # BLK-SHP-002 · sections in order
+    order = [m.group(1) for m in SEC.finditer(text)]
+    if order != sorted(order):
+        bad.append(("BLK-SHP-002", rel,
+                    "sections out of order · expected ascending · got: %s" % " ".join(order)))
+
+    # BLK-IDN-001 · id present and unique
+    bid = f.get("id", "").strip("`* ")
+    if not bid:
+        bad.append(("BLK-IDN-001", rel, "no id declared"))
+    elif bid in ids:
+        bad.append(("BLK-IDN-001", rel,
+                    "id %r already used by %s · resolution is exact" % (bid, ids[bid])))
+    else:
+        ids[bid] = rel
+
+    # BLK-IDN-002 · type
+    ty = f.get("type", "").strip("`* ")
+    if ty not in TYPES:
+        bad.append(("BLK-IDN-002", rel,
+                    "type missing or unknown · expected one of %s · got: %r"
+                    % ("|".join(sorted(TYPES)), ty)))
+
+    # BLK-IDN-003 · intent is one sentence
+    intent = f.get("intent", "").strip()
+    if not intent:
+        bad.append(("BLK-IDN-003", rel, "no intent"))
+    elif intent.count(".") > 1 or len(intent) > 160:
+        bad.append(("BLK-IDN-003", rel,
+                    "intent is not one sentence · got %d chars" % len(intent)))
+
+    # BLK-IDN-004 · status
+    st = f.get("status", "").strip("`* ")
+    if st not in STATUSES:
+        bad.append(("BLK-IDN-004", rel,
+                    "status missing or unknown · expected one of %s · got: %r"
+                    % ("|".join(sorted(STATUSES)), st)))
+
+    # lane, when declared, must be one of the three
+    lane = f.get("lane", "").strip("`* ")
+    if lane and lane not in LANES:
+        bad.append(("BLK-IDN-004", rel,
+                    "lane unknown · expected one of %s · got: %r"
+                    % ("|".join(sorted(LANES)), lane)))
+
+    # BLK-IDN-005 · updated present, ISO, and not stale
+    upd = f.get("updated", "")
+    m = ISO.search(upd)
+    if not m:
+        if "{{" not in upd:
+            bad.append(("BLK-IDN-005", rel, "no updated date · expected YYYY-MM-DD"))
+    else:
+        try:
+            d = datetime.date.fromisoformat(m.group(0))
+            age = (datetime.date.today() - d).days
+            if age > STALE_DAYS and st != "closed":
+                bad.append(("BLK-IDN-005", rel,
+                            "stale · updated %s · %d days ago · limit %d · "
+                            "is it still current?" % (m.group(0), age, STALE_DAYS)))
+        except ValueError:
+            bad.append(("BLK-IDN-005", rel, "updated not a real date: %r" % m.group(0)))
+
+    # BLK-SCP-001 · scope has both halves
+    b = body_of(text, "B")
+    if "B" in have:
+        if not re.search(r"(✅|^)\s*IN\b", b, re.M) or not re.search(r"(⛔|^)\s*OUT\b", b, re.M):
+            bad.append(("BLK-SCP-001", rel,
+                        "scope missing a half · expected both IN and OUT · "
+                        "an IN with no OUT is a wish, not a boundary"))
+
+    # BLK-STD-002 · each declared standard resolves
+    d = body_of(text, "D")
+    for ref in re.findall(r"`([A-Za-z0-9_./-]+\.md)`", d):
+        cands = [os.path.join(ROOT, ref), os.path.join(os.path.dirname(path), ref)]
+        if not any(os.path.exists(c) for c in cands):
+            bad.append(("BLK-STD-002", rel,
+                        "declared standard does not exist: %s · "
+                        "a standard pointing at nothing is not a standard" % ref))
+
+    # BLK-BLK-001 · a blocked block names what would unblock it
+    if st == "blocked":
+        e = body_of(text, "E")
+        if not re.search(r"\b(unblock|blocked by|waiting on|needs)\b", e, re.I):
+            bad.append(("BLK-BLK-001", rel,
+                        "blocked with no unblocker named · "
+                        "'waiting' is not a blocker"))
+
+    # BLK-CLS-001 / 002 · closing
+    if st == "closed":
+        if "K" not in have:
+            bad.append(("BLK-CLS-001", rel,
+                        "status closed with no section K · expected: K present"))
+        fbody = body_of(text, "F")
+        open_rows = re.findall(r"^\|.*\b(open|active|in progress|todo)\b.*\|$",
+                               fbody, re.M | re.I)
+        if open_rows:
+            bad.append(("BLK-CLS-002", rel,
+                        "closed with %d open sub-block row(s) in section F · "
+                        "closing over an open task hides it" % len(open_rows)))
+
+    return bad
+
+
+def main():
+    quiet = "--quiet" in sys.argv
+    if not os.path.exists(CONTRACT):
+        print("🔴 the contract itself is missing: rules/contract-block.md")
+        return 2
+    if not os.path.isdir(BLOCKS):
+        if not quiet:
+            print("check-block · no work/blocks directory · nothing to check")
+        return 0
+
+    found, ids, findings = [], {}, []
+    for dirpath, dirnames, filenames in os.walk(BLOCKS):
+        for name in sorted(filenames):
+            if name == "BLOCK.md":
+                found.append(os.path.join(dirpath, name))
+
+    for path in found:
+        rel = os.path.relpath(path, ROOT)
+        findings += check(path, rel, ids)
+
+    if not quiet:
+        print("check-block · %d block(s) found" % len(found))
+    if findings:
+        for cid, rel, msg in findings:
+            print("🔴 %s · %s · %s" % (rel, cid, msg))
+        print("\n%d violations · rule: rules/contract-block.md" % len(findings))
+        return 1
+    if not quiet:
+        print("✅ 0 violations")
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())
