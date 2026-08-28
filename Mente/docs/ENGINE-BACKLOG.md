@@ -329,5 +329,21 @@ this contract does not yet have.
 
 ---
 
+## E-23 · No document declares which ceiling applies to it
+
+- **Surfaced by:** `doc-structure.md` — the file that makes splitting mandatory
+- **Affects:** the document contract's type table · the health check · every engine document
+- **Closes when:** each `Type` names its ceiling and its unit, and a check measures it
+
+**Why it matters.** ⭐ The rule *"over its ceiling, it splits"* has no ceiling to measure against.
+Every engine document declares a `Type` and no type declares a limit, so the strongest structural
+rule in the system is unenforceable by construction.
+
+⚠️ **And it is worse than a missing number.** Without a declared ceiling, whoever notices a file is
+"long" applies their own threshold — which is the definition of a rule followed about half the
+time. ⭐ **A ceiling nobody can measure is indistinguishable from no ceiling at all.**
+
+---
+
 Related: `README.md` (folder) · `../memory/principles/README.md` (where the owners live) ·
 `../rules/README.md` (where a closed entry usually lands) · `../CAPABILITIES.md`.
