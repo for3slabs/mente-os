@@ -70,6 +70,8 @@ session that produced it.
 
 ---
 
+⭐ **Applied by `../owner-2-dev.md`** — which decides whether building may start at all. ⛔ **This file judges; the owner acts on the judgement.**
+
 ## 2 · THE BASE STANDARD
 
 ### 2.1 · Identity and relations — what is a row, and what does it belong to?

@@ -52,6 +52,8 @@ translation between them, ⭐ **which is precisely where a mismatched assumption
 
 ---
 
+⭐ **Applied by `../owner-3-validation.md`** — which refuses a closure on this basis. ⛔ **This file judges; the owner acts on the judgement.**
+
 ## 2 · THE BASE STANDARD
 
 ### 2.1 · Before touching a piece others consume

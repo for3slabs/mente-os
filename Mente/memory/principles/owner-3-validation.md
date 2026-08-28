@@ -154,6 +154,9 @@ whole difference: debt that is written down gets paid; debt that is felt gets re
 
 ### 5a · The four conditions
 
+⭐ **`expertise/val-functional.md` §2.1 owns these four** — this section states them because
+owner-3 is what refuses a closure on their basis; ⛔ **the discipline states how each is proven.**
+
 A datum is proof only when all four hold:
 
 | # | Condition | Without it |

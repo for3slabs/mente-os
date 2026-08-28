@@ -59,6 +59,8 @@ evidence rendered as evidence.**
 
 ---
 
+⭐ **Applied by `../owner-3-validation.md`** — which refuses a closure on this basis. ⛔ **This file judges; the owner acts on the judgement.**
+
 ## 2 · THE BASE STANDARD
 
 ### 2.1 · ⭐ What counts as proof — the four conditions

@@ -149,7 +149,7 @@ branches where that criterion lives.
 SEED (the three owners)              ROOTS (their disciplines)
 
 owner-1 · documentation format  ──▶  doc-planning · doc-structure
-owner-2 · development           ──▶  ⬜ one file per discipline this project has
+owner-2 · development           ──▶  dev-backend · dev-database · dev-frontend
 owner-3 · functional flow       ──▶  val-functional · val-integration
 ```
 
@@ -160,21 +160,32 @@ with what veto); **disciplines are the subject matter** (what each field demands
 ⭐ **The `<owner>-<discipline>` filename prefix exists so the tree is visible in a directory
 listing.** A flat list of files hides which owner each one answers to.
 
-### ⬜ Declare your disciplines
+### The three that ship — and how to add a fourth
 
-⬜ **One file per discipline this project actually has.** A project with no interface does not
-need a frontend discipline; one with three storage layers may need more than one.
+⭐ **These arrive written.** They are the engine's base standard: ⛔ their §2 is not edited in an
+installation, and ⬜ **§3 of each is where this installation adds its own criteria.**
 
-| Discipline | File | Status |
+| Discipline | File | Decides |
 |---|---|---|
-| ⬜ … | `expertise/dev-….md` | ⬜ empty |
+| **backend** | `expertise/dev-backend.md` | ⭐ whether the work is **well built** — not whether it runs |
+| **database** | `expertise/dev-database.md` | ⛔ what the store guarantees, and what code does |
+| **frontend** | `expertise/dev-frontend.md` | ⭐ representation, interaction and trust |
+
+⬜ **A project may need more** — a second storage layer, an infrastructure discipline, a mobile
+one. ⭐ **`expertise/DISCIPLINE.md.template` is the form**, and it carries the eight checks a new
+discipline must pass before it ships.
+
+⚠️ **A project may also need fewer.** One with no interface does not read `expertise/dev-frontend.md` —
+⛔ but the file still ships, because what does not apply today may apply next quarter.
 
 > ⭐ **Load only the disciplines the change touches.** A backend-only change does not need the
 > others read into context — and context is the scarce resource. Loading everything also lets one
 > discipline's criterion bleed into a decision that belongs to another.
 
-⛔ **Do not let an AI write these files.** An invented technical criterion reads exactly like a
-real one and becomes the bar everything is measured against. Empty is visible; invented is not.
+⛔ **Do not let an AI write the ⬜ §3 of any of them.** An invented technical criterion reads
+exactly like a real one and becomes the bar everything is measured against. ⭐ **Empty is visible;
+invented is not.** The method is in `expertise/README.md`: ⭐ **the AI asks, the owner answers with
+real cases, the AI structures.**
 
 ---
 
@@ -228,6 +239,10 @@ These do not depend on anybody's pending criterion — they are settled.
 | 7 | **reuse the existing pattern** — do not invent a second one | two patterns for one problem is a choice nobody documented |
 
 ### ⭐ fix ≠ patch — the operable definition
+
+⚠️ **What makes a patch possible is duplication:** ⭐ `expertise/dev-backend.md` §2.1
+(`BE-ARC-001`) requires exactly one implementation of a rule, ⛔ **and a rule that lives in six
+places can only ever be patched in one of them.**
 
 | | Does |
 |---|---|

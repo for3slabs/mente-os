@@ -51,6 +51,8 @@ and a maintenance cost paid forever for something that had a home already.
 
 ---
 
+⭐ **Applied by `../owner-1-docs.md`** — which rejects on this basis. ⛔ **This file judges; the owner acts on the judgement.**
+
 ## 2 · THE BASE STANDARD
 
 ### 2.1 · Where a document lives, and when it becomes two

@@ -169,6 +169,8 @@ criterion came with the engine and which you added must never require reading hi
 
 ---
 
+⭐ **Applied by `../owner-2-dev.md`** — which sequences the work and locks the scope. ⛔ **This file judges; the owner acts on the judgement.**
+
 ## 4 · ⭐ THE DECISION PROTOCOL — before touching backend
 
 ⭐ **This is the section that does the most work.** The criteria above judge what was built; these
