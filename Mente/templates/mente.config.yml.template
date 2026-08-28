@@ -77,7 +77,7 @@ session:
 # ⬜ Declare the trees the AI must NOT read without permission. There may be ZERO, one, or many
 #    — add as many entries as you need, or leave the list empty [].
 #    Each becomes a deny rule + a battery check. It is cost control as much as privacy: reading
-#    another Mente OS blows up token consumption (bridges/Puentes_Mente_OS.md).
+#    another Mente OS blows up token consumption (see connection/bridges/).
 #
 #    Copy this shape for each one (delete the example, it is not a real path):
 #      - path: "~/another-project"
@@ -130,15 +130,12 @@ frontier_engine:
 
 # yours · born empty or generated · ⛔ never travels when the engine ships
 frontier_instance:
-  - "Cerebro"
+  - "Cerebro"        # your project's own thinking — the pillar and the vision
   - "cache"          # the validators' local state · never travels
-  - "memory"
+  - "memory"         # ⚠️ except memory/principles/, which is engine doctrine
   - "secrets"
-  - "work"
-  - "vision"
-  - "blocks"
-  - "campaigns"   # they group blocks under a mission — instance, not engine
-  - "bridges"
+  - "work"           # blocks and campaigns live inside it
+  - "connection"
 
 # ⚠️ contains both — engine contracts and the instance's own logs
 frontier_mixed:
