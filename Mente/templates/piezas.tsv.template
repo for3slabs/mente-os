@@ -95,6 +95,7 @@ patrones-importados	memory/principles/imported-patterns.md	engine	canonical	abso
 contrato-entrega	memory/principles/contract-delivery.md	engine	canonical	what a response must contain, and what shape it takes
 arquitecto-docs	memory/principles/owner-1-docs.md	engine	canonical	the criterion for documentation
 arquitecto-dev	memory/principles/owner-2-dev.md	engine	canonical	the criterion for development
+exp-val-functional	memory/principles/expertise/val-functional.md	engine	canonical	the base criterion for proving something works — extensible per instance
 exp-doc-structure	memory/principles/expertise/doc-structure.md	engine	canonical	the base criterion for how a document is built — extensible per instance
 exp-doc-planning	memory/principles/expertise/doc-planning.md	engine	canonical	the base criterion for planning — extensible per instance
 exp-dev-frontend	memory/principles/expertise/dev-frontend.md	engine	canonical	the base criterion for interface work — extensible per instance
