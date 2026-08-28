@@ -91,6 +91,7 @@ reglas-universal	base-rules.md	engine	canonical	level 1 — conduct in any proje
 reglas-proyecto	PROJECT-RULES.md	owner	canonical	level 2 — this project's own rules
 enrutador	CLAUDE-MENTE-OS.md	engine	canonical	the router — imported with @Mente/CLAUDE-MENTE-OS.md from the user's own CLAUDE.md
 voz	memory/principles/owner-0-voice.md	engine	canonical	how the system communicates
+patrones-importados	memory/principles/imported-patterns.md	engine	canonical	absorbed failure patterns — knowledge, ⛔ never the owner's criterion
 contrato-entrega	memory/principles/contract-delivery.md	engine	canonical	what a response must contain, and what shape it takes
 arquitecto-docs	memory/principles/owner-1-docs.md	engine	canonical	the criterion for documentation
 arquitecto-dev	memory/principles/owner-2-dev.md	engine	canonical	the criterion for development
