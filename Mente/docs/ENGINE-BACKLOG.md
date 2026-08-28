@@ -304,5 +304,30 @@ that has to be argued rather than measured is the answer.
 
 ---
 
+## E-22 · ⭐ The block contract predates the criteria that now depend on it
+
+- **Surfaced by:** writing the owner files — three of their mechanisms have nowhere to live
+- **Affects:** the block contract · the sufficiency check · the gate that fires before an edit
+- **Closes when:** the block contract carries the three fields below, and something reads them
+
+**Why it matters.** ⭐ **The owners now demand things a block cannot express.** Each is a mechanism
+declared in criterion with no field to hold it, so it holds only while somebody remembers:
+
+| The owners demand | The block contract has |
+|---|---|
+| ⭐ **ALLOW / DENY** — the scope stated in both directions | a scope section, with no separation between the two halves |
+| ⭐ **the evidence level** the work's risk requires | ⛔ nothing |
+| ⭐ **checkpoints with their fields** — what changed, what did **not**, whether the scope held | a single free-form line |
+
+⚠️ **This is the ordering problem, not a defect in either side.** The criteria were written after
+the contract, and they turned out to need more than it offers. ⛔ **Writing the checks before the
+contract carries the fields would produce checks that measure nothing** — the field has to exist
+before anything can read it.
+
+⭐ **It is also the entry that unblocks three others:** E-02, E-03 and E-13 all wait on a field
+this contract does not yet have.
+
+---
+
 Related: `README.md` (folder) · `../memory/principles/README.md` (where the owners live) ·
 `../rules/README.md` (where a closed entry usually lands) · `../CAPABILITIES.md`.

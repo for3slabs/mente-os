@@ -38,6 +38,19 @@ say "I don't know" when you do not · never omit the WHY of what was delivered.
 
 ---
 
+## 1-bis · ⭐ WHEN IT APPLIES
+
+⭐ **On every response, without exception** — and that is what makes it different from the owner
+contracts, which fire at specific events.
+
+⛔ **There is no such thing as a response too small for §1.** A one-line answer still carries its
+why; the mode changes how much shape it gets, never whether the rule holds.
+
+⚠️ **The only thing that varies is which fields a response must be able to answer** (§7) — and
+that varies by type, not by how busy the writer is.
+
+---
+
 ## 2 · THE FIVE RESPONSE TYPES
 
 ⭐ **The question is not "which template do I use?" — it is "what kind of exchange is this?"**
