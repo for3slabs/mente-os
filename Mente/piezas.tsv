@@ -83,6 +83,17 @@ pendientes	memory/PENDIENTES.md	owner	canonical	non-urgent findings that must no
 gate	connection/bridges/BRIDGES.md	owner	canonical	which other installations may be reached, and under what permission
 config-instancia	mente.config.yml	owner	canonical	the instance declaration — gitignored, never travels
 pilar-arquitectura	Cerebro/ARQUITECTURA.md	owner	canonical	the architectural source of truth — the owner fills it
+# ── engine · the blueprints bin/init stamps ──
+val-declarados	bin/check-declared	engine	canonical	every engine file has a row in this table — the disk-side check
+tpl-enrutador	templates/CLAUDE.md.template	engine	canonical	the blueprint bin/init stamps into the project's CLAUDE.md
+tpl-reglas	templates/PROJECT-RULES.md.template	engine	canonical	the blueprint for the project-level rules
+tpl-config	templates/mente.config.yml.template	engine	canonical	the blueprint for the instance declaration
+tpl-workspace	templates/WORKSPACE.md.template	engine	canonical	the blueprint for the machine map — says WHERE, never WHAT
+tpl-arquitectura	templates/ARQUITECTURA.md.template	engine	canonical	the blueprint for the architecture pillar — born empty
+tpl-cold-start	templates/RETOMAR.md.template	engine	canonical	the blueprint for the cold-start brief
+tpl-pendientes	templates/PENDIENTES.md.template	engine	canonical	the blueprint for the pending-items list
+tpl-puentes	templates/bridges.md.template	engine	canonical	the blueprint for the registry of other installations
+tpl-piezas	templates/piezas.tsv.template	engine	canonical	the blueprint for this table — the only one shipping with content
 # ── shared · engine gives the form, owner writes the content ──
 piezas	piezas.tsv	shared	canonical	this table — where each key piece lives
 registro-cuentas	cuentas.tsv	shared	canonical	which account governs each repo — ⛔ never a token
