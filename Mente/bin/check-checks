@@ -104,6 +104,16 @@ def audit(path, rel, ignored):
                             "open(%s) with no guard · expected: check it exists, or "
                             "skip and say so · an unguarded open reports a crash, "
                             "not a failure" % arg[:40]))
+    # CHK-CAU-002 · a validator that dies reports nothing, and "nothing reported"
+    # reads exactly like "nothing wrong". Its entry point must turn an exception
+    # into a finding with a non-zero exit — a stack trace is not a verdict.
+    if is_py and "__main__" in text:
+        guarded = re.search(r"try:\s*\n\s*sys\.exit\(main\(\)\)", text)
+        if not guarded:
+            bad.append(("CHK-CAU-002", rel, len(lines),
+                        "entry point does not catch its own exceptions · expected: "
+                        "a crash reported as a finding with a non-zero exit · "
+                        "a stack trace is not a verdict"))
     return bad
 
 
@@ -142,4 +152,11 @@ def main():
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    try:
+        sys.exit(main())
+    except Exception as e:
+        # CHK-CAU-002 · a crash reports nothing, and "nothing reported" reads
+        # exactly like "nothing wrong". Turn it into a finding, not a trace.
+        print("🔴 %s crashed · %s: %s"
+              % (os.path.basename(__file__), type(e).__name__, e))
+        sys.exit(1)
