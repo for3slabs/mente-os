@@ -11,9 +11,12 @@ GOOD = """# 001 · Keep one decision in one file
 
 date: 2026-01-15
 status: accepted
+implementation: verified
 decided-by: the owner
 supersedes: —
 superseded-by: —
+applies-to: every decision record in this installation
+does-not-apply-to: decisions local to a single open block
 
 ## Context
 
@@ -23,13 +26,22 @@ Records kept as table rows ended up in two tables, and the two diverged.
 
 One decision is one file.
 
+## Rejected alternatives
+
+- a single shared table, which cannot carry evidence or a way back
+- an append-only log, which cannot be superseded
+
 ## Rationale
 
-The rejected alternative was a single table, which cannot carry evidence.
+A file carries its evidence, its boundary and its exit; a row carries none.
 
 ## Evidence
 
 Two tables of the same decisions, with different row counts.
+
+## Consequences
+
+Every record is a file under this folder, and the index is generated from them.
 
 ## Reverting
 
@@ -76,7 +88,25 @@ p.case("⑩ superseded pero status accepted",
                                                                "supersedes: 001"),
                     "002-" + MARK + "-b.md")), "DEC-SUP-003")
 
-p.inverse("⑪ un registro CORRECTO", lambda: put(GOOD))
+# ── las 5 reglas nuevas
+p.case("⑪ sin estado de implementación",
+       lambda: put(GOOD.replace("implementation: verified\n", "")), "DEC-IMP-001")
+p.case("⑫ estado de implementación desconocido",
+       lambda: put(GOOD.replace("implementation: verified", "implementation: done")),
+       "DEC-IMP-001")
+p.case("⑬ aceptado hace mucho y nunca empezado",
+       lambda: put(GOOD.replace("implementation: verified",
+                                "implementation: not-started")), "DEC-IMP-003")
+p.case("⑭ supersedes sin decir por qué",
+       lambda: put(GOOD.replace("supersedes: —", "supersedes: 099")), "DEC-FLD-006")
+p.case("⑮ sin declarar dónde aplica",
+       lambda: put(re.sub(r"applies-to: .*\n", "", GOOD)), "DEC-FLD-007")
+p.case("⑯ alternativas rechazadas sin nombrar",
+       lambda: put(re.sub(r"## Rejected alternatives\n\n.*?\n\n",
+                          "## Rejected alternatives\n\nwe looked at some others\n\n",
+                          GOOD, flags=re.S)), "DEC-FLD-005")
+
+p.inverse("⑰ un registro CORRECTO", lambda: put(GOOD))
 p.crash_guard()
 
 print("\n  ⚠️ sin corrida cruzada: la carpeta de decisiones de otra instancia\n"

@@ -7,18 +7,25 @@ measured is not the same as nothing wrong.
 
 Exit: 0 clean · 1 violations · 2 the contract itself is missing
 """
-import os, re, sys
+import os, re, sys, datetime
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 CONTRACT = os.path.join(ROOT, "rules", "contract-adr.md")
 DECISIONS = os.path.join(ROOT, "rules", "decisions")
 
 STATUSES = {"proposed", "accepted", "superseded", "reverted"}
-SECTIONS = ["Context", "Decision", "Rationale", "Evidence", "Reverting"]
+IMPL_STATES = {"not-started", "in-progress", "implemented", "verified"}
+SECTIONS = ["Context", "Decision", "Rejected alternatives", "Rationale",
+            "Evidence", "Consequences", "Reverting"]
+# DEC-IMP-003 · a decision accepted long ago and never started is asked about.
+# Not forbidden — deciding before building is normal — but it must not read
+# the same as one that was done.
+PENDING_DAYS = 90
 NONE = {"—", "-", "none", "n/a", ""}
 NO_EVIDENCE = re.compile(r"\bnone\b.*\bjudg?ment call\b", re.I)
 
-FIELD = re.compile(r"^(date|status|decided-by|supersedes|superseded-by):\s*(.*?)\s*$", re.M)
+FIELD = re.compile(r"^(date|status|implementation|decided-by|supersedes|"
+                   r"superseded-by|applies-to|does-not-apply-to):\s*(.*?)\s*$", re.M)
 ISO = re.compile(r"^\d{4}-\d{2}-\d{2}$")
 NUM = re.compile(r"^(\d{3,})[-_ ]")
 
@@ -116,6 +123,53 @@ def main():
             elif len(ev) < 12 and not NO_EVIDENCE.search(ev):
                 findings.append(("DEC-FLD-004", rel,
                                  "Evidence is too short to be one · got: %r" % ev[:40]))
+
+        # DEC-IMP-001 · both states declared
+        impl = f.get("implementation", "").strip().lower()
+        if not impl:
+            findings.append(("DEC-IMP-001", rel,
+                             "no implementation state · expected one of %s · "
+                             "status says what the decision IS, not whether it "
+                             "happened" % "|".join(sorted(IMPL_STATES))))
+        elif impl not in IMPL_STATES:
+            findings.append(("DEC-IMP-001", rel,
+                             "implementation state unknown · expected one of %s "
+                             "· got: %r" % ("|".join(sorted(IMPL_STATES)), impl)))
+
+        # DEC-IMP-003 · accepted and never started, for long enough, is asked about
+        if st == "accepted" and impl == "not-started" and ISO.match(f.get("date", "")):
+            try:
+                age = (datetime.date.today()
+                       - datetime.date.fromisoformat(f["date"])).days
+                if age > PENDING_DAYS:
+                    findings.append(("DEC-IMP-003", rel,
+                                     "accepted %d days ago and never started · "
+                                     "is it still current? · decided-and-never-built "
+                                     "reads exactly like decided-and-done" % age))
+            except ValueError:
+                pass
+
+        # DEC-FLD-006 · supersedes says WHY, not only WHAT
+        sup_raw = f.get("supersedes", "").strip()
+        if sup_raw.lower() not in NONE and len(sup_raw) < 12:
+            findings.append(("DEC-FLD-006", rel,
+                             "supersedes names a record but no reason: %r · "
+                             "expected what changed, not only which one" % sup_raw))
+
+        # DEC-FLD-007 · the record declares where it applies
+        if not f.get("applies-to", "").strip():
+            findings.append(("DEC-FLD-007", rel,
+                             "no applies-to · a decision with no boundary gets "
+                             "applied where it was never meant to"))
+
+        rej = (bodies.get("Rejected alternatives") or "").strip()
+        if bodies.get("Rejected alternatives") is not None and rej:
+            named = [l for l in rej.splitlines() if l.strip().startswith(("-", "*"))]
+            if not named and "none" not in rej.lower():
+                findings.append(("DEC-FLD-005", rel,
+                                 "rejected alternatives not named one per line · "
+                                 "expected a list · nothing can detect one being "
+                                 "proposed again"))
 
         records[num or name] = {
             "rel": rel, "status": st,
