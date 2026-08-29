@@ -156,3 +156,7 @@ probe-checks	bin/probes/probe-checks.py	engine	executable	proves check-checks de
 probe-decisions	bin/probes/probe-decisions.py	engine	executable	proves check-decisions detects what the decision contract claims
 probe-handoff	bin/probes/probe-handoff.py	engine	executable	proves check-handoff detects what the handoff contract claims — exit codes included
 probe-declared	bin/probes/probe-declared.py	engine	executable	proves check-declared finds a file the piece table omits
+rule-shipping	rules/rule-shipping.md	engine	canonical	how a change leaves the workspace — loop, base, grouping, cleanup, session close
+check-shipping	bin/check-shipping	engine	executable	enforces the lock rows of the shipping rule
+probe-shipping	bin/probes/probe-shipping.py	engine	executable	proves check-shipping detects what the shipping rule claims
+hook-pre-commit	hooks/pre-commit.sh	engine	executable	refuses a commit on the base branch — SHP-LCK-001

@@ -1,0 +1,115 @@
+#!/usr/bin/env python3
+"""check-shipping — enforces the 🔒 rows of rules/rule-shipping.md
+
+⚠️ Most of that rule is 📖: a script cannot watch somebody delete a branch.
+What it CAN check is that the locks the rule depends on are declared, in
+place, and that nothing here contradicts them.
+
+Exit: 0 clean · 1 violations · 2 the rule itself is missing
+"""
+import os, re, sys
+
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+RULE = os.path.join(ROOT, "rules", "rule-shipping.md")
+HOOKS = os.path.join(ROOT, "hooks")
+
+# SHP-CYC-001 · every stage of the cycle has an owner. A stage with none is a
+# stage nobody performs — measured: a cycle declared as ending at "propose"
+# left everything after it off every map.
+STAGES = ["PRE-FLIGHT", "BRANCH", "IMPLEMENT", "VERIFY", "COMMIT", "PROPOSE",
+          "GROUP", "CONFLICT", "MERGE", "DETECT", "VERIFY IT TRAVELLED", "DELETE"]
+
+# SHP-GRP-001 · the ceiling is the owner's, declared in the rule — never a
+# constant here. A validator that decides a number the doctrine assigns to the
+# installation is measuring a decision nobody took.
+DEFAULT_CEILING = 4
+
+
+def grouping_ceiling(text):
+    m = re.search(r"items_per_proposal\s*[:=]\s*(\d+)", text, re.I)
+    return (int(m.group(1)), "declared") if m else (DEFAULT_CEILING, "engine default")
+
+
+def main():
+    quiet = "--quiet" in sys.argv
+    if not os.path.exists(RULE):
+        print("🔴 the rule itself is missing: rules/rule-shipping.md")
+        return 2
+    text = open(RULE, encoding="utf-8").read()
+    findings = []
+
+    # SHP-CYC-001 · no stage without an owner
+    # A stage name can carry a suffix in its cell ("DETECT the merge"), so the
+    # match is on the leading capitals, not the whole bold run: a detector that
+    # requires the exact label reports a named stage as missing.
+    rows = re.findall(r"^\|\s*\d+\s*\|\s*(?:🔴\s*|⭐\s*|🆕\s*)*\*\*([A-Z][A-Z \-]*[A-Z])"
+                      r"[^|]*\|\s*(.+?)\s*\|$", text, re.M)
+    named = {s.strip(): owner for s, owner in rows}
+    for st in STAGES:
+        if st not in named:
+            findings.append(("SHP-CYC-001", "rules/rule-shipping.md",
+                             "stage %r is not in the cycle table · a stage nobody "
+                             "names is one nobody performs" % st))
+        elif not named[st].strip(" —-"):
+            findings.append(("SHP-CYC-001", "rules/rule-shipping.md",
+                             "stage %r has no owner · expected the rule that "
+                             "governs it" % st))
+
+    ceiling, origin = grouping_ceiling(text)
+    # SHP-GRP-001 · the ceiling is declared, never inferred
+    if origin != "declared":
+        findings.append(("SHP-GRP-001", "rules/rule-shipping.md",
+                         "no items_per_proposal declared · using the engine "
+                         "default of %d · declare it, or every reader assumes "
+                         "a different one" % ceiling))
+
+    # SHP-LCK-001 · the lock the rule depends on is declared and present.
+    # Checking that a rule NAMES a gate is not checking the gate works — that
+    # is what its own probe is for. This catches a rule claiming a lock that
+    # was never wired at all.
+    claims_lock = bool(re.search(r"SHP-LCK-001.*?🔒", text, re.S))
+    gate = None
+    if os.path.isdir(HOOKS):
+        for n in sorted(os.listdir(HOOKS)):
+            p = os.path.join(HOOKS, n)
+            # A backup or a disabled copy is not a wired gate: a detector that
+            # counts one reports a lock that will never run.
+            if n.endswith((".bak", ".disabled", ".orig", ".sample")) or ".bak" in n:
+                continue
+            if os.path.isfile(p) and not n.endswith(".md"):
+                try:
+                    if re.search(r"\b(base|main|master|trunk)\b.*\b(commit|branch)\b",
+                                 open(p, encoding="utf-8").read(), re.I | re.S):
+                        gate = n
+                        break
+                except OSError:
+                    pass
+    if claims_lock and gate is None:
+        findings.append(("SHP-LCK-001", "rules/rule-shipping.md",
+                         "the rule declares a 🔒 on committing to the base and no "
+                         "hook implements it · ⬜ NOT_MEASURED, not a pass · "
+                         "declaring a rule is not following it"))
+
+    if not quiet:
+        print("check-shipping · %d stage(s) owned · grouping ceiling %d (%s)%s"
+              % (len(named), ceiling, origin,
+                 " · gate: %s" % gate if gate else " · ⬜ no gate yet"))
+    if findings:
+        for cid, rel, msg in findings:
+            print("🔴 %s · %s · %s" % (rel, cid, msg))
+        print("\n%d violations · rule: rules/rule-shipping.md" % len(findings))
+        return 1
+    if not quiet:
+        print("✅ 0 violations")
+    return 0
+
+
+if __name__ == "__main__":
+    try:
+        sys.exit(main())
+    except Exception as e:
+        # CHK-CAU-002 · a crash reports nothing, and "nothing reported" reads
+        # exactly like "nothing wrong". Turn it into a finding, not a trace.
+        print("🔴 %s crashed · %s: %s"
+              % (os.path.basename(__file__), type(e).__name__, e))
+        sys.exit(1)
