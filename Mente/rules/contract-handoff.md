@@ -34,7 +34,65 @@ missing behaviour are not the same thing.
 
 ---
 
-## 1 · ENFORCEMENT
+## 1 · ⭐ WHAT A HANDOFF ACTUALLY IS
+
+> ## ⭐ Not an instruction to another agent — a TEMPORARY, VERIFIABLE, LIMITED GRANT OF AUTHORITY.
+
+⚠️ **The difference is not wording.** ⭐ An instruction is obeyed as well as it
+is understood; ⛔ **a capability is bounded whether it is understood or not.**
+
+```
+the specialist receives:   identity + READ capability + task
+                         + WRITE capability + stop conditions
+                                    ⛔ and nothing else
+when it finishes:          the capability EXPIRES
+                           the result is VALIDATED
+                           control returns to the coordinator
+```
+
+### ⭐ THE TEN INVARIANTS — ⛔ never broken, whatever the task needs
+
+| # | A specialist MUST… |
+|---|---|
+| 1 | ⭐ **validate the handoff BEFORE reading any task file** |
+| 2 | read only what `load` allows |
+| 3 | ⭐ **write only where `write_back` allows** |
+| 4 | ⛔ **never modify coordinator-owned state** |
+| 5 | stop the moment a binding check fails |
+| 6 | stop when its stop condition is met |
+| 7 | ⭐ **never expand its own scope** |
+| 8 | return the declared artifact shape |
+| 9 | ⭐ **report uncertainty instead of inventing** |
+| 10 | ⛔ **never treat task necessity as permission** |
+
+⭐ **Invariant 10 is the one that gets rationalised away**, and §5 is the whole
+argument for it.
+
+---
+
+## 2 · ⭐ WHO MAY DO WHAT
+
+| Action | Coordinator | Specialist |
+|---|---|---|
+| create the handoff | ✅ | ⛔ |
+| ⭐ **define the scope** | ✅ | ⛔ |
+| validate the manifest | ⭐ the system | ⭐ the system |
+| read what `load.required` names | ✅ | ✅ |
+| ⛔ **read outside `load`** | ✅ | ⛔ **never** |
+| ⛔ **change identity, scope, state or decisions** | ✅ | ⛔ **never** |
+| write the return artifact | — | ✅ |
+| append to the one allowed section | ✅ | ⭐ bounded |
+| ⭐ **change the scope mid-task** | ✅ ⚠️ by reissuing | ⛔ **never** |
+| decide what the result means | ✅ | ⛔ |
+
+> ## ⭐ THE SPECIALIST EXECUTES WITHIN THE COORDINATOR'S AUTHORITY.
+> ⛔ **It does not acquire authority by discovering information.** ⚠️ Finding
+> out that something else matters is a finding to report — **not a permission
+> that just arrived.**
+
+---
+
+## 3 · ENFORCEMENT
 
 | | Means |
 |---|---|
@@ -46,7 +104,7 @@ missing behaviour are not the same thing.
 
 ---
 
-## 2 · WHAT THE MANIFEST DECLARES
+## 4 · WHAT THE MANIFEST DECLARES
 
 | Field | Req | ⭐ What it settles |
 |---|---|---|
@@ -75,7 +133,44 @@ until it runs out of context** — which is the failure this whole contract exis
 
 ---
 
-## 3 · ⭐ THE WRITE SCOPE — the rule that matters most
+## 5 · ⭐ THE READ SCOPE — and why needing is not permission
+
+⛔ **`load` is an allowlist. Everything outside it is out of reach**, however
+relevant it turns out to be.
+
+| ⛔ A specialist MUST NOT | ⭐ |
+|---|---|
+| **discover files outside `load`** | ⚠️ a listing is a read |
+| ⭐ **scan a directory that `load` does not name** | ⛔ not even to "orient itself" |
+| **read a parent directory** | ⭐ the path given is the path allowed |
+| ⭐ **follow a reference out of scope** | ⚠️ **a pointer is not a permission** |
+| **inspect project-wide state** | ⛔ unless `load` says so |
+
+| ID | Rule | Enf | Verify |
+|---|---|---|---|
+| `HND-RED-001` | ⭐ **Reading outside `load` is a violation, not a shortcut** | 📖 | ⛔ nothing verifies this at runtime |
+| `HND-RED-002` | 🔴 **NEEDING A FILE DOES NOT CREATE PERMISSION TO READ IT** | 📖 | ⭐ see below |
+| `HND-RED-003` | ⭐ **Out of scope → stop and report, never widen** | 📖 | ⚠️ §8, boundary stop |
+
+> ## 🔴 `HND-RED-002` — the rationalisation this contract exists to stop
+> ⚠️ **The specialist discovers it needs something the manifest did not grant.**
+> ⭐ **That is a FINDING, not a permission that just arrived.**
+>
+> ```
+> ⛔  "I need this to do the job"  →  reads it
+> ✅  "this is outside my scope"   →  BOUNDARY STOP · reported
+> ```
+>
+> ⛔ **The first is how a bounded agent becomes an unbounded one — one
+> reasonable step at a time**, and every step looks justified from inside.
+
+⭐ **The way out is a reissued manifest, not a wider reading.** ⚠️ **The cost of
+stopping is one round trip. The cost of widening is that the boundary stops
+meaning anything.**
+
+---
+
+## 6 · ⭐ THE WRITE SCOPE — the rule that matters most
 
 ⛔ **A specialist writes to exactly two places, both declared:**
 
@@ -90,9 +185,24 @@ until it runs out of context** — which is the failure this whole contract exis
 > ⭐ **If the scope was wrong, the MANIFEST was wrong.** Fix the manifest and run the handoff
 > again — ⚠️ **widening the scope mid-task is how a boundary becomes a suggestion.**
 
+### ⭐ AND THE MODE IS PART OF THE PERMISSION
+
+| ⭐ Granted | ⛔ Does NOT mean |
+|---|---|
+| **create** the artifact | ⚠️ modify one that exists |
+| ⭐ **append** to a section | ⛔ **overwrite that section** |
+| **a named section** | ⭐ **the whole file** |
+| **a named path** | ⛔ its parent directory |
+| a line ceiling | ⚠️ ⭐ **a hard limit, not a suggestion** |
+
+> ## ⭐ "I MAY WRITE IN SECTION J" IS NOT "I MAY EDIT THIS FILE."
+> ⛔ **Every row above is a widening somebody could argue for**, and each one
+> ends with the coordinator's own state rewritten by somebody else.
+
 | ID | Rule | Enf | Verify |
 |---|---|---|---|
 | `HND-WRT-001` | ⭐ **The write scope is an allowlist — ⛔ everything else denied** | 🔒 | ⚠️ a denylist can never be complete |
+| `HND-WRT-004` | ⭐ **The MODE is granted, not assumed** | 🔒 | ⛔ create ≠ modify · append ≠ overwrite |
 | `HND-WRT-002` | ⭐ **A specialist never writes the block's identity, scope or state** | 🔒 | ⛔ see below |
 | `HND-WRT-003` | **Every append declares a line ceiling** | 🔒 | ⭐ an unbounded append is an unbounded writer |
 
@@ -102,7 +212,7 @@ until it runs out of context** — which is the failure this whole contract exis
 
 ---
 
-## 4 · THE RETURN ARTIFACT
+## 7 · THE RETURN ARTIFACT
 
 | Section | ⭐ What goes in it |
 |---|---|
@@ -110,12 +220,50 @@ until it runs out of context** — which is the failure this whole contract exis
 | `work` | what it actually did |
 | `findings` | ⭐ what it found, **with evidence** |
 | `open-questions` | ⚠️ what it could not resolve |
-| `status` | ⭐ `done` · `blocked` · **`aborted-binding-mismatch`** |
+| `status` | ⭐ one of the five below |
 
 | ID | Rule | Enf | Verify |
 |---|---|---|---|
 | `HND-RET-001` | **Every section present, in order** | 🔒 | ⛔ a missing section is an answer nobody asked for |
 | `HND-RET-002` | ⭐ **`status` is machine-readable** | 🔒 | ⚠️ prose cannot be dispatched on |
+
+### ⭐ THE FIVE OUTCOMES — they send the coordinator to different places
+
+| `status` | Means | ⭐ What the coordinator does |
+|---|---|---|
+| ✅ **done** | the success condition was met | accept |
+| ⭐ **partial** | ⚠️ **part completed and valid; the rest was not** | accept the part, reissue the rest |
+| ⚠️ **blocked** | ⛔ it lacked permission or information | ⭐ widen the manifest, or answer |
+| 🔴 **aborted-binding-mismatch** | reality did not match the manifest | ⭐ the world moved — re-derive it |
+| 🔴 **failed** | ⛔ **it had everything it needed and the work failed** | ⚠️ that is a real defect |
+
+⛔ **Collapsing these is how a coordinator retries the wrong thing.** ⭐ *"I was
+not allowed"*, *"the world changed"* and *"I tried and it broke"* need three
+different responses.
+
+### ⭐ A FINDING CARRIES ITS EVIDENCE AND ITS CONFIDENCE
+
+```
+- claim:      <what was found>
+  evidence:   <where — a path, a line, a command, an output>
+  confidence: high | medium | low
+```
+
+| ⭐ Confidence | Means |
+|---|---|
+| **high** | ⭐ directly demonstrated by the evidence shown |
+| **medium** | strong evidence, ⚠️ incomplete |
+| ⭐ **low** | ⛔ **a hypothesis that needs validating** |
+
+| ID | Rule | Enf | Verify |
+|---|---|---|---|
+| `HND-FND-001` | ⭐ **Every finding names where it was found** | 🟡 | ⛔ a claim with no location cannot be rechecked |
+| `HND-FND-002` | 🔴 **A low-confidence finding is NEVER presented as a fact** | 📖 | ⭐ see below |
+
+> ## 🔴 `HND-FND-002` — the sentence that costs most
+> ⛔ **A hypothesis written as a conclusion is indistinguishable from a measured
+> one**, and the coordinator acts on both the same way. ⭐ **Confidence is not
+> hedging: it is the difference between what was shown and what was guessed.**
 
 > ## ⭐ `aborted-binding-mismatch` IS THE GOOD FAILURE
 > ⛔ It means the specialist found the disk did not match its manifest **and stopped before
@@ -124,7 +272,32 @@ until it runs out of context** — which is the failure this whole contract exis
 
 ---
 
-## 5 · BINDING CHECKS — the manifest against reality
+## 8 · ⭐ THE THREE STOPS — and nothing happens after one
+
+| Kind | ⭐ When | What the artifact says |
+|---|---|---|
+| ✅ **SUCCESS STOP** | the success condition is met | `done` — ⭐ or `partial` |
+| ⚠️ **BOUNDARY STOP** | ⭐ **it needs something outside its scope** | `blocked`, ⛔ naming exactly what |
+| 🔴 **FAILURE STOP** | ⛔ **reality contradicts the manifest** | `aborted-binding-mismatch` · `failed` |
+
+| ID | Rule | Enf | Verify |
+|---|---|---|---|
+| `HND-STP-001` | ⭐ **A specialist stops the moment a stop condition is met** | 📖 | ⛔ nothing verifies this at runtime |
+| `HND-STP-002` | 🔴 **NO FURTHER DISCOVERY AFTER A STOP** | 📖 | ⭐ see below |
+| `HND-STP-003` | ⭐ **A boundary stop names exactly what it lacked** | 🔒 | ⛔ *"I could not continue"* is not a report |
+
+> ## 🔴 `HND-STP-002` — the one that is broken with good intentions
+> ⚠️ **After stopping, "let me just check one more thing" is reading outside a
+> scope that has already ended.** ⭐ **A stop is the end of the capability, not
+> a pause in it.**
+
+⭐ **And the cost of the alternative is measured:** ⛔ *"one more look"* is
+exactly how a bounded task turns into hundreds of operations whose output
+never leaves the context.
+
+---
+
+## 9 · BINDING CHECKS — the manifest against reality
 
 ⛔ **Run in order. The first failure aborts, and nothing is written.**
 
@@ -146,7 +319,48 @@ misleading error costs more than a missing one, because it sends the reader the 
 
 ---
 
-## 6 · ⭐ THE GATE — this is enforced, not suggested
+## 10 · 🔴 POST-FLIGHT — validating what came back
+
+> ## ⛔ VALIDATING BEFORE THE SPECIALIST RUNS IS HALF THE PROBLEM.
+
+⚠️ **The write scope is a promise until something checks it was kept.** ⭐ **A
+specialist that wrote outside its allowlist leaves no trace anybody looks
+at** — and the coordinator reads the artifact as if the boundary had held.
+
+```
+PRE  ──▶ validate the manifest and its binding
+WORK ──▶ the specialist runs
+POST ──▶ ⭐ validate what it actually did
+```
+
+| # | Post-flight check | ⛔ Fails when |
+|---|---|---|
+| 1 | **the artifact exists** | ⚠️ ⭐ `done` with no artifact |
+| 2 | **it belongs to this handoff** | it names another id |
+| 3 | ⭐ **its sections match the declared schema, in order** | one is missing or renamed |
+| 4 | **`status` is one of the five** | ⛔ free text cannot be dispatched on |
+| 5 | ⭐ **only allowed paths changed** | ⚠️ **the write scope was exceeded** |
+| 6 | ⭐ **only the allowed section was appended to** | the whole file was rewritten |
+| 7 | **the line ceiling was respected** | an unbounded append |
+| 8 | ⛔ **no coordinator-owned section changed** | 🔴 a second coordinator |
+
+| ID | Rule | Enf | Verify |
+|---|---|---|---|
+| `HND-PST-001` | ⭐ **A handoff is not complete until post-flight passes** | 🔒 | ⛔ the result is rejected, not accepted-with-notes |
+| `HND-PST-002` | 🔴 **`done` requires an artifact that validates** | 🔒 | ⭐ see below |
+| `HND-PST-003` | ⭐ **A rejected result is returned, never partially merged** | 📖 | ⚠️ half a bounded result is unbounded |
+
+> ## 🔴 `HND-PST-002` — a claim of completion that nothing backs
+> ⛔ **With nothing validating the return, a specialist reporting `done` and
+> having done nothing is indistinguishable from one that worked.**
+>
+> ⭐ **It is the same shape as a decision recorded `accepted` and never
+> implemented:** ⚠️ **an assertion of completeness with no evidence behind it,
+> and everything downstream treats it as settled.**
+
+---
+
+## 11 · ⭐ THE GATE — this is enforced, not suggested
 
 ⭐ **The level was measured, not chosen:**
 
@@ -158,6 +372,22 @@ misleading error costs more than a missing one, because it sends the reader the 
 > ## 🔴 AN UNKNOWN AGENT TYPE FAILS CLOSED
 > ⭐ **An agent whose tools are not known could be anything, so it is treated as a writer.**
 > ⛔ **Failing open here would make the gate decorative.**
+
+### ⭐ THE GATE DECIDES ON CAPABILITIES, NOT ON NAMES
+
+```
+⛔  is it called one of these three names?
+✅  what can it DO?   read: yes · write: yes  →  it is a writer
+```
+
+| ID | Rule | Enf | Verify |
+|---|---|---|---|
+| `HND-GAT-004` | ⭐ **The level comes from declared capabilities** | 🔒 | ⛔ a name list ages; a capability does not |
+| `HND-GAT-005` | ⭐ **An undeclared capability is assumed present** | 🔒 | ⚠️ fail closed, again |
+
+⚠️ **A list of names is the loose comparison of `rule-checks-must-measure.md`
+§4-A, in another shape:** ⛔ **it is correct exactly until somebody adds a
+fourth agent type** — ⭐ and then the gate is silently permissive for it.
 
 ### ⭐ Presence is not compliance
 
@@ -179,7 +409,7 @@ stop.
 
 ---
 
-## 7 · ⭐ WHEN A HANDOFF IS WORTH IT
+## 12 · ⭐ WHEN A HANDOFF IS WORTH IT
 
 > ## ⛔ NOT EVERY TASK DESERVES A MANIFEST.
 > ⚠️ **Writing one costs more than a small task saves** — and a contract nobody writes because it
@@ -197,7 +427,7 @@ hundreds of operations kept their full output in context forever.**
 
 ---
 
-## 8 · ⛔ WHAT IT COSTS TO BREAK IT
+## 13 · ⛔ WHAT IT COSTS TO BREAK IT
 
 | Broken | ⭐ The cost |
 |---|---|
@@ -206,10 +436,14 @@ hundreds of operations kept their full output in context forever.**
 | **the specialist writes the state** | ⛔ ⭐ **two coordinators disagreeing about where the work stands** |
 | **widening the scope mid-task** | ⚠️ the boundary becomes a suggestion |
 | **an unknown agent type allowed through** | ⭐ the gate is decorative, and looks exactly like a working one |
+| ⭐ **reading outside `load` because the task needed it** | ⛔ **a bounded agent becomes unbounded, one reasonable step at a time** |
+| **nothing validating the return** | ⭐ `done` with nothing done reads exactly like `done` |
+| ⭐ **a low-confidence finding written as a fact** | ⚠️ the coordinator acts on a guess as if it were measured |
+| **the gate keyed on names** | ⛔ ⭐ **silently permissive for every type added later** |
 
 ---
 
-## 9 · WHO GOVERNS THIS FILE
+## 14 · WHO GOVERNS THIS FILE
 
 | Change | Who |
 |---|---|

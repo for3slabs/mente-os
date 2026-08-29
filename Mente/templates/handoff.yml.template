@@ -22,6 +22,15 @@ block_path: ""      # where that block lives
 # ── Optional · role ──────────────────────────────────────────────────────
 role: ""            # descriptive only, for logs
 
+# ── Required · what the specialist CAN DO ────────────────────────────────
+# ⭐ The gate decides on capabilities, not on the agent's NAME: a list of names
+#    is correct exactly until somebody adds a fourth type, and then the gate is
+#    silently permissive for it. ⛔ An undeclared capability is assumed PRESENT.
+agent:
+  capabilities:
+    read: true
+    write: false      # ⭐ true here means the gate BLOCKS without a valid manifest
+
 # ── Required · the READ scope ────────────────────────────────────────────
 # ⛔ Reading outside this list is a violation, not a shortcut.
 load:
@@ -45,16 +54,41 @@ binding_checks:
   - load_required_paths_exist
 
 # ── Required · the WRITE scope ───────────────────────────────────────────
-# ⭐ An allowlist. Everything not named here is denied.
+# ⭐ An allowlist. Everything not named here is denied — and the MODE is part
+#    of the permission: create ≠ modify · append ≠ overwrite · a section is not
+#    the whole file · a path is not its parent directory.
 write_back:
-  artifact: ""             # where the return goes, inside the block
+  artifact:
+    path: ""               # where the return goes, inside the block
+    mode: create-only      # ⛔ create-only — never modify an existing artifact
   artifact_schema:         # ⭐ the sections the return must contain, in order
-    - objective            # restated — it proves the right manifest was read
-    - work
-    - findings
-    - open-questions
-    - status               # done | blocked | aborted-binding-mismatch
+    required:
+      - objective          # restated — it proves the right manifest was read
+      - work
+      - findings           # ⭐ each one with its evidence and its confidence
+      - open-questions
+      - status
+    status:                # ⛔ anything outside this set is an invalid artifact
+      - done
+      - partial
+      - blocked
+      - aborted-binding-mismatch
+      - failed
   also_append: []          # bounded appends to coordinator-owned sections
-                           # each entry: {target: "...", section: "...", max_lines: N}
+                           # each entry:
+                           #   {target: "...", section: "...",
+                           #    mode: append-only, max_lines: N}
                            # ⛔ never identity, scope, connections, standards,
                            #    state or decisions — those are the coordinator's
+
+# ── The return artifact · the shape it must have ─────────────────────────
+# ⭐ A finding is not prose. It carries WHERE it was found and HOW SURE it is:
+#
+#   ## findings
+#   - claim:      "..."
+#     evidence:   "path:line · or the command and its output"
+#     confidence: high | medium | low
+#
+# 🔴 A low-confidence finding is NEVER written as a fact. A hypothesis stated
+#    as a conclusion is indistinguishable from a measured one, and the
+#    coordinator acts on both the same way.

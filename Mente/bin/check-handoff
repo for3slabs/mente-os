@@ -20,6 +20,10 @@ REQUIRED = ["schema_version", "handoff_id", "block", "block_path", "load",
             "task", "binding_checks", "write_back"]
 TASK_FIELDS = ["objective", "success_condition", "stop_condition"]
 RETURN_SECTIONS = ["objective", "work", "findings", "open-questions", "status"]
+# HND-PST-002 · the five outcomes send the coordinator to different places:
+# "not allowed", "the world moved" and "it broke" need three different answers.
+STATUSES = {"done", "partial", "blocked", "aborted-binding-mismatch", "failed"}
+WRITE_MODES = {"create-only", "append-only"}
 # HND-WRT-002 · sections a specialist may never append to
 COORDINATOR_ONLY = {"a", "b", "c", "d", "e", "g",
                     "identity", "scope", "connections",
@@ -117,15 +121,45 @@ def check(path, rel):
 
     # HND-WRT-001 / 002 / 003 · the write scope
     wb = d.get("write_back") or {}
-    if not (wb.get("artifact") or "").strip():
+    art = wb.get("artifact")
+    art_path = (art.get("path") if isinstance(art, dict) else art) or ""
+    if not str(art_path).strip():
         mal.append(("HND-WRT-001", rel,
-                    "write_back.artifact is empty · the write scope is an "
+                    "write_back.artifact has no path · the write scope is an "
                     "allowlist, and an empty one denies the return itself"))
-    schema = items(wb.get("artifact_schema"))
+
+    # HND-WRT-004 · the MODE is granted, never assumed
+    if isinstance(art, dict):
+        mode = (art.get("mode") or "").strip()
+        if mode not in WRITE_MODES:
+            mal.append(("HND-WRT-004", rel,
+                        "artifact mode missing or unknown · expected one of %s "
+                        "· got: %r · create is not modify, append is not "
+                        "overwrite" % ("|".join(sorted(WRITE_MODES)), mode)))
+
+    sch = wb.get("artifact_schema")
+    schema = items(sch.get("required")) if isinstance(sch, dict) else items(sch)
     if schema != RETURN_SECTIONS:
         mal.append(("HND-RET-001", rel,
                     "return schema wrong · expected %s · got %s"
                     % (RETURN_SECTIONS, schema or "nothing")))
+
+    # the declared status set must be the five, or dispatch is impossible
+    if isinstance(sch, dict) and "status" in sch:
+        declared = set(items(sch.get("status")))
+        if declared and declared != STATUSES:
+            mal.append(("HND-RET-002", rel,
+                        "status set wrong · expected %s · got %s"
+                        % (sorted(STATUSES), sorted(declared))))
+
+    # HND-GAT-004 · the gate decides on capabilities, not on names
+    agent = d.get("agent") or {}
+    caps = agent.get("capabilities") if isinstance(agent, dict) else None
+    if not isinstance(caps, dict) or "write" not in caps:
+        mal.append(("HND-GAT-004", rel,
+                    "no declared capabilities · expected agent.capabilities "
+                    "with read and write · a name list is correct exactly "
+                    "until somebody adds another agent type"))
     for entry in items(wb.get("also_append")):
         low = entry.lower()
         for banned in COORDINATOR_ONLY:
@@ -173,8 +207,72 @@ def check(path, rel):
     return mal, bind
 
 
+def postflight(path, rel):
+    """HND-PST-* · validate what came BACK.
+
+    Validating the manifest before the specialist runs is half the problem:
+    the write scope is a promise until something checks it was kept, and a
+    specialist reporting `done` with nothing done reads exactly like one that
+    worked.
+    """
+    bad = []
+    d = parse(path)
+    wb = d.get("write_back") or {}
+    art = wb.get("artifact")
+    art_path = (art.get("path") if isinstance(art, dict) else art) or ""
+    bp = d.get("block_path", "")
+    bdir = bp if os.path.isabs(bp) else os.path.join(ROOT, bp)
+    apath = os.path.join(bdir, art_path)
+
+    # 1 · the artifact exists
+    if not os.path.isfile(apath):
+        bad.append(("HND-PST-002", rel,
+                    "no return artifact at %r · a claim of completion that "
+                    "nothing backs" % art_path))
+        return bad
+
+    text = open(apath, encoding="utf-8").read()
+
+    # 2 · it belongs to this handoff
+    hid = d.get("handoff_id", "").strip('"')
+    if hid and hid not in text and hid not in art_path:
+        bad.append(("HND-PST-001", rel,
+                    "the artifact does not name this handoff (%s) · it may "
+                    "belong to another one" % hid))
+
+    # 3 · its sections match the declared schema, in order
+    sch = wb.get("artifact_schema")
+    want = items(sch.get("required")) if isinstance(sch, dict) else items(sch)
+    found = [m.group(1).strip().lower()
+             for m in re.finditer(r"^##\s+(.+?)\s*$", text, re.M)]
+    if [f for f in found if f in [w.lower() for w in want]] != [w.lower() for w in want]:
+        bad.append(("HND-PST-001", rel,
+                    "artifact sections wrong or out of order · expected %s · "
+                    "got %s" % (want, found)))
+
+    # 4 · status is one of the five
+    m = re.search(r"^##\s+status\s*$(.*?)(?=^##|\Z)", text, re.M | re.S | re.I)
+    st = (m.group(1).strip().splitlines() or [""])[0].strip("`* ").lower() if m else ""
+    if st not in STATUSES:
+        bad.append(("HND-PST-001", rel,
+                    "status %r is not one of %s · prose cannot be dispatched on"
+                    % (st, sorted(STATUSES))))
+
+    # 8 · no coordinator-owned section was touched
+    for entry in items(wb.get("also_append")):
+        low = entry.lower()
+        for banned in COORDINATOR_ONLY:
+            if re.search(r"(section|§)\s*:?\s*%s\b" % re.escape(banned), low):
+                bad.append(("HND-PST-001", rel,
+                            "append targets a coordinator-owned section (%s)"
+                            % banned))
+                break
+    return bad
+
+
 def main():
-    argv = [a for a in sys.argv[1:] if a != "--quiet"]
+    argv = [a for a in sys.argv[1:] if a not in ("--quiet", "--postflight")]
+    post = "--postflight" in sys.argv
     quiet = "--quiet" in sys.argv
     if not os.path.exists(CONTRACT):
         print("🔴 the contract itself is missing: rules/contract-handoff.md")
@@ -198,6 +296,8 @@ def main():
         rel = os.path.relpath(t, ROOT)
         try:
             m, b = check(t, rel)
+            if post and not m and not b:
+                b += postflight(t, rel)
         except Exception as e:
             # a crash reports nothing actionable — turn it into a finding
             mal_all.append(("HND-MAN-001", rel,
@@ -207,8 +307,9 @@ def main():
         bind_all += b
 
     if not quiet:
-        print("check-handoff · %d manifest(s)%s"
-              % (len(targets), " · none to bind" if not targets else ""))
+        print("check-handoff%s · %d manifest(s)%s"
+              % (" --postflight" if post else "", len(targets),
+                 " · none to bind" if not targets else ""))
     for cid, rel, msg in mal_all:
         print("🔴 %s · %s · %s" % (rel, cid, msg))
     for cid, rel, msg in bind_all:
