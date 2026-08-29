@@ -89,7 +89,7 @@ fine and the wrong ceiling is applied to it.
 | Type | Ceiling | On overflow |
 |---|---|---|
 | `entry-point` | **250 lines** | ⭐ move content out, keep pointers |
-| `contract` | **400** | split by topic |
+| `contract` | **700** | ⭐ split by topic — ⚠️ see the base-file note below |
 | `rule` | **250** | split by topic |
 | `architecture` | **800** | ⛔ split per area |
 | `plan` | **400** | move closed phases to the logbook |
@@ -116,6 +116,17 @@ thousands of lines. **The number did not constrain them; declaring it did.**
 
 ⛔ **Splitting is governed by `../memory/principles/expertise/doc-structure.md` §2.1** — cut by
 subject, never by length, and nothing duplicated across the halves.
+
+### ⭐ WHY `contract` CARRIES THE HIGHEST CEILING OF ANY WRITTEN TYPE
+
+⚠️ **A contract is a BASE file: it ships whole, and its reader is a stranger.** ⭐ **Every other
+type can point somewhere else for the detail; a contract IS the detail** — it is the document
+people open precisely when they need the part nobody remembered to summarise.
+
+⛔ **This is not a licence to ramble.** The ceiling still forces curation at close, and a padded
+contract fails `DOC-BOD-001` long before it fails this row. ⭐ **What the raised ceiling buys is
+that a criterion is never cut down the middle to fit a number** — which `doc-structure.md` §2.1
+already forbids, and a low ceiling would quietly force.
 
 ---
 
