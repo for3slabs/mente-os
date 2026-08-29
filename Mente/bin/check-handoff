@@ -1,0 +1,228 @@
+#!/usr/bin/env python3
+"""check-handoff — enforces the 🔒 rows of rules/contract-handoff.md
+
+Validates a delegation manifest and binds it against reality. Nothing else
+opens the gate: presence is not compliance.
+
+Usage: check-handoff <manifest.yml>
+       check-handoff              (audits every manifest under work/blocks)
+
+Exit: 0 well-formed AND bound · 1 usage · 2 malformed · 3 binding failed
+"""
+import os, re, sys
+
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+CONTRACT = os.path.join(ROOT, "rules", "contract-handoff.md")
+BLOCKS = os.path.join(ROOT, "work", "blocks")
+
+KNOWN_VERSIONS = {"v1"}
+REQUIRED = ["schema_version", "handoff_id", "block", "block_path", "load",
+            "task", "binding_checks", "write_back"]
+TASK_FIELDS = ["objective", "success_condition", "stop_condition"]
+RETURN_SECTIONS = ["objective", "work", "findings", "open-questions", "status"]
+# HND-WRT-002 · sections a specialist may never append to
+COORDINATOR_ONLY = {"a", "b", "c", "d", "e", "g",
+                    "identity", "scope", "connections",
+                    "required standards", "state", "decisions"}
+VAGUE = re.compile(r"^(when (done|finished|complete)|asap|as needed|n/?a|tbd)\.?$", re.I)
+
+
+def parse(path):
+    """A two-level reader for the manifest shape. Deliberately not a general
+    YAML parser: a hand-written general parser is a bug generator, and this
+    file has exactly two levels by design."""
+    data = {}
+    stack = [(0, data)]
+    for raw in open(path, encoding="utf-8"):
+        line = raw.split("#")[0].rstrip()
+        if not line.strip():
+            continue
+        indent = len(line) - len(line.lstrip())
+        while len(stack) > 1 and indent <= stack[-1][0]:
+            stack.pop()
+        node = stack[-1][1]
+        body = line.strip()
+        if body.startswith("- "):
+            node.setdefault("__list__", []).append(body[2:].strip().strip('"\''))
+            continue
+        if ":" not in body:
+            continue
+        k, _, v = body.partition(":")
+        k, v = k.strip(), v.strip().strip('"\'')
+        if v in ("", "[]", "{}"):
+            child = {} if v == "" else ([] if v == "[]" else {})
+            if v == "":
+                node[k] = child
+                stack.append((indent, child))
+            else:
+                node[k] = child
+        else:
+            node[k] = v
+    return normalise(data)
+
+
+def normalise(node):
+    if isinstance(node, dict):
+        if set(node) == {"__list__"}:
+            return node["__list__"]
+        out = {k: normalise(v) for k, v in node.items() if k != "__list__"}
+        if "__list__" in node:
+            out["__items__"] = node["__list__"]
+        return out
+    return node
+
+
+def items(v):
+    if isinstance(v, list):
+        return v
+    if isinstance(v, dict):
+        return v.get("__items__", [])
+    return []
+
+
+def check(path, rel):
+    """Returns (malformed, binding) finding lists."""
+    mal, bind = [], []
+    d = parse(path)
+
+    # HND-MAN-001 · every required field
+    for k in REQUIRED:
+        if k not in d or d[k] in ("", None):
+            mal.append(("HND-MAN-001", rel,
+                        "missing required field %r · expected all of: %s"
+                        % (k, ", ".join(REQUIRED))))
+    if mal:
+        return mal, bind
+
+    # HND-MAN-002 · an unknown schema version is refused, never guessed
+    ver = str(d.get("schema_version", ""))
+    if ver not in KNOWN_VERSIONS:
+        mal.append(("HND-MAN-002", rel,
+                    "unknown schema version %r · expected one of %s · "
+                    "refuse, never guess the shape"
+                    % (ver, "|".join(sorted(KNOWN_VERSIONS)))))
+
+    # HND-MAN-003 · the task fields, and a stop condition that says something
+    task = d.get("task") or {}
+    for k in TASK_FIELDS:
+        v = (task.get(k) or "").strip() if isinstance(task, dict) else ""
+        if not v:
+            mal.append(("HND-MAN-003", rel,
+                        "task.%s is empty · expected: an observable condition" % k))
+        elif k == "stop_condition" and VAGUE.match(v):
+            mal.append(("HND-MAN-003", rel,
+                        "stop_condition is not observable: %r · a specialist "
+                        "with no stop condition runs until the context collapses"
+                        % v))
+
+    # HND-WRT-001 / 002 / 003 · the write scope
+    wb = d.get("write_back") or {}
+    if not (wb.get("artifact") or "").strip():
+        mal.append(("HND-WRT-001", rel,
+                    "write_back.artifact is empty · the write scope is an "
+                    "allowlist, and an empty one denies the return itself"))
+    schema = items(wb.get("artifact_schema"))
+    if schema != RETURN_SECTIONS:
+        mal.append(("HND-RET-001", rel,
+                    "return schema wrong · expected %s · got %s"
+                    % (RETURN_SECTIONS, schema or "nothing")))
+    for entry in items(wb.get("also_append")):
+        low = entry.lower()
+        for banned in COORDINATOR_ONLY:
+            if re.search(r"(section|§)\s*:?\s*%s\b" % re.escape(banned), low):
+                mal.append(("HND-WRT-002", rel,
+                            "append targets a coordinator-owned section (%s) · "
+                            "a specialist that rewrites the state it was given "
+                            "is a second coordinator" % banned))
+                break
+        if "max_lines" not in low:
+            mal.append(("HND-WRT-003", rel,
+                        "append entry declares no max_lines · an unbounded "
+                        "append is an unbounded writer: %s" % entry[:50]))
+
+    if mal:
+        return mal, bind
+
+    # ── binding checks, in order · the first failure aborts
+    bp = d["block_path"]
+    bdir = bp if os.path.isabs(bp) else os.path.join(ROOT, bp)
+    if not os.path.isdir(bdir):
+        bind.append(("HND-BND-001", rel,
+                     "block_path does not resolve to a directory: %r" % bp))
+        return mal, bind
+
+    bfile = os.path.join(bdir, "BLOCK.md")
+    if not os.path.isfile(bfile):
+        bind.append(("HND-BND-001", rel, "no BLOCK.md at %r" % bp))
+        return mal, bind
+
+    text = open(bfile, encoding="utf-8").read()
+    m = re.search(r"\bid:\s*([^\n·]+)", text)
+    real = (m.group(1).strip() if m else "")
+    if real != d["block"]:
+        bind.append(("HND-BND-001", rel,
+                     "block id mismatch · manifest says %r · the block says %r · "
+                     "the folder was probably renamed" % (d["block"], real)))
+        return mal, bind
+
+    for p in items((d.get("load") or {}).get("required")):
+        cand = p if os.path.isabs(p) else os.path.join(bdir, p)
+        if not os.path.exists(cand):
+            bind.append(("HND-BND-001", rel,
+                         "load.required path does not resolve: %r" % p))
+    return mal, bind
+
+
+def main():
+    argv = [a for a in sys.argv[1:] if a != "--quiet"]
+    quiet = "--quiet" in sys.argv
+    if not os.path.exists(CONTRACT):
+        print("🔴 the contract itself is missing: rules/contract-handoff.md")
+        return 2
+
+    if argv:
+        targets = [a for a in argv]
+        for t in targets:
+            if not os.path.isfile(t):
+                print("usage: check-handoff <manifest.yml>")
+                return 1
+    else:
+        targets = []
+        for dp, _, fns in os.walk(BLOCKS):
+            if os.path.basename(dp) == "handoffs":
+                targets += [os.path.join(dp, f) for f in sorted(fns)
+                            if f.endswith((".yml", ".yaml"))]
+
+    mal_all, bind_all = [], []
+    for t in targets:
+        rel = os.path.relpath(t, ROOT)
+        try:
+            m, b = check(t, rel)
+        except Exception as e:
+            # a crash reports nothing actionable — turn it into a finding
+            mal_all.append(("HND-MAN-001", rel,
+                            "could not be read: %s: %s" % (type(e).__name__, e)))
+            continue
+        mal_all += m
+        bind_all += b
+
+    if not quiet:
+        print("check-handoff · %d manifest(s)%s"
+              % (len(targets), " · none to bind" if not targets else ""))
+    for cid, rel, msg in mal_all:
+        print("🔴 %s · %s · %s" % (rel, cid, msg))
+    for cid, rel, msg in bind_all:
+        print("🔴 %s · %s · %s" % (rel, cid, msg))
+    if mal_all:
+        print("\nmalformed · fix the manifest · rule: rules/contract-handoff.md")
+        return 2
+    if bind_all:
+        print("\nbinding failed · the manifest describes a world that does not exist")
+        return 3
+    if not quiet and targets:
+        print("✅ 0 violations")
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

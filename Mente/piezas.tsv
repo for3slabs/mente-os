@@ -124,3 +124,6 @@ rule-checks-measure	rules/rule-checks-must-measure.md	engine	canonical	a check s
 check-decisions	bin/check-decisions	engine	executable	enforces the lock rules of the decision-record contract
 contract-adr	rules/contract-adr.md	engine	canonical	the shape of a decision already taken — append-only, never edited
 decisions-readme	rules/decisions/README.md	engine	canonical	the append-only folder — ships empty, the records are yours
+check-handoff	bin/check-handoff	engine	executable	validates a delegation manifest and binds it against reality
+contract-handoff	rules/contract-handoff.md	engine	canonical	bounded delegation — what a specialist may read, write, and when it stops
+tpl-handoff	templates/handoff.yml.template	engine	template	the manifest to copy and fill before delegating

@@ -1,0 +1,60 @@
+# HANDOFF MANIFEST — copy this file, fill it, then validate it.
+#
+#   cp templates/handoff.yml.template <block-path>/handoffs/<handoff_id>.yml
+#   bin/check-handoff <that-file>
+#
+# ⭐ Exit 0 means the manifest is well-formed AND matches reality. Nothing
+#    else opens the gate: an unfilled copy of this file leaves it shut.
+#
+# Shape and reasoning: rules/contract-handoff.md
+
+# ── Required · the schema version ────────────────────────────────────────
+# ⛔ A specialist REFUSES an unknown version rather than guessing the shape.
+schema_version: v1
+
+# ── Required · identity ──────────────────────────────────────────────────
+# ⭐ `block` + `block_path` are the binding. Both are verified against the
+#    block itself before the specialist takes any action.
+handoff_id: ""      # unique within the block
+block: ""           # the block's declared id — ⛔ not its folder name
+block_path: ""      # where that block lives
+
+# ── Optional · role ──────────────────────────────────────────────────────
+role: ""            # descriptive only, for logs
+
+# ── Required · the READ scope ────────────────────────────────────────────
+# ⛔ Reading outside this list is a violation, not a shortcut.
+load:
+  required:         # ⭐ always read · every path is checked to exist
+    - BLOCK.md
+  optional: []      # may read if the task warrants it — the specialist's call
+
+# ── Required · the task ──────────────────────────────────────────────────
+task:
+  objective: ""          # what the specialist does
+  success_condition: ""  # ⭐ the observable condition that means it is done
+  stop_condition: ""     # ⛔ when it must stop even if not done
+                         #    "when finished" is NOT a stop condition
+
+# ── Required · binding checks ────────────────────────────────────────────
+# ⭐ Run in order. The first failure aborts and nothing is written.
+binding_checks:
+  - block_path_exists
+  - block_file_exists
+  - block_id_matches
+  - load_required_paths_exist
+
+# ── Required · the WRITE scope ───────────────────────────────────────────
+# ⭐ An allowlist. Everything not named here is denied.
+write_back:
+  artifact: ""             # where the return goes, inside the block
+  artifact_schema:         # ⭐ the sections the return must contain, in order
+    - objective            # restated — it proves the right manifest was read
+    - work
+    - findings
+    - open-questions
+    - status               # done | blocked | aborted-binding-mismatch
+  also_append: []          # bounded appends to coordinator-owned sections
+                           # each entry: {target: "...", section: "...", max_lines: N}
+                           # ⛔ never identity, scope, connections, standards,
+                           #    state or decisions — those are the coordinator's
