@@ -9,13 +9,23 @@
 
 ## 0 · WHAT THIS FILE IS
 
-> ## ⭐ The map of WHERE a rule lives — and why a rule with no declared level is a defect.
+> ## ⭐ How an agent determines, deterministically, WHICH rules govern it — before it acts.
 
 ⚠️ **The failure it prevents: contamination.** ⛔ **One project's rules injected into every piece
 of work**, forever, because nothing said which level they belonged to.
 
 ⭐ **A rule written with no declared level is not a strict rule. It is a rule that applies in the
 wrong places** — and the places where it does not belong are where people learn to ignore it.
+
+### ⭐ THREE THINGS, AND THIS FILE MUST NOT CONFUSE THEM
+
+| | Decides |
+|---|---|
+| ⭐ **inheritance** | which rules the agent **KNOWS** — §2, §3 |
+| ⭐ **resolution** | which of them are **ACTIVE** right now — §5, §6 |
+| ⭐ **enforcement** | whether the action **MAY RUN** — the gates, and each rule's `Enf` column |
+
+⛔ **Collapsing them is how a system ends up "having rules" that nothing applies.**
 
 ### ⭐ THE MEASUREMENT THAT PRODUCED THIS RULE
 
@@ -84,6 +94,10 @@ session of every project.**
 ⭐ **`INH-LVL-002` is the one a script can actually catch**, and it catches the exact defect that
 produced this rule: **a rule naming one place, living where every place reads it.**
 
+⚠️ **The level IS the scope.** ⛔ A rule does not carry a separate scope field — **it carries a
+location**, and adding a field that repeats the location is the duplication `../memory/principles/expertise/doc-structure.md`
+§2.3 forbids.
+
 ---
 
 ## 3 · ⭐ THE INHERITANCE RULE
@@ -128,7 +142,57 @@ exemption is invisible, and it looks exactly like compliance.
 
 ---
 
-## 4 · WHEN LEVELS COMBINE — the rules ADD UP
+## 4 · 🔴 NO PRIVILEGE ESCALATION
+
+> ## ⭐ A CHILD CONTEXT MUST NOT OBTAIN AUTHORITY ITS PARENT DOES NOT HAVE.
+
+| Inheritance… | |
+|---|---|
+| **MAY** remove available actions | ✅ |
+| **MAY** add restrictions | ✅ |
+| ⛔ **MUST NOT** increase authority | 🔴 **never** |
+
+| ID | Rule | Enf | Verify |
+|---|---|---|---|
+| `INH-ESC-001` | ⭐ **No level grants an action denied above it** | 🔒 | ⛔ compare effects, not wording |
+| `INH-ESC-002` | ⭐ **A dependency shares its RULES, never its AUTHORITY** | 📖 | ⚠️ see §6 |
+
+⚠️ **This is the same idea as §3, said as what it actually is.** ⭐ *"Does not loosen"* is an
+editorial rule about wording; ⛔ **"does not escalate" is a security property**, and it is what a
+script can be pointed at.
+
+---
+
+## 5 · ⭐ WHAT "STRICTER" MEANS — declared, never judged
+
+⛔ **Saying *"the stricter rule wins"* without defining stricter leaves the decision to whoever is
+reading.** ⚠️ ***"You may not do X"* and *"you may do X with approval"* must not be compared by
+interpretation.**
+
+> ## ⭐ THE ORDER OF EFFECTS, strongest first:
+
+| Effect | Means |
+|---|---|
+| 🔴 **DENY** | ⛔ the action never runs |
+| 🟠 **REQUIRE_APPROVAL** | it runs only after an explicit yes |
+| 🟡 **RESTRICT** | it runs, ⭐ under a stated condition |
+| 🟢 **ALLOW** | it runs |
+| ⬜ **INFORMATIONAL** | ⚠️ it states something, it decides nothing |
+
+| ID | Rule | Enf | Verify |
+|---|---|---|---|
+| `INH-PRC-001` | ⭐ **On conflict, the strongest effect wins** | 🔒 | ⛔ by this table, never by reading |
+| `INH-PRC-002` | ⛔ **Two effects never average out** | 🔒 | ⚠️ ⭐ see below |
+| `INH-PRC-003` | ⭐ **A rule whose effect cannot be classified is DENY** | 📖 | see §7 |
+
+> ## ⭐ "THE STRICTER ONE WINS" IS NOT A TIEBREAK — IT IS THE WHOLE MODEL
+> ⛔ **Averaging two rules produces a third that nobody wrote**, and it is always the weaker one.
+> ⚠️ **The strict rule exists because something went wrong; the permissive one exists because
+> nothing has gone wrong there yet.**
+
+---
+
+## 6 · WHEN LEVELS COMBINE — the rules ADD UP
 
 ```
 effective set = universal + project + (this block) + (a block it DECLARES)
@@ -139,25 +203,69 @@ effective set = universal + project + (this block) + (a block it DECLARES)
 | one block open | universal + project + that block |
 | ⭐ **this block DECLARES another as a dependency** | + that block's rules |
 | ⛔ **two blocks with no declared connection** | ⚠️ **their rules do NOT mix** |
-| ⭐ **a conflict between two levels** | 🔴 **the stricter one wins** — ⛔ never the more permissive |
+| ⭐ **a conflict between two levels** | 🔴 **the strongest effect wins** — §5 |
 
 | ID | Rule | Enf | Verify |
 |---|---|---|---|
 | `INH-SUM-001` | ⭐ **Rules add up only through a DECLARED connection** | 🔒 | ⚠️ the connection exists in the block |
-| `INH-SUM-002` | ⭐ **On conflict, the stricter rule wins** | 📖 | ⛔ ⭐ two rules never average out |
+| `INH-SUM-002` | ⭐ **Conflicts resolve by §5, never by judgement** | 🔒 | ⛔ classify both effects first |
+| `INH-SUM-003` | 🔴 **A dependency cycle is invalid** | 🔒 | ⭐ see below |
 
-> ## ⭐ "THE STRICTER ONE WINS" IS NOT A TIEBREAK — IT IS THE WHOLE MODEL
-> ⛔ **Averaging two rules produces a third that nobody wrote**, and it is always the weaker one.
-> ⚠️ **The strict rule exists because something went wrong; the permissive one exists because
-> nothing has gone wrong there yet.**
+### ⭐ WHAT `DEPENDS ON` MEANS — and what it does NOT
 
-⚠️ **Why rules only add through a declared connection:** ⭐ **the isolation rule protects context,
-which is the scarce resource.** ⛔ If reading another block's rules were free, *"loading the rules
-for context"* becomes the way the gate stops meaning anything.
+| ✅ Declaring a dependency… | ⛔ It does NOT… |
+|---|---|
+| inherits that block's **applicable rules** | ⛔ inherit its objective or its task |
+| ⭐ lets you read what it **declared** | ⛔ **inherit its authority** |
+| — | ⛔ activate it |
+| — | ⚠️ **permit modifying it** |
+
+> ## ⭐ INHERITING RULES IS NOT INHERITING AUTHORITY.
+> ⛔ **A block that depends on another gains its CONSTRAINTS, not its permissions** — ⚠️ otherwise
+> a dependency becomes the way to acquire access nobody granted.
+
+### 🔴 A cycle is invalid
+
+⭐ `A → B → C → A` **cannot be resolved**: there is no order in which the effective set is
+complete. ⚠️ **And a resolver that meets one runs forever** — ⛔ **a validator stuck in a loop
+reports nothing, which reads exactly like reporting no problem.**
+
+⚠️ **Why rules only add through a declared connection:** ⭐ **isolation protects context, which is
+the scarce resource.** ⛔ If reading another block's rules were free, *"loading the rules for
+context"* becomes the way the gate stops meaning anything.
 
 ---
 
-## 5 · ⭐ THE ROUTER IS NOT A RULE STORE
+## 7 · ⛔ FAIL CLOSED — when the rules cannot be resolved
+
+> ## ⭐ UNKNOWN IS NOT ALLOW. UNKNOWN IS STOP.
+
+**The agent MUST stop when:**
+
+| ⛔ Condition |
+|---|
+| the project cannot be identified |
+| ⭐ **the active block cannot be identified** |
+| a declared dependency does not resolve |
+| ⚠️ **two effects conflict and neither is classifiable** |
+| ⭐ **a rule declares no level** |
+
+| ID | Rule | Enf | Verify |
+|---|---|---|---|
+| `INH-FCL-001` | ⭐ **An unresolvable rule set STOPS the action** | 📖 | ⛔ nothing verifies this |
+| `INH-FCL-002` | ⭐ **The stop names WHICH resolution failed** | 📖 | ⚠️ *"unclear"* is not a report |
+
+⭐ **This is the same third state the rest of the system already uses** — `UNKNOWN` in the document
+contract, `NOT_MEASURED` in the functional criterion. ⛔ **Here it has teeth: an unresolved policy
+does not default to permission.**
+
+⚠️ **The failure it prevents is the quiet one:** ⭐ **an agent that cannot tell which rules apply
+and proceeds anyway is an agent operating with no rules at all** — and from the outside that looks
+identical to an agent following them.
+
+---
+
+## 8 · ⭐ THE ROUTER IS NOT A RULE STORE
 
 ⛔ **The file an agent reads first is a ROUTER: it points at where the rules live. It does not
 hold them.**
@@ -174,29 +282,34 @@ hold them.**
 
 ---
 
-## 6 · ⛔ WHAT IT COSTS TO BREAK IT
+## 9 · ⛔ WHAT IT COSTS TO BREAK IT
 
 | Broken | ⭐ The cost |
 |---|---|
 | **a rule with no level** | ⛔ it contaminates every project that inherits it |
-| ⭐ **a universal rule naming one place** | ⚠️ **it is meaningless everywhere else — and meaningless rules teach people to skim** |
+| ⭐ **a universal rule naming one place** | ⚠️ **meaningless everywhere else — and meaningless rules teach people to skim** |
 | **a block loosening an inherited rule** | ⛔ ⭐ **the rule above stops protecting anything, invisibly** |
-| **a block repeating a rule from above** | ⚠️ the two copies diverge, and neither looks wrong alone |
+| ⭐ **a dependency treated as authority** | ⛔ **access nobody granted, obtained by declaring a link** |
+| **"stricter" left to interpretation** | ⚠️ ⭐ the model picks, and it picks the permissive one |
+| **an unresolvable set treated as ALLOW** | ⛔ an agent running with no rules, looking compliant |
+| **a block repeating a rule from above** | the two copies diverge, and neither looks wrong alone |
 | **rules mixing with no declared connection** | ⭐ the gate that protects context stops meaning anything |
 
 ---
 
-## 7 · WHO GOVERNS THIS FILE
+## 10 · WHO GOVERNS THIS FILE
 
 | Change | Who |
 |---|---|
 | ⬜ the project level — its rules and their content | ⭐ the owner of the instance |
 | the three levels and the direction of inheritance | whoever maintains the engine, through a recorded decision |
 | ⛔ allowing a level to loosen what it inherited | **nobody** — ⭐ ⚠️ **it would empty every rule above it at once** |
+| ⛔ treating an unresolved set as permission | **nobody** — ⭐ §7 |
 
 ---
 
 Related: `README.md` (⭐ **the three document types, and the law that rules tighten and never
-loosen**) · `contract-block.md` (⭐ §B the scope, §C the declared connections that let rules add
-up) · `rule-working-in-a-block.md` (⭐ §3 isolation — why rules do not mix by default) ·
-`contract-document.md` · `../bin/check-inheritance` (what enforces the 🔒 rows).
+loosen**) · `contract-block.md` (⭐ §B the scope and its two-levels test, §C the declared
+connections that let rules add up) · `rule-working-in-a-block.md` (⭐ §3 isolation — why rules do
+not mix by default) · `contract-document.md` (⭐ §7 — the same third state, under its own name) ·
+`../bin/check-inheritance` (what enforces the 🔒 rows).

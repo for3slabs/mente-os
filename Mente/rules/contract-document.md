@@ -130,7 +130,7 @@ fine and the wrong ceiling is applied to it.
 |---|---|---|
 | `entry-point` | **250 lines** | ⭐ move content out, keep pointers |
 | `contract` | **700** | ⭐ split by topic — ⚠️ see the base-file note below |
-| `rule` | **250** | split by topic |
+| `rule` | **400** | ⭐ split by topic — ⚠️ a base rule ships whole, like a contract |
 | `architecture` | **800** | ⛔ split per area |
 | `plan` | **400** | move closed phases to the logbook |
 | `block` | **200** | see the block contract |
