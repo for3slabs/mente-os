@@ -1,0 +1,109 @@
+#!/usr/bin/env python3
+"""probe-block — does check-block detect what contract-block.md claims?
+
+Two halves: plant each defect in OUR shape, then run against REAL blocks
+written in ANOTHER shape. A check proven only on fixtures its own author
+wrote has been proven on one shape (rule-checks-must-measure.md §4-D).
+"""
+import os, re, sys, glob, shutil
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from harness import Probe, ROOT, MARK
+from fixtures import block, BLOCKS
+
+# ⭐ The cross-run needs real objects nobody here wrote. Where they live
+# is the operator's business, never the engine's: a hardcoded path makes
+# this probe measure one machine (rule-checks-must-measure.md §5).
+REF = os.environ.get("MENTE_CROSSRUN_BLOCKS", "")
+p = Probe("check-block", "BLK")
+
+def _path(bid):
+    return os.path.join(BLOCKS, bid, "BLOCK.md")
+
+
+def _sub(bid, a, b):
+    q = _path(bid); s = open(q, encoding="utf-8").read()
+    open(q, "w", encoding="utf-8").write(s.replace(a, b))
+
+
+def _re(bid, pat, rep, flags=re.S):
+    q = _path(bid); s = open(q, encoding="utf-8").read()
+    open(q, "w", encoding="utf-8").write(re.sub(pat, rep, s, flags=flags))
+
+
+def _strip(bid, head):
+    _re(bid, re.escape(head) + r" ·.*?\n\n.*?\n\n", "")
+
+print("═══ A · SABOTAJE · check-block ═══\n")
+p.baseline()
+
+p.case("① falta la sección D",
+       lambda: _strip(block(p, "a"), "## D"), "BLK-OPN-001")
+p.case("② type inválido",
+       lambda: _sub(block(p, "a"), "type: docs", "type: invented"), "BLK-IDN-002")
+p.case("③ status inválido",
+       lambda: _sub(block(p, "a"), "status: active", "status: alive"), "BLK-IDN-004")
+p.case("④ lane inválido",
+       lambda: _sub(block(p, "a"), "lane: task", "lane: quick"), "BLK-IDN-004")
+p.case("⑤ scope sin OUT",
+       lambda: _re(block(p, "a"), r"### ⛔ OUT\n.*?\n", ""), "BLK-SCP-001")
+p.case("⑥ OUT sin fuente declarada",
+       lambda: _sub(block(p, "a"),
+                    "- DO NOT touch anything else · DERIVED: another block owns it",
+                    "- DO NOT touch anything else"), "BLK-SCP-002")
+p.case("⑦ estándar inexistente",
+       lambda: _sub(block(p, "a"), "contract-block.md", "does-not-exist.md"),
+       "BLK-STD-002")
+p.case("⑧ stale", lambda: _re(block(p, "a"), r"updated: \d{4}-\d\d-\d\d",
+                              "updated: 2026-01-01"), "BLK-IDN-005")
+p.case("⑨ blocked sin desbloqueador",
+       lambda: block(p, "a", status="blocked"), "BLK-BLK-001")
+p.case("⑩ closed sin §K", lambda: block(p, "a", status="closed"), "BLK-CLS-001")
+p.case("⑪ closed con sub-bloque abierto",
+       lambda: block(p, "a", status="closed",
+                     extra="\n## F · Sub-blocks\n\n| # | task | state |\n"
+                           "|---|---|---|\n| 1 | x | open |\n\n"
+                           "## K · Closing\n\nnot completed: none\n"),
+       "BLK-CLS-002")
+p.case("⑫ closed sin 'not completed'",
+       lambda: block(p, "a", status="closed",
+                     extra="\n## K · Closing\n\ncompleted: everything\n"),
+       "BLK-CLS-003")
+p.case("⑬ intent no es una frase",
+       lambda: _sub(block(p, "a"),
+                    "intent: a fixture used to prove a check detects what it claims",
+                    "intent: one. two. three. and a fourth clause making this far "
+                    "too long to be a single statement of purpose."), "BLK-IDN-003")
+p.case("⑭ id ausente", lambda: _re(block(p, "a"), r"^id: .*\n", "", flags=re.M),
+       "BLK-IDN-001")
+
+p.inverse("⑮ un bloque CORRECTO", lambda: block(p, "a"))
+p.crash_guard()
+
+
+
+
+# ── B · the cross-run
+print("\n═══ B · CORRIDA CRUZADA · bloques reales de otra instancia ═══\n")
+p.clean()
+real = sorted(glob.glob(os.path.join(REF, "*", "*", "BLOCK.md"))) if REF else []
+if real:
+    for q in real:
+        d = p.track(os.path.join(BLOCKS, MARK + "-" + os.path.basename(os.path.dirname(q))))
+        os.makedirs(d, exist_ok=True)
+        shutil.copy(q, os.path.join(d, "BLOCK.md"))
+    code, out, err = p.run()
+    mine = [l for l in out.splitlines() if MARK in l]
+    shape = [l for l in mine if "BLK-OPN-001" in l or "BLK-SHP-002" in l]
+    print("  ⑯ %d bloques reales · %d hallazgos" % (len(real), len(mine)))
+    print("     ⭐ de FORMA (el detector no los lee): %d %s"
+          % (len(shape), "✅" if not shape else "🔴"))
+    by = {}
+    for l in mine:
+        for m in re.findall(r"BLK-[A-Z]+-\d+", l):
+            by[m] = by.get(m, 0) + 1
+    for k in sorted(by):
+        print("       %-14s %d" % (k, by[k]))
+else:
+    print("  ⑯ ⬜ NOT_MEASURED · set %s to a tree of real blocks" % "MENTE_CROSSRUN_BLOCKS")
+
+sys.exit(0 if p.report() else 1)

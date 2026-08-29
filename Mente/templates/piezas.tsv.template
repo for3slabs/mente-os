@@ -145,3 +145,14 @@ decisions-readme	rules/decisions/README.md	engine	canonical	the append-only fold
 check-handoff	bin/check-handoff	engine	executable	validates a delegation manifest and binds it against reality
 contract-handoff	rules/contract-handoff.md	engine	canonical	bounded delegation — what a specialist may read, write, and when it stops
 tpl-handoff	templates/handoff.yml.template	engine	template	the manifest to copy and fill before delegating
+probes-harness	bin/probes/harness.py	engine	executable	the sabotage harness — one place, so every probe verifies the same way
+probes-fixtures	bin/probes/fixtures.py	engine	executable	the fixtures probes plant, carrying the marker in their identity
+probes-runall	bin/probes/run-all.py	engine	executable	runs every probe — the only thing that matters is failed: 0
+probe-block	bin/probes/probe-block.py	engine	executable	proves check-block detects what the block contract claims
+probe-document	bin/probes/probe-document.py	engine	executable	proves check-document detects what the document contract claims
+probe-work	bin/probes/probe-work.py	engine	executable	proves check-work detects what working-in-a-block claims
+probe-inheritance	bin/probes/probe-inheritance.py	engine	executable	proves check-inheritance detects what inheritance claims
+probe-checks	bin/probes/probe-checks.py	engine	executable	proves check-checks detects what checks-must-measure claims
+probe-decisions	bin/probes/probe-decisions.py	engine	executable	proves check-decisions detects what the decision contract claims
+probe-handoff	bin/probes/probe-handoff.py	engine	executable	proves check-handoff detects what the handoff contract claims — exit codes included
+probe-declared	bin/probes/probe-declared.py	engine	executable	proves check-declared finds a file the piece table omits
