@@ -40,6 +40,8 @@ def three_blocks():
 
 
 p.case("⑥ misma regla en 3 bloques DISTINTOS", three_blocks, "WRK-FRI-003")
+p.case("⑦ full-block sin declarar su propagación",
+       lambda: block(p, "a", lane="full-block"), "WRK-FIX-003")
 
 # ⭐ the inverse that separates a useful alarm from one that gets switched off
 p.clean()
@@ -48,14 +50,14 @@ block(p, "r", fric="\n".join(
     for _ in range(3)))
 code, out, err = p.run()
 fired = "RULE REVIEW" in out
-print("  %-46s %s %s" % ("⑦ 3 fricciones en el MISMO bloque",
+print("  %-46s %s %s" % ("⑧ 3 fricciones en el MISMO bloque",
                          "✅" if not fired else "🔴",
                          "NO dispara (correcto)" if not fired
                          else "falso positivo — no distingue"))
-p.results.append(("⑦ mismo bloque", "PASS" if not fired else "FALSE_POSITIVE"))
+p.results.append(("⑧ mismo bloque", "PASS" if not fired else "FALSE_POSITIVE"))
 p.clean()
 
-p.inverse("⑧ un bloque CORRECTO", lambda: block(p, "a"))
+p.inverse("⑨ un bloque CORRECTO", lambda: block(p, "a"))
 p.crash_guard()
 
 print("\n═══ B · CORRIDA CRUZADA · bloques reales de otra instancia ═══\n")

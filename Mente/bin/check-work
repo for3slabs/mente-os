@@ -85,6 +85,18 @@ def main():
             d = d.strip("`,. ")
             findings.append(("__dep__", rel, d))
 
+        # WRK-FIX-003 · a full-block change declares its propagation. The lane
+        # already says the piece has dependents; §C and §F are where that lands,
+        # and a full-block with neither declares a propagation it never mapped.
+        if lane == "full-block":
+            has_c = bool(DEPENDS.findall(body_of(text, "C")))
+            has_f = bool(re.search(r"^\|.*\|.*\|", body_of(text, "F"), re.M))
+            if not has_c and not has_f:
+                findings.append(("WRK-FIX-003", rel,
+                                 "lane is full-block but neither connections nor "
+                                 "sub-blocks declare the propagation · expected: "
+                                 "the graph that forced this lane, written down"))
+
         # WRK-FRI-002 · each friction line carries its four fields
         h = body_of(text, "H")
         loose = FRICTION_LOOSE.findall(h)
