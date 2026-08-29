@@ -9,13 +9,13 @@
 
 ## 0 · WHAT THIS FILE IS
 
-> ## ⭐ The shape a document must have to be trusted six months later.
+> ## ⭐ A document is not trustworthy because it exists. It is trustworthy because its identity, authority, evidence, state and references can be VERIFIED.
 
 ⚠️ **The failure it prevents:** a tree of documents where nothing declares whether it is still
 true. ⭐ **The modification date becomes the only signal — and a bulk edit destroys even that.**
 
-⛔ **This is not about style.** It is about whether a reader can tell, in five seconds, that what
-they are reading still holds.
+⛔ **This is not about style.** It is about whether a reader — ⭐ **or an agent** — can tell, in
+five seconds, that what they are reading still holds and who says so.
 
 ### ⭐ It absorbs three things that used to be separate
 
@@ -26,7 +26,7 @@ they are reading still holds.
 | **moving a file** | ⛔ a move that breaks pointers breaks the shape of every file pointing at it |
 
 ⭐ **They share one owner and one moment of change** — you rename, you move, you repoint, in one
-action. **Three files made you open three files to do one thing.**
+action.
 
 ---
 
@@ -45,28 +45,68 @@ rule in code is followed 100%, a rule in a document 40-60%.
 > ⭐ A limit everyone believes enforced, and is not, is worse than no limit: **the belief replaces
 > the vigilance.**
 
+⭐ **A 🔒 row is written as MUST / MUST NOT** — ⚠️ **that is where ambiguity is paid for.** The
+prose around it stays prose: ⛔ a document written entirely in normative capitals is one nobody
+finishes.
+
 **IDs are permanent.** `DOC-<area>-<nnn>` — ⛔ never renumbered, never reused. Something cites it.
 
 ---
 
-## 2 · THE HEADER — four fields, no exceptions
+## 2 · ⭐ THREE THINGS A HEADER DECLARES — and they are not the same
+
+⚠️ **The distinction that is missing almost everywhere:** ⭐ **`current` does NOT mean
+`authoritative`.** A document can be perfectly up to date and still not be the place a value
+lives.
+
+| Axis | Answers | Values |
+|---|---|---|
+| **Status** | ⭐ is it still in force? | draft · current · superseded · fossil |
+| ⭐ **Authority** | ⭐ **may I settle a question with it?** | canonical · reference · evidence · generated |
+| ⭐ **Nature** | is what it holds allowed to change? | live · static · dated |
+
+### ⭐ THE CASE THAT FORCES THE SEPARATION
+
+| Document | Status | Authority | Nature | ⭐ And so |
+|---|---|---|---|---|
+| a generated metrics file | current | **generated** | **live** | ⭐ **read it, never edit it** |
+| a dated incident record | current | **evidence** | ⭐ **dated** | ⛔ **refreshing it destroys what it recorded** |
+
+⛔ **Both are `current`. One must be regenerated and the other must never change.** ⚠️ **A single
+axis cannot say that.**
+
+| ID | Rule | Enf | Verify |
+|---|---|---|---|
+| `DOC-AUT-001` | ⭐ **A document declaring itself canonical MUST name what it is canonical for** | 🟡 | ⛔ *"it seems important"* is not a declaration |
+| `DOC-AUT-002` | ⭐ **A `generated` document MUST NOT be edited by hand** | 🔒 | ⚠️ the next regeneration silently discards the edit |
+| `DOC-AUT-003` | **A `dated` document MUST NOT be refreshed** | 📖 | ⭐ it measures a moment |
+
+⭐ **`Authority` and `Nature` are optional fields** — ⚠️ **but a document that omits them is
+treated as `reference` and `static`**, which is the safe default: ⛔ **not the source of anything,
+and not expected to change.**
+
+---
+
+## 3 · THE HEADER — four fields, no exceptions
 
 ```markdown
 # TITLE
 
 **Status:** draft | current | superseded | fossil
-**Type:** <one of §3>
+**Type:** <one of §4>
 **Updated:** YYYY-MM-DD
 **Owner:** <who keeps it true>
 ```
 
+⭐ **Optional, when they apply:** `Authority:` · `Nature:` · `Supersedes:` · `Superseded by:`
+
 | ID | Rule | Enf | Verify |
 |---|---|---|---|
-| `DOC-HDR-001` | ⭐ **All four fields present** | 🔒 | ⛔ missing one, the document fails this contract whatever it says |
-| `DOC-HDR-002` | **`Status` is one of the four** | 🔒 | ⚠️ a free-text status means nothing can read it |
-| `DOC-HDR-003` | ⭐ **`Type` is one of §3** | 🔒 | it decides which ceiling applies |
-| `DOC-HDR-004` | **`Updated` in `YYYY-MM-DD`** | 🔒 | ⭐ avoids the day/month ambiguity that silently reads as a different date |
-| `DOC-HDR-005` | ⛔ **`superseded` names its replacement** | 🔒 | ⭐ a superseded document with no pointer is a dead end |
+| `DOC-HDR-001` | ⭐ **All four fields MUST be present** | 🔒 | ⛔ missing one, the document fails this contract whatever it says |
+| `DOC-HDR-002` | **`Status` MUST be one of the four** | 🔒 | ⚠️ free text means nothing can read it |
+| `DOC-HDR-003` | ⭐ **`Type` MUST be one of §4** | 🔒 | it decides which ceiling applies |
+| `DOC-HDR-004` | **`Updated` MUST be `YYYY-MM-DD`** | 🔒 | ⭐ it removes the day/month ambiguity that reads as a different date |
+| `DOC-HDR-005` | ⛔ **`superseded` MUST name its replacement** | 🔒 | ⭐ a superseded document with no pointer is a dead end |
 
 ### What each field prevents
 
@@ -82,7 +122,7 @@ fine and the wrong ceiling is applied to it.
 
 ---
 
-## 3 · ⭐ TYPES AND THEIR CEILINGS
+## 4 · ⭐ TYPES AND THEIR CEILINGS
 
 > ## ⛔ THE TYPE DECIDES THE CEILING. A DOCUMENT WITH NO TYPE HAS NO LIMIT.
 
@@ -103,7 +143,7 @@ fine and the wrong ceiling is applied to it.
 | ID | Rule | Enf | Verify |
 |---|---|---|---|
 | `DOC-SIZ-001` | ⭐ **Over its ceiling → a pending split** | 🔒 | ⛔ not a warning — named work |
-| `DOC-SIZ-002` | **A type with no ceiling declares why** | 📖 | ⚠️ nothing checks this |
+| `DOC-SIZ-002` | **A type with no ceiling MUST declare why** | 📖 | ⚠️ nothing checks this |
 
 ### ⭐ THE RULE BEHIND THE CEILING
 
@@ -125,41 +165,28 @@ people open precisely when they need the part nobody remembered to summarise.
 
 ⛔ **This is not a licence to ramble.** The ceiling still forces curation at close, and a padded
 contract fails `DOC-BOD-001` long before it fails this row. ⭐ **What the raised ceiling buys is
-that a criterion is never cut down the middle to fit a number** — which `doc-structure.md` §2.1
+that a criterion is never cut down the middle to fit a number** — which `../memory/principles/expertise/doc-structure.md` §2.1
 already forbids, and a low ceiling would quietly force.
 
 ---
 
-## 4 · BODY — the required order
+## 5 · ⭐ ONE LIVE FACT, ONE CANONICAL SOURCE
 
-| # | Part | Rule |
-|---|---|---|
-| 1 | **Purpose** — one paragraph | ⭐ if it needs three, the document does two things |
-| 2 | **Content** | numbered `## N · TITLE`, sub-sections `### N.M ·` |
-| 3 | **Related** — the last line | pointers to its siblings |
+> ## A live fact MUST have exactly one canonical source.
 
-| ID | Rule | Enf | Verify |
-|---|---|---|---|
-| `DOC-BOD-001` | **A `Purpose` and a `Related` exist** | 🔒 | both present |
-| `DOC-BOD-002` | ⛔ **No `N-bis`, `N-ter`, `N-quater` numbering** | 🔒 | ⭐ see below |
-
-⭐ **`DOC-BOD-002` is 🔒 because it is a symptom, not a style preference.** That numbering appears
-when a document grew past its shape and nobody wanted to renumber. ⚠️ **It is the smell that says
-*split me*, and it is mechanically detectable — which is rare for a structural defect.**
-
----
-
-## 5 · CONTENT RULES
+```
+canonical source  ──▶  the value
+        ▲
+        └── pointers ── documents ── the reader
+```
 
 | ID | Rule | Enf | Verify |
 |---|---|---|---|
-| `DOC-CNT-001` | ⭐ **A claim carries its evidence** — a number, a file, a command | 📖 | ⛔ nothing checks this |
-| `DOC-CNT-002` | ⛔ **A live number is never written into prose** | 🔒 | ⭐ see below |
-| `DOC-CNT-003` | **Point, never copy** | 📖 | ⚠️ a duplicated table desynchronises |
-| `DOC-CNT-004` | **Every path is written from the system root** | 🔒 | ⭐ a bare filename cannot be resolved |
-| `DOC-CNT-005` | ⛔ **No credential, not even as an example** | 🔒 | ⚠️ what is written stays in history |
+| `DOC-CAN-001` | ⛔ **A document MUST NOT reproduce a live value when a canonical source exists** | 🔒 | ⭐ see below |
+| `DOC-CAN-002` | ⭐ **It MAY describe what the value MEANS. It MUST point at the source** | 📖 | ⚠️ the meaning is stable; the number is not |
+| `DOC-CAN-003` | ⭐ **A dated snapshot MAY be copied when the historical value IS the evidence** | 📖 | ⛔ and it is marked `dated` |
 
-### ⭐ `DOC-CNT-002` — why a copied number is the most reliable defect here
+### ⭐ Why a copied number is the most reliable defect here
 
 > ## A number copied into prose is correct exactly once.
 
@@ -173,14 +200,108 @@ when a document grew past its shape and nobody wanted to renumber. ⚠️ **It i
 | | Where it lives |
 |---|---|
 | **live state** — counts, totals, versions | ⭐ the generated metrics file |
-| **dated evidence** — *"5 of 11 were missing, on this date"* | ✅ **frozen on purpose** — it measures a moment |
+| **dated evidence** — *"5 of 11 were missing, on this date"* | ✅ **frozen on purpose** |
 
-⭐ **The distinction matters:** dated evidence must NOT update. It is a measurement of a past
-state, and refreshing it destroys what it recorded.
+⭐ **The distinction matters:** dated evidence must NOT update. ⛔ **Refreshing it destroys what it
+recorded.**
 
 ---
 
-## 6 · NAMES
+## 6 · ⭐ WHEN TWO DOCUMENTS DISAGREE
+
+> ## ⛔ THE AGENT MUST NOT CHOOSE BY RECENCY, PROXIMITY OR INTUITION.
+
+**Authority, strongest first:**
+
+| # | Source |
+|---|---|
+| 1 | ⭐ **an explicit canonical-source pointer** |
+| 2 | a current contract or rule |
+| 3 | the current architecture |
+| 4 | ⭐ **generated state** — measured, not written |
+| 5 | dated evidence |
+| 6 | ⛔ **a fossil** — ⚠️ never an authority, only a record of what was once believed |
+
+| ID | Rule | Enf | Verify |
+|---|---|---|---|
+| `DOC-CFL-001` | ⭐ **On conflict, the higher authority wins** | 📖 | ⛔ nothing verifies this |
+| `DOC-CFL-002` | ⭐ **If no source owns it, the divergence is REPORTED, not resolved** | 📖 | ⚠️ declaring an owner is the owner's decision |
+
+⚠️ **`DOC-CFL-002` is the one that matters:** ⭐ **an agent that resolves an ownerless divergence
+is inventing authority** — and it does it invisibly, because the result looks like a fixed
+document. ⭐ **The full protocol is in `../memory/principles/expertise/doc-structure.md` §5.**
+
+---
+
+## 7 · 🔴 UNKNOWN IS A VALID STATE
+
+> ## ⛔ IF IT CANNOT BE ESTABLISHED FROM AN AUTHORITATIVE SOURCE, IT IS UNKNOWN.
+
+**The agent MUST NOT:**
+
+| ⛔ |
+|---|
+| invent the value |
+| ⭐ **infer it from an unrelated document** |
+| copy an outdated one |
+| ⚠️ **silently pick between conflicting sources** |
+
+**The agent MUST report it as UNKNOWN, and name what evidence is missing.**
+
+| ID | Rule | Enf | Verify |
+|---|---|---|---|
+| `DOC-UNK-001` | ⭐ **UNKNOWN is reported, never filled in** | 📖 | ⛔ nothing verifies this |
+| `DOC-UNK-002` | ⭐ **UNKNOWN names WHAT is missing** | 📖 | ⚠️ *"unclear"* is not a report |
+
+> ## ⭐ AN AGENT'S NATURAL TENDENCY IS TO FILL THE GAP.
+> ⛔ **This system does the opposite: no evidence, no fact.**
+
+⭐ **The same third state, under three names, in three places:** `UNKNOWN` here · `UNKNOWN ≠ PASS`
+in the validation owner · `NOT_MEASURED` in the functional criterion. ⭐ **One idea, consistently:
+*this is wrong* and *nobody checked* are opposite problems.**
+
+---
+
+## 8 · BODY — the required order
+
+| # | Part | Rule |
+|---|---|---|
+| 1 | **Purpose** — one paragraph | ⭐ if it needs three, the document does two things |
+| 2 | **Content** | numbered `## N · TITLE`, sub-sections `### N.M ·` |
+| 3 | **Related** — the last line | pointers to its siblings |
+
+| ID | Rule | Enf | Verify |
+|---|---|---|---|
+| `DOC-BOD-001` | **A `Purpose` and a `Related` MUST exist** | 🔒 | both present |
+| `DOC-BOD-002` | ⛔ **No `N-bis`, `N-ter`, `N-quater` numbering** | 🔒 | ⭐ see below |
+
+⭐ **`DOC-BOD-002` is 🔒 because it is a symptom, not a style preference.** That numbering appears
+when a document grew past its shape and nobody wanted to renumber. ⚠️ **It is the smell that says
+*split me*, and it is mechanically detectable — which is rare for a structural defect.**
+
+---
+
+## 9 · CONTENT RULES
+
+| ID | Rule | Enf | Verify |
+|---|---|---|---|
+| `DOC-CNT-001` | ⭐ **A claim carries its evidence** — a number, a file, a command | 📖 | ⛔ nothing checks this |
+| `DOC-CNT-002` | ⛔ **A live number MUST NOT be written into prose** | 🔒 | ⭐ §5 |
+| `DOC-CNT-003` | **Point, never copy** | 📖 | ⚠️ a duplicated table desynchronises |
+| `DOC-CNT-004` | ⭐ **Every path MUST be written from the system root** | 🔒 | ⛔ a bare filename cannot be resolved |
+| `DOC-CNT-005` | ⛔ **No credential, not even as an example** | 🔒 | ⚠️ what is written stays in history |
+| `DOC-CNT-006` | ⭐ **A quotation is verbatim, or it is not a quotation** | 📖 | ⛔ see below |
+
+⭐ **`DOC-CNT-006` matters more than it looks.** A paraphrase presented as a quote is the agent's
+reading standing in for someone's words — ⚠️ **and the reader cannot tell which they are getting.**
+⛔ **Paraphrase freely; just do not put it in quotation marks.**
+
+⭐ **`DOC-CNT-004` has a second half the checker enforces:** a path must not only carry a
+directory — ⛔ **it must RESOLVE.** ⚠️ A well-formed pointer to nothing reads as a promise.
+
+---
+
+## 10 · NAMES
 
 | ID | Rule | Enf | Verify |
 |---|---|---|---|
@@ -200,7 +321,100 @@ treat them as two things.
 
 ---
 
-## 7 · MOVING A FILE
+## 11 · ⭐ DOCUMENTARY OPERATIONS — each one has a rule
+
+⛔ **Editing is not the only thing that happens to a document.** ⭐ **The three that go wrong:**
+
+### `SUPERSEDE`
+
+| ⭐ Rule |
+|---|
+| the old document becomes `superseded` |
+| ⭐ **its replacement is named, and points back** |
+| ⛔ **the old document stays — and stops being edited** |
+
+### `SPLIT`
+
+| ⭐ Rule |
+|---|
+| ⭐ **the halves point at each other** |
+| ⛔ **nothing is duplicated across them** |
+| ⭐ everything that pointed at the original now points at the right half |
+
+### `ARCHIVE`
+
+| ⭐ Rule |
+|---|
+| ⭐ **it keeps its name** — ⛔ renaming breaks every pointer at once |
+| it becomes `fossil` and stops growing |
+| ⛔ **it is never deleted** |
+
+| ID | Rule | Enf | Verify |
+|---|---|---|---|
+| `DOC-OPS-001` | ⭐ **A supersede link is symmetric** | 🔒 | ⛔ one-sided means one of the two is wrong |
+| `DOC-OPS-002` | **A split leaves no orphan** | 📖 | ⚠️ ⭐ the reader finds half the answer and cannot know the rest exists |
+| `DOC-OPS-003` | ⛔ **An archived document keeps its name** | 📖 | ⭐ nothing verifies this |
+
+---
+
+## 12 · LIFECYCLE
+
+```
+draft ──▶ current ──▶ superseded ──▶ fossil
+                          │              │
+                 names its replacement   └─▶ archived, keeps its name
+```
+
+| Status | Means | Editable? |
+|---|---|---|
+| `draft` | being written | ✅ |
+| `current` | in force | ✅ ⭐ with `Updated` bumped |
+| `superseded` | replaced — ⛔ **must name its replacement** | only to add the pointer |
+| `fossil` | historical | ⛔ frozen |
+
+> ## ⭐ A FOSSIL IS MARKED, NEVER DELETED
+> ⚠️ **Deleting history is how you lose the ability to diagnose.** The incident nobody can explain
+> is the one whose record was tidied away.
+
+| ID | Rule | Enf | Verify |
+|---|---|---|---|
+| `DOC-LIF-001` | ⭐ **`current` with an old `Updated` is stale, not current** | 🔒 | ⛔ re-verify or restate |
+| `DOC-LIF-002` | **A fossil is archived, never removed** | 📖 | ⚠️ nothing checks this |
+| `DOC-LIF-003` | ⭐ **A fossil MUST NOT be used as a current authority** | 📖 | §6, row 6 |
+
+⭐ **What `current` promises:** somebody verified it, its date reflects the last real change, its
+type declares its limits, and someone identified keeps it true. ⛔ **Missing one, it promises
+nothing.**
+
+---
+
+## 13 · ⬜ WHAT AN AGENT MAY DO WITH A DOCUMENT IT DOES NOT OWN
+
+⚠️ **`Owner` says who keeps a document true. ⛔ It does not say what somebody else may change** —
+⭐ **and an undefined permission is read differently by every reader.**
+
+⬜ **Declare it here.** The engine ships the question, not the answer: ⭐ **how much an agent may
+change without asking is the owner's criterion, and it changes per installation.**
+
+| Owner | read | fix a typo | restructure | change the criterion |
+|---|---|---|---|---|
+| ⬜ the agent itself | ⬜ | ⬜ | ⬜ | ⬜ |
+| ⬜ a person | ⬜ | ⬜ | ⬜ | ⬜ |
+| ⬜ generated | ⬜ | ⛔ **never** | ⛔ **never** | ⛔ **never** |
+
+⭐ **Only one row ships filled, because it is not a preference:** ⛔ **a generated document is
+overwritten by its generator, so an edit there is work that disappears silently.**
+
+**⬜ The questions that settle the rest:**
+
+1. ⬜ May an agent fix a typo in a document it does not own, without asking?
+2. ⭐ ⬜ May it reorder sections, if the content does not change?
+3. ⬜ What must it never touch, whatever the reason?
+4. ⭐ ⬜ **What does it do when the answer is unclear?** — ⛔ the honest default is §7: STOP.
+
+---
+
+## 14 · MOVING A FILE
 
 ⛔ **A move is not a rename. It is a rename plus every pointer that resolved to the old place.**
 
@@ -225,37 +439,7 @@ files nobody remembers — ⭐ **and those are the ones with the stale pointers.
 
 ---
 
-## 8 · LIFECYCLE
-
-```
-draft ──▶ current ──▶ superseded ──▶ fossil
-                          │              │
-                 names its replacement   └─▶ archived, keeps its name
-```
-
-| Status | Means | Editable? |
-|---|---|---|
-| `draft` | being written | ✅ |
-| `current` | in force | ✅ ⭐ with `Updated` bumped |
-| `superseded` | replaced — ⛔ **must name its replacement** | only to add the pointer |
-| `fossil` | historical | ⛔ frozen |
-
-> ## ⭐ A FOSSIL IS MARKED, NEVER DELETED
-> ⚠️ **Deleting history is how you lose the ability to diagnose.** The incident nobody can explain
-> is the one whose record was tidied away.
-
-| ID | Rule | Enf | Verify |
-|---|---|---|---|
-| `DOC-LIF-001` | ⭐ **`current` with an old `Updated` is stale, not current** | 🔒 | ⛔ re-verify or restate |
-| `DOC-LIF-002` | **A fossil is archived, never removed** | 📖 | ⚠️ nothing checks this |
-
-⭐ **What `current` promises:** somebody verified it, its date reflects the last real change, its
-type declares its limits, and someone identified keeps it true. ⛔ **Missing one, it promises
-nothing.**
-
----
-
-## 9 · MIGRATION — ⛔ never in bulk
+## 15 · MIGRATION — ⛔ never in bulk
 
 | Case | What happens |
 |---|---|
@@ -268,29 +452,35 @@ modification date, which is the only staleness signal a document without a heade
 
 ---
 
-## 10 · ⛔ WHAT IT COSTS TO BREAK IT
+## 16 · ⛔ WHAT IT COSTS TO BREAK IT
 
 | Broken | ⭐ The cost |
 |---|---|
 | **no header** | ⛔ nothing can tell a live document from a fossil |
-| **a live number in prose** | ⭐ **it is wrong from the second read**, and it teaches distrust of the rest |
+| ⭐ **a live number in prose** | ⭐ **it is wrong from the second read**, and it teaches distrust of the rest |
 | **over the ceiling, unsplit** | ⚠️ it stops being read in full — ⛔ **and a document read in half looks complete** |
-| **a move with orphaned pointers** | ⭐ readers reach a dead end and rewrite what already existed |
+| ⭐ **a gap filled instead of reported** | ⛔ **an invented fact is indistinguishable from a measured one** |
+| **a conflict resolved silently** | ⚠️ ⭐ the agent invented authority, and nothing shows it |
+| **a generated file edited by hand** | ⭐ the edit disappears at the next run, with no error |
+| **a move with orphaned pointers** | readers reach a dead end and rewrite what already existed |
 
 ---
 
-## 11 · WHO GOVERNS THIS FILE
+## 17 · WHO GOVERNS THIS FILE
 
 | Change | Who |
 |---|---|
-| the ceilings in §3 | ⭐ the owner of the instance, ⚠️ **once, in writing** |
+| the ceilings in §4 | ⭐ the owner of the instance, ⚠️ **once, in writing** |
+| ⬜ §13 — the permission matrix | ⭐ **the owner** — the engine ships only the question |
 | the rules and their IDs | whoever maintains the engine, through a recorded decision |
-| ⛔ exempting a document from §2 | **nobody** — ⭐ an exemption is declared in the document, never assumed |
+| ⛔ exempting a document from §3 | **nobody** — ⭐ an exemption is declared in the document, never assumed |
+| ⛔ treating UNKNOWN as a value | **nobody** — ⚠️ ⭐ it is the defect §7 exists to stop |
 
 ---
 
 Related: `README.md` (⭐ **the three document types, and how law is written here**) ·
-⬜ the block contract and the decision-record contract (⭐ not written yet — see the backlog) ·
+`contract-block.md` · `contract-adr.md` (⭐ the shape of an append-only record) ·
 `../memory/principles/owner-1-docs.md` (⭐ **who applies this and rejects on it**) ·
 `../memory/principles/expertise/doc-structure.md` (⭐ the criterion behind the shape — ⛔ how to
-split well) · `../bin/check-document` (what enforces the 🔒 rows).
+split well, and §5 the conflict protocol) · `../memory/principles/expertise/val-functional.md`
+(⭐ the third state, under its other name) · `../bin/check-document` (what enforces the 🔒 rows).

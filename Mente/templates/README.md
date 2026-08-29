@@ -7,7 +7,7 @@
 Every file here ends in `.template`. It is a **blueprint**, not a live file. `bin/init` copies
 each one into its real location, fills the placeholders, and asks the user for whatever is
 missing. The generated copies (`CLAUDE.md`, `PROJECT-RULES.md`, `mente.config.yml`,
-`docs/WORKSPACE.md`, and the architecture pillar) are **instance files** — they are gitignored
+⬜ `docs/WORKSPACE.md` (created at install), and the architecture pillar) are **instance files** — they are gitignored
 and never travel between clones.
 
 > ⭐ **The whole point:** a fresh clone owns nothing personal. Identity, repos, and project state
@@ -71,11 +71,11 @@ literal text behind.
 | `CLAUDE.md.template` | `CLAUDE.md` | the router. Mostly doctrine; the § ESTADO block is the only ⬜ zone. Points at the architecture pillar via config, never by filename |
 | `PROJECT-RULES.md.template` | `PROJECT-RULES.md` | project rules. Doctrine + a ⬜ scope zone and a ⬜ repos zone. §5 carries no security values — WHERE, never WHAT |
 | `mente.config.yml.template` | `mente.config.yml` | the instance declaration. Mostly ⬜: `owner`, `pillars`, `gates`, `siblings`. `gates`/`siblings` default to `[]` and take zero, one, or many entries |
-| `WORKSPACE.md.template` | `docs/WORKSPACE.md` | ⭐ the model — almost all ⬜. Carries no values: says WHERE a secret lives, never WHAT |
+| `WORKSPACE.md.template` | ⬜ `docs/WORKSPACE.md` (created at install) | ⭐ the model — almost all ⬜. Carries no values: says WHERE a secret lives, never WHAT |
 | `ARQUITECTURA.md.template` | the architecture pillar (path declared in `mente.config.yml` → `pillars.architecture`) | born empty; the user fills it as the project takes shape. Form-agnostic — declares components, invariants, limits and load-bearing decisions without imposing a shape |
 | `piezas.tsv.template` | `piezas.tsv` | ⚠️ **the one template that ships with content**: the engine's own rows. It cannot be born empty — without them `check-structure` has nothing to verify |
-| `RETOMAR.md.template` | `memory/RETOMAR.md` | the cold-start brief. Born empty, but carries the explanation of the cycle: you never write it by hand, the closing routine does |
-| `PENDIENTES.md.template` | `memory/PENDIENTES.md` | the debt list. Born empty; carries the entry shape and the rotation rule |
+| `RETOMAR.md.template` | ⬜ `memory/RETOMAR.md` (created at install) | the cold-start brief. Born empty, but carries the explanation of the cycle: you never write it by hand, the closing routine does |
+| `PENDIENTES.md.template` | ⬜ `memory/PENDIENTES.md` | the debt list. Born empty; carries the entry shape and the rotation rule |
 | `bridges.md.template` | `connection/bridges/` | the registry of other installations. Born with **no entries** — nobody inherits somebody else's neighbours |
 
 ## The pillar circuit — how the architecture source of truth is wired

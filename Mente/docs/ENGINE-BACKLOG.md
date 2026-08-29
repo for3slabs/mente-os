@@ -35,7 +35,7 @@ condition is a complaint; one with a closing condition is work that can be finis
 
 ## E-01 · A criterion with no validator is invisible as such
 
-- **Surfaced by:** writing `owner-1-docs.md`
+- **Surfaced by:** writing `../memory/principles/owner-1-docs.md`
 - **Affects:** every `contract-*` and every owner file
 - **Closes when:** a check reports which declared criteria have no verifier
 
@@ -48,7 +48,7 @@ rule.
 
 ## E-02 · No mechanism enforces `SCOPE LOCK`
 
-- **Surfaced by:** writing `owner-2-dev.md` §2
+- **Surfaced by:** writing `../memory/principles/owner-2-dev.md` §2
 - **Affects:** the block contract (the scope section) · the gate that fires before an edit
 - **Closes when:** editing a piece outside the declared ALLOW is reported, or blocked
 
@@ -60,7 +60,7 @@ watches it, so it holds exactly as long as attention does.
 
 ## E-03 · A checkpoint has no required content
 
-- **Surfaced by:** `owner-2-dev.md` §6 · measured against the block contract, where a checkpoint
+- **Surfaced by:** `../memory/principles/owner-2-dev.md` §6 · measured against the block contract, where a checkpoint
   is a single line
 - **Affects:** the block contract · the sufficiency check
 - **Closes when:** the sufficiency check verifies a checkpoint carries its fields
@@ -73,7 +73,7 @@ act on. ⭐ The two fields that matter most — **what did not change** and **wh
 
 ## E-04 · The four verdicts are not a shared vocabulary
 
-- **Surfaced by:** `owner-1-docs.md` §3
+- **Surfaced by:** `../memory/principles/owner-1-docs.md` §3
 - **Affects:** all three owners · the validators' exit codes
 - **Closes when:** PASS / WARN / REJECT / PENDING mean the same thing in every piece that emits one
 
@@ -85,7 +85,7 @@ files a violation as an open question — where it waits politely and forever.
 
 ## E-05 · Size limits have no declared unit
 
-- **Surfaced by:** `owner-1-docs.md` §6
+- **Surfaced by:** `../memory/principles/owner-1-docs.md` §6
 - **Affects:** the document contract's size table · the health check
 - **Closes when:** every limit states its unit, and one command measures it
 
@@ -97,7 +97,7 @@ time.
 
 ## E-06 · Nothing verifies that a pointer's target is still current
 
-- **Surfaced by:** external review of `owner-1-docs.md`
+- **Surfaced by:** external review of `../memory/principles/owner-1-docs.md`
 - **Affects:** the citation check
 - **Closes when:** a pointer to a `superseded` or `fossil` document is reported
 
@@ -122,7 +122,7 @@ means it cannot be found wrong — and a claim that cannot be found wrong is not
 
 ## E-08 · Governance of the governing files is undeclared
 
-- **Surfaced by:** external review of `owner-1-docs.md`
+- **Surfaced by:** external review of `../memory/principles/owner-1-docs.md`
 - **Affects:** the owner files · the contracts
 - **Closes when:** each declares who may change it, and it is not itself
 
@@ -134,7 +134,7 @@ declare this; the contracts do not.
 
 ## E-09 · Disciplines are loaded whole, not by relevance
 
-- **Surfaced by:** external review of `owner-2-dev.md`
+- **Surfaced by:** external review of `../memory/principles/owner-2-dev.md`
 - **Affects:** the gate that injects standards before an edit
 - **Closes when:** only the disciplines a change actually touches are loaded
 
@@ -146,7 +146,7 @@ into a decision belonging to another.
 
 ## E-10 · No trigger contract for the owners
 
-- **Surfaced by:** external review of `owner-1-docs.md`
+- **Surfaced by:** external review of `../memory/principles/owner-1-docs.md`
 - **Affects:** all three owners · the gates
 - **Closes when:** each owner's trigger events are wired to something that fires
 
@@ -157,7 +157,7 @@ files now declare *when* they act; nothing yet acts on that declaration.
 
 ## E-11 · Closing produces no artefact
 
-- **Surfaced by:** `owner-3-validation.md`
+- **Surfaced by:** `../memory/principles/owner-3-validation.md`
 - **Affects:** the closing procedure · the quality verdict
 - **Closes when:** a close writes a machine-readable record — verdict, level, which dimensions
   passed, which are UNKNOWN, and the evidence behind each
@@ -170,7 +170,7 @@ re-arguing it. It also makes the UNKNOWN list survive the session that produced 
 
 ## E-12 · Evidence production and closure authority are the same actor
 
-- **Surfaced by:** external review · `owner-3-validation.md` §1
+- **Surfaced by:** external review · `../memory/principles/owner-3-validation.md` §1
 - **Affects:** the validation owner · the quality dimensions
 - **Closes when:** the layer that **runs** the checks is separate from the one that **decides**
   what they authorise
@@ -184,7 +184,7 @@ choosing what to measure — and the bar was the only thing stopping it from dec
 
 ## E-13 · No level is declared for the evidence a block needs
 
-- **Surfaced by:** `owner-3-validation.md` §5b
+- **Surfaced by:** `../memory/principles/owner-3-validation.md` §5b
 - **Affects:** the block contract · the quality verdict
 - **Closes when:** a block declares the evidence level its risk requires, and closing checks it
 
@@ -331,7 +331,7 @@ this contract does not yet have.
 
 ## E-23 · No document declares which ceiling applies to it
 
-- **Surfaced by:** `doc-structure.md` — the file that makes splitting mandatory
+- **Surfaced by:** `../memory/principles/expertise/doc-structure.md` — the file that makes splitting mandatory
 - **Affects:** the document contract's type table · the health check · every engine document
 - **Closes when:** each `Type` names its ceiling and its unit, and a check measures it
 
