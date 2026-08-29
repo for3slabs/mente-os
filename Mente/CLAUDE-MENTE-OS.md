@@ -32,7 +32,7 @@ It stores no rules and no state — it points at them, so the value is read from
 
 ## 🚀 STARTUP (always do this, without the owner asking)
 
-1. **READ FIRST** `Mente/memory/RETOMAR.md` (~5 KB) — the cold-start brief: where we left off +
+1. **READ FIRST** ⬜ `Mente/memory/RETOMAR.md` (created at install) (~5 KB) — the cold-start brief: where we left off +
    next step + flags + pointers. **In ~90% of cases it is ALL you need.**
 2. ⛔ **Do NOT read** any large historical file unless a pointer in
    RETOMAR sends you there explicitly. Reading it "just in case" burns tokens — measured.
@@ -66,12 +66,12 @@ stores everything on disk, so `/clear` is safe **when the session is registered*
 | **This project** — scope, the gate to other Mente OS, server-first, security, identity | **`PROJECT-RULES.md`** |
 | **The voice** — how Mente OS communicates | `Mente/memory/principles/owner-0-voice.md` (vehicle: `outputStyle: "{{project}}"`) |
 | **Large work** — your method for milestones | ⬜ declared in `PROJECT-RULES.md` |
-| **Open/close a block** | `Mente/rules/block-lifecycle.md` |
-| **Which standard applies to the code I am about to touch** | 🤖 the hook `Mente/hooks/pre-edit-standards.py` injects it on its own |
+| **Open/close a block** | ⬜ `Mente/rules/block-lifecycle.md` |
+| **Which standard applies to the code I am about to touch** | 🤖 the hook ⬜ `Mente/hooks/pre-edit-standards.py` injects it on its own |
 | **System architecture** | the architecture pillar declared in config |
 | 🤖 **WHAT I CAN RUN and what I must not touch** — the validators, the gates, the engine/instance line | ⭐ `Mente/CAPABILITIES.md` |
-| 🗺️ **Where everything on THIS machine is** — repos, what is locked, where secrets live (never their value) | `Mente/docs/WORKSPACE.md` |
-| 🚢 **How a PR ships** — branch → verify → PR → ⛔ do not merge (owner's discipline) | `Mente/rules/rule-shipping-flow.md` |
+| 🗺️ **Where everything on THIS machine is** — repos, what is locked, where secrets live (never their value) | ⬜ `Mente/docs/WORKSPACE.md` |
+| 🚢 **How a PR ships** — branch → verify → PR → ⛔ do not merge (owner's discipline) | ⬜ `Mente/rules/rule-shipping-flow.md` |
 | ⭐ **WHICH REPO this work goes to and who governs it** | declared in `Mente/cuentas.tsv` |
 
 > ⭐ **Rules ADD UP, they never loosen.** Two blocks share rules only if one declares the other in
@@ -83,13 +83,13 @@ stores everything on disk, so `/clear` is safe **when the session is registered*
 
 | When | What runs |
 |---|---|
-| at session start | `Mente/hooks/session-start.sh` → health + structure + indexes + drifting blocks. **Speaks only on 🔴** |
-| before editing | `Mente/hooks/pre-edit-standards.py` → injects the owning block's `§D` |
-| before editing | `Mente/hooks/gate-critical.py` → 🔴 DB with no rollback · 🔴 closing an insufficient block · ⚠️ a piece with dependents |
-| before a commit | `Mente/hooks/pre-commit.sh` → 🔴 **BLOCKS** a block that violates its contract |
+| at session start | ⬜ `Mente/hooks/session-start.sh` → health + structure + indexes + drifting blocks. **Speaks only on 🔴** |
+| before editing | ⬜ `Mente/hooks/pre-edit-standards.py` → injects the owning block's `§D` |
+| before editing | ⬜ `Mente/hooks/gate-critical.py` → 🔴 DB with no rollback · 🔴 closing an insufficient block · ⚠️ a piece with dependents |
+| before a commit | ⬜ `Mente/hooks/pre-commit.sh` → 🔴 **BLOCKS** a block that violates its contract |
 | is this product or MVP? | ⬜ a block grader → **measured** verdict, never opinion |
 | is the tree the declared one? | `Mente/bin/check-structure` → reads `Mente/piezas.tsv` |
-| regenerate the indexes | `Mente/bin/generate-index` → 🤖 `docs/INDEX.md` + `docs/STATES.md` |
+| regenerate the indexes | `Mente/bin/generate-index` → 🤖 ⬜ `docs/INDEX.md` + `docs/STATES.md` |
 | before `/clear` | `Mente/bin/check-clear-ready` → 🔴 refuses if something would be lost |
 | **the whole system** | `Mente/bin/check-all` → the only thing that matters is `failed: 0` · the count lives in the generated metrics file |
 
@@ -104,7 +104,7 @@ When the owner signals a `/clear` (or I propose one), **first** the dying sessio
 in the session registry your instance declares: a row in the index + its autopsy.
 
 **Verify it with `Mente/bin/check-clear-ready`** — it refuses if it is missing.
-Full rule: `Mente/rules/rule-session-close.md`. Origin: a very large runaway session that had to
+Full rule: ⬜ `Mente/rules/rule-session-close.md`. Origin: a very large runaway session that had to
 be recovered from disk.
 
 > `/clear` is a **cut, not a save.** Whatever is not on disk is lost with no warning.
@@ -121,7 +121,7 @@ be recovered from disk.
 | `Mente/rules/` | contracts + rules + `decisions/` (the ADRs) |
 | `Mente/memory/principles/` | the owners (owner-0..3) + `expertise/` |
 | `Mente/bin/` · `Mente/hooks/` | 🤖 the validators and the gates |
-| `Mente/docs/` | plans, analyses, phase logs · 🤖 `Mente/docs/INDEX.md` and `Mente/docs/STATES.md` generated |
+| `Mente/docs/` | plans, analyses, phase logs · 🤖 ⬜ `Mente/docs/INDEX.md` and `Mente/docs/STATES.md` generated |
 | `Mente/piezas.tsv` | ⭐ **where each key piece lives** — moving something costs 1 line |
 | `Mente/Cerebro/vision/` `Mente/work/` `Mente/memory/` `Mente/connection/bridges/` | 🆕 vision · the work · live memory · the gate |
 | `Mente/Cerebro/` | your project's own thinking — the architecture pillar and the vision |
@@ -136,18 +136,18 @@ be recovered from disk.
 > read from the file that measures it, so it cannot fall out of date.
 
 ⬜ **Describe your project's state in ONE line** — or delete this line and leave only the pointer
-table below. NEVER put numbers here (they belong in `Mente/docs/METRICS.md`).
+table below. NEVER put numbers here (they belong in ⬜ `Mente/docs/METRICS.md`).
 
 **Mente OS** = the block system that governs a repository: validators + hooks + 3 rule levels.
 **The living proof is `Mente/bin/check-all`; the only thing that matters is `failed: 0`.**
 
 | You need… | Read it from… |
 |---|---|
-| ⭐ **real state + next step** | `Mente/memory/RETOMAR.md` |
-| any **live number** (battery, gaps, permissions, quotes) | 🤖 `Mente/docs/METRICS.md` |
-| product version · closed phases · which blocks exist | `Mente/memory/RETOMAR.md` §5 |
-| open pending items | `Mente/memory/PENDIENTES.md` |
+| ⭐ **real state + next step** | ⬜ `Mente/memory/RETOMAR.md` (created at install) |
+| any **live number** (battery, gaps, permissions, quotes) | 🤖 ⬜ `Mente/docs/METRICS.md` |
+| product version · closed phases · which blocks exist | ⬜ `Mente/memory/RETOMAR.md` (created at install) §5 |
+| open pending items | ⬜ `Mente/memory/PENDIENTES.md` |
 
 ---
 
-Related: `PROJECT-RULES.md` (🏢 the project level this router declares) · `Mente/base-rules.md` (🌐 universal) · `Mente/memory/RETOMAR.md` (the real state) · `Mente/rules/rule-inheritance.md` (why rules do NOT go here) · `Mente/rules/contract-document.md` (the form this file meets).
+Related: `PROJECT-RULES.md` (🏢 the project level this router declares) · `Mente/base-rules.md` (🌐 universal) · ⬜ `Mente/memory/RETOMAR.md` (created at install) (the real state) · `Mente/rules/rule-inheritance.md` (why rules do NOT go here) · `Mente/rules/contract-document.md` (the form this file meets).

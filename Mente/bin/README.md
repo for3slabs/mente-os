@@ -87,7 +87,7 @@ import mente_config as cfg          # noqa: E402
 | config | through `mente_config` **whenever it needs an instance value** | one parser, one place to fix it |
 | `chmod` | `755` — it must be executable | a validator you cannot run is a document with a shebang |
 
-⚠️ **The one file here that is NOT an executable: `mente_config.py`.** It is a module — imported,
+⚠️ **The one file here that is NOT an executable: ⬜ `bin/mente_config.py` (not written yet).** It is a module — imported,
 never run — so it carries no shebang and no exit code. It is the single place that knows what is
 instance-specific, and every validator that needs an instance value imports it instead of reading
 `mente.config.yml` on its own. ⛔ **It parses the config directly rather than using a YAML

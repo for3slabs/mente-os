@@ -83,7 +83,7 @@ Here is what **actually** happens on a clean clone:
 ```
 
 It says **your session is not registered yet**, and that is true: you just arrived. The registry
-is written before a `/clear` (`rules/rule-session-close.md`), so on a fresh clone that red is the 
+is written before a `/clear` (⬜ the session-close rule (`rules/`)), so on a fresh clone that red is the 
 system reporting accurately. A check that turned green there would be lying. It clears itself the
 moment you register your first session.
 
@@ -101,7 +101,7 @@ bin/check-sufficiency my-first-task       # can it be resumed by reading §A-E a
 ```
 
 A **block** is a unit of work with a contract: what goes in, what does not, what it  depends on,
-under what criteria it is judged, and when it may close. `rules/block-lifecycle.md` explains it
+under what criteria it is judged, and when it may close. ⬜ `rules/block-lifecycle.md` explains it
 in full.
 
 ⛔ **What the system will stop you from doing**, worth knowing before you hit it:
@@ -139,4 +139,4 @@ in full.
 
 Related: `CLAUDE.md` (the router Claude Code reads at startup) · `PROJECT-RULES.md` (the
 project-level rules) · `Mente/CAPABILITIES.md` (what may run and what is forbidden) ·
-`Mente/rules/block-lifecycle.md` (opening and closing a block) · `LICENSE` (AGPL-3.0).
+⬜ `Mente/rules/block-lifecycle.md` (opening and closing a block) · `LICENSE` (AGPL-3.0).

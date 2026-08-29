@@ -52,7 +52,7 @@ bin/check-health            # 3 · tells you what is missing, in plain language
 > clone owned by someone else arrived carrying the **previous owner's name throughout** its project
 > rules and **not once** the real one — and `init` could not fix it, because it correctly refuses
 > to overwrite files that already exist. The engine was handing a stranger another person's rules.
-> ⭐ Same diagnosis and same cure as `docs/WORKSPACE.md`, which describes one machine.
+> ⭐ Same diagnosis and same cure as ⬜ `docs/WORKSPACE.md` (created at install), which describes one machine.
 
 `check-health` is the first thing that talks to you after `init`. If it says nothing, nothing is
 wrong.
@@ -182,7 +182,7 @@ bin/generate-metrics         # 🤖 republish the live numbers
 `bin/check-all` is the truth. It takes a lock, so **one run at a time** — a second is refused
 on purpose, because both would corrupt each other's probe blocks.
 
-> ⚠️ **Never write a count into a document.** Live numbers live in `docs/METRICS.md`, regenerated.
+> ⚠️ **Never write a count into a document.** Live numbers live in ⬜ `docs/METRICS.md`, regenerated.
 > A number copied into prose is correct exactly once — this project froze the same one twice in
 > a single day before the rule existed.
 
@@ -197,7 +197,7 @@ the box: dead code, duplication, tests, the import graph.
 
 | File | What goes in it |
 |---|---|
-| `rules/qa-dimensions.md` | the quality dimensions, and what each demands |
+| ⬜ `rules/qa-dimensions.md` | the quality dimensions, and what each demands |
 | `memory/principles/expertise/dev-*.md` | database · backend · frontend |
 | `memory/principles/expertise/doc-*.md` | planning · structure |
 | `memory/principles/expertise/val-*.md` | functional · integration |
@@ -206,7 +206,7 @@ Each ships with the interview questions already written. **The method is: the AI
 answer with real cases, the AI structures.** Never the reverse — a draft written first comes out
 as *"use best practices"*, which is as empty as *"it's fine"*.
 
-Open holes: `docs/PENDING-{{owner}}.md` (count in `docs/METRICS.md` · `criterion.holes`).
+Open holes: `docs/PENDING-{{owner}}.md` (count in ⬜ `docs/METRICS.md` · `criterion.holes`).
 
 ---
 
@@ -233,11 +233,11 @@ Read that one before adding a file — it is the shortest path to getting the pl
 
 ## 9 · Resuming after a context reset
 
-Read **`memory/RETOMAR.md`**. It is the only file guaranteed to be read, and its ceiling is
+Read **⬜ `memory/RETOMAR.md`**. It is the only file guaranteed to be read, and its ceiling is
 declared on purpose — ⭐ **it should be enough to start working without asking anything.**
 
 Closing a session is the other half: run the `session-wrap` skill, or follow
-`rules/rule-session-close.md`. **`/clear` is a cut, not a save** — whatever is not on disk is
+⬜ `rules/rule-session-close.md`. **`/clear` is a cut, not a save** — whatever is not on disk is
 lost with no warning. `bin/check-clear-ready` refuses while something would be lost.
 
 ---

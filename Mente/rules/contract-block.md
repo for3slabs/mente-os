@@ -466,7 +466,7 @@ sufficiency:          pass | fail
 | `BLK-CLS-001` | ⭐ **§K present before `status: closed`** | 🔒 | ⛔ closed with no closing section |
 | `BLK-CLS-002` | **No open sub-block in §F** | 🔒 | ⚠️ closing over an open task hides it |
 | `BLK-CLS-003` | ⭐ **What was NOT done is stated** | 🔒 | ⛔ silence reads as completeness |
-| `BLK-CLS-004` | ⭐ **The verdict cites its evidence** | 🟡 | see `val-functional.md` §2.1 |
+| `BLK-CLS-004` | ⭐ **The verdict cites its evidence** | 🟡 | see `../memory/principles/expertise/val-functional.md` §2.1 |
 | `BLK-CLS-005` | ⭐ **The invariants of §B were re-checked** | 🟡 | ⚠️ still true after the changes? |
 
 ⭐ **`BLK-CLS-003` is what makes an archive worth reading.** ⛔ **A closing that lists only
@@ -495,8 +495,8 @@ Evidence required:
 > commitment — ⚠️ **and the difference is whether the block can fail.**
 
 ⭐ **This is the handover point of the whole system:** the success criterion comes from planning
-(`doc-planning.md` §2.5), is committed to here, and is proven at close
-(`val-functional.md`). ⛔ **A criterion never made measurable cannot be validated** — and the gap
+(`../memory/principles/expertise/doc-planning.md` §2.5), is committed to here, and is proven at close
+(`../memory/principles/expertise/val-functional.md`). ⛔ **A criterion never made measurable cannot be validated** — and the gap
 only shows at closing time, when it is expensive.
 
 ---
@@ -509,7 +509,7 @@ only shows at closing time, when it is expensive.
 | `BLK-EVI-002` | ⭐ **Evidence is reproducible** | 🟡 | ⚠️ a number nobody can re-derive is not evidence |
 | `BLK-EVI-003` | ⛔ **An unreproducible measurement is a §3 STOP** | 📖 | ⭐ not a rounding error |
 
-⭐ **The four conditions of what counts as proof live in `val-functional.md` §2.1** — ⛔ this
+⭐ **The four conditions of what counts as proof live in `../memory/principles/expertise/val-functional.md` §2.1** — ⛔ this
 section does not restate them; **it says that a block's claims are subject to them.**
 
 ---

@@ -38,10 +38,10 @@ Code, this file plus the pointers below is enough to work correctly.
 |---|---|---|
 | 1 | **Explain → approve → build.** Never build a milestone without explicit approval | ⬜ your method, declared in `PROJECT-RULES.md` |
 | 2 | **The AI does not invent criterion.** Criterion is the owner's; the AI gives it form | the decision record that settles it |
-| 3 | **Do not state — report the measurement.** An unverified claim is banned | `principles/owner-0-voice.md` |
+| 3 | **Do not state — report the measurement.** An unverified claim is banned | `memory/principles/owner-0-voice.md` |
 | 4 | **Secrets are referenced, never pasted** | architecture §12-S.1 |
-| 5 | **Scope is declared, never inferred.** No match → **stop and ask** | `rules/rule-isolation.md` |
-| 6 | ⭐ **No `/clear` without registering the session first** | `rules/rule-session-close.md` |
+| 5 | **Scope is declared, never inferred.** No match → **stop and ask** | `rules/rule-working-in-a-block.md` §3 |
+| 6 | ⭐ **No `/clear` without registering the session first** | ⬜ `rules/rule-session-close.md` |
 
 > ⬜ **Your project adds its own** in `PROJECT-RULES.md` — a gate to something outside, a
 > deploy-target rule, whatever holds here and would be false elsewhere.
@@ -72,14 +72,14 @@ Code, this file plus the pointers below is enough to work correctly.
 
 | Need | Path |
 |---|---|
-| Where we left off | `memory/RETOMAR.md` |
-| The voice | `principles/owner-0-voice.md` |
-| The three owners | `principles/owner-1-docs.md` · `principles/owner-2-dev.md` · `principles/owner-3-validation.md` |
+| Where we left off | ⬜ `memory/RETOMAR.md` |
+| The voice | `memory/principles/owner-0-voice.md` |
+| The three owners | ⬜ `principles/owner-1-docs.md` · `principles/owner-2-dev.md` · `principles/owner-3-validation.md` |
 | Expert criterion | `principles/expertise/{database,backend,frontend}.md` |
 | Contracts | `rules/contract-block.md` · `rules/contract-document.md` · `rules/contract-adr.md` |
 | Rules | `rules/rule-{lanes,fix-not-patch,friction,isolation,session-close}.md` |
-| Decisions | `docs/DECISIONS.md` (generated) + `rules/decisions/ADR-*.md` |
-| Naming | `rules/NAMING_CONVENTION.md` |
+| Decisions | ⬜ `docs/DECISIONS.md` (generated) + `rules/decisions/ADR-*.md` |
+| Naming | ⬜ `rules/NAMING_CONVENTION.md` |
 | Architectural truth | the architecture pillar declared in `mente.config.yml` (`pillars.architecture`) |
 | Active blocks | `blocks/active/<name>/BLOCK.md` |
 | Open criterion the owner still owes | `docs/PENDING-{{owner}}.md` |
@@ -121,7 +121,7 @@ What you lose and what you keep:
 
 | Piece | Without Claude Code |
 |---|---|
-| `output-styles/` (the voice) | 🔴 not injected → **read `principles/owner-0-voice.md` and apply it** |
+| `output-styles/` (the voice) | 🔴 not injected → **read `memory/principles/owner-0-voice.md` and apply it** |
 | Hooks (inject / block) | 🔴 do not fire → **read §D of the block manually before editing** |
 | Auto-injected `CLAUDE.md` | 🔴 → **read this file first** |
 | Everything else | ✅ works — it is plain markdown and scripts |
@@ -130,5 +130,5 @@ What you lose and what you keep:
 
 ---
 
-Related: `memory/RETOMAR.md` · `principles/owner-0-voice.md` · `rules/contract-block.md` ·
-`docs/DECISIONS.md` · `mente.config.yml` (identity: owner + pillars) · `CLAUDE.md` (Claude Code entry point).
+Related: ⬜ `memory/RETOMAR.md` · `memory/principles/owner-0-voice.md` · `rules/contract-block.md` ·
+⬜ `docs/DECISIONS.md` · `mente.config.yml` (identity: owner + pillars) · `CLAUDE.md` (Claude Code entry point).

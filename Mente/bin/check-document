@@ -26,6 +26,16 @@ ISO = re.compile(r"^\d{4}-\d{2}-\d{2}$")
 BIS = re.compile(r"^#{2,4}\s+\d+-(bis|ter|quater)\b", re.M | re.I)
 BADNAME = re.compile(r"[_ ]|-(v\d+|final|new|old|copy)\.|^\d{4}-\d{2}-\d{2}-", re.I)
 LIVENUM = re.compile(r"\b\d+\s*/\s*\d+\b|\b\d+\s+checks?\b", re.I)
+# ⬜ before a pointer marks a piece the engine has not written yet: flagging it
+# would report a promise as a defect, and noise is how a validator stops being read.
+PLANNED = re.compile(r"⬜[^\n]{0,90}$")
+
+# Names that denote a KIND of file, not one file: the instance creates them at
+# install time, and a bare mention of one is not a pointer to anything.
+# A checker that cannot tell "points at a file" from "names a type of file"
+# reports every mention as broken — which is the loudest way to be ignored.
+GENERIC = {"CLAUDE.md", "BLOCK.md", "README.md", "PROJECT-RULES.md",
+           "SUMMARY.md", "CHANGELOG.md", "MEMORY.md", "VERSION"}
 
 
 def read_ceilings(text):
@@ -114,13 +124,62 @@ def check(path, rel, ceilings, quiet):
                         % m.group(0)))
             break
 
+    # DOC-CNT-004 · a path must not merely carry a directory — it must RESOLVE.
+    # A well-formed pointer to nothing reads as a promise.
+    here = os.path.dirname(path)
+    for m in re.finditer(r"`([A-Za-z0-9_][A-Za-z0-9_./-]*\.(?:md|template|tsv|yml|py|sh))`", text):
+        ref = m.group(1)
+        if os.path.basename(ref) == ref and ref in GENERIC:
+            continue          # a kind of file, not a pointer to one
+        if any(os.path.exists(os.path.join(b, ref))
+               for b in (here, ROOT, os.path.join(here, ".."),
+                         os.path.join(here, "../.."), os.path.join(here, "../../.."))):
+            continue
+        if PLANNED.search(text[max(0, m.start() - 90):m.start()]):
+            continue          # ⬜ marks a piece the engine has not written yet
+        ln = text[:m.start()].count("\n") + 1
+        bad.append(("DOC-CNT-004", rel, ln,
+                    "pointer does not resolve: %r · expected a path readable from "
+                    "here or from the root · a pointer to nothing reads as a promise"
+                    % ref))
+        break
+
+    # DOC-AUT-002 · a generated document is overwritten by its generator
+    m_auth = re.search(r"\*\*Authority:\*\*\s*([^\n·]+)", head)
+    auth = (m_auth.group(1).strip("*` ").lower() if m_auth else "")
+    # Search the BODY, not the header: the header holds the declaration itself,
+    # so a check that reads it finds its own field and always passes. A rule that
+    # satisfies itself is the purest form of a check that cannot fail.
+    body = text[len(head):]
+    if auth == "generated" and not re.search(
+            r"do not edit|never written|never edited|regenerat", body, re.I):
+        bad.append(("DOC-AUT-002", rel, 1,
+                    "declares Authority: generated but does not say so in its body · "
+                    "a hand edit here disappears at the next run, with no error"))
+
+    # DOC-OPS-001 · a supersede link points both ways
+    m = re.search(r"\*\*Supersedes?:\*\*\s*([^\n·]+)", head)
+    if m and m.group(1).strip("*` ") not in ("—", "-", ""):
+        target = m.group(1).strip("*`— ")
+        cands = [os.path.join(b, target) for b in (here, ROOT)]
+        found = next((c for c in cands if os.path.exists(c)), None)
+        if not found:
+            bad.append(("DOC-OPS-001", rel, 1,
+                        "supersedes %r, which does not exist" % target))
+        elif "superseded by" not in open(found, encoding="utf-8").read().lower():
+            bad.append(("DOC-OPS-001", rel, 1,
+                        "one-sided supersede link · %s does not point back · "
+                        "one of the two is wrong" % target))
+
     # DOC-NAM-001 / 003 / 004 / 007 · the filename
     base = os.path.basename(rel)
     if base not in SKIP_NAMES and base != base.lower() and not base.isupper():
         if not re.match(r"^[A-Z][A-Z0-9_.-]*$", base.split(".")[0]):
             bad.append(("DOC-NAM-006", rel, 0,
                         "mixed case in a non entry-point name: %r" % base))
-    if "_" in base.split(".")[0] and not base.isupper():
+    # An underscore is wrong in any name — including an entry point.
+    # The earlier guard let an all-caps name through, which is a different rule.
+    if "_" in base.split(".")[0]:
         bad.append(("DOC-NAM-001", rel, 0, "underscore in name · use hyphens: %r" % base))
     if re.search(r"-(v\d+|final|new|old|copy)(\.|$)", base, re.I):
         bad.append(("DOC-NAM-004", rel, 0,
