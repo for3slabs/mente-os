@@ -35,7 +35,73 @@ reverses the decision without knowing why it was made.
 
 ---
 
-## 2 · ⭐ THE THREE RULES
+## 2 · ⭐ BEFORE WRITING ONE — search, understand, reuse
+
+> ## ⛔ AN AGENT NEVER CREATES A RECORD BEFORE LOOKING FOR THE ONE THAT ALREADY ANSWERS IT.
+
+```
+SEARCH ──▶ UNDERSTAND ──▶ REUSE ──▶ CHECK FOR CONFLICT ──▶ CREATE
+```
+
+| ID | Rule | Enf | Verify |
+|---|---|---|---|
+| `DEC-SRC-001` | ⭐ **The existing records are searched first** | 📖 | ⛔ nothing verifies this |
+| `DEC-SRC-002` | ⭐ **A question already answered is REUSED, never re-decided** | 📖 | ⚠️ cite the record instead |
+| `DEC-SRC-003` | ⛔ **A record that contradicts a current one is a CONFLICT** | 🔒 | ⭐ see §7 |
+
+⚠️ **What happens without this, and it is the failure that costs most quietly:**
+
+```
+⛔  a new record says: "use this store"
+    a record from months ago already said exactly that
+    → two records, one question, and nothing says which is current
+```
+
+⭐ **That is not a duplicate document. It is a second authority** — and the next
+reader has to decide which one wins, which is the ambiguity these records exist
+to remove.
+
+---
+
+## 3 · ⭐ WHEN A RECORD IS NEEDED — and when it is BUREAUCRACY
+
+⛔ **A system that records everything records nothing:** ⚠️ **the signal drowns,
+and people stop writing them at all.**
+
+### ✅ A record IS needed when the decision…
+
+| # | |
+|---|---|
+| 1 | ⭐ **changes the architecture** — how the pieces relate |
+| 2 | **introduces a structural dependency** |
+| 3 | ⭐ **changes a contract between components** |
+| 4 | **modifies or removes an existing rule** |
+| 5 | ⭐ **changes a decision already accepted** |
+| 6 | **touches persistence, security, data or a protocol** |
+| 7 | ⭐ **is hard to reverse** |
+| 8 | **sets a pattern others will be expected to follow** |
+
+### ⛔ A record is NOT needed for…
+
+| ⛔ | ⭐ Why |
+|---|---|
+| a cosmetic change | it decides nothing |
+| a typo, a rename with no consequence | ⚠️ version control already records it |
+| ⭐ **a refactor with no behaviour change** | the behaviour is the decision, and it did not change |
+| a local, reversible choice | ⭐ it lives in the block's decisions, not here |
+| ⛔ **something a current record already settles** | ⚠️ **that is §2 — reuse it** |
+
+> ## ⭐ THE TEST
+> ⛔ **Would somebody, six months from now, argue about this?** If not, it is
+> not a decision — ⚠️ **it is a preference, and preferences do not get records.**
+
+⭐ **The failure this prevents is a real one:** a chain of records for a
+framework, then a component, then its padding, then the number. ⛔ **Each one
+correct, and together they make the folder unreadable.**
+
+---
+
+## 4 · ⭐ THE THREE RULES
 
 | # | Rule | ⛔ What it prevents |
 |---|---|---|
@@ -65,16 +131,19 @@ the reasoning ever moved.**
 
 ---
 
-## 3 · THE TEMPLATE
+## 5 · THE TEMPLATE
 
 ```markdown
 # <NNN> · Short imperative name
 
 date: <YYYY-MM-DD>
 status: proposed | accepted | superseded | reverted
+implementation: not-started | in-progress | implemented | verified
 decided-by: <who>
-supersedes: —
+supersedes: —          ⭐ and WHY, when it supersedes something
 superseded-by: —
+applies-to: <where this decision governs>
+does-not-apply-to: <where it explicitly does not>
 
 ## Context
 The problem that forced the decision — ⭐ with data, not adjectives.
@@ -82,11 +151,19 @@ The problem that forced the decision — ⭐ with data, not adjectives.
 ## Decision
 What was decided, in one sentence.
 
+## Rejected alternatives
+⭐ What was considered and turned down — **each one named**, so that proposing
+it again is recognised as a re-decision, not a new idea.
+
 ## Rationale
-Why this and not the alternative. ⭐ Name the alternative that was rejected.
+Why this one and not those.
 
 ## Evidence
 The measurement behind it. ⛔ If there is none, write `none — judgment call`.
+
+## Consequences
+⭐ What this decision obliges — the rules it produces, the pieces it affects,
+and what demonstrates it is actually in place.
 
 ## Reverting
 How to undo it if it turns out wrong. ⛔ If it cannot be undone, say so.
@@ -102,6 +179,10 @@ How to undo it if it turns out wrong. ⛔ If it cannot be undone, say so.
 | **Decision** | ⭐ one sentence |
 | **Rationale** | ⛔ must name what was rejected |
 | **Evidence** | a number, a file, a command — ⭐ or the words that admit there is none |
+| ⭐ **`implementation`** | ⚠️ **a decision and its implementation are not the same thing** — see §6 |
+| ⭐ **`applies-to` / `does-not-apply-to`** | ⛔ a decision with no boundary gets applied where it was never meant to |
+| **Rejected alternatives** | ⭐ **each one named** — see below |
+| **Consequences** | ⭐ what it obliges, and what proves it is in place |
 | **Reverting** | ⚠️ **and if it cannot be undone, that is the most important sentence in the file** |
 
 | ID | Rule | Enf | Verify |
@@ -110,7 +191,9 @@ How to undo it if it turns out wrong. ⛔ If it cannot be undone, say so.
 | `DEC-FLD-002` | **`status` is one of the four** | 🔒 | ⚠️ free text means nothing can sort them |
 | `DEC-FLD-003` | **All five sections present** | 🔒 | Context · Decision · Rationale · Evidence · Reverting |
 | `DEC-FLD-004` | ⭐ **`Evidence` is filled, or explicitly says there is none** | 🔒 | ⛔ an empty field reads as *not yet written* |
-| `DEC-FLD-005` | ⭐ **`Rationale` names the rejected alternative** | 🟡 | ⚠️ without it, the reasoning cannot be re-examined |
+| `DEC-FLD-005` | ⭐ **Rejected alternatives are named, one per line** | 🟡 | ⚠️ without them, the reasoning cannot be re-examined |
+| `DEC-FLD-006` | ⭐ **`supersedes` states WHY, not only WHAT** | 🟡 | ⛔ *"replaced by 008"* does not say what changed |
+| `DEC-FLD-007` | ⭐ **A record declares where it applies** | 🟡 | ⚠️ and where it explicitly does not |
 
 > ## ⭐ `Evidence` AND `Reverting` ARE WHAT MAKE THIS MORE THAN A CHANGELOG
 > ⛔ **A decision with no evidence is an opinion. A decision with no exit is a trap.**
@@ -121,7 +204,89 @@ identical afterwards, and only one of them was a choice.
 
 ---
 
-## 4 · NUMBERING
+## 6 · ⭐ THE DECISION AND ITS IMPLEMENTATION ARE NOT THE SAME THING
+
+⛔ **`status: accepted` says the decision was taken. It says NOTHING about
+whether it happened.**
+
+| `status` | Says |
+|---|---|
+| `proposed` · `accepted` · `superseded` · `reverted` | ⭐ **what the decision IS** |
+
+| `implementation` | Says |
+|---|---|
+| `not-started` | ⭐ decided, ⛔ nothing built |
+| `in-progress` | under way |
+| `implemented` | ⚠️ built — **and not yet demonstrated** |
+| ⭐ **`verified`** | ⭐ **built AND something proves it** |
+
+| ID | Rule | Enf | Verify |
+|---|---|---|---|
+| `DEC-IMP-001` | ⭐ **Both states are declared** | 🔒 | ⛔ one of them alone is half an answer |
+| `DEC-IMP-002` | ⭐ **`verified` names what demonstrates it** | 🟡 | ⚠️ a validator, a test, a measurement |
+| `DEC-IMP-003` | 🔴 **`accepted` + `not-started`, long enough, is asked about** | 📖 | ⭐ see below |
+
+> ## 🔴 AN ACCEPTED DECISION THAT WAS NEVER IMPLEMENTED
+> ⛔ **From the outside it reads exactly like one that was.** ⚠️ The record says
+> `accepted`, the folder looks healthy, and the thing it decided does not
+> exist anywhere.
+>
+> ⭐ **It is the same shape as a piece that is built and never connected** — and
+> it is worse here, because ⛔ **everything downstream cites the record as
+> settled.**
+
+⭐ **The fix is not to forbid it.** A decision taken before the work is normal
+and often correct. ⚠️ **What is not acceptable is that nothing distinguishes
+"decided, pending" from "decided, done".**
+
+---
+
+## 7 · ⛔ WHEN TWO RECORDS DISAGREE
+
+> ## ⭐ AN AGENT NEVER PICKS BETWEEN TWO CONTRADICTORY RECORDS.
+
+```
+two records answer the same question, differently
+        ↓
+does one supersede the other?
+    ├─ YES ─▶ ⭐ the superseding one is current · the other is history
+    │
+    └─ NO ──▶ ⛔ CONFLICT
+                ↓
+        ⭐ STOP · report both · do not implement either
+        the resolution is a NEW record that supersedes both
+```
+
+| ID | Rule | Enf | Verify |
+|---|---|---|---|
+| `DEC-CFL-001` | ⭐ **A conflict is reported, never resolved by choosing** | 📖 | ⛔ nothing verifies this |
+| `DEC-CFL-002` | ⭐ **The resolution is a new record superseding BOTH** | 📖 | ⚠️ not an edit to either |
+| `DEC-CFL-003` | ⛔ **Nothing is implemented while a conflict is open** | 📖 | ⭐ see below |
+
+⚠️ **`DEC-CFL-003` is the one that matters:** ⛔ **implementing one side of an
+open conflict makes the code the tiebreaker** — and then the decision was taken
+by whoever typed fastest, with no record of it.
+
+### ⭐ AND WHEN THE CONFLICT IS NOT BETWEEN RECORDS
+
+⚠️ **A record can also contradict a rule, a criterion, or the code itself.**
+⭐ **The order, strongest first:**
+
+| # | Source | ⭐ |
+|---|---|---|
+| 1 | ⭐ **the current decision record** | it is what the others were derived from |
+| 2 | **a rule born from it** | ⚠️ if it disagrees, the rule drifted |
+| 3 | **a criterion** | it judges, it does not decide |
+| 4 | ⛔ **the implementation** | ⭐ **code is evidence of what happens, never of what was decided** |
+| 5 | **documentation** | ⚠️ the most likely to be stale |
+
+⛔ **And a conflict between levels is still a conflict:** ⭐ **the higher one
+wins AND the divergence is reported** — ⚠️ a rule that drifted from its record
+is a defect in one of the two, and silently obeying the record hides which.
+
+---
+
+## 8 · NUMBERING
 
 | ID | Rule | Enf | Verify |
 |---|---|---|---|
@@ -135,7 +300,7 @@ none of them says so.**
 
 ---
 
-## 5 · ⛔ A LINK POINTS BOTH WAYS
+## 9 · ⛔ A LINK POINTS BOTH WAYS
 
 ```
 NNN  superseded-by: MMM        MMM  supersedes: NNN
@@ -154,7 +319,7 @@ the reader has no way to tell which one won.
 
 ---
 
-## 6 · ⭐ WHAT ELSE DESERVES A RECORD
+## 10 · ⭐ WHAT ELSE DESERVES A RECORD
 
 ⛔ **Not everything. The heavier the object, the heavier the record.**
 
@@ -172,7 +337,7 @@ written at all.**
 
 ---
 
-## 7 · ⛔ WHAT IT COSTS TO BREAK IT
+## 11 · ⛔ WHAT IT COSTS TO BREAK IT
 
 | Broken | ⭐ The cost |
 |---|---|
@@ -182,10 +347,15 @@ written at all.**
 | **a reused number** | ⛔ every citation resolves to the wrong decision, silently |
 | **empty `Evidence`** | ⭐ an opinion, indistinguishable from a measurement |
 | **no `Reverting`** | ⚠️ the decision cannot be undone by anyone who was not there |
+| ⭐ **a record written without searching first** | ⛔ **two records, one question — and nothing says which is current** |
+| **a record for something nobody would argue about** | ⚠️ the folder becomes unreadable, ⭐ and the real decisions drown |
+| ⭐ **`accepted` with no implementation state** | ⛔ **decided and never built reads exactly like decided and done** |
+| ⭐ **a rejected alternative left inside the rationale** | ⚠️ **nothing can detect it being proposed again** |
+| **choosing between two contradictory records** | ⛔ ⭐ **the tiebreak becomes whoever typed fastest, with no record of it** |
 
 ---
 
-## 8 · WHO GOVERNS THIS FILE
+## 12 · WHO GOVERNS THIS FILE
 
 | Change | Who |
 |---|---|
