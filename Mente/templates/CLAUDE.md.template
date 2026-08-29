@@ -70,7 +70,7 @@ stores everything on disk, so `/clear` is safe **when the session is registered*
 | **Conduct** — do not state without measuring · do not invent criterion · explain before building | `Mente/base-rules.md` |
 | **This project** — scope, the gate to other Mente OS, server-first, security, identity | **`PROJECT-RULES.md`** |
 | **The voice** — how Mente OS communicates | `Mente/memory/principles/owner-0-voice.md` (vehicle: `outputStyle: "{{project}}"`) |
-| **Large work** — the F-phase method | `Mente/rules/ESTANDAR_Metodo_Fases_F.md` |
+| **Large work** — your method for milestones | ⬜ declared in `PROJECT-RULES.md` |
 | **Open/close a block** | `Mente/rules/block-lifecycle.md` |
 | **Which standard applies to the code I am about to touch** | 🤖 the hook `Mente/hooks/pre-edit-standards.py` injects it on its own |
 | **System architecture** | the architecture pillar declared in config |
@@ -143,7 +143,7 @@ be recovered from disk.
 ⬜ **Describe your project's state in ONE line** — or delete this line and leave only the pointer
 table below. NEVER put numbers here (they belong in `Mente/docs/METRICS.md`).
 
-**Mente OS v2** = the block system that governs this repo: validators + hooks + 3 rule levels.
+**Mente OS** = the block system that governs a repository: validators + hooks + 3 rule levels.
 **The living proof is `Mente/bin/check-all`; the only thing that matters is `failed: 0`.**
 
 | You need… | Read it from… |

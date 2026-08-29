@@ -161,11 +161,11 @@ like separate repos, so a stale table can cite a dead address and still appear t
 
 ## 7 · 🏗️ HOW WORK IS BUILT
 
-Every **large milestone** uses the F-phase method: `Mente/rules/ESTANDAR_Metodo_Fases_F.md`.
+⬜ **Declare here the method your large milestones follow**, and point at where it lives.
 
 ```
 explain → approve → build          (never skip the middle step)
-investigate the ground → build defensively → §5-BIS battery → signed commit → server first
+⬜ investigate the ground → build defensively → verify → sign → publish
 ```
 
 ⭐ **Curiosity that hunts bugs:** actively look for your own latent bug. Never call something good

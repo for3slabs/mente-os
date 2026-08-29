@@ -72,7 +72,6 @@ contrato-campana	rules/contract-campaign.md	engine	canonical	which fields a camp
 contrato-doc	rules/contract-document.md	engine	canonical	the shape every document in the system follows
 contrato-adr	rules/contract-adr.md	engine	canonical	the shape of a recorded decision
 herencia	rules/rule-inheritance.md	engine	canonical	the 3 levels and how rules add up
-metodo-fases	rules/ESTANDAR_Metodo_Fases_F.md	engine	canonical	the phase method for large work
 ciclo-bloque	rules/block-lifecycle.md	engine	canonical	how a block opens and closes
 regla-cierre	rules/rule-session-close.md	engine	canonical	register the session before a reset
 convencion-nombres	rules/NAMING_CONVENTION.md	engine	canonical	how pieces are named
@@ -140,3 +139,6 @@ check-inheritance	bin/check-inheritance	engine	executable	enforces the lock rule
 rule-inheritance	rules/rule-inheritance.md	engine	canonical	the three levels where rules live — add or tighten, never loosen
 check-checks	bin/check-checks	engine	executable	audits the other validators — the five families of a blind check
 rule-checks-measure	rules/rule-checks-must-measure.md	engine	canonical	a check seen only green has not been tested — the five families
+check-decisions	bin/check-decisions	engine	executable	enforces the lock rules of the decision-record contract
+contract-adr	rules/contract-adr.md	engine	canonical	the shape of a decision already taken — append-only, never edited
+decisions-readme	rules/decisions/README.md	engine	canonical	the append-only folder — ships empty, the records are yours

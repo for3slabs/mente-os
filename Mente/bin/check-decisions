@@ -1,0 +1,173 @@
+#!/usr/bin/env python3
+"""check-decisions — enforces the 🔒 rows of rules/contract-adr.md
+
+The folder ships empty: another installation's decisions are not yours.
+With no records, this reports what it found rather than a pass — nothing
+measured is not the same as nothing wrong.
+
+Exit: 0 clean · 1 violations · 2 the contract itself is missing
+"""
+import os, re, sys
+
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+CONTRACT = os.path.join(ROOT, "rules", "contract-adr.md")
+DECISIONS = os.path.join(ROOT, "rules", "decisions")
+
+STATUSES = {"proposed", "accepted", "superseded", "reverted"}
+SECTIONS = ["Context", "Decision", "Rationale", "Evidence", "Reverting"]
+NONE = {"—", "-", "none", "n/a", ""}
+NO_EVIDENCE = re.compile(r"\bnone\b.*\bjudg?ment call\b", re.I)
+
+FIELD = re.compile(r"^(date|status|decided-by|supersedes|superseded-by):\s*(.*?)\s*$", re.M)
+ISO = re.compile(r"^\d{4}-\d{2}-\d{2}$")
+NUM = re.compile(r"^(\d{3,})[-_ ]")
+
+
+def body_of(text, name):
+    m = re.search(r"^##\s+%s\s*$" % re.escape(name), text, re.M)
+    if not m:
+        return None
+    nxt = re.search(r"^##\s+", text[m.end():], re.M)
+    return (text[m.end(): m.end() + nxt.start()] if nxt else text[m.end():]).strip()
+
+
+def main():
+    quiet = "--quiet" in sys.argv
+    if not os.path.exists(CONTRACT):
+        print("🔴 the contract itself is missing: rules/contract-adr.md")
+        return 2
+    if not os.path.isdir(DECISIONS):
+        if not quiet:
+            print("check-decisions · no rules/decisions directory · "
+                  "nothing measured (the folder ships empty)")
+        return 0
+
+    files = sorted(f for f in os.listdir(DECISIONS)
+                   if f.endswith(".md") and f != "README.md")
+    findings = []
+    seen_num = {}
+    records = {}
+
+    for name in files:
+        path = os.path.join(DECISIONS, name)
+        rel = os.path.relpath(path, ROOT)
+        if not os.path.isfile(path):
+            findings.append(("DEC-FLD-001", rel,
+                             "vanished between listing and reading"))
+            continue
+        text = open(path, encoding="utf-8").read()
+        f = {k: v.strip("`* ") for k, v in FIELD.findall(text)}
+
+        # DEC-NUM-001 · a sortable, zero-padded number in the filename
+        m = NUM.match(name)
+        if not m:
+            findings.append(("DEC-NUM-001", rel,
+                             "filename does not start with a zero-padded number · "
+                             "expected NNN-name.md · got: %r" % name))
+            num = None
+        else:
+            num = m.group(1)
+            # DEC-NUM-002 · a number is never reused
+            if num in seen_num:
+                findings.append(("DEC-NUM-002", rel,
+                                 "number %s already used by %s · a number is an "
+                                 "address, and reuse makes every citation resolve "
+                                 "to the wrong record" % (num, seen_num[num])))
+            else:
+                seen_num[num] = rel
+
+        # DEC-FLD-001 · the five header fields
+        missing = [k for k in ("date", "status", "decided-by",
+                               "supersedes", "superseded-by") if k not in f]
+        if missing:
+            findings.append(("DEC-FLD-001", rel,
+                             "missing header field(s): %s · expected all five"
+                             % ", ".join(missing)))
+
+        if not ISO.match(f.get("date", "")):
+            findings.append(("DEC-FLD-001", rel,
+                             "date not ISO · expected YYYY-MM-DD · got: %r"
+                             % f.get("date", "")))
+
+        # DEC-FLD-002 · status in the allowed set
+        st = f.get("status", "").lower()
+        if st not in STATUSES:
+            findings.append(("DEC-FLD-002", rel,
+                             "status not allowed · expected one of %s · got: %r"
+                             % ("|".join(sorted(STATUSES)), f.get("status", ""))))
+
+        # DEC-FLD-003 · the five sections
+        bodies = {}
+        for s in SECTIONS:
+            b = body_of(text, s)
+            bodies[s] = b
+            if b is None:
+                findings.append(("DEC-FLD-003", rel,
+                                 "missing section: %s · expected all five" % s))
+
+        # DEC-FLD-004 · Evidence filled, or explicitly none
+        ev = (bodies.get("Evidence") or "").strip()
+        if bodies.get("Evidence") is not None:
+            if not ev:
+                findings.append(("DEC-FLD-004", rel,
+                                 "Evidence is empty · expected a measurement, or "
+                                 "the words admitting there is none · silence and "
+                                 "an honest 'no data' look identical afterwards"))
+            elif len(ev) < 12 and not NO_EVIDENCE.search(ev):
+                findings.append(("DEC-FLD-004", rel,
+                                 "Evidence is too short to be one · got: %r" % ev[:40]))
+
+        records[num or name] = {
+            "rel": rel, "status": st,
+            "supersedes": f.get("supersedes", "").strip(),
+            "superseded_by": f.get("superseded-by", "").strip(),
+        }
+
+    # DEC-SUP-* · symmetry, existence, and status
+    def key(ref):
+        m = re.search(r"(\d{3,})", ref or "")
+        return m.group(1) if m else None
+
+    for num, r in records.items():
+        sup, by = key(r["supersedes"]), key(r["superseded_by"])
+        if r["supersedes"].lower() not in NONE and sup:
+            if sup not in records:
+                findings.append(("DEC-SUP-002", r["rel"],
+                                 "supersedes %s, which does not exist" % sup))
+            elif key(records[sup]["superseded_by"]) != num:
+                findings.append(("DEC-SUP-001", r["rel"],
+                                 "one-sided link · %s says it supersedes %s · %s "
+                                 "does not point back" % (num, sup, sup)))
+        if r["superseded_by"].lower() not in NONE and by:
+            if by not in records:
+                findings.append(("DEC-SUP-002", r["rel"],
+                                 "superseded-by %s, which does not exist" % by))
+            else:
+                # symmetry checked from BOTH ends: a link declared on one side
+                # only is the shape a one-sided check cannot see
+                if key(records[by]["supersedes"]) != num:
+                    findings.append(("DEC-SUP-001", r["rel"],
+                                     "one-sided link · %s says it is superseded by "
+                                     "%s · %s does not point back · one of the two "
+                                     "is wrong" % (num, by, by)))
+                if r["status"] != "superseded":
+                    findings.append(("DEC-SUP-003", r["rel"],
+                                     "superseded by %s but status is %r · expected: "
+                                     "superseded · two records both read as current"
+                                     % (by, r["status"])))
+
+    if not quiet:
+        print("check-decisions · %d record(s)%s"
+              % (len(files), " · the folder ships empty" if not files else ""))
+    if findings:
+        for cid, rel, msg in findings:
+            print("🔴 %s · %s · %s" % (rel, cid, msg))
+        print("\n%d violations · rule: rules/contract-adr.md" % len(findings))
+        return 1
+    if not quiet and files:
+        print("✅ 0 violations")
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

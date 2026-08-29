@@ -1,4 +1,4 @@
-# Mente OS v2
+# Mente OS
 
 **Status:** current · **Type:** entry-point · **Updated:** {{date}} · **Owner:** {{owner}}
 **License:** AGPL-3.0 — see `LICENSE` at the repository root
@@ -233,8 +233,8 @@ Read that one before adding a file — it is the shortest path to getting the pl
 
 ## 9 · Resuming after a context reset
 
-Read **`memory/RETOMAR.md`**. It is the only file guaranteed to be read, capped at 200 lines on
-purpose, and it should be enough to start working without asking anything.
+Read **`memory/RETOMAR.md`**. It is the only file guaranteed to be read, and its ceiling is
+declared on purpose — ⭐ **it should be enough to start working without asking anything.**
 
 Closing a session is the other half: run the `session-wrap` skill, or follow
 `rules/rule-session-close.md`. **`/clear` is a cut, not a save** — whatever is not on disk is
