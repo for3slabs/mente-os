@@ -103,8 +103,8 @@ Registry and full rules: `Mente/connection/bridges/`.
 
 ## 4 · 📏 SERVER-FIRST — the deploy rule
 
-> **Develop and test on the SERVER. Push to GitHub only on an explicit order.**
-> Flow: `server → local → GitHub`.
+> ⬜ **Develop and test where you declared. Publish only on an explicit order.**
+> ⬜ Flow: declare yours — ⭐ **the engine fixes that publishing needs an order, never where to.**
 
 ⚠️ **Why this is project-level and not universal:** it only matters in repos with auto-deploy.
 **A repo with auto-deploy publishes on push to its release branch** — declare below which one that is.
@@ -120,8 +120,8 @@ publishing happens. A repo not declared here is a repo someone will push to by m
 
 | Repo | Role | Remote name on the server |
 |---|---|---|
-| `github.com/<org>/<workshop-repo>` | ⭐ **the workshop's remote** — where the server pushes daily | `origin` |
-| `github.com/<org>/<product-repo>` | **the verified product's backup** (AGPL, GPG-signed by the owner) | `backup` |
+| ⬜ `<forge>/<org>/<workshop-repo>` | ⭐ **the workshop's remote** — where the server pushes daily | `origin` |
+| ⬜ `<forge>/<org>/<product-repo>` | **the verified product's backup** (AGPL, GPG-signed by the owner) | `backup` |
 | server `~/<workshop-dir>` | the workshop itself — **the source** | — |
 | `<site-project>` | the site — **pushing to `main` publishes** | — |
 
