@@ -1,0 +1,263 @@
+#!/usr/bin/env python3
+"""check-pending — enforces the 🔒 rows of rules/contract-pending.md
+
+⭐ The failure this measures is not a forgotten item: it is a list that LIES.
+An item marked closed with no closing date, one carried from nowhere, one
+loose with no block — each reads as debt that is understood, and is not.
+
+Exit: 0 clean · 1 violations · 2 the contract itself is missing
+"""
+import os, re, sys
+
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+CONTRACT = os.path.join(ROOT, "rules", "contract-pending.md")
+MEMORY = os.path.join(ROOT, "memory")
+
+# ⬜ Field labels are the installation's. The engine fixes WHAT must be
+# answered, never what it is called — an installation writing them in another
+# language is not in violation; one that omits a field is. Declared in the
+# project rules as:  pending_field <field> = <regex>
+CANON = {"priority": r"priority", "state": r"state",
+         "created": r"created", "carried from": r"carried[ _-]?from",
+         "closed": r"closed"}
+
+
+def load_aliases():
+    p = os.path.join(ROOT, "PROJECT-RULES.md")
+    out = {}
+    if os.path.exists(p):
+        for m in re.finditer(r"pending_field\s+([\w ]+?)\s*=\s*(.+)",
+                             open(p, encoding="utf-8").read()):
+            out[m.group(1).strip().lower()] = m.group(2).strip()
+    return out
+
+
+def canon(label, alias):
+    """Map whatever the installation calls a field back to its canonical name."""
+    low = label.strip().lower()
+    for name, pat in CANON.items():
+        if re.fullmatch(pat, low) or (name in alias
+                                      and re.fullmatch(alias[name], low, re.I)):
+            return name
+    return low
+
+
+# ⬜ The state VALUES are the installation's too, for the same reason the field
+# labels are. Declared as:  pending_state <canonical> = <regex>
+STATES = {"open", "paused", "closed", "dropped", "finished"}
+
+
+def load_states():
+    p = os.path.join(ROOT, "PROJECT-RULES.md")
+    out = {}
+    if os.path.exists(p):
+        for m in re.finditer(r"pending_state\s+(\w+)\s*=\s*(.+)",
+                             open(p, encoding="utf-8").read()):
+            out[m.group(1).strip().lower()] = m.group(2).strip()
+    return out
+
+
+def canon_state(value, smap):
+    """Map whatever the installation calls a state back to its canonical name.
+    ⭐ The value can carry a comment after it — the state is the first word."""
+    v = re.split(r"[—·\-(]", value.strip(), 1)[0].strip().lower()
+    if v in STATES:
+        return v
+    for name, pat in smap.items():
+        if re.match(pat, v, re.I):
+            return name
+    return v
+PRIORITIES = {"🔴", "🟠", "🟢"}
+CLOSED = {"closed", "finished", "dropped"}
+
+# A pending file is any list of items under memory/. The engine fixes the SHAPE,
+# never the filename: an installation naming its periods differently is not in
+# violation.
+# An item is a heading whose body declares the contract's fields — not any
+# heading with a separator in it. Reading every `### x · y` turned prose
+# headings in unrelated documents into malformed pending items: a detector
+# looser than the thing it measures reports defects that are not there.
+ITEM = re.compile(r"^###\s+(\S+)\s*·\s*(.+?)\s*$\n+(?=-\s*\*{0,2}\w)", re.M)
+# ⬜ The block heading's word is the installation's too. Declared as:
+#    pending_field block = <regex>
+BLOCK_DEFAULT = r"BLOCK"
+
+
+def block_re(alias):
+    return re.compile(r"^##\s+(?:%s)\s*·\s*(.+?)\s*$"
+                      % alias.get("block", BLOCK_DEFAULT), re.M | re.I)
+
+
+BLOCK = block_re({})
+# Several fields can share one line separated by ·, so a value ends at the
+# separator — not at the end of the line. Reading to the line end swallowed the
+# fields that followed, and every one of them read as missing.
+FIELD = re.compile(r"(?:^-\s*|·\s*)\*{0,2}([\w ]+?)\*{0,2}\s*:\s*"
+                   r"([^\n·]*?)\s*(?=·|$)", re.M)
+ISO = re.compile(r"\d{4}-\d{2}-\d{2}")
+
+
+def files():
+    if not os.path.isdir(MEMORY):
+        return []
+    out = []
+    for n in sorted(os.listdir(MEMORY)):
+        p = os.path.join(MEMORY, n)
+        if not os.path.isfile(p) or not n.endswith(".md"):
+            continue
+        head = open(p, encoding="utf-8").read(4000)
+        # A pending list declares itself by holding items in the contract's
+        # shape — not by its name, which is the installation's to choose.
+        # ⛔ And it is recognised by its ITEMS alone: requiring a block too
+        # means a flat list — the very defect PND-BLK-001 exists to catch — is
+        # not read as a pending list at all, and goes unreported.
+        if ITEM.search(head):
+            out.append(p)
+    return out
+
+
+def section(text, start, nxt):
+    end = nxt if nxt is not None else len(text)
+    return text[start:end]
+
+
+def check(path, rel):
+    bad = []
+    alias = load_aliases()
+    smap = load_states()
+    text = open(path, encoding="utf-8").read()
+    blocks = [(m.start(), m.group(1)) for m in block_re(alias).finditer(text)]
+    items = [(m.start(), m.group(1), m.group(2)) for m in ITEM.finditer(text)]
+
+    for i, (pos, iid, title) in enumerate(items):
+        nxt = items[i + 1][0] if i + 1 < len(items) else None
+        body = section(text, pos, nxt)
+        f = {canon(k, alias): v for k, v in FIELD.findall(body)}
+
+        # PND-BLK-001 · every item belongs to a block
+        # An item with no block ABOVE it — including a file with no blocks at
+        # all, which is the shape a flat list takes.
+        owner = [name for start, name in blocks if start < pos]
+        if not owner:
+            bad.append(("PND-BLK-001", rel,
+                        "%s belongs to no block · a loose item has no subject, "
+                        "and a reader scanning fifty retains none" % iid))
+
+        # PND-FLD-001 · every field present
+        for field in ("priority", "state", "created", "carried from"):
+            if field not in f:
+                bad.append(("PND-FLD-001", rel,
+                            "%s has no %r · a missing field is not brevity, it "
+                            "is an unanswered question" % (iid, field)))
+
+        state = canon_state(f.get("state", ""), smap)
+        if state and state not in STATES:
+            bad.append(("PND-VRB-003", rel,
+                        "%s state %r unknown · expected one of %s"
+                        % (iid, state, "|".join(sorted(STATES)))))
+
+        # PND-VRB-001 · closed requires a closing date
+        if state in ("closed", "finished"):
+            closed = f.get("closed", "") or body
+            if not ISO.search(f.get("closed", "")):
+                bad.append(("PND-VRB-001", rel,
+                            "%s is %s with no closing date · prose is not a "
+                            "state" % (iid, state)))
+
+        # PND-VRB-002 · dropped requires a written reason
+        if state == "dropped":
+            why = re.search(r"\b(because|reason|why|dropped because)\b", body, re.I)
+            if not why:
+                bad.append(("PND-VRB-002", rel,
+                            "%s is dropped with no written reason · it will be "
+                            "reborn in three months as a new finding" % iid))
+
+        # PND-FLD-002 · the three dates, and created is real
+        if "created" in f and not ISO.search(f["created"]):
+            bad.append(("PND-FLD-002", rel,
+                        "%s has no real creation date · without it, age cannot "
+                        "be read" % iid))
+
+        # PND-FLD-003 · carried from names a file, or says it was born here
+        cf = f.get("carried from", "").strip()
+        if cf and cf not in ("—", "-") and "born" not in cf.lower():
+            if not re.search(r"[\w./-]+\.\w+", cf):
+                bad.append(("PND-FLD-003", rel,
+                            "%s carried-from names no file · without it, six "
+                            "months old reads like yesterday" % iid))
+
+    # PND-ROT-001 · an open item is rewritten, never pointed at
+    for i, (pos, iid, title) in enumerate(items):
+        nxt = items[i + 1][0] if i + 1 < len(items) else None
+        body = section(text, pos, nxt)
+        f = {canon(k, alias): v for k, v in FIELD.findall(body)}
+        if canon_state(f.get("state", ""), smap) in ("open", "paused"):
+            if re.search(r"\bsee\b[^\n]*\bprevious\b|\bsee\b[^\n]*§|\bas described in\b",
+                         body, re.I):
+                bad.append(("PND-ROT-001", rel,
+                            "%s points at a previous period instead of being "
+                            "rewritten · one broken link and the item is "
+                            "invisible, and invisible is gone" % iid))
+
+    # PND-BLK-002 · a block declares its plan
+    for i, (start, name) in enumerate(blocks):
+        nxt = blocks[i + 1][0] if i + 1 < len(blocks) else len(text)
+        body = text[start:nxt]
+        if not re.search(r"\bplan\b", body, re.I):
+            bad.append(("PND-BLK-002", rel,
+                        "block %r declares no plan · a block with none is a "
+                        "folder with a name" % name))
+    return bad
+
+
+def main():
+    quiet = "--quiet" in sys.argv
+    if not os.path.exists(CONTRACT):
+        print("🔴 the contract itself is missing: rules/contract-pending.md")
+        return 2
+
+    found = files()
+    findings = []
+    for p in found:
+        findings += check(p, os.path.relpath(p, ROOT))
+
+    # PND-CNV-002 · only one list receives writes
+    if len(found) > 1:
+        # A list is dead only when it SAYS so in its header: any other word in
+        # its body is not a declaration, and treating it as one hides a second
+        # live list — which is exactly what this rule measures.
+        live = [p for p in found
+                if not re.search(r"\*\*Status:\*\*\s*(fossil|superseded)"
+                                 r"|no longer receives writes|history only",
+                                 open(p, encoding="utf-8").read(2000), re.I)]
+        if len(live) > 1:
+            # Name the lists themselves, not the folder: a finding whose
+            # path is a directory cannot be attributed to what caused it.
+            findings.append(("PND-CNV-002",
+                             " · ".join(os.path.relpath(q, ROOT) for q in live[:3]),
+                             "%d live pending lists · expected one · two live "
+                             "lists diverge, and the older one is planned "
+                             "against" % len(live)))
+
+    if not quiet:
+        print("check-pending · %d list(s)%s"
+              % (len(found), " · nothing measured" if not found else ""))
+    if findings:
+        for cid, rel, msg in findings:
+            print("🔴 %s · %s · %s" % (rel, cid, msg))
+        print("\n%d violations · rule: rules/contract-pending.md" % len(findings))
+        return 1
+    if not quiet and found:
+        print("✅ 0 violations")
+    return 0
+
+
+if __name__ == "__main__":
+    try:
+        sys.exit(main())
+    except Exception as e:
+        # CHK-CAU-002 · a crash reports nothing, and "nothing reported" reads
+        # exactly like "nothing wrong". Turn it into a finding, not a trace.
+        print("🔴 %s crashed · %s: %s"
+              % (os.path.basename(__file__), type(e).__name__, e))
+        sys.exit(1)
