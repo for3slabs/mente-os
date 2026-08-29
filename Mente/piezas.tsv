@@ -145,3 +145,6 @@ hook-pre-commit	hooks/pre-commit.sh	engine	executable	refuses a commit on the ba
 contract-archive	rules/contract-archive.md	engine	canonical	what survives when a block closes — the three files and what goes inside them
 check-archive	bin/check-archive	engine	executable	enforces the lock rules of the archive contract
 probe-archive	bin/probes/probe-archive.py	engine	executable	proves check-archive detects what the archive contract claims
+contract-pending	rules/contract-pending.md	engine	canonical	the shape of a debt that outlives its session, and how its file rotates
+check-pending	bin/check-pending	engine	executable	enforces the lock rules of the pending contract
+probe-pending	bin/probes/probe-pending.py	engine	executable	proves check-pending detects what the pending contract claims
