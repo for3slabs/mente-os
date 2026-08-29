@@ -160,3 +160,6 @@ rule-shipping	rules/rule-shipping.md	engine	canonical	how a change leaves the wo
 check-shipping	bin/check-shipping	engine	executable	enforces the lock rows of the shipping rule
 probe-shipping	bin/probes/probe-shipping.py	engine	executable	proves check-shipping detects what the shipping rule claims
 hook-pre-commit	hooks/pre-commit.sh	engine	executable	refuses a commit on the base branch — SHP-LCK-001
+contract-archive	rules/contract-archive.md	engine	canonical	what survives when a block closes — the three files and what goes inside them
+check-archive	bin/check-archive	engine	executable	enforces the lock rules of the archive contract
+probe-archive	bin/probes/probe-archive.py	engine	executable	proves check-archive detects what the archive contract claims
