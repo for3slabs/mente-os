@@ -1,0 +1,176 @@
+#!/usr/bin/env python3
+"""check-archive — enforces the 🔒 rows of rules/contract-archive.md
+
+⭐ A validator that demands a file whose content is undefined produces empty
+files that satisfy the check and teach nothing. This one checks the CONTENT
+of the two written files, not only that they exist.
+
+Exit: 0 clean · 1 violations · 2 the contract itself is missing
+"""
+import os, re, sys
+
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+CONTRACT = os.path.join(ROOT, "rules", "contract-archive.md")
+ARCHIVE = os.path.join(ROOT, "work", "blocks", "archive")
+
+REQUIRED_FILES = ["SUMMARY.md", "connections.md", "BLOCK.md"]
+# ARC-SUM-001 · the fields the summary must answer. Matched on intent, not on
+# an exact heading: a contract that pins the wording makes every installation
+# that phrases it differently fail for a reason that is not a defect.
+# ⬜ Heading names are the installation's. The engine fixes WHAT must be
+# answered, never what it is called — an installation writing in another
+# language is not in violation; one that omits a field is. Declared in the
+# project rules as:  archive_field <field> = <regex>
+def load_aliases():
+    p = os.path.join(ROOT, "PROJECT-RULES.md")
+    out = {}
+    if os.path.exists(p):
+        for m in re.finditer(r"archive_field\s+([\w-]+)\s*=\s*(.+)",
+                             open(p, encoding="utf-8").read()):
+            out[m.group(1).strip()] = m.group(2).strip()
+    return out
+
+
+SUMMARY_FIELDS = {
+    "what it was for": r"\b(what it was for|intent|purpose)\b",
+    "what was built": r"\b(what was built|delivered|completed)\b",
+    "the quality verdict": r"\b(verdict|quality)\b",
+    "what was learned": r"\b(learn(ed|ings)?|lesson)\b",
+    "what was left out": r"\b(left out|not (done|completed)|remaining|pending)\b",
+}
+CONNECTION_FIELDS = {
+    "pieces owned": r"\b(piece|owned|scope)\b",
+    "blocks that depended on it": r"\b(depend|dependent|depended)\b",
+    "what is still open": r"\b(still open|open|moved to|unfinished)\b",
+}
+# ARC-NEV-001 · a credential never reaches an archive, not even an expired one
+SECRET = re.compile(
+    r"(?i)\b(api[_-]?key|secret|token|password|passwd|private[_-]?key)\b\s*[:=]\s*\S{8,}"
+    r"|\b[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]{20,}\b")
+
+
+def body(text, pattern):
+    """The section under a heading that matches the pattern.
+
+    ⚠️ The field patterns contain their own groups, so the body cannot be
+    group(1): it returned the matched WORD instead of the content, and every
+    field read as filled. A named group is the only safe way to address it.
+    """
+    # The last section runs to the Related line, not to the end of the file:
+    # without that boundary an empty field reads as filled by the pointer line
+    # that follows it.
+    m = re.search(r"^#{1,4}[^\n]*(?:%s)[^\n]*$(?P<body>.*?)"
+                  r"(?=^#{1,4}\s|^Related:|\Z)" % pattern,
+                  text, re.M | re.S | re.I)
+    return m.group("body").strip() if m else None
+
+
+def check(d, rel):
+    bad = []
+    # ARC-SHP-001 · all three files present
+    for f in REQUIRED_FILES:
+        if not os.path.isfile(os.path.join(d, f)):
+            bad.append(("ARC-SHP-001", rel,
+                        "no %s · an archive missing one of its three files is "
+                        "not consultable" % f))
+    if bad:
+        return bad
+
+    alias = load_aliases()
+    sfields = {k: "%s|%s" % (v, alias[k]) if k in alias else v
+               for k, v in SUMMARY_FIELDS.items()}
+    cfields = {k: "%s|%s" % (v, alias[k]) if k in alias else v
+               for k, v in CONNECTION_FIELDS.items()}
+    summary = open(os.path.join(d, "SUMMARY.md"), encoding="utf-8").read()
+    conns = open(os.path.join(d, "connections.md"), encoding="utf-8").read()
+
+    # ARC-SHP-002 · the two written files are DOCUMENTS
+    for name, text in (("SUMMARY.md", summary), ("connections.md", conns)):
+        for field in ("Status", "Type", "Updated", "Owner"):
+            if not re.search(r"\*\*%s:\*\*" % field, text):
+                bad.append(("ARC-SHP-002", "%s/%s" % (rel, name),
+                            "no %s in the header · these are documents, and the "
+                            "document contract applies to them" % field))
+                break
+
+    # ARC-SUM-001 · every required field answered
+    for label, pat in sfields.items():
+        b = body(summary, pat)
+        if b is None:
+            bad.append(("ARC-SUM-001", "%s/SUMMARY.md" % rel,
+                        "no section for %r · a missing field is not an omission, "
+                        "it is a false record" % label))
+
+    # ARC-LRN-001 · the one section that is not consolidation
+    learned = body(summary, sfields["what was learned"])
+    if learned is not None and len(learned.strip()) < 20:
+        bad.append(("ARC-LRN-001", "%s/SUMMARY.md" % rel,
+                    "'what was learned' is empty · the only section that is not "
+                    "a copy, and the reason anybody opens this file"))
+
+    # ARC-SUM-002 · an empty "left out" is a lie
+    left = body(summary, sfields["what was left out"])
+    if left is not None and len(left.strip()) < 8:
+        bad.append(("ARC-SUM-002", "%s/SUMMARY.md" % rel,
+                    "'what was left out' is empty · no block closes having done "
+                    "everything · silence says nobody looked"))
+
+    # ARC-CON-001 · what the connections file must answer
+    for label, pat in cfields.items():
+        if body(conns, pat) is None:
+            bad.append(("ARC-CON-001", "%s/connections.md" % rel,
+                        "no section for %r · the next block cannot tell what "
+                        "this closing changed for it" % label))
+
+    # ARC-NEV-001 · no credential, not even an expired one
+    for name, text in (("SUMMARY.md", summary), ("connections.md", conns),
+                       ("BLOCK.md", open(os.path.join(d, "BLOCK.md"),
+                                         encoding="utf-8").read())):
+        m = SECRET.search(text)
+        if m:
+            bad.append(("ARC-NEV-001", "%s/%s" % (rel, name),
+                        "a credential-shaped value is in the archive · what is "
+                        "written stays in the record, and a leaked secret is "
+                        "ROTATED, never deleted"))
+            break
+    return bad
+
+
+def main():
+    quiet = "--quiet" in sys.argv
+    if not os.path.exists(CONTRACT):
+        print("🔴 the contract itself is missing: rules/contract-archive.md")
+        return 2
+    if not os.path.isdir(ARCHIVE):
+        if not quiet:
+            print("check-archive · no archive directory · nothing measured")
+        return 0
+
+    dirs = [os.path.join(ARCHIVE, n) for n in sorted(os.listdir(ARCHIVE))
+            if os.path.isdir(os.path.join(ARCHIVE, n))]
+    findings = []
+    for d in dirs:
+        findings += check(d, os.path.relpath(d, ROOT))
+
+    if not quiet:
+        print("check-archive · %d archived block(s)%s"
+              % (len(dirs), " · nothing measured" if not dirs else ""))
+    if findings:
+        for cid, rel, msg in findings:
+            print("🔴 %s · %s · %s" % (rel, cid, msg))
+        print("\n%d violations · rule: rules/contract-archive.md" % len(findings))
+        return 1
+    if not quiet and dirs:
+        print("✅ 0 violations")
+    return 0
+
+
+if __name__ == "__main__":
+    try:
+        sys.exit(main())
+    except Exception as e:
+        # CHK-CAU-002 · a crash reports nothing, and "nothing reported" reads
+        # exactly like "nothing wrong". Turn it into a finding, not a trace.
+        print("🔴 %s crashed · %s: %s"
+              % (os.path.basename(__file__), type(e).__name__, e))
+        sys.exit(1)

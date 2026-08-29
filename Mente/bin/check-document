@@ -35,7 +35,7 @@ PLANNED = re.compile(r"⬜[^\n]{0,90}$")
 # A checker that cannot tell "points at a file" from "names a type of file"
 # reports every mention as broken — which is the loudest way to be ignored.
 GENERIC = {"CLAUDE.md", "BLOCK.md", "README.md", "PROJECT-RULES.md",
-           "SUMMARY.md", "CHANGELOG.md", "MEMORY.md", "VERSION"}
+           "SUMMARY.md", "connections.md", "CHANGELOG.md", "MEMORY.md", "VERSION"}
 
 
 def read_ceilings(text):
