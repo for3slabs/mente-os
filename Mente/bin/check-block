@@ -18,21 +18,38 @@ LANES = {"direct", "task", "full-block"}
 OPEN_SECTIONS = ["A", "B", "C", "D"]
 STALE_DAYS = 14
 
-SEC = re.compile(r"^##\s*([A-K])\s*[·.:-]", re.M)
+# A section is marked either as a markdown heading (## A · Identity) or as a
+# banner comment (<!-- ══ A · IDENTITY ══ -->). Reading only one shape reports
+# zero sections on a block written in the other — measured against real blocks.
+# The banner form must be a BANNER, not any comment that happens to contain a
+# capital letter: an ordinary comment mentioning a tool name was being read as a
+# section, which reported the sections out of order on a correctly ordered block.
+SEC = re.compile(r"^(?:##[ \t]*([A-K])[ \t]*[·.:-]"
+                 r"|<!--[ \t]*[═=─-]{2,}[ \t]*([A-K])[ \t]*[·.:-])", re.M)
 # fields may share a line separated by · — match each one wherever it appears
-FIELD = re.compile(r"\b(id|type|intent|status|lane|owner|created|updated):\s*([^\n·]+?)\s*(?=·|$)", re.M)
+# A field value ends at a · separator or the end of the line, and never swallows
+# the prose that follows it: a value read past its boundary reports a defect that
+# is not there, and a check that flags what is correct gets switched off.
+FIELD = re.compile(r"^[ \t]*(id|type|intent|status|lane|owner|created|updated):"
+                   r"[ \t]*([^\n·]*?)[ \t]*(?=·|$)", re.M)
 ISO = re.compile(r"\d{4}-\d{2}-\d{2}")
 
 
 def sections(text):
-    return {m.group(1) for m in SEC.finditer(text)}
+    return {(m.group(1) or m.group(2)) for m in SEC.finditer(text)}
+
+
+def order(text):
+    return [(m.group(1) or m.group(2)) for m in SEC.finditer(text)]
 
 
 def body_of(text, letter):
-    m = re.search(r"^##\s*%s\s*[·.:-].*?$" % letter, text, re.M)
+    """Everything between this section's marker and the next one, in either shape."""
+    m = re.search(r"^(?:##\s*%s\s*[·.:-]|<!--[^\n]*?\b%s\s*[·.:-][^\n]*?-->).*?$"
+                  % (letter, letter), text, re.M)
     if not m:
         return ""
-    nxt = re.search(r"^##\s*[A-K]\s*[·.:-]", text[m.end():], re.M)
+    nxt = SEC.search(text[m.end():])
     return text[m.end(): m.end() + nxt.start()] if nxt else text[m.end():]
 
 
@@ -50,10 +67,10 @@ def check(path, rel, ids):
                     % (" ".join(missing), " ".join(sorted(have)) or "none")))
 
     # BLK-SHP-002 · sections in order
-    order = [m.group(1) for m in SEC.finditer(text)]
-    if order != sorted(order):
+    seq = order(text)
+    if seq != sorted(seq):
         bad.append(("BLK-SHP-002", rel,
-                    "sections out of order · expected ascending · got: %s" % " ".join(order)))
+                    "sections out of order · expected ascending · got: %s" % " ".join(seq)))
 
     # BLK-IDN-001 · id present and unique
     bid = f.get("id", "").strip("`* ")
@@ -119,6 +136,25 @@ def check(path, rel, ids):
                         "scope missing a half · expected both IN and OUT · "
                         "an IN with no OUT is a wish, not a boundary"))
 
+    # BLK-SCP-002 · every OUT line states where it comes from.
+    # An unsourced limit is an opinion enforced as a rule.
+    if "B" in have:
+        m = re.search(r"(?:⛔|##)\s*OUT\b(.*?)(?=\n\s*(?:###|##|<!--)|\Z)", b, re.S)
+        if m:
+            for line in m.group(1).splitlines():
+                t = line.strip()
+                if not t.startswith(("-", "*")):
+                    continue
+                sourced = ("DERIVED:" in t or re.search(r"[\w./-]+\.\w+:\d+", t)
+                           or re.search(r"\b(deny|denied|locked|blocked by)\b", t, re.I)
+                           or re.search(r"`[\w./-]+\.(md|yml|json|tsv)`", t))
+                if not sourced:
+                    bad.append(("BLK-SCP-002", rel,
+                                "OUT line states no source: %r · expected a file "
+                                "reference, a technical lock, or DERIVED: · "
+                                "an unsourced limit is an opinion" % t[:55]))
+                    break
+
     # BLK-STD-002 · each declared standard resolves
     d = body_of(text, "D")
     for ref in re.findall(r"`([A-Za-z0-9_./-]+\.md)`", d):
@@ -148,6 +184,14 @@ def check(path, rel, ids):
             bad.append(("BLK-CLS-002", rel,
                         "closed with %d open sub-block row(s) in section F · "
                         "closing over an open task hides it" % len(open_rows)))
+
+        # BLK-CLS-003 · what was NOT done is stated. Silence reads as completeness.
+        kbody = body_of(text, "K")
+        if "K" in have and not re.search(r"not\s+completed|not\s+done|remaining|pending|debt",
+                                         kbody, re.I):
+            bad.append(("BLK-CLS-003", rel,
+                        "closing does not state what was NOT done · expected a "
+                        "'not completed' line · silence reads as completeness"))
 
     return bad
 
