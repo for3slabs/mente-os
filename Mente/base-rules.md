@@ -30,9 +30,9 @@ Code, this file plus the pointers below is enough to work correctly.
 
 ## 2 · THE NON-NEGOTIABLES — by level
 
-> ⚠️ **3 of these 8 are NOT universal** (marked 🏢). They belong in `PROJECT-RULES.md` and are
-> pending migration — see `rules/rule-inheritance.md` §6. Listed here meanwhile so nothing is lost.
-> **A rule at the wrong level contaminates every block that inherits it.**
+> ⭐ **These six are UNIVERSAL: each one holds in any project, including one that does not exist
+> yet.** ⛔ A rule that names a specific path, service or machine is not universal — it belongs at
+> the project level, and `rules/rule-inheritance.md` §2 is the test that decides.
 
 | # | Rule | Pointer |
 |---|---|---|
@@ -41,13 +41,13 @@ Code, this file plus the pointers below is enough to work correctly.
 | 3 | **Do not state — report the measurement.** An unverified claim is banned | `principles/owner-0-voice.md` |
 | 4 | **Secrets are referenced, never pasted** | architecture §12-S.1 |
 | 5 | **Scope is declared, never inferred.** No match → **stop and ask** | `rules/rule-isolation.md` |
-| 6 | 🏢 **Never read another Mente OS without the gate** | `connection/bridges/` — **project-level** |
-| 7 | 🏢 **Server-first.** Push to GitHub only on explicit order | `PROJECT-RULES.md` §4 — **project-level** |
-| 8 | ⭐ **No `/clear` without registering the session first** | `rules/rule-session-close.md` |
+| 6 | ⭐ **No `/clear` without registering the session first** | `rules/rule-session-close.md` |
 
-> 🌐 = universal (any project, any block) · 🏢 = specific to this project
-> **The inheritance rule:** a lower level may only ADD or TIGHTEN — **never loosen**
-> (`rules/rule-inheritance.md`).
+> ⬜ **Your project adds its own** in `PROJECT-RULES.md` — a gate to something outside, a
+> deploy-target rule, whatever holds here and would be false elsewhere.
+>
+> ⭐ **The inheritance rule:** a lower level may only ADD or TIGHTEN — ⛔ **never loosen**
+> (`rules/rule-inheritance.md` §3).
 
 ---
 
