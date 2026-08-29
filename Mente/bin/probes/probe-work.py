@@ -43,6 +43,37 @@ p.case("⑥ misma regla en 3 bloques DISTINTOS", three_blocks, "WRK-FRI-003")
 p.case("⑦ full-block sin declarar su propagación",
        lambda: block(p, "a", lane="full-block"), "WRK-FIX-003")
 
+
+def hide_threshold():
+    """⭐ WRK-FRI-005 · remove the declaration and the check must say the
+    engine default was used — an undeclared N silently becomes whatever the
+    code holds."""
+    import shutil
+    q = os.path.join(ROOT, "rules", "rule-working-in-a-block.md")
+    bak = p.track(q + ".zzprobe-bak")
+    shutil.copy(q, bak)
+    t = open(q, encoding="utf-8").read()
+    open(q, "w", encoding="utf-8").write(t.replace("friction_threshold: 3", "N: 3"))
+    block(p, "a")
+
+
+_orig_clean = p.clean
+
+
+def clean_with_restore():
+    """⭐ Restore the file this probe EDITS, not only what it creates."""
+    import shutil
+    q = os.path.join(ROOT, "rules", "rule-working-in-a-block.md")
+    if os.path.exists(q + ".zzprobe-bak"):
+        shutil.copy(q + ".zzprobe-bak", q)
+    _orig_clean()
+
+
+p.clean = clean_with_restore
+p.also = p.also + ("rule-working-in-a-block.md",)
+p.case("⑧ umbral no declarado · usa el default del motor",
+       hide_threshold, "WRK-FRI-005")
+
 # ⭐ the inverse that separates a useful alarm from one that gets switched off
 p.clean()
 block(p, "r", fric="\n".join(
@@ -50,14 +81,14 @@ block(p, "r", fric="\n".join(
     for _ in range(3)))
 code, out, err = p.run()
 fired = "RULE REVIEW" in out
-print("  %-46s %s %s" % ("⑧ 3 fricciones en el MISMO bloque",
+print("  %-46s %s %s" % ("⑨ 3 fricciones en el MISMO bloque",
                          "✅" if not fired else "🔴",
                          "NO dispara (correcto)" if not fired
                          else "falso positivo — no distingue"))
-p.results.append(("⑧ mismo bloque", "PASS" if not fired else "FALSE_POSITIVE"))
+p.results.append(("⑨ mismo bloque", "PASS" if not fired else "FALSE_POSITIVE"))
 p.clean()
 
-p.inverse("⑨ un bloque CORRECTO", lambda: block(p, "a"))
+p.inverse("⑩ un bloque CORRECTO", lambda: block(p, "a"))
 p.crash_guard()
 
 print("\n═══ B · CORRIDA CRUZADA · bloques reales de otra instancia ═══\n")
