@@ -1,0 +1,145 @@
+#!/usr/bin/env python3
+"""check-checks — enforces the 🔒 rows of rules/rule-checks-must-measure.md
+
+It audits the other validators. The families it can see mechanically:
+
+  A  CHK-CMP-001  a short alphanumeric value compared without delimiters
+  C  CHK-CLB-001  an exit status used after another command could clobber it
+  D  CHK-TRV-001  a path required that by design does not reach a clone
+  D  CHK-TRV-002  an absent instance treated as a pass instead of a skip
+
+Families B and E need intent, and the rule marks them 📖.
+
+Exit: 0 clean · 1 violations · 2 the rule itself is missing
+"""
+import os, re, sys
+
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+RULE = os.path.join(ROOT, "rules", "rule-checks-must-measure.md")
+BIN = os.path.join(ROOT, "bin")
+HOOKS = os.path.join(ROOT, "hooks")
+GITIGNORE = os.path.join(ROOT, ".gitignore")
+
+# CHK-CMP-001 · `x in text` where x is a short id-shaped variable.
+# A literal with markup or a path cannot collide by accident and is left alone.
+LOOSE_IN = re.compile(
+    r"\bif\s+(?!.*[\"'`/*])([a-z_][a-z0-9_]*(?:id|hash|sha|num|no|key|ref)[a-z0-9_]*)"
+    r"\s+(?:not\s+)?in\s+(\w+)\s*:", re.I)
+
+# CHK-CLB-001 · $? read after a command substitution on the same line
+CLOBBER = re.compile(r"\$\([^)]*\)[^\n]*\$\?|\$\?[^\n]*\$\([^)]*\)")
+
+# CHK-TRV-002 · an open() with no guard, in a checker
+BARE_OPEN = re.compile(r"^\s*(?:\w+\s*=\s*)?open\(([^)]+)\)", re.M)
+
+SKIP = {"README.md", "__pycache__"}
+
+
+def ignored_paths():
+    """Paths .gitignore excludes: requiring one measures the machine, not the system."""
+    out = set()
+    if not os.path.exists(GITIGNORE):
+        return out
+    for line in open(GITIGNORE, encoding="utf-8"):
+        line = line.split("#")[0].strip()
+        if not line or line.startswith("!"):
+            continue
+        out.add(line.rstrip("/*").lstrip("/"))
+    return {p for p in out if p}
+
+
+def audit(path, rel, ignored):
+    bad = []
+    if not os.path.isfile(path):
+        return [("CHK-TRV-002", rel, 0, "vanished between listing and reading")]
+    text = open(path, encoding="utf-8").read()
+    lines = text.splitlines()
+    is_py = text.startswith("#!") and "python" in lines[0]
+
+    for i, line in enumerate(lines, 1):
+        code = line.split("#")[0]
+        if not code.strip():
+            continue
+
+        # A · loose comparison
+        m = LOOSE_IN.search(code)
+        if m:
+            bad.append(("CHK-CMP-001", rel, i,
+                        "loose comparison: %r matched as a substring · expected: "
+                        "delimited match · an accidental occurrence makes the "
+                        "system more permissive" % m.group(1)))
+
+        # C · clobbered exit status
+        if not is_py and CLOBBER.search(code):
+            bad.append(("CHK-CLB-001", rel, i,
+                        "exit status read after a substitution on the same line · "
+                        "expected: capture it first · it survives one command"))
+
+        # D · requiring a path that does not travel
+        for p in re.findall(r"[\"']([\w./-]+)[\"']", code):
+            base = p.strip("./").split("/")[0]
+            if base and base in ignored and (
+                    "exists" in code or "isdir" in code or "isfile" in code
+                    or "open(" in code):
+                if "if " not in code and "or " not in code and "and " not in code:
+                    bad.append(("CHK-TRV-001", rel, i,
+                                "requires %r, which .gitignore excludes · expected: "
+                                "skip and say so · this measures who worked in this "
+                                "tree, not whether the system works" % p))
+
+        # D-bis · an unguarded open() of a DECLARED path crashes instead of reporting.
+        # A path that came from a directory walk already exists — flagging it would
+        # be family E on this validator itself: reading one shape as another.
+        m = BARE_OPEN.match(line)
+        if m and is_py and "try" not in "\n".join(lines[max(0, i - 3):i]):
+            arg = m.group(1).strip()
+            var = arg.split(",")[0].strip()
+            discovered = re.search(
+                r"for\s+%s\s+in\b|%s\s*=\s*os\.path\.join\([^)]*dirpath"
+                % (re.escape(var), re.escape(var)), text)
+            guarded = re.search(r"exists\(\s*%s|isfile\(\s*%s"
+                                % (re.escape(var), re.escape(var)), text)
+            if not discovered and not guarded:
+                bad.append(("CHK-TRV-002", rel, i,
+                            "open(%s) with no guard · expected: check it exists, or "
+                            "skip and say so · an unguarded open reports a crash, "
+                            "not a failure" % arg[:40]))
+    return bad
+
+
+def main():
+    quiet = "--quiet" in sys.argv
+    if not os.path.exists(RULE):
+        print("🔴 the rule itself is missing: rules/rule-checks-must-measure.md")
+        return 2
+
+    ignored = ignored_paths()
+    targets = []
+    for d in (BIN, HOOKS):
+        if not os.path.isdir(d):
+            continue
+        for n in sorted(os.listdir(d)):
+            p = os.path.join(d, n)
+            if n in SKIP or not os.path.isfile(p) or n.endswith(".md"):
+                continue
+            targets.append(p)
+
+    findings = []
+    for p in targets:
+        findings += audit(p, os.path.relpath(p, ROOT), ignored)
+
+    if not quiet:
+        print("check-checks · %d validator(s) audited · %d ignored path(s) known"
+              % (len(targets), len(ignored)))
+    if findings:
+        for cid, rel, ln, msg in findings:
+            print("🔴 %s:%d · %s · %s" % (rel, ln, cid, msg))
+        print("\n%d violations · rule: rules/rule-checks-must-measure.md" % len(findings))
+        return 1
+    if not quiet:
+        print("✅ 0 violations")
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

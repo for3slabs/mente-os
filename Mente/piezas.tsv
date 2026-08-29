@@ -120,3 +120,5 @@ check-work	bin/check-work	engine	executable	enforces the lock rules of working i
 rule-working	rules/rule-working-in-a-block.md	engine	canonical	how to behave inside a block — lane, isolation, friction, fix not patch
 check-inheritance	bin/check-inheritance	engine	executable	enforces the lock rules of rule inheritance
 rule-inheritance	rules/rule-inheritance.md	engine	canonical	the three levels where rules live — add or tighten, never loosen
+check-checks	bin/check-checks	engine	executable	audits the other validators — the five families of a blind check
+rule-checks-measure	rules/rule-checks-must-measure.md	engine	canonical	a check seen only green has not been tested — the five families
