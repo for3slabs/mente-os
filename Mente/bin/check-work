@@ -14,7 +14,23 @@ RULE = os.path.join(ROOT, "rules", "rule-working-in-a-block.md")
 BLOCKS = os.path.join(ROOT, "work", "blocks")
 
 LANES = {"direct", "task", "full-block"}
-FRICTION_THRESHOLD = 3          # WRK-FRI-003 · distinct blocks, never repetitions
+# WRK-FRI-003 · the threshold is the OWNER's, declared in the rule — never a
+# constant here. A validator that decides a number the doctrine says belongs to
+# the installation is measuring a decision nobody took.
+DEFAULT_THRESHOLD = 3
+
+
+def friction_threshold():
+    """Read it from the rule. Fall back only if the rule does not declare it,
+    and say which was used."""
+    try:
+        t = open(RULE, encoding="utf-8").read()
+    except OSError:
+        return DEFAULT_THRESHOLD, "default"
+    m = re.search(r"friction[_ ]threshold\s*[:=]\s*(\d+)", t, re.I)
+    if m:
+        return int(m.group(1)), "declared"
+    return DEFAULT_THRESHOLD, "engine default"
 
 SEC = re.compile(r"^##\s*([A-K])\s*[·.:-]", re.M)
 FIELD = re.compile(r"\b(id|lane|status):\s*([^\n·]+?)\s*(?=·|$)", re.M)
@@ -122,11 +138,22 @@ def main():
     findings = real
 
     # WRK-FRI-003 · a rule chafing in N distinct blocks is flagged for review
-    flagged = [(r, bs) for r, bs in friction.items() if len(bs) >= FRICTION_THRESHOLD]
+    threshold, origin = friction_threshold()
+    flagged = [(r, bs) for r, bs in friction.items() if len(bs) >= threshold]
 
     if not quiet:
-        print("check-work · %d block(s) · %d rule(s) with logged friction"
-              % (len(blocks), len(friction)))
+        print("check-work · %d block(s) · %d rule(s) with logged friction · "
+              "threshold %d (%s)"
+              % (len(blocks), len(friction), threshold, origin))
+    # WRK-FRI-005 · the agent never infers N. If the rule declares no threshold,
+    # say the engine default was used — an undeclared number silently becomes
+    # whatever this code happens to hold.
+    if origin != "declared":
+        findings.append(("WRK-FRI-005", "rules/rule-working-in-a-block.md",
+                         "no friction_threshold declared · using the engine "
+                         "default of %d · declare it, or every reader assumes "
+                         "a different N" % threshold))
+
     for r, bs in sorted(flagged):
         print("🔔 RULE REVIEW · %r · friction in %d distinct blocks: %s · "
               "WRK-FRI-003 · the owner decides, never the agent"

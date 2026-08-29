@@ -130,7 +130,7 @@ fine and the wrong ceiling is applied to it.
 |---|---|---|
 | `entry-point` | **250 lines** | ⭐ move content out, keep pointers |
 | `contract` | **700** | ⭐ split by topic — ⚠️ see the base-file note below |
-| `rule` | **400** | ⭐ split by topic — ⚠️ a base rule ships whole, like a contract |
+| `rule` | **700** | ⭐ split by topic — ⚠️ a base rule ships whole, like a contract |
 | `architecture` | **800** | ⛔ split per area |
 | `plan` | **400** | move closed phases to the logbook |
 | `block` | **200** | see the block contract |
@@ -167,6 +167,11 @@ people open precisely when they need the part nobody remembered to summarise.
 contract fails `DOC-BOD-001` long before it fails this row. ⭐ **What the raised ceiling buys is
 that a criterion is never cut down the middle to fit a number** — which `../memory/principles/expertise/doc-structure.md` §2.1
 already forbids, and a low ceiling would quietly force.
+
+⭐ **`rule` carries the same ceiling for the same reason.** ⚠️ A base rule of this engine is not a
+note about one topic: **it can govern several disciplines that share an owner and a moment** — and
+splitting those apart is exactly what §2.1 forbids. ⛔ **The ceiling is the signal, and for a base
+file the signal fires later.**
 
 ---
 

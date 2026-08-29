@@ -46,7 +46,46 @@ can check that a friction was logged; it cannot check that the work stopped to t
 
 ---
 
-## 2 · THE LANE — how much process this change needs
+## 2 · ⭐ THE THREE WORDS THIS FILE RESTS ON
+
+⛔ **Every rule below uses them, and an undefined term is a term each reader
+resolves differently** — which is the exact failure this file exists to stop.
+
+### ⭐ DEPENDENT — what makes the lane widen
+
+| ✅ A dependent is a piece that… | |
+|---|---|
+| **consumes what the target produces** | its output, its record, its file |
+| **imports or calls the target** | ⭐ across a module, a process, a boundary |
+| **relies on its declared contract** | a shape, a name, a guarantee |
+| ⭐ **depends on its runtime behaviour** | ⚠️ it works because the target behaves that way |
+| **is declared downstream of it** | in the block's connections |
+
+| ⛔ NOT a dependent | ⭐ Why it gets counted anyway |
+|---|---|
+| **the same filename elsewhere** | ⚠️ a naive search finds it |
+| **a nearby directory** | proximity reads as relationship |
+| ⭐ **conceptual similarity** | *"it does something similar"* is not a dependency |
+| **a mention in prose** | ⛔ **a mention is not an import** |
+| ⭐ **a build artifact or a vendored copy** | ⚠️ **they are copies, not consumers** |
+
+⭐ **The last row is measured:** counting build output turned a real count of
+sixteen into thirty-eight. ⛔ **A number nobody can reproduce is not evidence.**
+
+### CONSUMER · PROPAGATION
+
+| | |
+|---|---|
+| **consumer** | ⭐ a dependent **that this specific change reaches** — ⚠️ not every dependent is |
+| **propagation** | ⭐ the path from the target to each consumer, **written down** |
+
+⚠️ **The difference between dependent and consumer is what §5 turns on:** ⛔ you
+fix every affected **consumer**, not every piece that happens to depend on the
+target.
+
+---
+
+## 3 · THE LANE — how much process this change needs
 
 ⛔ **Three lanes. And the lane is chosen by PROPAGATION, never by judgement.**
 
@@ -70,12 +109,36 @@ Does the target have DECLARED DEPENDENTS in the graph?
 
 ⭐ **The decision comes from the graph, not from an estimate.**
 
+#### ⛔ `full-block` APPLIES WHEN **ANY** OF THESE IS TRUE
+
+⚠️ *"It touches several pieces"* is still a judgement. ⭐ **These are not:**
+
+| # | The change… |
+|---|---|
+| 1 | ⭐ **the target has declared dependents** |
+| 2 | **it changes a declared contract** — a shape, a name, a guarantee |
+| 3 | ⭐ **it changes something others read** — a schema, a shared store |
+| 4 | **it changes behaviour something outside relies on** |
+| 5 | ⭐ **it introduces a new integration** |
+| 6 | **it creates or changes a connection between blocks** |
+
+⭐ **Any one is enough.** ⛔ **None of them asks how big the change feels.**
+
 | ID | Rule | Enf | Verify |
 |---|---|---|---|
 | `WRK-LAN-001` | ⭐ **The lane comes from the dependency graph, not an estimate** | 🟡 | ⛔ *"it looks small"* is not an input |
 | `WRK-LAN-002` | **Declared dependents → `full-block`, always** | 🔒 | ⚠️ count them before choosing |
 | `WRK-LAN-003` | **The lane is written in the block's identity** | 🔒 | the field is present and valid |
 | `WRK-LAN-004` | ⭐ **The graph is re-measured before the lane is chosen** | 📖 | ⛔ a stale graph picks the wrong lane |
+| `WRK-LAN-005` | 🔴 ⭐ **NOTHING IS EDITED BEFORE THE SCOPE IS KNOWN** | 📖 | ⛔ see below |
+
+> ## 🔴 `WRK-LAN-005` — the most dangerous order to get wrong
+> ⛔ **Nothing is edited until: the lane is chosen · the dependents are
+> measured · every required block resolved · the consumers found.**
+>
+> ⚠️ **The natural order is the opposite one:** ⛔ find the bug → open the file
+> → edit → think afterwards. ⭐ **By then the estimate has already become a
+> commit**, and everything after it is justification.
 
 > ## ⭐ THIS IS THE WHOLE POINT OF THE RULE
 > ⛔ **It stops an agent from declaring something trivial and being wrong** — ⚠️ **measured: one
@@ -117,7 +180,7 @@ credible for the cases that need it.**
 
 ---
 
-## 3 · ISOLATION — what you may read
+## 4 · ISOLATION — what you may read
 
 > ## ⛔ BLOCKS DO NOT READ EACH OTHER BY DEFAULT.
 
@@ -181,7 +244,46 @@ system the consumption problem the gate already solved OUTSIDE it.**
 
 ---
 
-## 4 · FRICTION — when a rule is in your way
+## 5 · ⛔ THE STOP PROTOCOL — three kinds, and each one reports differently
+
+⚠️ **`STOP AND ASK` with no format is an instruction every agent obeys
+differently.** ⭐ **What must be reported is as much the rule as the stopping.**
+
+| Kind | ⭐ When | What follows |
+|---|---|---|
+| ⬜ **STOP-ASK** | ⭐ **information is missing** — a block, a path, a decision | ⚠️ the owner answers, the work resumes |
+| 🔴 **STOP-SAFETY** | ⛔ **continuing causes real damage** — data, a secret, production | ⭐ raise it immediately, before anything else |
+| ⚠️ **STOP-BLOCKED** | ⭐ **it cannot proceed technically** — a broken graph, a missing artifact | it becomes the block's blocker |
+
+| ID | Rule | Enf | Verify |
+|---|---|---|---|
+| `WRK-STP-001` | ⭐ **A stop names WHICH of the three it is** | 📖 | ⛔ they resume differently |
+| `WRK-STP-002` | ⭐ **A stop reports what is missing, not that something is** | 📖 | ⚠️ *"I could not find it"* is not a report |
+| `WRK-STP-003` | ⛔ **STOP-SAFETY interrupts everything** | 📖 | ⭐ it does not wait for a good moment |
+
+### ⭐ WHAT A STOP MUST REPORT
+
+```
+KIND:     ask | safety | blocked
+BLOCK:    <the block this happened in>
+ATTEMPT:  <what was being done>
+MISSING:  <the exact thing that did not resolve>
+LOOKED:   <the exact id or path attempted>
+WHY:      <why it is required to continue>
+QUESTION: <the one question that unblocks it>
+```
+
+⭐ **The `LOOKED` line is the one that saves the round trip.** ⚠️ Without it the
+owner has to guess what the agent searched for, ⛔ **and half the time the
+answer is that the search itself was wrong.**
+
+> ## ⛔ A STOP IS NOT A FAILURE. IT IS THE ONLY HONEST OUTPUT WHEN THE INPUT IS MISSING.
+> ⭐ **An agent that continues on an assumption produces work that looks
+> finished** — and the assumption is invisible in the result.
+
+---
+
+## 6 · FRICTION — when a rule is in your way
 
 ```
 1 · COMPLY              ⛔ even if it seems wrong
@@ -201,6 +303,21 @@ system the consumption problem the gate already solved OUTSIDE it.**
 | `WRK-FRI-001` | ⭐ **Comply first. Never skip a rule in the moment** | 📖 | ⛔ nothing verifies this |
 | `WRK-FRI-002` | **Each friction is logged with its four fields** | 🔒 | ⚠️ date · rule · block · reason |
 | `WRK-FRI-003` | ⭐ **A rule is flagged at N frictions in DISTINCT blocks** | 🔒 | see below |
+| `WRK-FRI-005` | ⛔ **The agent never infers N** | 🔒 | ⭐ it is declared, or it is the engine default |
+
+### ⭐ N IS DECLARED, NEVER GUESSED
+
+```
+friction_threshold: 3
+```
+
+⬜ **The installation may change that number** — ⚠️ **once, here, in writing.**
+⛔ **What it may not do is leave it undeclared and let each reader assume one.**
+
+⚠️ **Measured in this engine's own code:** the validator carried the number as
+a constant while this file said it belonged to the owner. ⭐ **A validator that
+decides a number the doctrine assigns to somebody else is measuring a decision
+nobody took.**
 | `WRK-FRI-004` | ⛔ **A flagged rule is never changed automatically** | 📖 | ⭐ it escalates to the owner |
 
 ### ⭐ THE LOG FORMAT — four fixed fields
@@ -271,7 +388,7 @@ or merely costs time.**
 
 ---
 
-## 5 · FIX, NOT PATCH
+## 7 · FIX, NOT PATCH
 
 > ## ⭐ THE ONE QUESTION THAT CHANGES EVERYTHING
 > | ⛔ A patch asks | ⭐ A fix asks |
@@ -292,7 +409,7 @@ or merely costs time.**
 | ID | Rule | Enf | Verify |
 |---|---|---|---|
 | `WRK-FIX-001` | ⭐ **Every consumer measured before the fix** | 📖 | ⛔ nothing verifies this |
-| `WRK-FIX-002` | ⭐ **All copies fixed, never one** | 📖 | ⚠️ ⛔ the copy left behind is the one that resurfaces |
+| `WRK-FIX-002` | ⭐ **Every AFFECTED consumer resolved — only affected copies changed** | 📖 | ⚠️ ⛔ see below |
 | `WRK-FIX-003` | **The propagation is declared in the block** | 🟡 | connections and sub-blocks updated |
 | `WRK-FIX-004` | ⭐ **A different route is allowed, and often correct** | 📖 | ⛔ see below |
 
@@ -311,6 +428,22 @@ or merely costs time.**
 ```
 
 > ## ⭐ THE DIFFERENCE IS NOT EFFORT. IT IS STEP 3.
+
+### ⚠️ AND THE PRECISION `WRK-FIX-002` NEEDS
+
+⛔ ***"All copies"* is too absolute, and following it literally does damage.**
+⭐ **Some copies are supposed to differ:**
+
+| ⛔ Not a copy to fix | ⭐ Why |
+|---|---|
+| a fixture or a snapshot | it records a past state on purpose |
+| ⭐ **a historical migration** | ⚠️ **rewriting it changes what already happened** |
+| an example in documentation | it illustrates, it does not run |
+| ⭐ **a deliberately different implementation** | ⛔ §2 — different owners, legitimate coincidence |
+
+⭐ **So the rule is: every AFFECTED consumer is resolved; only affected copies
+change.** ⚠️ **And which ones are affected is the impact map's answer (§8), not
+a guess.**
 
 ### ⛔ WHAT THIS RULE IS **NOT**
 
@@ -339,7 +472,46 @@ is the procedure above** — and the documented way out.
 
 ---
 
-## 6 · ⭐ HOW THE FOUR CONNECT — they are one decision, taken in order
+## 8 · ⭐ THE IMPACT MAP — the measurement, written down
+
+⛔ **A measurement that is not written is a measurement that gets redone or
+forgotten.** ⭐ **§7 says find every consumer; this is where the finding lands.**
+
+```
+TARGET:      <the piece being changed>
+DEPENDENTS:  <every piece that depends on it · measured, with the date>
+CONSUMERS:   <the subset THIS change actually reaches>
+PROPAGATION: <target → consumer, for each>
+CHANGED:     <what was actually edited>
+VALIDATED:   <each consumer, with what proves it>
+UNAFFECTED:  <a dependent this change does NOT reach, and why>
+```
+
+| ID | Rule | Enf | Verify |
+|---|---|---|---|
+| `WRK-IMP-001` | ⭐ **Dependents are measured before the first edit** | 📖 | ⛔ see §7 step 3 |
+| `WRK-IMP-002` | ⭐ **The map states WHICH dependents this change does not reach** | 📖 | ⚠️ silence means *not checked*, not *unaffected* |
+| `WRK-IMP-003` | **Every consumer listed is validated, or the block does not close** | 🟡 | ⭐ a consumer with no evidence is untested |
+
+⭐ **`WRK-IMP-002` is the row that separates a map from a list.** ⛔ **A dependent
+left off the map cannot be told apart from one nobody looked at** — and the
+second is the one that breaks.
+
+### ⭐ WHAT COUNTS AS EVIDENCE HERE
+
+| ✅ Evidence | ⛔ Not evidence |
+|---|---|
+| the graph output, ⭐ **with the date it was taken** | *"I checked"* |
+| the list of consumers found | ⚠️ *"looks correct"* |
+| a test or a run, per consumer | *"should work"* |
+| ⭐ **the exact id that resolved** | ⛔ *"probably unaffected"* |
+
+⭐ **The four on the right are the same sentence in four disguises:**
+⛔ **confidence with nothing behind it.**
+
+---
+
+## 9 · ⭐ HOW THE FOUR CONNECT — they are one decision, taken in order
 
 ```
 a change arrives
@@ -365,7 +537,7 @@ was supposed to produce.**
 
 ---
 
-## 7 · ⛔ WHAT IT COSTS TO BREAK IT
+## 10 · ⛔ WHAT IT COSTS TO BREAK IT
 
 | Broken | ⭐ The cost |
 |---|---|
@@ -381,7 +553,7 @@ was supposed to produce.**
 
 ---
 
-## 8 · WHO GOVERNS THIS FILE
+## 11 · WHO GOVERNS THIS FILE
 
 | Change | Who |
 |---|---|
