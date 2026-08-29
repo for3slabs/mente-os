@@ -1,0 +1,180 @@
+#!/usr/bin/env python3
+"""check-inheritance — enforces the 🔒 rows of rules/rule-inheritance.md
+
+Three levels: universal (base rules) · project · block. A rule may add or
+tighten as it goes down, never loosen — and a rule with no declared level
+applies everywhere by accident.
+
+Exit: 0 clean · 1 violations · 2 the rule itself is missing
+"""
+import os, re, sys
+
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+RULE = os.path.join(ROOT, "rules", "rule-inheritance.md")
+BASE = os.path.join(ROOT, "base-rules.md")
+BLOCKS = os.path.join(ROOT, "work", "blocks")
+ROUTERS = ["CLAUDE-MENTE-OS.md"]
+
+# INH-LVL-002 · a universal rule naming one specific place is not universal.
+# Shapes that name something: a path, a host, a service, a machine.
+NAMES_A_PLACE = re.compile(
+    r"(~/[\w./-]+"                      # a home-relative path
+    r"|/(?:home|Users|opt|srv)/[\w./-]+"  # an absolute machine path
+    r"|\b[\w-]+\.(?:com|io|dev|net|org|app|sh)\b"  # a host
+    r"|\b(?:localhost|127\.0\.0\.1)\b)")
+
+# A rule line: a numbered table row, a bullet, or an imperative sentence.
+# Rules in this engine are written as `| N | **The rule.** ... |` — a detector
+# that only matched "NEVER ..." would report one rule where there are eight.
+RULE_ROW = re.compile(r"^\|\s*\d+\s*\|\s*(.+?)\s*\|", re.M)
+IMPERATIVE = re.compile(
+    r"^\s*(?:[-*]|\d+\.)?\s*(?:⛔\s*)?\*{0,2}"
+    r"(NEVER|ALWAYS|DO NOT|Never|Always|Do not)\b", re.M)
+# INH-LVL-003 · a row inside the universal file that marks itself project-level
+MARKED_PROJECT = re.compile(r"🏢|\bproject-level\b", re.I)
+
+SEC = re.compile(r"^##\s*([A-K])\s*[·.:-]", re.M)
+FIELD = re.compile(r"\b(id|status):\s*([^\n·]+?)\s*(?=·|$)", re.M)
+LOOSEN = re.compile(
+    r"\b(may now|is allowed here|exempt|does not apply here|waived|"
+    r"overrides? the (?:universal|project))\b", re.I)
+
+
+def body_of(text, letter):
+    m = re.search(r"^##\s*%s\s*[·.:-].*?$" % letter, text, re.M)
+    if not m:
+        return ""
+    nxt = re.search(r"^##\s*[A-K]\s*[·.:-]", text[m.end():], re.M)
+    return text[m.end(): m.end() + nxt.start()] if nxt else text[m.end():]
+
+
+def norm(s):
+    s = re.sub(r"[^a-z ]", " ", s.lower())
+    return " ".join(w for w in s.split() if len(w) > 3)
+
+
+BULLET = re.compile(r"^\s*[-*]\s+(.*\S)")
+
+
+def rule_lines(text, bullets=False):
+    """Lines that state a rule.
+
+    In the universal file they are numbered table rows. In a block's scope
+    they are bullets — so a restatement of a universal rule arrives in a
+    different shape from the rule it copies, and a detector that only reads
+    one shape reports zero.
+    """
+    out = []
+    for line in text.splitlines():
+        m = RULE_ROW.match(line)
+        body = m.group(1) if m else None
+        if body is None and IMPERATIVE.match(line):
+            body = line
+        if body is None and bullets:
+            b = BULLET.match(line)
+            if b:
+                body = b.group(1)
+        if body is None:
+            continue
+        n = norm(body)
+        if len(n.split()) >= 4:
+            out.append((n, line.strip()[:70]))
+    return out
+
+
+def overlap(a, b):
+    """Two rule lines say the same thing when most of their content words match."""
+    wa, wb = set(a.split()), set(b.split())
+    if not wa or not wb:
+        return False
+    shared = len(wa & wb)
+    return shared >= 4 and shared / min(len(wa), len(wb)) >= 0.6
+
+
+def main():
+    quiet = "--quiet" in sys.argv
+    if not os.path.exists(RULE):
+        print("🔴 the rule itself is missing: rules/rule-inheritance.md")
+        return 2
+
+    findings = []
+
+    # ── INH-LVL-002 · a universal rule must not name a specific place
+    universal = []
+    if os.path.exists(BASE):
+        text = open(BASE, encoding="utf-8").read()
+        for i, line in enumerate(text.splitlines(), 1):
+            m = NAMES_A_PLACE.search(line)
+            if m and not line.lstrip().startswith("#"):
+                findings.append(("INH-LVL-002", "base-rules.md", i,
+                                 "a universal rule names a specific place: %r · "
+                                 "expected: no path, host or machine · "
+                                 "it is a project rule, not a universal one" % m.group(0)))
+        for i, line in enumerate(text.splitlines(), 1):
+            m = RULE_ROW.match(line)
+            if m and MARKED_PROJECT.search(m.group(1)):
+                findings.append(("INH-LVL-003", "base-rules.md", i,
+                                 "a rule marked project-level lives in the universal "
+                                 "file: %r · expected: it moves to the project level · "
+                                 "every clone inherits it today" % m.group(1)[:55]))
+        universal = rule_lines(text)
+
+    # ── INH-RTR-001 · the router points, it does not hold rules
+    for r in ROUTERS:
+        p = os.path.join(ROOT, r)
+        if not os.path.exists(p):
+            continue
+        text = open(p, encoding="utf-8").read()
+        for i, line in enumerate(text.splitlines(), 1):
+            if IMPERATIVE.match(line) and "`" not in line:
+                findings.append(("INH-RTR-001", r, i,
+                                 "a rule is written in the router: %r · "
+                                 "expected: a pointer to where it lives · "
+                                 "a rule here has no declared level"
+                                 % line.strip()[:60]))
+
+    # ── the block level
+    blocks = []
+    for dirpath, _, filenames in os.walk(BLOCKS):
+        for name in sorted(filenames):
+            if name == "BLOCK.md":
+                blocks.append(os.path.join(dirpath, name))
+
+    for path in blocks:
+        rel = os.path.relpath(path, ROOT)
+        text = open(path, encoding="utf-8").read()
+        scope = body_of(text, "B")
+
+        # INH-DIR-001 · a block never loosens what it inherited
+        m = LOOSEN.search(scope)
+        if m:
+            ln = text[:text.find(scope) + m.start()].count("\n") + 1
+            findings.append(("INH-DIR-001", rel, ln,
+                             "scope loosens an inherited rule: %r · "
+                             "a level may ADD or TIGHTEN, never LOOSEN" % m.group(0)))
+
+        # INH-DIR-003 · a block never repeats a rule that exists above
+        for nline, shown in rule_lines(scope, bullets=True):
+            for unorm, ushown in universal:
+                if overlap(nline, unorm):
+                    findings.append(("INH-DIR-003", rel, 0,
+                                     "restates a universal rule: %r · "
+                                     "expected: inherit it · two copies diverge"
+                                     % shown))
+                    break
+
+    if not quiet:
+        print("check-inheritance · %d block(s) · %d universal rule(s)"
+              % (len(blocks), len(universal)))
+    if findings:
+        for cid, rel, ln, msg in findings:
+            print("🔴 %s:%d · %s · %s" % (rel, ln, cid, msg))
+        print("\n%d violations · rule: rules/rule-inheritance.md" % len(findings))
+        return 1
+    if not quiet:
+        print("✅ 0 violations")
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())
