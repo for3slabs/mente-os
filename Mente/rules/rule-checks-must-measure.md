@@ -77,7 +77,42 @@ defect underneath it.
 
 ---
 
-## 3 · ⭐ THE FIVE FAMILIES
+## 3 · ⭐ THE VERDICT IS NOT BINARY
+
+⛔ **"It failed" is not evidence that the check works.** ⚠️ **It may have failed for something
+else entirely** — and a red for the wrong reason looks exactly like detection.
+
+| Verdict | Means | ⭐ |
+|---|---|---|
+| ✅ **PASS** | the valid state was accepted | |
+| 🔴 **FAIL** | ⭐ **the broken state was detected, and the message names the real cause** | ✅ the only red that counts |
+| ⚠️ **WRONG_CAUSE** | ⛔ **it failed — for a different reason** | ⭐ the check is still unproven |
+| 🔴 **CRASH** | ⛔ **it produced no verdict at all** | ⚠️ see below |
+| ⬜ **SKIP** | it does not apply here, ⭐ **and it says so** | ⛔ never a pass |
+
+| ID | Rule | Enf | Verify |
+|---|---|---|---|
+| `CHK-CAU-001` | ⭐ **A red counts only when the message names the intended cause** | 📖 | ⛔ read the message, not the exit code |
+| `CHK-CAU-002` | 🔴 **A crash is not a detection** | 🔒 | ⭐ a validator that dies reports nothing |
+| `CHK-CAU-003` | ⛔ **SKIP is said out loud, never counted as PASS** | 🔒 | ⚠️ a silent gap turned green |
+
+### ⭐ WHY `CRASH` DESERVES ITS OWN NAME
+
+⚠️ **A crashing validator produces no output — and "nothing reported" reads exactly like "nothing
+wrong".** ⛔ **Measured twice while writing the validators in this folder:** one died on every
+input including the correct one, and the sabotage run read it as *"detects nothing"*; ⭐ **the
+truth was that it never ran at all.**
+
+⭐ **So a validator catches its own exceptions and turns them into a finding with a non-zero
+exit** — ⛔ **a stack trace is not actionable, and it is not a verdict.**
+
+> ## ⭐ THE TEST FOR CAUSALITY
+> ⛔ **Break a link → the validator crashes → FAIL.** ⚠️ **That does not prove it detects broken
+> links. It proves the interpreter stopped.**
+
+---
+
+## 4 · ⭐ THE FIVE FAMILIES
 
 ⛔ **Every blind check measured so far falls into one of these.** ⭐ **When you find one, look for
 the same shape in its siblings** — the pattern never lives alone.
@@ -190,7 +225,35 @@ detector missed every copy, because ⭐ **a copy arrives in a different shape fr
 
 ---
 
-## 4 · ⭐ THE COROLLARY THAT MULTIPLIES EVERY FINDING
+## 5 · ⭐ INSTANCE INDEPENDENCE — a rule, not just a family
+
+> ## ⛔ THE LOCAL STATE OF ONE MACHINE MUST NOT BECOME PART OF THE SYSTEM'S SPECIFICATION.
+
+⭐ **Family D describes the shape. This is the rule behind it**, and it is the one to apply before
+writing a check, not after finding the defect.
+
+| A check distinguishes… | |
+|---|---|
+| ⭐ **SYSTEM state** | what is true of the engine anywhere it is installed |
+| ⛔ **INSTANCE state** | what happens to exist in this tree, on this machine |
+
+| ID | Rule | Enf | Verify |
+|---|---|---|---|
+| `CHK-IND-001` | ⭐ **A check's verdict does not change with the amount of work already done** | 📖 | ⛔ would this be the same in an empty tree? |
+| `CHK-IND-002` | ⭐ **Absent instance → verify the BEHAVIOUR instead** | 🔒 | ⚠️ not *"skip the check"* |
+| `CHK-IND-003` | ⛔ **A check is proven on a clean clone, not only where it was written** | 📖 | ⭐ nothing verifies this yet |
+
+⭐ **`CHK-IND-002` is what keeps this from becoming an excuse.** ⛔ **The way out is never to stop
+verifying:** if the file exists, hold it to the same standard; ⭐ **if it does not, invoke the
+thing and require its effect** — that verifies the same behaviour on any machine.
+
+⚠️ **`CHK-IND-003` is 📖 and it is the most expensive gap in this file.** ⭐ **A validator proven
+only where it was written has been proven on one instance** — and family D is exactly what that
+produces.
+
+---
+
+## 6 · ⭐ THE COROLLARY THAT MULTIPLIES EVERY FINDING
 
 > ## Fixing this family in one validator does NOT fix it in its siblings.
 
@@ -202,7 +265,44 @@ fixed in another. ⭐ **On finding one, search for the pattern in all the others
 
 ---
 
-## 5 · ⛔ WHAT THIS DOES NOT MEAN
+## 7 · ⭐ THE ATTACK MATRIX — so the negative run is not improvised
+
+⛔ **An agent inventing an attack each time produces a different battery every time** — ⚠️ some
+checks get fifteen probes and others get six, ⭐ **and nothing says which coverage was intended.**
+
+| The risk | ⭐ The attack that proves it |
+|---|---|
+| **loose comparison** | ⭐ introduce a partial match — a longer string containing the short one |
+| **short reach** | move the target one level outside the search |
+| **clobbered value** | insert a command between the run and the capture |
+| ⭐ **instance dependence** | ⛔ **run it where the instance artifacts do not exist** |
+| **instance-dependent result** | change how much work exists, ⭐ not whether files exist |
+| **misleading exit code** | force a non-zero exit while the output still looks correct |
+| **wrong shape** | ⭐ write the same defect in another valid form |
+| **path dependence** | run it from a different working directory |
+
+| ID | Rule | Enf | Verify |
+|---|---|---|---|
+| `CHK-ATK-001` | ⭐ **Each attack that applies is run, or its absence is stated** | 📖 | ⛔ silence and *"not applicable"* look identical |
+
+### ⭐ THE PROBE HAS ITS OWN FAILURE MODES — measured, three in a row
+
+⚠️ **The file already says to suspect the probe. ⭐ What it did not say is HOW a probe fails**, and
+there are three concrete shapes:
+
+| # | ⛔ The probe… | ⭐ What it reports |
+|---|---|---|
+| 1 | **does not clean up everything it creates** | ⚠️ residue contaminates the next case, which then reports a stale finding as its own |
+| 2 | ⭐ **its fixtures cannot reference each other** | a working graph check reported as broken |
+| 3 | ⛔ **its output filter is narrower than what it generates** | ⭐ **a correct check reported as undetected** |
+
+> ## ⭐ ALL THREE REPORT A WORKING CHECK AS BROKEN.
+> ⛔ **That is the direction that costs most**, because the obvious response is to "fix" the check
+> — ⚠️ **and then a working validator gets a defect introduced into it.**
+
+---
+
+## 8 · ⛔ WHAT THIS DOES NOT MEAN
 
 | ⛔ Not this | ⭐ Why |
 |---|---|
@@ -218,7 +318,7 @@ and redundant probes are how a battery becomes noise.**
 
 ---
 
-## 6 · ⛔ WHAT IT COSTS TO BREAK IT
+## 9 · ⛔ WHAT IT COSTS TO BREAK IT
 
 | Broken | ⭐ The cost |
 |---|---|
@@ -227,10 +327,13 @@ and redundant probes are how a battery becomes noise.**
 | **short reach** | ⭐ the thing you most wanted to protect is outside the search |
 | ⭐ **a check bound to one machine** | ⛔ **green here, broken everywhere else — and nobody finds out** |
 | **fixing one sibling** | ⚠️ the same defect stays in the others, now with less suspicion on it |
+| ⭐ **a red accepted without reading its cause** | ⛔ **the check is trusted for a failure it did not detect** |
+| **a crash read as a detection** | ⚠️ ⭐ **it never ran, and nothing said so** |
+| ⭐ **a defect in the PROBE fixed in the CHECK** | ⛔ **a working validator gets a defect introduced into it** |
 
 ---
 
-## 7 · WHO GOVERNS THIS FILE
+## 10 · WHO GOVERNS THIS FILE
 
 | Change | Who |
 |---|---|
