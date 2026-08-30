@@ -7,6 +7,7 @@ actionable without opening the code.
 Exit: 0 clean · 1 violations · 2 the contract itself is missing
 """
 import os, re, sys
+from datetime import date
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 CONTRACT = os.path.join(ROOT, "rules", "contract-document.md")
@@ -19,6 +20,34 @@ FALLBACK_CEILINGS = {}
 
 SKIP_DIRS = {".git", "__pycache__", "node_modules", ".venv", "cache"}
 SKIP_NAMES = {"CHANGELOG.md"}
+
+# DOC-CNT-005 · a credential shape. ⛔ `-p` is deliberately absent: a
+# one-letter flag matched a directory name in a real file (rule-config-hygiene §2).
+CREDENTIAL = re.compile(
+    r"(?:--password|--token|--secret|--api[_-]?key)[= ]+['\"]?(?!\$|<|\.\.\.)"
+    r"[A-Za-z0-9!@#$%^&*_+./-]{8,}"
+    r"|\b(?:password|passwd|api[_-]?key|secret|token)\s*[:=]\s*"
+    r"['\"](?!\$|<|\.\.\.|⬜)[^'\"]{8,}['\"]"
+    r"|\b(?:sk|pk|ghp|xox[bap])[-_][A-Za-z0-9]{16,}", re.I)
+# ⭐ A placeholder is not a credential. Without this the rule fires on its own
+# documentation — and a rule that cannot describe itself gets deleted, not obeyed.
+EXAMPLE_SAFE = re.compile(r"⬜|<[^>]+>|\.\.\.|xxx+|your[-_]|example|placeholder|\$\{?\w",
+                          re.I)
+
+def stale_threshold():
+    """⬜ How old a `current` document may be before it is stale. Read from the
+    contract, never fixed here — and ⛔ if no threshold is declared, NOTHING is
+    measured: the rule says so instead of inventing a number."""
+    try:
+        t = open(os.path.join(ROOT, "rules", "contract-document.md"),
+                 encoding="utf-8", errors="replace").read()
+    except OSError:
+        return 0
+    m = re.search(r"⬜ staleness threshold[^|]*\|\s*(\d+)", t)
+    return int(m.group(1)) if m else 0
+
+
+STALE_DAYS = stale_threshold()
 
 HDR = re.compile(r"^\*\*(Status|Type|Updated|Owner):\*\*\s*(.+?)\s*(?:·|$)", re.M)
 FIELD = re.compile(r"\*\*(Status|Type|Updated|Owner):\*\*\s*([^·\n]+)")
@@ -143,6 +172,48 @@ def check(path, rel, ceilings, quiet):
                     "here or from the root · a pointer to nothing reads as a promise"
                     % ref))
         break
+
+    # DOC-CNT-005 · no credential, not even as an example. ⛔ What is written
+    # into a document stays in history: purging the file does not un-publish it.
+    for i, line in enumerate(text.split("\n"), 1):
+        m = CREDENTIAL.search(line)
+        if m and not EXAMPLE_SAFE.search(line):
+            bad.append(("DOC-CNT-005", rel, i,
+                        "credential-shaped value: %r · a document is not the "
+                        "place, not even as an example — what is written stays "
+                        "in history, and the answer is ROTATION, not deletion"
+                        % m.group(0)[:40]))
+            break
+
+    # DOC-NAM-007 · a filename never names a person. ⭐ It outlives whoever
+    # installed the system, and a person's name in a path is a permanent label.
+    stem = os.path.basename(rel).rsplit(".", 1)[0]
+    owner = (f.get("Owner") or "").strip().strip("*`").lower()
+    if owner and owner not in ("", "—", "-") and not owner.startswith("⬜"):
+        first = re.split(r"[\s,·]", owner)[0]
+        if len(first) > 2 and re.search(r"(^|-)%s(-|$)" % re.escape(first),
+                                        stem, re.I):
+            bad.append(("DOC-NAM-007", rel, 1,
+                        "the filename names a person (%r) · name the subject, "
+                        "not who owns it — the file outlives whoever installed "
+                        "the system, and the owner already lives in the header"
+                        % first))
+
+    # DOC-LIF-001 · `current` with an old `Updated` is stale, not current.
+    # ⬜ The threshold is the installation's: read from §5 of the contract, so
+    # raising it is a documented act. ⛔ Without a declared threshold nothing is
+    # measured — and this rule says so rather than inventing a number.
+    if f.get("Status", "").strip().lower() == "current" and STALE_DAYS:
+        d = (f.get("Updated") or "").strip()
+        if re.fullmatch(r"\d{4}-\d{2}-\d{2}", d):
+            age = (date.today() - date.fromisoformat(d)).days
+            if age > STALE_DAYS:
+                bad.append(("DOC-LIF-001", rel, 1,
+                            "declares `current` and was last updated %d days "
+                            "ago (threshold %d) · re-verify it or restate what "
+                            "changed — a stale `current` is worse than no "
+                            "status, because it is believed"
+                            % (age, STALE_DAYS)))
 
     # DOC-AUT-002 · a generated document is overwritten by its generator
     m_auth = re.search(r"\*\*Authority:\*\*\s*([^\n·]+)", head)

@@ -1,6 +1,6 @@
 # CONTRACT · QUALITY VERDICT
 
-**Status:** current · **Type:** contract · **Updated:** 2026-08-30 · **Owner:** ⬜ declare
+**Status:** current · **Type:** contract · **Updated:** {{date}} · **Owner:** {{owner}}
 **Applies to:** the verdict a block carries when it closes
 **Enforcement:** 🔒 partial — `bin/grade-block` is layer 1; layer 2 is criterion
 **Verified by:** `bin/grade-block` · `bin/probes/probe-grade.py`

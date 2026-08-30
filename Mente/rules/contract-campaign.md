@@ -1,6 +1,6 @@
 # CONTRACT · CAMPAIGN
 
-**Status:** current · **Type:** contract · **Updated:** 2026-08-29 · **Owner:** ⬜ declare
+**Status:** current · **Type:** contract · **Updated:** {{date}} · **Owner:** {{owner}}
 **Applies to:** every file at `campaigns/<name>/CAMPAIGN.md`
 **Enforcement:** 🔒 partial — `bin/check-campaign`
 **Verified by:** `bin/check-campaign` · `bin/probes/probe-campaign.py`
