@@ -414,11 +414,21 @@ two, and the last five are the ones a script cannot ask.
 | **10** | is the REVERSION real? | ⛔ "go back" without saying what is lost is an exit nobody can take |
 | **11** | does it declare its BOUNDARY? | ⚠️ a decision with none gets applied where it was never meant to |
 | **12** | ⭐ does it survive without its original CONTEXT? | ⛔ if it only makes sense to whoever was there that day, it does not travel |
+| **13** | ⭐ what decision ENABLES it, and what depends on it? | ⛔ a record with no neighbours is reverted without seeing what goes with it |
+| **14** | does its `status` match MEASURED reality? | ⚠️ `accepted` with nothing built reads exactly like done |
+| **15** | can it be SHOWN still to hold today? | ⭐ a decision can die quietly and the record stays confident |
+| **16** | ⭐ what would CHANGE it? | ⛔ a decision with no revision condition is dogma |
 
-> ## ⭐ 8 TO 12 ARE NOT VERIFIABLE BY A SCRIPT, AND THAT IS WHY THEY ARE WRITTEN DOWN.
+> ## ⭐ 8 TO 16 ARE NOT VERIFIABLE BY A SCRIPT, AND THAT IS WHY THEY ARE WRITTEN DOWN.
 > ⚠️ **A check can see that `Rejected alternatives` exists.** ⛔ **It cannot see that what is in it
 > would let somebody re-open the question honestly** — and that is the whole reason the section
 > is there.
+
+### ⭐ 16 IS THE ONE MOST OFTEN MISSING
+
+⛔ **`Reverting` says how to undo a decision. Nothing says what would make it WRONG.** ⚠️ Without
+that, a record is defended forever by whoever inherits it — and the condition that should have
+retired it passes unnoticed, because nobody wrote down what to watch for.
 
 ---
 
