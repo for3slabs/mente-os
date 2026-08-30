@@ -1,0 +1,73 @@
+# ══════════════════════════════════════════════════════════════════════════
+# cuentas.tsv — the single source of truth for WHICH ACCOUNT governs each repo.
+#
+# Read by:  bin/check-accounts (verifies)  ·  bin/conectar-cuenta (resolves)
+#           hooks/gate-accounts.py (blocks a push to a repo declared elsewhere)
+#
+# 📦 THIS FILE IS INSTANCE DATA. It describes YOUR accounts and YOUR repos.
+#    A clone receives it with this header and ZERO rows — nobody inherits
+#    somebody else's accounts. It is gitignored for the same reason.
+#
+# ⛔ NEVER PUT A TOKEN, A PASSWORD OR A KEY HERE. Not even temporarily.
+#    The `guia` column points at a file under secrets/, which is outside git.
+#    This file says WHERE credentials live; it never says WHAT they are.
+#
+# ⭐ WHY IT EXISTS, and it is not bookkeeping:
+#    When several accounts are in play, "which one governs this repo" is a fact
+#    that lives in three places at once — the remote, the docs, and someone's
+#    memory — and nothing compares them. They drift, and the drift is silent:
+#    work gets pushed to the wrong account, or to a repo that was retired
+#    months ago, and the push succeeds. A declaration that no script checks is
+#    a claim; this file exists so a script can check it against the machine.
+#
+# ⚠️ THE TRAP TO KNOW ABOUT: a renamed or transferred repository usually keeps
+#    redirecting from its old address. Both names resolve, both look alive, and
+#    a stale row can point at a dead repo and still appear to work. Re-measure
+#    with `git remote -v`; never trust the row alone.
+#
+# ══════════════════════════════════════════════════════════════════════════
+#
+# FORMAT — TAB-separated, one row per repository:
+#
+#   repo   cuenta   rol   remoto   ruta_local   por_que_existe   guia
+#
+#   repo             owner/name as the host spells it
+#   cuenta           which account governs it — the identity that may push
+#   rol              what it is FOR (see the roles below)
+#   remoto           the git remote name it answers to (origin, backup, …)
+#                    or `-` when there is no local clone
+#   ruta_local       where it lives on this machine, or `-` if not cloned
+#                    ⚠️ a repo with no local path has never been verified
+#                       against the machine — the row is a claim, not a fact
+#   por_que_existe   ⭐ MANDATORY. One line. A repo that cannot justify itself
+#                    is either duplicated work or abandoned work
+#   guia             a file under secrets/ with the access steps, or `-`
+#                    ⛔ the pointer, never the credential
+#
+# ── THE ROLES ─────────────────────────────────────────────────────────────
+#   taller       the working repo — where daily work is pushed
+#   backup       a verified copy of the product; not the working surface
+#   motor        the engine itself, when you maintain one
+#   control      tooling or orchestration around the work
+#   sitio        a public site — ⚠️ pushing may publish
+#   publicado    released for third parties, usually under a public licence
+#   plantilla    a template others start from
+#   archivado    ⛔ RETIRED — receives no work. Kept declared on purpose:
+#                a repo that disappears from this table becomes invisible
+#                again, and the reason it was retired disappears with it
+#
+# ⭐ Add your own roles if you need them, but declare each one here first.
+#    A role used and not declared is a role the validator cannot check, and
+#    it will pass silently — which is how a retired repo keeps receiving work.
+#
+# ══════════════════════════════════════════════════════════════════════════
+repo	cuenta	rol	remoto	ruta_local	por_que_existe	guia
+#
+# ⬜ YOUR ROWS GO BELOW. The file ships with none.
+#
+# Example of the shape — ⚠️ THIS IS A COMMENT, NOT A ROW. Copy it, remove the
+# leading "#", and replace every value. Columns are separated by a TAB, never
+# by spaces:
+#
+# my-org/my-app	my-account	taller	origin	~/my-app	where the product is built day to day	-
+#
