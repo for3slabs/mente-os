@@ -361,5 +361,140 @@ installer — ⭐ **and the names may be deliberate.** The finding is that nothi
 
 ---
 
+## E-25 · ⭐ Nothing compares a declared 🔒 against the code
+
+⚠️ **This is `E-01` with a measurement behind it.** E-01 asked for visibility; this names the exact
+comparison, what it found by hand, and the one trap that makes a naive version useless.
+
+- **Surfaced by:** the rule-by-rule audit — the same comparison run by hand thirteen times
+- **Affects:** every `rules/*.md` and its validator
+- **Closes when:** a check reports, per rule, how many rows declare 🔒 and how many ids the
+  validator actually cites — ⭐ **closing E-01 with it**
+
+**Why it matters.** ⛔ **Measured across the thirteen rules: 177 rows declared a lock and roughly
+118 were implemented.** A rule that says 🔒 and has no lock is the one lie this system cannot
+afford — ⚠️ **and it is invisible from the document, which reads exactly like an enforced one.**
+
+⭐ **The comparison is mechanical:** the ids marked 🔒 in the table, against the ids the validator
+names. It found 59 gaps by hand; a script finds them on every run.
+
+⚠️ **It must also see DELEGATION.** Six rules are performed by another rule's check — `DOC-MOV-002`
+by `DOC-CNT-004`, `BLK-ARC-001` by `ARC-DEL-002`. ⛔ **Counting those as gaps produces false
+alarms, and a false alarm on a real tree is how a check gets switched off.**
+
+---
+
+## E-26 · ⭐ A probe filters to its own fixtures, so a validator can be green there and dirty on the tree
+
+- **Surfaced by:** audit 8 — `check-checks` had reported four real violations for seven audits
+- **Affects:** `bin/probes/run-all.py` and every probe
+- **Closes when:** the suite runs each validator against the real tree as well as its fixtures,
+  and reports both
+
+**Why it matters.** ⛔ **A probe answers "does this check detect what it claims?", never "is the
+tree clean right now?"** — and the second question went unasked for seven audits while four
+unguarded `open()` calls sat in the code.
+
+> ⭐ Two questions, two runs. A suite that answers one and implies the other is worse than one
+> that answers neither, because it looks complete.
+
+---
+
+## E-27 · Nothing verifies a check on a CLEAN CLONE
+
+- **Surfaced by:** `rules/rule-checks-must-measure.md` `CHK-IND-003`, still 📖
+- **Affects:** all 14 validators
+- **Closes when:** the suite can run from a fresh clone with no instance files, and says which
+  checks became NOT MEASURED there
+
+**Why it matters.** ⚠️ **Everything verified in this audit ran in the tree where it was written.**
+⛔ A validator proven only there has been proven on one instance — which is the exact family the
+rule names — and the failures that appear on a clean clone are the ones nobody sees until an
+outsider installs it.
+
+⭐ **It is the highest-value gap left**, because it is the one the engine exists for.
+
+---
+
+## E-28 · 106 rules are 📖 and nothing distinguishes "cannot be checked" from "not built yet"
+
+- **Surfaced by:** the audit tally — 106 of 315 rules carry 📖
+- **Affects:** every rule file
+- **Closes when:** a 📖 row declares which of the two it is, and the count of the second kind is
+  reported
+
+**Why it matters.** ⭐ **Most of those 106 are honest:** a script can check that a friction was
+logged, never that the work stopped to think. ⛔ **But two say "nothing verifies this YET"**, and
+those are work, not a limit. ⚠️ **Mixed into one symbol, the buildable ones are invisible** — and
+a backlog nobody can see is a backlog nobody works.
+
+---
+
+## E-29 · ⬜ declarations have no completeness report
+
+- **Surfaced by:** the audit — 100 ⬜ markers across the thirteen rules
+- **Affects:** every rule that defers a threshold, a path or a vocabulary to the installation
+- **Closes when:** a check lists the ⬜ declarations an installation has not filled
+
+**Why it matters.** ⭐ **`⬜` is the mechanism that makes this engine portable:** thresholds,
+section names, base branch, code extensions. ⛔ **An unfilled one is NOT MEASURED, and every rule
+that depends on it silently measures nothing.**
+
+⚠️ **Measured during the audit:** the staleness threshold, the section ceilings and the pending
+period all default to `0`, and `0` means the rule is off. ⭐ **That is correct and honest — and
+invisible unless something counts them.**
+
+---
+
+## E-30 · A shared reader exists for blocks and for nothing else
+
+- **Surfaced by:** audit 4 — four copies of the same section reader, already diverged
+- **Affects:** `bin/blockread.py`, and every future validator over a shared shape
+- **Closes when:** a rule states when a parser is shared and when a shape earns its own
+
+**Why it matters.** ⛔ **Two readers over one shape diverge; one cannot.** ⚠️ But the opposite
+error is just as real: forcing two SHAPES into one reader made a decision record return nothing,
+and "nothing" reads exactly like "the section is empty".
+
+⭐ **The line is drawn in one comment inside one file.** A line that matters this much belongs in
+a rule, not in a comment somebody has to find.
+
+---
+
+## E-31 · Repeated findings are grouped in one validator only
+
+- **Surfaced by:** audit 12 — a real list produced 590 findings that were 5 distinct shapes
+- **Affects:** every validator that iterates over many objects
+- **Closes when:** grouping lives in one place every validator uses
+
+**Why it matters.** ⛔ **A report nobody finishes is a report nobody applies** — the same argument
+this engine makes against long documents, applied to its own output. ⭐ **`check-pending` groups
+now; the other thirteen do not**, and any of them can hit the same volume the moment a real
+instance has many objects.
+
+---
+
+## E-32 · ⚠️ Two real archives and one real block carry defects this engine now detects
+
+- **Surfaced by:** the cross-runs, against objects nobody wrote for this engine
+- **Affects:** nothing in the engine — ⭐ recorded so the findings are not lost
+- **Closes when:** the installation that owns them decides whether to fix or accept them
+
+**Why it matters.** ⭐ **These are not engine gaps; they are proof the engine measures something
+real:**
+
+| Finding | Where |
+|---|---|
+| one archive is missing both its summary and its connections file | 1 of 6 real archives |
+| two closed blocks declare acceptance and no sufficiency | 6 real closed blocks |
+| a block's declared scope resolves to one path out of three | 1 real block |
+| two rules marked project-level live in the universal file every clone inherits | a real base-rules |
+| 14 commands granted twice, once as `x` and once as `./x` | a real configuration |
+
+⛔ **The engine does not fix these** — they belong to an installation. ⚠️ **But an audit that finds
+them and writes them nowhere has measured for nothing.**
+
+---
+
 Related: `README.md` (folder) · `../memory/principles/README.md` (where the owners live) ·
 `../rules/README.md` (where a closed entry usually lands) · `../CAPABILITIES.md`.
