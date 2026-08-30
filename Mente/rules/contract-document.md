@@ -499,7 +499,8 @@ modification date, which is the only staleness signal a document without a heade
 
 ---
 
-**Decided by:** `decisions/ADR-023-instructions-are-in-one-language.md` — ⭐ **why identifiers live in one declared language**, and why the owner's thinking does not.
+**Decided by:** `decisions/ADR-027-ceilings-are-per-document-type.md` — ⭐ **why the ceiling is a SIGNAL**, why per type, and what a global limit discredits.
+**Also decided by:** `decisions/ADR-023-instructions-are-in-one-language.md` — ⭐ **why identifiers live in one declared language**, and why the owner's thinking does not.
 
 Related: `README.md` (⭐ **the three document types, and how law is written here**) ·
 `contract-block.md` · `contract-adr.md` (⭐ the shape of an append-only record) ·

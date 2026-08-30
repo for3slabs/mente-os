@@ -440,7 +440,7 @@ two, and the last five are the ones a script cannot ask.
 |---|---|---|
 | 1 | does its FORM pass the check? | it cannot be read by anything |
 | 2 | is the decision IMPLEMENTED? | ⚠️ a record of something that never happened |
-| 3 | does the rule CITE it? | ⭐ **the rule is one argument from being reverted by somebody who does not know what caused it** |
+| 3 | does the rule CITE it? ⚠️ ⛔ **not a superseded one** — its successor cites it | ⭐ **the rule is one argument from being reverted by somebody who does not know what caused it** |
 | 4 | is any INSTANCE data left? | it does not travel |
 | 5 | do its POINTERS resolve here? | a promise to a reader who will follow it |
 | 6 | does it CONTRADICT another? | two records, one question, nothing says which |

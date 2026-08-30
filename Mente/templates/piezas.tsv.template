@@ -161,6 +161,7 @@ adr-021	rules/decisions/ADR-021-an-error-becomes-a-case-only-if-it-passes-three.
 adr-022	rules/decisions/ADR-022-a-rule-is-flagged-at-n-distinct-blocks.md	engine	canonical	when a rule has earned a review — counted over DISTINCT blocks, never raw repetitions
 adr-023	rules/decisions/ADR-023-instructions-are-in-one-language.md	engine	canonical	why instructions live in one declared language and the owner's thinking does not
 adr-024	rules/decisions/ADR-024-the-system-audits-itself-unasked.md	engine	canonical	why the system checks itself unasked — and why it never deletes what it finds
+adr-027	rules/decisions/ADR-027-ceilings-are-per-document-type.md	engine	canonical	why ceilings are per type and why the limit is a signal, never the cause
 adr-030	rules/decisions/ADR-030-the-block-message-is-the-receipt.md	engine	canonical	what a refusal must say — piece, reason, assessment, and the way out
 decisions-readme	rules/decisions/README.md	engine	canonical	the append-only folder — ships empty, the records are yours
 check-handoff	bin/check-handoff	engine	executable	validates a delegation manifest and binds it against reality
