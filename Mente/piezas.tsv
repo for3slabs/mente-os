@@ -137,6 +137,10 @@ adr-012	rules/decisions/ADR-012-few-gates-block-the-rest-warn.md	engine	canonica
 adr-013	rules/decisions/ADR-013-the-verdict-has-two-layers.md	engine	canonical	why a verdict has two layers — measured and criterion, and why neither alone works
 adr-014	rules/decisions/ADR-014-the-criterion-belongs-to-the-owner.md	engine	canonical	whose criterion layer 2 is — and why an agent writing its own has written a linter
 adr-015	rules/decisions/ADR-015-nesting-is-bounded-at-three.md	engine	canonical	why nesting is bounded at three — ⬜ decided, not yet built
+adr-018	rules/decisions/ADR-018-the-system-governs-how-it-communicates.md	engine	canonical	why the system governs how it communicates — negative, checkable rules
+adr-025	rules/decisions/ADR-025-config-hygiene-needs-a-mechanism.md	engine	canonical	the four config hygiene rules, and why discipline was not enough
+adr-026	rules/decisions/ADR-026-permission-granularity-is-the-mechanism.md	engine	canonical	why a permission is granted per mechanism — and the one deliberate exception
+adr-028	rules/decisions/ADR-028-the-type-changes-the-ruler.md	engine	canonical	why a block's type changes the ruler and never the bar
 adr-019	rules/decisions/ADR-019-a-validator-completes-what-is-derivable.md	engine	canonical	what a validator may complete, and what it must never derive — ⬜ decided, not yet built
 adr-020	rules/decisions/ADR-020-a-block-emits-an-approval-receipt.md	engine	canonical	⛔ superseded — the receipt whose FORM assumed an interface that does not exist
 adr-021	rules/decisions/ADR-021-an-error-becomes-a-case-only-if-it-passes-three.md	engine	canonical	when an error is worth reusing — ⬜ decided, the type does not exist yet
