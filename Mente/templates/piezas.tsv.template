@@ -172,3 +172,6 @@ probe-config	bin/probes/probe-config.py	engine	executable	proves check-config de
 contract-campaign	rules/contract-campaign.md	engine	canonical	what holds several blocks together when one is not enough and a project is too much
 check-campaign	bin/check-campaign	engine	executable	enforces the lock rules of the campaign contract
 probe-campaign	bin/probes/probe-campaign.py	engine	executable	proves check-campaign detects what the campaign contract claims
+contract-quality-verdict	rules/contract-quality-verdict.md	engine	canonical	is this a product or an MVP — two layers, measured and criterion
+grade-block	bin/grade-block	engine	executable	layer 1 of the quality verdict: answers with numbers, never an opinion
+probe-grade	bin/probes/probe-grade.py	engine	executable	proves grade-block measures what the quality contract claims

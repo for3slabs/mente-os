@@ -1,0 +1,503 @@
+#!/usr/bin/env python3
+"""grade-block — layer 1 of the quality verdict: is this a product or an MVP?
+
+Answers with NUMBERS, never with an opinion. The reason it exists, measured:
+
+    21:15   "the system is complete"
+    06:33   "what is wrong is that this file implements it halfway"
+
+⭐ The same code. Opposite verdicts. Nine minutes apart. The only thing that
+happened in between was a context reset.
+
+    ⛔ A verdict that changes with context is not a verdict — it is a mood.
+    🚫 The agent does not declare "this is fine." It reports the measurement.
+
+This is LAYER 1. Layer 2 is the criterion, and it belongs to the installation:
+rules/contract-quality-verdict.md §5.
+
+Usage:
+  bin/grade-block <block-name> [--root <repo>] [--json] [--quiet]
+
+Exit: 0 product · 1 close or nothing measured · 2 MVP
+"""
+import os, re, sys, glob, json, subprocess
+from datetime import date
+from collections import defaultdict
+
+MENTE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+CONTRACT = os.path.join(MENTE, "rules", "contract-quality-verdict.md")
+BLOCKS = os.path.join(MENTE, "work", "blocks")
+
+# ── ⬜ the installation's declarations, with the engine's defaults ───────────
+# ⛔ A threshold that lives only in code is a decision nobody knows was taken.
+# These are read from the contract's §7 table, so raising one is a documented
+# act — the same way a document ceiling is raised by declaring it.
+DEFAULTS = {
+    "extensions": ".py .js .ts .tsx .jsx",
+    "window": "8",
+    "tolerance": "2",
+    "exclude": ".git node_modules __pycache__ .venv dist build coverage .next",
+}
+
+
+def declared():
+    """Read §7 of the contract. ⭐ The engine ships defaults; the installation
+    overrides them by editing the table, never by editing this script."""
+    cfg = dict(DEFAULTS)
+    try:
+        t = open(CONTRACT, encoding="utf-8", errors="replace").read()
+    except OSError:
+        return cfg
+    m = re.search(r"⬜ code file extensions[^|]*\|\s*`?([^|`]+)`?\s*\|", t)
+    if m:
+        cfg["extensions"] = m.group(1).strip()
+    m = re.search(r"⬜ duplication window[^|]*\|\s*(\d+)", t)
+    if m:
+        cfg["window"] = m.group(1)
+    m = re.search(r"⬜ duplication tolerance[^|]*\|[^|]*?(\d+)\s*blocks? is red", t)
+    if m:
+        cfg["tolerance"] = m.group(1)
+    return cfg
+
+
+CFG = declared()
+CODE_EXT = tuple(e if e.startswith(".") else "." + e
+                 for e in CFG["extensions"].replace(",", " ").split())
+WINDOW = int(CFG["window"])
+TOLERANCE = int(CFG["tolerance"])
+EXCLUDE = ["--exclude-dir=" + d for d in CFG["exclude"].split()]
+
+# 🔴 QLT-TYP-003 · a pasted secret is red for EVERY type
+SECRET = re.compile(
+    r"(?:--password|--token|--secret|--api[_-]?key)[= ]+['\"]?(?!\$)[\w!@#$%^&*./-]{8,}"
+    r"|\b(?:password|passwd|api[_-]?key|secret|token)\s*[:=]\s*['\"](?!\$)[^'\"]{8,}['\"]",
+    re.I)
+
+
+def sh(*cmd):
+    try:
+        return subprocess.run(cmd, capture_output=True, text=True, timeout=60).stdout
+    except Exception:
+        return ""
+
+
+def scope_dirs(text):
+    """The paths the block declares as its own territory.
+
+    ⚠️ An HTML comment between the heading and the first item used to end the
+    list SILENTLY: the scope came back empty, nothing was measured, and the
+    block scored a false ⬜ with every real metric green. Comments are skipped,
+    never treated as the end of the list."""
+    m = re.search(r"##\s*✅?\s*IN\s*\n(.*?)(?=\n##|\Z)", text, re.S)
+    if not m:
+        return []
+    body = re.sub(r"<!--.*?-->", "", m.group(1), flags=re.S)
+    dirs = []
+    for line in body.split("\n"):
+        if not line.lstrip().startswith("-"):
+            continue
+        for tok in re.findall(r"[\w./\[\]*-]+/[\w./\[\]*-]*", line):
+            d = tok.split("*")[0].rstrip("/")
+            if d and "/" in d:
+                dirs.append(d)
+    return sorted(set(dirs))
+
+
+def resolve_scope(dirs, root):
+    """⭐ Two validators, two roots. A path written for one used to make the
+    other measure nothing. A bare path that does not resolve is retried with
+    the engine prefix, and the reverse — whichever exists on disk wins."""
+    stem = os.path.basename(MENTE)
+    out = []
+    for d in dirs:
+        if os.path.exists(os.path.join(root, d)):
+            out.append(d)
+            continue
+        alt = (d[len(stem) + 1:] if d.startswith(stem + "/")
+               else os.path.join(stem, d))
+        out.append(alt if os.path.exists(os.path.join(root, alt)) else d)
+    return sorted(set(out))
+
+
+def files_in(dirs, root, ext=None):
+    out = []
+    skip = set(CFG["exclude"].split())
+    for d in dirs:
+        base = os.path.join(root, d)
+        if os.path.isfile(base):
+            out.append(base)
+            continue
+        for f in glob.glob(os.path.join(base, "**", "*"), recursive=True):
+            if os.path.isdir(f) or skip & set(f.split(os.sep)):
+                continue
+            if ext is None or f.endswith(ext):
+                out.append(f)
+    return sorted(set(out))
+
+
+def importers(stem, root):
+    """Files that IMPORT this piece — ⛔ not files that MENTION it. Measured:
+    one piece had 26 mentions and 9 real imports, and counting mentions makes
+    a dead file look alive."""
+    # ⛔ Two import shapes, not one. A path import (`from "./x"`, `require("../x")`)
+    # separates the name with a slash; a module import (`from .x import y`,
+    # `import pkg.x`) separates it with a DOT. Requiring the slash reported
+    # every module-imported file as dead — the fixture's own helper, imported
+    # one line away, came back as dead code.
+    # ⛔ POSIX ERE, not Python. `grep -E` has no `(?:…)`, no `\s`, no `\b` —
+    # a pattern that matches perfectly in Python silently matches NOTHING here,
+    # and the result reads as "no importers": every file comes back dead.
+    # ⛔ Two import shapes, not one. A path import (`from "./x"`) separates the
+    # name with a slash; a module import (`from .x import y`) with a DOT.
+    q = re.escape(stem).replace("\\", "")
+    pat = (r"(from|require|import)[ (]*[\"']?[A-Za-z0-9_./-]*[/.]%s([^A-Za-z0-9_]|$)"
+           r"|(from|import)[ ]+%s([^A-Za-z0-9_]|$)" % (q, q))
+    inc = ["--include=*%s" % e for e in CODE_EXT]
+    out = sh("grep", "-rlE", pat, root, *inc, *EXCLUDE)
+    return [h for h in out.strip().split("\n")
+            if h and "/%s." % stem not in h.split("/")[-1]]
+
+
+def dead_code(dirs, root):
+    dead_files, dead_exports = [], []
+    for f in files_in(dirs, root, CODE_EXT):
+        rel = f.replace(root.rstrip("/") + "/", "")
+        stem = os.path.basename(f).rsplit(".", 1)[0]
+        # entry points are loaded by the framework, not imported by code
+        if re.fullmatch(r"route|page|layout|index|middleware|main|__init__", stem):
+            continue
+        # ⭐ A TEST IS RUN, NEVER IMPORTED. Counting one as dead code punishes
+        # exactly what the system demands: measured, a block's verdict went
+        # from 🟢 to 🔴 *because it had gained tests*. The runner collects them
+        # by filename, so "0 importers" is a healthy test's normal state.
+        # ⛔ Not a blanket exemption — only names a runner actually collects.
+        if re.search(r"\.(test|spec)$", stem) or re.match(r"(test_|conftest$)", stem):
+            continue
+        if not importers(stem, root):
+            dead_files.append(rel)
+            continue
+        try:
+            src = open(f, encoding="utf-8", errors="replace").read()
+        except OSError:
+            continue
+        inc = ["--include=*%s" % e for e in CODE_EXT]
+        for name in re.findall(
+                r"^export\s+(?:async\s+)?(?:function|const|class)\s+(\w+)"
+                r"|^def\s+(\w+)\s*\(", src, re.M):
+            name = name[0] or name[1]
+            if not name or name.startswith("_"):
+                continue
+            used = sh("grep", "-rlE", r"\b%s\b" % re.escape(name), root, *inc, *EXCLUDE)
+            if not [h for h in used.strip().split("\n") if h and h != f]:
+                dead_exports.append("%s::%s" % (rel, name))
+    return dead_files, dead_exports
+
+
+def duplication(dirs, root):
+    """⬜ WINDOW consecutive meaningful lines appearing in more than one place."""
+    seen = defaultdict(list)
+    for f in files_in(dirs, root, CODE_EXT):
+        try:
+            lines = [l.strip() for l in open(f, encoding="utf-8", errors="replace")
+                     if l.strip() and not l.strip().startswith(("#", "//", "*", "/*"))]
+        except OSError:
+            continue
+        for i in range(len(lines) - WINDOW + 1):
+            seen["\n".join(lines[i:i + WINDOW])].append(
+                "%s:%d" % (f.replace(root.rstrip("/") + "/", ""), i + 1))
+    return [v for v in seen.values() if len({x.split(":")[0] for x in v}) > 1]
+
+
+def cycles(dirs, root):
+    graph, own = defaultdict(set), {}
+    for f in files_in(dirs, root, CODE_EXT):
+        own[os.path.basename(f).rsplit(".", 1)[0]] = f
+    for stem, f in own.items():
+        try:
+            src = open(f, encoding="utf-8", errors="replace").read()
+        except OSError:
+            continue
+        for m in re.finditer(r"(?:from|import)\s+[\"']?[\w./]*?([\w-]+)[\"']?", src):
+            t = m.group(1)
+            if t in own and t != stem:
+                graph[stem].add(t)
+    out = []
+    for a in graph:
+        for b in graph[a]:
+            if a in graph.get(b, ()) and (b, a) not in out:
+                out.append((a, b))
+    return out
+
+
+def broken_links(dirs, root):
+    bad = []
+    for f in files_in(dirs, root, (".md",)):
+        try:
+            src = open(f, encoding="utf-8", errors="replace").read()
+        except OSError:
+            continue
+        for tgt in re.findall(r"\[[^\]]*\]\(([^)#][^)]*)\)", src):
+            if tgt.startswith(("http", "mailto:")):
+                continue
+            p = os.path.normpath(os.path.join(os.path.dirname(f), tgt.split("#")[0]))
+            if not os.path.exists(p):
+                bad.append("%s → %s" % (f.replace(root.rstrip("/") + "/", ""), tgt))
+    return bad
+
+
+def orphan_docs(dirs, root):
+    docs = files_in(dirs, root, (".md",))
+    out = []
+    for f in docs:
+        name = os.path.basename(f)
+        if name.upper().startswith("README"):
+            continue
+        if not sh("grep", "-rl", name, root, "--include=*.md", *EXCLUDE).replace(f, "").strip():
+            out.append(f.replace(root.rstrip("/") + "/", ""))
+    return out
+
+
+def infra_evidence(dirs, root, block_dir=None):
+    ev = {"runbook": False, "rollback": False}
+    for f in files_in(dirs, root, (".md",)) + (
+            files_in([block_dir], "/") if block_dir else []):
+        try:
+            t = open(f, encoding="utf-8", errors="replace").read().lower()
+        except OSError:
+            continue
+        if re.search(r"\brunbook\b|## *how to run|## *operation", t):
+            ev["runbook"] = True
+        if re.search(r"\brollback\b|\brevert\b|\bundo\b", t):
+            ev["rollback"] = True
+    return ev
+
+
+def data_evidence(dirs, root):
+    ev = {"migrations": 0, "reversible": 0}
+    for f in files_in(dirs, root):
+        if not re.search(r"migrat", f, re.I):
+            continue
+        ev["migrations"] += 1
+        try:
+            t = open(f, encoding="utf-8", errors="replace").read().lower()
+        except OSError:
+            continue
+        if re.search(r"\bdown\b|\brollback\b|\bdrop\b|\brevert\b", t):
+            ev["reversible"] += 1
+    return ev
+
+
+def pasted_secrets(dirs, root):
+    out = []
+    for f in files_in(dirs, root):
+        try:
+            src = open(f, encoding="utf-8", errors="replace").read()
+        except (OSError, UnicodeDecodeError):
+            continue
+        for m in SECRET.finditer(src):
+            out.append("%s:%d" % (f.replace(root.rstrip("/") + "/", ""),
+                                  src[:m.start()].count("\n") + 1))
+    return out
+
+
+def find_block(name):
+    hits = glob.glob(os.path.join(BLOCKS, "**", name, "BLOCK.md"), recursive=True)
+    if hits:
+        return hits[0], None
+    # ⭐ A closed block carries an archive suffix. Refusing it made a closed
+    # block ungradeable, so its recorded verdict could never be reproduced.
+    alt = glob.glob(os.path.join(BLOCKS, "**", name + "_*", "BLOCK.md"), recursive=True)
+    if len(alt) == 1:
+        return alt[0], os.path.basename(os.path.dirname(alt[0]))
+    if len(alt) > 1:
+        return None, "AMBIGUOUS:" + ", ".join(
+            sorted(os.path.basename(os.path.dirname(a)) for a in alt))
+    return None, None
+
+
+def main():
+    argv = sys.argv[1:]
+    args = [a for a in argv if not a.startswith("--")]
+    if "--root" in argv:
+        root = argv[argv.index("--root") + 1]
+    else:
+        root = os.path.dirname(MENTE)
+    as_json, quiet = "--json" in argv, "--quiet" in argv
+
+    if not args:
+        print(__doc__)
+        return 1
+    # ⛔ A glob would silently grade a DIFFERENT block than the one asked for.
+    if not re.fullmatch(r"[a-z0-9][a-z0-9-]*(_\d{4}-\d{2})?", args[0]):
+        print("🔴 %r is not a block name — lowercase, digits and hyphens, "
+              "optionally the archive suffix `_YYYY-MM`" % args[0])
+        return 1
+
+    path, note = find_block(args[0])
+    if note and note.startswith("AMBIGUOUS:"):
+        print("🔴 %r is archived more than once: %s" % (args[0], note[10:]))
+        return 1
+    if not path:
+        print("🔴 no block named %r" % args[0])
+        return 1
+    if note and not quiet and not as_json:
+        print("   (archived: grading %s)" % note)
+
+    text = open(path, encoding="utf-8", errors="replace").read()
+    dirs = resolve_scope(scope_dirs(text), root)
+
+    # 🔴 QLT-TYP-001 · the type decides the ruler
+    tm = re.search(r"^type:\s*(\w+)", text, re.M)
+    if not tm:
+        print("🔴 %s: no `type:` field.\n"
+              "   ⛔ Without it the wrong metrics get measured, and the wrong\n"
+              "   metric produces a false red. Add: type: code | docs | infra | data"
+              % args[0])
+        return 1
+    btype = tm.group(1).lower()
+    if btype not in ("code", "docs", "infra", "data"):
+        print("🔴 %s: type %r is not one of code | docs | infra | data"
+              % (args[0], btype))
+        return 1
+
+    rows, reds, yels = [], [], []
+
+    def row(label, value, red_if=False, yel_if=False, na=None):
+        """⭐ na = the reason this does not apply. QLT-TYP-002: never a green."""
+        rows.append((label, value, na, red_if, yel_if))
+        if na is None:
+            if red_if:
+                reds.append(label)
+            elif yel_if:
+                yels.append(label)
+
+    secrets = pasted_secrets(dirs, root)
+    row("secret values written down", len(secrets), red_if=bool(secrets))
+
+    detail = {}
+    if btype == "code":
+        dead_files, dead_exports = dead_code(dirs, root)
+        dups, cyc = duplication(dirs, root), cycles(dirs, root)
+        tests = [f for f in files_in(dirs, root, CODE_EXT)
+                 if re.search(r"(\.test\.|\.spec\.|(^|/)test_|(^|/)tests?/)",
+                              f.replace(root, ""))]
+        row("files nobody imports (dead code)", len(dead_files), red_if=bool(dead_files))
+        row("exports never imported", len(dead_exports), yel_if=bool(dead_exports))
+        row("duplicated blocks (>=%d lines)" % WINDOW, len(dups),
+            red_if=len(dups) > TOLERANCE, yel_if=bool(dups))
+        row("test files", len(tests), red_if=not tests)
+        row("import cycles", len(cyc), red_if=bool(cyc))
+        detail = {"dead files": dead_files,
+                  "duplication": [" == ".join(d[:3]) for d in dups],
+                  "cycles": ["%s <-> %s" % (a, b) for a, b in cyc]}
+
+    elif btype == "docs":
+        bad, orph = broken_links(dirs, root), orphan_docs(dirs, root)
+        row("broken links", len(bad), red_if=bool(bad))
+        row("orphan docs (nothing links to them)", len(orph), yel_if=bool(orph))
+        row("test files", 0, na="a document has no test file")
+        row("files nobody imports", 0, na="documents are linked, not imported")
+        row("duplicated code blocks", 0, na="not code")
+        detail = {"broken links": bad, "orphans": orph}
+
+    elif btype == "infra":
+        ev = infra_evidence(dirs, root, os.path.dirname(path))
+        row("runbook documented", "yes" if ev["runbook"] else "NO",
+            red_if=not ev["runbook"])
+        row("rollback documented", "yes" if ev["rollback"] else "NO",
+            red_if=not ev["rollback"])
+        row("test files", 0, na="infrastructure is verified by running it")
+        row("files nobody imports", 0, na="no code in scope")
+        row("duplicated code blocks", 0, na="not code")
+
+    else:                                                       # data
+        ev = data_evidence(dirs, root)
+        irrev = ev["migrations"] - ev["reversible"]
+        row("migrations found", ev["migrations"])
+        row("migrations WITHOUT a rollback", irrev, red_if=irrev > 0)
+        row("test files", 0, na="a schema is verified by migrating up and down")
+        row("duplicated code blocks", 0, na="not application code")
+
+    # 🔴 QLT-EVD-001 · absence of evidence is not evidence. Measured: an empty
+    # scope had zero broken links and zero orphans, and scored 🟢 PRODUCT.
+    measured = len(files_in(dirs, root))
+    if measured == 0:
+        verdict, code = "NOTHING MEASURED", 1
+    else:
+        verdict = "MVP" if reds else ("CLOSE" if yels else "PRODUCT")
+        code = 2 if reds else (1 if yels else 0)
+
+    if as_json:
+        print(json.dumps({"block": args[0], "type": btype,
+                          "date": date.today().isoformat(),
+                          "scope": dirs, "measured_files": measured,
+                          "metrics": {l: (v if na is None else "n/a")
+                                      for l, v, na, _, _ in rows},
+                          "reds": reds, "verdict": verdict}, indent=2))
+        return code
+    if quiet:
+        return code
+
+    print("\nBLOCK %s · type: %s — measured quality · %s"
+          % (args[0], btype, date.today().isoformat()))
+    print("  scope: %s\n" % (", ".join(dirs) or "(none declared)"))
+    for label, value, na, r, y in rows:
+        dots = "." * max(2, 42 - len(label))
+        if na is not None:
+            print("  %s %s %4s  ⬜  (%s)" % (label, dots, "n/a", na))
+        else:
+            print("  %s %s %4s  %s" % (label, dots, value,
+                                       "🔴" if r else ("🟡" if y else "🟢")))
+    print("  " + "-" * 56)
+    icon = {"PRODUCT": "🟢", "CLOSE": "🟡", "MVP": "🔴",
+            "NOTHING MEASURED": "⬜"}[verdict]
+    print("  LAYER 1 VERDICT: %s %s   (metrics for type `%s`)" % (icon, verdict, btype))
+
+    if verdict == "NOTHING MEASURED":
+        print("\n  ⛔ Zero files in scope. Every metric above is correct and the\n"
+              "     verdict means nothing — absence of evidence is not evidence.\n"
+              "     Fix the scope declared in the block, then grade it again.")
+    if secrets:
+        print("\n  🔴 SECRETS — reference them, never write the value:")
+        for s in secrets[:5]:
+            print("     %s" % s)
+    for name, items in detail.items():
+        if items:
+            print("\n  %s:" % name)
+            for it in items[:6]:
+                print("     %s" % it)
+
+    print("\n  ⬜ = not measured for this type. ⛔ It is NOT a pass.")
+    # ⭐ Read the criterion's state from the contract, never hardcode it: a
+    # fixed "still pending" line becomes a lie the day somebody fills it in.
+    try:
+        # ⛔ A HOLE IS A HOLE, A LABEL IS NOT. Counting every ⬜ in the file
+        # counts the heading and the illustration too, and the number can then
+        # never reach zero — a metric with a floor it cannot clear teaches
+        # people to ignore it. Only the declaration rows count.
+        holes = len(re.findall(r"\|\s*⬜ undeclared\s*\|",
+                               open(CONTRACT, encoding="utf-8",
+                                    errors="replace").read()))
+    except OSError:
+        holes = -1
+    where = "rules/contract-quality-verdict.md §5"
+    if holes == 0:
+        print("  Layer 2 (criterion) is %s — DECLARED: run it at close." % where)
+    elif holes > 0:
+        print("  Layer 2 (criterion) is %s — %d dimension(s) still ⬜ undeclared."
+              % (where, holes))
+    else:
+        print("  Layer 2 (criterion) is %s — could not read it." % where)
+    print("  ⭐ A 🔴 does not forbid closing the block. It forbids closing it AS A PRODUCT.")
+    return code
+
+
+if __name__ == "__main__":
+    try:
+        sys.exit(main())
+    except Exception as e:
+        # CHK-CAU-002 · a crash reports nothing, and "nothing reported" reads
+        # exactly like "nothing wrong". Turn it into a finding, not a trace.
+        print("🔴 %s crashed · %s: %s"
+              % (os.path.basename(__file__), type(e).__name__, e))
+        sys.exit(1)
