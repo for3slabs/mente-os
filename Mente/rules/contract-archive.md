@@ -54,7 +54,7 @@ longer active.
 |---|---|---|---|
 | `ARC-SHP-001` | ⭐ **All three files present** | 🔒 | ⛔ one missing and the archive is not consultable |
 | `ARC-SHP-002` | ⭐ **The two written files are DOCUMENTS** | 🔒 | ⚠️ header, purpose and pointers, like everything else |
-| `ARC-SHP-003` | ⭐ **The folder name carries the CLOSING period, not the opening one** | 🔒 | ⛔ see below |
+| `ARC-SHP-003` | ⭐ **The folder name carries the CLOSING period, not the opening one** | 🔒 | `bin/check-archive` · compared against the block's `closed:` |
 | `ARC-SHP-004` | ⛔ **The block file is moved verbatim** | 📖 | ⭐ §5 |
 
 ⚠️ **`ARC-SHP-002` was found on the first real close:** the validator refused the two new files
@@ -101,6 +101,26 @@ nothing warns, because the file still exists.
 | `ARC-SUM-001` | **Every required field present** | 🔒 | ⛔ a missing one is not an omission, it is a false record |
 | `ARC-SUM-002` | ⭐ **"What was left out" is never empty** | 🔒 | ⚠️ ⭐ see below |
 | `ARC-SUM-003` | ⭐ **The intent is copied, not paraphrased** | 📖 | ⛔ a rewritten intent is the intent as remembered |
+
+### ⬜ WHAT EACH FIELD IS CALLED
+
+⛔ **The engine fixes WHAT must be answered, never what it is called.** ⚠️ An installation writing
+in another language is not in violation; one that OMITS a field is.
+
+Declare an alias in the project rules, one per line:
+
+```
+archive_field what was built = \b(qué se hizo|lo que se construyó)\b
+archive_field blocks that depended on it = \b(afectado|dependían)\b
+```
+
+⭐ **Measured on six real archives:** their headings ran in three vocabularies at once — English,
+Spanish, and numbered (`1 · Blocks affected`). ⛔ **A validator that knows one of them reports the
+other two as missing fields** — and "missing field" reads as a broken archive when the archive is
+fine and the reader is narrow.
+
+> ## ⛔ A FIELD REPORTED MISSING BECAUSE IT WAS NAMED DIFFERENTLY IS A FALSE RECORD TOO.
+> ⚠️ **And it is the kind that gets the check switched off**, not the kind that gets the archive fixed.
 
 > ## ⭐ AN EMPTY "WHAT WAS LEFT OUT" IS A LIE
 > ⚠️ **No block closes having done everything it could have.** ⛔ **Silence there does not say
@@ -157,8 +177,8 @@ me?"*
 | ID | Rule | Enf | Verify |
 |---|---|---|---|
 | `ARC-CON-001` | ⭐ **Every dependent named, with its dependency's fate** | 🔒 | ⛔ satisfied or orphaned — never unstated |
-| `ARC-CON-002` | ⭐ **Every id named exists** | 🔒 | ⚠️ a pointer to nothing reads as a promise |
-| `ARC-CON-003` | 🔴 **Anything still open names where it MOVED** | 🔒 | ⭐ see below |
+| `ARC-CON-002` | ⭐ **Every id named exists** | 🔒 | `bin/check-archive` · ⚠️ a pointer to nothing reads as a promise |
+| `ARC-CON-003` | 🔴 **Anything still open names where it MOVED** | 🔒 | `bin/check-archive` · ⭐ see below |
 
 > ## 🔴 A BLOCK DOES NOT CLOSE OVER AN OPEN SUB-BLOCK
 > ⛔ **If one is still open it MOVES to another block first, and this file names where it went.**

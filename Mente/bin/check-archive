@@ -7,11 +7,12 @@ of the two written files, not only that they exist.
 
 Exit: 0 clean · 1 violations · 2 the contract itself is missing
 """
-import os, re, sys
+import os, re, sys, glob
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 CONTRACT = os.path.join(ROOT, "rules", "contract-archive.md")
 ARCHIVE = os.path.join(ROOT, "work", "blocks", "archive")
+BLOCKS = os.path.join(ROOT, "work", "blocks")
 
 REQUIRED_FILES = ["SUMMARY.md", "connections.md", "BLOCK.md"]
 # ARC-SUM-001 · the fields the summary must answer. Matched on intent, not on
@@ -25,8 +26,15 @@ def load_aliases():
     p = os.path.join(ROOT, "PROJECT-RULES.md")
     out = {}
     if os.path.exists(p):
-        for m in re.finditer(r"archive_field\s+([\w-]+)\s*=\s*(.+)",
-                             open(p, encoding="utf-8").read()):
+        # ⛔ `[\w-]+` stops at the first space, and EVERY field name here is
+        # several words ("what was built"). The mechanism existed, was
+        # documented, and could never match a single alias — built and never
+        # connected. Measured: declaring three aliases changed nothing.
+        try:
+            src = open(p, encoding="utf-8", errors="replace").read()
+        except OSError:
+            return out            # ⬜ no project rules · nothing to alias
+        for m in re.finditer(r"archive_field\s+([\w -]+?)\s*=\s*(.+)", src):
             out[m.group(1).strip()] = m.group(2).strip()
     return out
 
@@ -83,6 +91,14 @@ def check(d, rel):
                for k, v in CONNECTION_FIELDS.items()}
     summary = open(os.path.join(d, "SUMMARY.md"), encoding="utf-8").read()
     conns = open(os.path.join(d, "connections.md"), encoding="utf-8").read()
+    # ARC-SHP-003 / ARC-DEL-002 read the block file itself, which until now was
+    # only checked for existence. ⛔ Guarded: a file present at listing time can
+    # be gone at read time, and an unguarded open turns that into a crash.
+    try:
+        block = open(os.path.join(d, "BLOCK.md"),
+                     encoding="utf-8", errors="replace").read()
+    except OSError:
+        block = ""            # ⬜ unreadable · ARC-SHP-001 already reported it
 
     # ARC-SHP-002 · the two written files are DOCUMENTS
     for name, text in (("SUMMARY.md", summary), ("connections.md", conns)):
@@ -92,6 +108,47 @@ def check(d, rel):
                             "no %s in the header · these are documents, and the "
                             "document contract applies to them" % field))
                 break
+
+    # ARC-SHP-003 · the folder name carries the CLOSING period.
+    # ⭐ Two blocks with the same name in different periods are two entries,
+    # not a conflict — ⛔ but dating by the OPENING makes a block that ran for
+    # months file itself under a period it did not close in, and the archive
+    # then sorts by when work started, which nobody looks for.
+    name = os.path.basename(d.rstrip("/"))
+    m_per = re.search(r"_(\d{4})-(\d{2})$", name)
+    if not m_per:
+        bad.append(("ARC-SHP-003", rel,
+                    "the folder name carries no closing period · expected "
+                    "`<name>_YYYY-MM` · without it two closings of one block "
+                    "collide instead of filing as two entries"))
+    else:
+        m_closed = re.search(r"^closed:\s*(\d{4})-(\d{2})", block, re.M)
+        if m_closed and m_closed.group(1, 2) != m_per.group(1, 2):
+            bad.append(("ARC-SHP-003", rel,
+                        "the folder says %s-%s and the block closed %s-%s · the "
+                        "name carries the CLOSING period, never the opening one"
+                        % (m_per.group(1), m_per.group(2),
+                           m_closed.group(1), m_closed.group(2))))
+
+    # ARC-DEL-002 · an archived block keeps its NAME. ⛔ Renaming breaks every
+    # pointer at once, and no pointer says so — they resolve to nothing and
+    # each reader concludes the block never existed.
+    m_id = re.search(r"^\s*id:\s*([^\n·]+)", block, re.M)
+    if m_id:
+        bid = m_id.group(1).strip()
+        stem = re.sub(r"_\d{4}-\d{2}$", "", name)
+        # ⛔ Not string equality. Real ids carry a kind prefix and the period
+        # inside (`blk-<name>-YYYY-MM`) while the folder is `<name>_YYYY-MM` —
+        # comparing them literally called all six real archives renamed. The
+        # rule says the block KEEPS ITS NAME, and the name is what survives
+        # once the decoration is stripped from both sides.
+        core = re.sub(r"^(?:blk|block)-|-\d{4}-\d{2}$", "", bid)
+        if core != stem:
+            bad.append(("ARC-DEL-002", rel,
+                        "the folder is %r and the block declares id %r · an "
+                        "archived block keeps its name: renaming breaks every "
+                        "pointer at once, and none of them says so"
+                        % (stem, bid)))
 
     # ARC-SUM-001 · every required field answered
     for label, pat in sfields.items():
@@ -122,10 +179,42 @@ def check(d, rel):
                         "no section for %r · the next block cannot tell what "
                         "this closing changed for it" % label))
 
+    # ARC-CON-002 · every id named EXISTS. ⚠️ A pointer to nothing reads as a
+    # promise: the reader assumes the block is somewhere and stops looking.
+    for cited in re.findall(r"`([a-z][\w-]*(?:[-_][\w-]+)+)`", conns):
+        if re.search(r"\.(md|py|sh|tsv|yml|json|ts|js)$", cited):
+            continue                     # a file, not a block id
+        found = glob.glob(os.path.join(BLOCKS, "**", cited, "BLOCK.md"),
+                          recursive=True) or \
+                glob.glob(os.path.join(BLOCKS, "**", cited + "_*", "BLOCK.md"),
+                          recursive=True)
+        if not found:
+            bad.append(("ARC-CON-002", "%s/connections.md" % rel,
+                        "names %r, which exists in no state · a pointer to "
+                        "nothing reads as a promise, and the reader stops "
+                        "looking" % cited))
+            break
+
+    # ARC-CON-003 · anything still open names WHERE IT MOVED.
+    # ⛔ A block does not close over an open sub-block: if one is still open it
+    # moves first, and this file says where. ⚠️ An orphaned sub-block is work
+    # that disappears silently, and the archive is the last moment anybody
+    # would notice.
+    still = body(conns, cfields.get("what is still open", r"still open"))
+    if still and still.strip() and not re.search(
+            r"(?i)\b(moved to|now in|picked up by|→|->|continues in|"
+            r"transferred to)\b", still):
+        if not re.match(r"(?i)^\s*[-*]?\s*(none|nothing|—|-)\s*$",
+                        still.strip()):
+            bad.append(("ARC-CON-003", "%s/connections.md" % rel,
+                        "something is still open and the file does not say "
+                        "WHERE IT MOVED · an orphaned sub-block is work that "
+                        "disappears silently, and this is the last moment "
+                        "anybody would notice"))
+
     # ARC-NEV-001 · no credential, not even an expired one
     for name, text in (("SUMMARY.md", summary), ("connections.md", conns),
-                       ("BLOCK.md", open(os.path.join(d, "BLOCK.md"),
-                                         encoding="utf-8").read())):
+                       ("BLOCK.md", block)):
         m = SECRET.search(text)
         if m:
             bad.append(("ARC-NEV-001", "%s/%s" % (rel, name),
