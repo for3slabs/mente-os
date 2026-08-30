@@ -166,3 +166,6 @@ probe-archive	bin/probes/probe-archive.py	engine	executable	proves check-archive
 contract-pending	rules/contract-pending.md	engine	canonical	the shape of a debt that outlives its session, and how its file rotates
 check-pending	bin/check-pending	engine	executable	enforces the lock rules of the pending contract
 probe-pending	bin/probes/probe-pending.py	engine	executable	proves check-pending detects what the pending contract claims
+rule-config-hygiene	rules/rule-config-hygiene.md	engine	canonical	a permission surface is complete, portable and free of pasted secrets
+check-config	bin/check-config	engine	executable	enforces the lock rules of the config-hygiene rule
+probe-config	bin/probes/probe-config.py	engine	executable	proves check-config detects what the config-hygiene rule claims

@@ -1,0 +1,251 @@
+#!/usr/bin/env python3
+"""check-config — enforces the 🔒 rows of rules/rule-config-hygiene.md
+
+⭐ The failure this measures is not an untidy configuration: it is a tidy one
+with a hole. A permission surface can be justified, portable and deduplicated
+and still be reachable by a channel nobody denied.
+
+Exit: 0 clean · 1 violations · 2 the rule itself is missing
+"""
+import os, re, sys, json
+
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+RULE = os.path.join(ROOT, "rules", "rule-config-hygiene.md")
+GITIGNORE = os.path.join(ROOT, ".gitignore")
+
+# ⬜ Where the configuration lives is the harness's, not the engine's. The
+# engine fixes WHAT must hold, never which file holds it.
+CONFIG_HINTS = ["settings.json", "settings.local.json", "config.json"]
+
+# CFG-SEC-001 · a secret in an approved command is recorded forever
+# ⛔ `-p` is NOT in this list. A one-letter flag is a loose comparison — the
+# family §5 names first — and it matched a directory name in a real
+# configuration. A false secret costs a rotation nobody needed.
+SECRET = re.compile(
+    r"(?:--password|--token|--secret|--api[_-]?key)[= ]+['\"]?"
+    r"(?!\$)[A-Za-z0-9!@#$%^&*_+./-]{8,}"
+    r"|\b(?:password|passwd|api[_-]?key|secret|token)\s*[:=]\s*['\"]"
+    r"(?!\$)[^'\"]{8,}['\"]", re.I)
+
+# CFG-SUR-003 · a grant for a shell interpreter makes every denial decorative
+SHELL_WRAPPER = re.compile(r"^Bash\((?:ba)?sh\s*\*?\)$|^Bash\((?:ba)?sh\b", re.I)
+UNBOUNDED_RM = re.compile(r"^Bash\(rm\s+-[rf]{1,2}\s*\*?\)$", re.I)
+
+# CFG-SUR-001 · the channels a protected target is reachable by
+CHANNELS = {
+    "read": ["cat", "head", "tail", "less", "more"],
+    "binary read": ["strings", "xxd", "od", "base64"],
+    "copy out": ["cp", "mv", "tar"],
+}
+
+# CFG-PRT-001 · an absolute path into somebody's home measures one machine
+HOME_PATH = re.compile(r"/(?:home|Users)/[A-Za-z0-9._-]+/")
+
+
+def find_configs():
+    out = []
+    for dp, dn, fn in os.walk(ROOT):
+        dn[:] = [d for d in dn if d not in {".git", "__pycache__", "node_modules"}]
+        for n in fn:
+            if n in CONFIG_HINTS:
+                out.append(os.path.join(dp, n))
+    return sorted(out)
+
+
+def protected_targets():
+    """CFG-SUR-002 · DISCOVER what is protected. A fixed list of what is
+    dangerous is a hole with a schedule: the guard must find what exists, not
+    consult what somebody remembered."""
+    found = set()
+    if os.path.exists(GITIGNORE):
+        for line in open(GITIGNORE, encoding="utf-8"):
+            line = line.split("#")[0].strip()
+            if line and not line.startswith("!"):
+                found.add(line.rstrip("/*").lstrip("/"))
+    for n in os.listdir(ROOT):
+        if re.search(r"secret|credential|\.env|key", n, re.I):
+            found.add(n)
+    return {f for f in found if f}
+
+
+def load(path):
+    try:
+        raw = open(path, encoding="utf-8").read()
+        return json.loads(re.sub(r"^\s*//[^\n]*$", "", raw, flags=re.M)), raw
+    except Exception:
+        return None, ""
+
+
+def check(path, rel, targets):
+    bad = []
+    data, raw = load(path)
+    if data is None:
+        return [("CFG-SEC-001", rel, "unreadable or malformed configuration")]
+
+    perms = data.get("permissions", {}) if isinstance(data, dict) else {}
+    allow = perms.get("allow", []) or []
+    deny = perms.get("deny", []) or []
+    dirs = perms.get("additionalDirectories", []) or []
+    shared = os.path.basename(path) == "settings.json"
+
+    # CFG-SEC-001 / 002 · no secret anywhere in it
+    m = SECRET.search(raw)
+    if m:
+        ln = raw[:m.start()].count("\n") + 1
+        bad.append(("CFG-SEC-001", "%s:%d" % (rel, ln),
+                    "a secret-shaped value is embedded here · approving a "
+                    "command files it VERBATIM, forever · reference it instead, "
+                    "and ROTATE what leaked"))
+
+    # CFG-SUR-003 · the grants that make every denial decorative
+    for entry in allow:
+        if SHELL_WRAPPER.match(str(entry)):
+            bad.append(("CFG-SUR-003", rel,
+                        "%r grants a shell interpreter · any command runs by "
+                        "wrapping it, and every denial below becomes a "
+                        "suggestion" % entry))
+        if UNBOUNDED_RM.match(str(entry)):
+            bad.append(("CFG-SUR-003", rel,
+                        "%r grants an unbounded recursive delete" % entry))
+
+    # CFG-WHY-003 · a granted path resolves
+    for d in dirs:
+        p = str(d).replace("$CLAUDE_PROJECT_DIR", os.path.dirname(ROOT))
+        if not p.startswith("$") and not os.path.exists(p):
+            bad.append(("CFG-WHY-003", rel,
+                        "granted path does not resolve: %r · a dead grant is "
+                        "one nobody uses and nobody audits" % d))
+
+    # CFG-ONE-001 · one entry per mechanism, not per invocation
+    # ⭐ The mechanism is the SCRIPT, not the first path segment. Grouping on
+    # `bin` reported one mechanism with 15 entries when it was 15 scripts —
+    # a real defect named by the wrong cause is still a wrong cause.
+    mech = {}
+    for entry in allow:
+        m2 = re.match(r"Bash\(\s*(?:\./)?(?:[\w.-]+/)*([\w.-]+)", str(entry))
+        if m2:
+            mech.setdefault(m2.group(1), 0)
+            mech[m2.group(1)] += 1
+    # CFG-ONE-001 · the SAME command written two ways is one permission, twice.
+    # A real configuration carried 15 scripts each granted as `bin/x` and
+    # `./bin/x`: nobody added a capability, somebody approved the same one
+    # from a different working directory.
+    forms = {}
+    for entry in allow:
+        m3 = re.match(r"Bash\(\s*(\./)?((?:[\w.-]+/)*[\w.-]+)", str(entry))
+        if m3 and m3.group(1):
+            forms.setdefault(m3.group(2), []).append(str(entry))
+    dupes = [k for k in forms
+             if any(re.match(r"Bash\(\s*%s\b" % re.escape(k), str(e))
+                    for e in allow)]
+    if len(dupes) > 2:
+        bad.append(("CFG-ONE-001", rel,
+                    "%d command(s) are granted twice — once as `x` and once as "
+                    "`./x` · that is one permission written two ways, not two "
+                    "permissions: %s…" % (len(dupes), ", ".join(sorted(dupes)[:2]))))
+
+    for tool, n in sorted(mech.items()):
+        if n > 3:
+            bad.append(("CFG-ONE-002", rel,
+                        "%d entries for one mechanism (%s) · that is not a "
+                        "permission list, it is a log of every time somebody "
+                        "said yes" % (n, tool)))
+
+    # CFG-ONE-001 · a grant contained by another grants nothing new
+    for a in dirs:
+        for b in dirs:
+            if a != b and str(b).startswith(str(a).rstrip("/") + "/"):
+                bad.append(("CFG-ONE-001", rel,
+                            "%r is already contained by %r · it authorizes "
+                            "nothing new" % (b, a)))
+                break
+
+    # CFG-PRT-001 · portable paths
+    for entry in list(dirs) + list(allow):
+        if HOME_PATH.search(str(entry)):
+            bad.append(("CFG-PRT-001", rel,
+                        "absolute home path in %r · this configuration "
+                        "measures one machine" % str(entry)[:50]))
+            break
+
+    # CFG-SUR-001 · every reach channel to a protected target is denied
+    if shared and targets:
+        denied = " ".join(str(d) for d in deny)
+        # ⛔ No cap on this loop. Capping it was a short-reach defect of the
+        # exact family §5 names: the first N discovered targets are alphabetical,
+        # not the interesting ones, and the check then reads green because it
+        # never reached the target that IS claimed as protected.
+        claimed = [t for t in sorted(targets) if re.search(re.escape(t), denied)]
+        if claimed:
+            missing = [ch for ch, cmds in CHANNELS.items()
+                       if not any(re.search(r"Bash\(%s\b" % c, denied)
+                                  for c in cmds)]
+            if missing:
+                bad.append(("CFG-SUR-001", rel,
+                            "%r is denied for some tools but the %s channel(s) "
+                            "reach it · a protection declared BY TOOL is a "
+                            "protection with a back door"
+                            % (claimed[0], ", ".join(sorted(missing)))))
+
+    # CFG-SHR-001 · every denial is mirrored into the shared file
+    return bad, deny, shared
+
+
+def main():
+    quiet = "--quiet" in sys.argv
+    if not os.path.exists(RULE):
+        print("🔴 the rule itself is missing: rules/rule-config-hygiene.md")
+        return 2
+
+    configs = find_configs()
+    targets = protected_targets()
+    findings = []
+    denies = {}
+    for p in configs:
+        rel = os.path.relpath(p, ROOT)
+        out = check(p, rel, targets)
+        if isinstance(out, list):
+            findings += out
+            continue
+        bad, deny, shared = out
+        findings += bad
+        denies[rel] = (set(str(d) for d in deny), shared)
+
+    # CFG-SHR-001 · a denial only in the local file protects nobody else
+    sharedset = set()
+    for rel, (deny, shared) in denies.items():
+        if shared:
+            sharedset |= deny
+    for rel, (deny, shared) in denies.items():
+        if shared:
+            continue
+        only_local = deny - sharedset
+        if only_local:
+            findings.append(("CFG-SHR-001", rel,
+                             "%d denial(s) live only here · a denial in the "
+                             "local file protects nobody else: mirror it into "
+                             "the shared one" % len(only_local)))
+
+    if not quiet:
+        print("check-config · %d configuration(s) · %d protected target(s) "
+              "discovered%s" % (len(configs), len(targets),
+                                " · nothing measured" if not configs else ""))
+    if findings:
+        for cid, rel, msg in findings:
+            print("🔴 %s · %s · %s" % (rel, cid, msg))
+        print("\n%d violations · rule: rules/rule-config-hygiene.md" % len(findings))
+        return 1
+    if not quiet and configs:
+        print("✅ 0 violations")
+    return 0
+
+
+if __name__ == "__main__":
+    try:
+        sys.exit(main())
+    except Exception as e:
+        # CHK-CAU-002 · a crash reports nothing, and "nothing reported" reads
+        # exactly like "nothing wrong". Turn it into a finding, not a trace.
+        print("🔴 %s crashed · %s: %s"
+              % (os.path.basename(__file__), type(e).__name__, e))
+        sys.exit(1)
