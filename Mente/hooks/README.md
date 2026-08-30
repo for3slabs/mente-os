@@ -54,6 +54,10 @@ the first thing anyone does with an unusable guard is turn it off.
 
 ---
 
+**Rules 1 and 2 are decided by** `../rules/decisions/ADR-024-the-system-audits-itself-unasked.md`
+— ⭐ **they ship ahead of the tool they govern**, because a startup check that blocks or that
+talks on every healthy run is removed within a week.
+
 ## ⛔ THE FOUR RULES THAT MUST NEVER BREAK
 
 **1 · Never block the session at startup.**
