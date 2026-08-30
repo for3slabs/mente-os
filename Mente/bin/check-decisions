@@ -242,6 +242,8 @@ def main():
             # DEC-NUM-003 / DEC-SRC-003 need these across records, not per file
             "applies_to": f.get("applies-to", "").strip(),
             "reason": (body_of(text, "Rationale") or "").strip(),
+            "body": text,          # DEC-SUP-004 reads prose references
+
         }
 
     # DEC-SUP-* · symmetry, existence, and status
@@ -276,6 +278,24 @@ def main():
                                      "superseded by %s but status is %r · expected: "
                                      "superseded · two records both read as current"
                                      % (by, r["status"])))
+
+    # DEC-SUP-004 · a record cited in PROSE must exist, or be marked planned.
+    # ⛔ DEC-SUP-002 only checks the `supersedes` fields, so a reference written
+    # in Consequences or Related pointed at nothing and nobody noticed.
+    # ⚠️ Measured: two records announced consequences in decisions that had not
+    # been written — ⭐ a promise to a reader who will follow it.
+    for num, r in records.items():
+        for ref in sorted(set(re.findall(r"ADR-(\d{3})", r.get("body", "")))):
+            if ref == num or ref in records:
+                continue
+            if re.search(r"⬜[^\n]{0,60}ADR-%s|ADR-%s[^\n]{0,40}⬜" % (ref, ref),
+                         r.get("body", "")):
+                continue          # ⬜ declared as planned, not as present
+            findings.append(("DEC-SUP-004", r["rel"],
+                             "cites ADR-%s, which does not exist here · ⭐ mark "
+                             "it ⬜ planned, or a reader follows a pointer to "
+                             "nothing" % ref))
+            break
 
     # DEC-NUM-003 · a REVERTED decision keeps its file and its number.
     # ⛔ Deleting it makes every citation resolve to nothing, and nothing says

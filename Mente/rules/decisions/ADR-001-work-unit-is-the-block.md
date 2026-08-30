@@ -49,6 +49,13 @@ change being hard.
 - ⭐ `rules/rule-working-in-a-block.md` `WRK-IMP-*` — dependents are measured BEFORE the first
   edit, which is only possible because the two levels exist
 
+## What would change this decision
+
+⭐ **It stops being right if the second level is never used** — if in practice every block holds
+one task and the sub-block is ceremony. ⚠️ **The signal is measurable:** blocks whose sub-block
+list is empty or holds a single row, consistently, over a period of work. ⛔ **Until then, the
+absence of sub-blocks means the graph is not being written, not that it does not exist.**
+
 ## Reverting
 
 ⛔ **Collapse to a single level. The propagation graph is lost** — and with it every rule that
