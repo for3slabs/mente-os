@@ -3,6 +3,7 @@
 **Status:** current · **Type:** contract · **Updated:** {{date}} · **Owner:** {{owner}}
 **Applies to:** the verdict a block carries when it closes
 **Enforcement:** 🔒 partial — `bin/grade-block` is layer 1; layer 2 is criterion
+**Level:** 🌐 universal — ⭐ travels identical to every clone; a lower level may ADD or TIGHTEN, never loosen
 **Verified by:** `bin/grade-block` · `bin/probes/probe-grade.py`
 
 ## Purpose

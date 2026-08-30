@@ -3,6 +3,7 @@
 **Status:** current · **Type:** rule · **Updated:** {{date}} · **Owner:** {{owner}}
 **Applies to:** every configuration file that grants a permission or registers a gate
 **Enforcement:** 🔒 partial — `bin/check-config`
+**Level:** 🌐 universal — ⭐ travels identical to every clone; a lower level may ADD or TIGHTEN, never loosen
 **Verified by:** `bin/check-config` · `bin/probes/probe-config.py`
 **Governance:** `engine` in the piece table · ✅ ships identical to every clone
 **Size:** ⭐ **a BASE file — it ships whole.** See `contract-document.md` §4.

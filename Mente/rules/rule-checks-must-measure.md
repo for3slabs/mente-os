@@ -3,6 +3,7 @@
 **Status:** current · **Type:** rule · **Updated:** {{date}} · **Owner:** {{owner}}
 **Applies to:** every validator, gate and hook in this system
 **Enforcement:** 🔒 partial — `bin/check-checks`
+**Level:** 🌐 universal — ⭐ travels identical to every clone; a lower level may ADD or TIGHTEN, never loosen
 **Verified by:** `bin/check-checks` · `bin/probes/probe-checks.py`
 **Governance:** `engine` in the piece table · ✅ ships identical to every clone
 

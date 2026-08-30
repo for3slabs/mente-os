@@ -3,6 +3,7 @@
 **Status:** current · **Type:** contract · **Updated:** {{date}} · **Owner:** {{owner}}
 **Applies to:** every `BLOCK.md` — open, blocked, closed or archived
 **Enforcement:** 🔒 lock — `bin/check-block`
+**Level:** 🌐 universal — ⭐ travels identical to every clone; a lower level may ADD or TIGHTEN, never loosen
 **Verified by:** `bin/check-block` · `bin/probes/probe-block.py`
 **Governance:** `engine` in the piece table · ✅ ships identical to every clone
 **Size:** ⭐ **this is a BASE file — it ships whole.** See `contract-document.md` §3: the ceiling
