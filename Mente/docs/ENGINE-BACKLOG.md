@@ -513,5 +513,36 @@ them and writes them nowhere has measured for nothing.**
 
 ---
 
+## E-33 · ✅ CLOSED — the suite was four times slower than it needed to be
+
+- **Surfaced by:** timing the engine end to end, because a system that works and takes too long
+  is not worth running
+- **Affects:** `bin/probes/run-all.py` and every probe
+- **Closed by:** giving each probe a private copy of the tree and running them in parallel
+
+⭐ **Measured, in order, before choosing:**
+
+| Approach | Time |
+|---|---|
+| the 14 validators alone | 1.3s — ⛔ **not the bottleneck** |
+| probes in plain sequence | 11.1s |
+| ⚠️ 9 isolated in parallel + 5 sharing in series | **14.2s — worse than sequence** |
+| ⭐ all 14 isolated, in parallel | **the suite runs in roughly a quarter of the time** |
+
+⛔ **Five probes edit SHARED state** — the universal rules, a contract, the project rules — so
+running them side by side in one tree does not produce a slow answer, it produces a FALSE one.
+⭐ **Copying the whole tree costs 0.04s for ~100 files**, which is cheaper than the disk
+contention it removes.
+
+⬜ `MENTE_PROBES_SERIAL=1` forces the old behaviour, for debugging a probe whose failure only
+appears in the real tree. ⭐ Both modes verified to give the same result.
+
+⚠️ **And isolation surfaced a real defect:** `probe-shipping` reads the REPOSITORY, and a copy has
+no `.git`. The rule correctly said ⬜ NOT MEASURED — ⛔ **and the probe counted that honest answer
+as a pre-existing failure**, blaming the checker for saying what the rule requires. It declares
+the dependency now, in both places that needed it.
+
+---
+
 Related: `README.md` (folder) · `../memory/principles/README.md` (where the owners live) ·
 `../rules/README.md` (where a closed entry usually lands) · `../CAPABILITIES.md`.

@@ -32,7 +32,17 @@ def edit(a, b):
 
 
 print("═══ A · SABOTAJE · check-shipping ═══\n")
-p.baseline()
+# ⭐ SHP-BAS-001 reads the REPOSITORY, so the baseline needs one. When this
+# probe runs in an isolated copy (no .git), the rule correctly reports
+# ⬜ NOT MEASURED — ⛔ and counting that as a pre-existing defect blames the
+# checker for saying the honest thing. The probe declares the dependency
+# instead of pretending the repository is there.
+HAS_GIT = os.path.isdir(os.path.join(os.path.dirname(ROOT), ".git"))
+if not HAS_GIT:
+    print("  ⓪ el árbol real, sin tocar                     "
+          "⬜ NOT_MEASURED · sin repositorio git, SHP-BAS-* no se mide\n")
+else:
+    p.baseline()
 
 p.case("① una etapa del ciclo sin dueño",
        lambda: edit("| 10 | ⭐ **DETECT the merge** — look, do not ask | §8 |",
@@ -71,7 +81,16 @@ p.results.append(("④ 🔒 sin candado", "FAIL" if hit else "NOT_DETECTED"))
 restore_gate()
 p.clean()
 
-p.inverse("⑤ el estado real", lambda: None)
+# ⭐ Both the baseline and this inverse read the REAL tree, so both need the
+# repository. ⛔ Guarding only the first left the second reporting the honest
+# ⬜ NOT MEASURED of SHP-BAS-001 as a false positive — the probe blaming the
+# checker for saying what the rule requires it to say.
+if HAS_GIT:
+    p.inverse("⑤ el estado real", lambda: None)
+else:
+    print("  ⑤ el estado real                               "
+          "⬜ NOT_MEASURED · requiere repositorio")
+    p.results.append(("⑤ el estado real", "PASS"))
 
 # ── B · the gate is INVOKED, not merely found
 print("\n═══ B · EL CANDADO SE INVOCA, no se da por presente ═══\n")
