@@ -372,6 +372,7 @@ NNN  superseded-by: MMM        MMM  supersedes: NNN
 |---|---|---|---|
 | `DEC-SUP-001` | ⭐ **A supersede link is symmetric** | 🔒 | ⛔ one-sided means one of the two is wrong |
 | `DEC-SUP-002` | **A link points at a record that exists** | 🔒 | ⚠️ a pointer to nothing reads as a promise |
+| `DEC-CON-001` | ⭐ **Every consequence a record claims must EXIST** | 🔒 | `bin/check-adr-wiring` · ⛔ a rule id no rule declares, or an artefact never built |
 | `DEC-SUP-004` | ⭐ **A record cited in PROSE exists, or is marked ⬜ planned** | 🔒 | ⛔ measured: two records announced consequences in decisions never written |
 | `DEC-SUP-003` | ⭐ **A superseded record has `status: superseded`** | 🔒 | ⛔ otherwise two records both read as current |
 

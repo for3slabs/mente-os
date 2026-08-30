@@ -176,6 +176,8 @@ probe-work	bin/probes/probe-work.py	engine	executable	proves check-work detects 
 probe-inheritance	bin/probes/probe-inheritance.py	engine	executable	proves check-inheritance detects what inheritance claims
 probe-checks	bin/probes/probe-checks.py	engine	executable	proves check-checks detects what checks-must-measure claims
 probe-decisions	bin/probes/probe-decisions.py	engine	executable	proves check-decisions detects what the decision contract claims
+check-adr-wiring	bin/check-adr-wiring	engine	executable	every consequence a decision claims must exist — id or artefact
+probe-adr-wiring	bin/probes/probe-adr-wiring.py	engine	executable	proves check-adr-wiring detects a consequence that resolves to nothing
 probe-handoff	bin/probes/probe-handoff.py	engine	executable	proves check-handoff detects what the handoff contract claims — exit codes included
 probe-declared	bin/probes/probe-declared.py	engine	executable	proves check-declared finds a file the piece table omits
 rule-shipping	rules/rule-shipping.md	engine	canonical	how a change leaves the workspace — loop, base, grouping, cleanup, session close

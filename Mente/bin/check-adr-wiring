@@ -1,0 +1,84 @@
+#!/usr/bin/env python3
+"""check-adr-wiring — every consequence a decision claims must EXIST.
+
+⭐ A decision record names what it produced: rule ids, validators, hooks. This
+verifies those references resolve. ⛔ It does not check that the claim is
+sensible — that is a reader's job — only that the thing named is there.
+
+⚠️ Measured while writing it: a first version searched only for rule IDS and
+reported two records with "0 in code", when both cite EXECUTABLES. The defect
+was the check's, not the records'.
+
+Exit: 0 clean · 1 violations · 2 the contract is missing
+"""
+import os, re, sys, glob
+
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+CONTRACT = os.path.join(ROOT, "rules", "contract-adr.md")
+DECISIONS = os.path.join(ROOT, "rules", "decisions")
+
+
+def read(path):
+    try:
+        return open(path, encoding="utf-8", errors="replace").read()
+    except OSError:
+        return ""          # ⬜ unreadable · counted as absent, never as fine
+
+
+def main():
+    quiet = "--quiet" in sys.argv
+    if not os.path.exists(CONTRACT):
+        print("🔴 the contract itself is missing: rules/contract-adr.md")
+        return 2
+
+    rules = "".join(read(f) for f in glob.glob(os.path.join(ROOT, "rules", "*.md")))
+    files = sorted(glob.glob(os.path.join(DECISIONS, "*.md")))
+    files = [f for f in files if not os.path.basename(f).upper().startswith("README")]
+
+    bad, checked = [], 0
+    for q in files:
+        t = read(q)
+        rel = os.path.relpath(q, ROOT)
+        if "## Consequences" not in t:
+            continue          # ⬜ no consequences section · nothing to resolve
+        con = t.split("## Consequences")[-1].split("\n## ")[0]
+
+        for rid in sorted(set(re.findall(r"`([A-Z]{3}-[A-Z]+-\d+)`", con))):
+            checked += 1
+            # ⛔ CHK-CMP-001 · a substring match would accept DOC-SIZ-0011
+            # as proof that DOC-SIZ-001 exists. The id must be DELIMITED.
+            if not re.search(r"`%s`" % re.escape(rid), rules):
+                bad.append((rel, "claims %s, which no rule declares · a "
+                                 "consequence pointing at nothing is a claim "
+                                 "nobody can check" % rid))
+
+        for art in sorted(set(re.findall(
+                r"`((?:bin|hooks|rules|templates|memory)/[\w./-]+)`", con))):
+            checked += 1
+            if not os.path.exists(os.path.join(ROOT, art)):
+                bad.append((rel, "claims %s, which does not exist · ⭐ a record "
+                                 "naming an artefact it did not produce reads "
+                                 "as implemented when it is not" % art))
+
+    if not quiet:
+        print("check-adr-wiring · %d record(s) · %d consequence(s) resolved%s"
+              % (len(files), checked, "" if files else " · the folder ships empty"))
+    if bad:
+        for rel, msg in bad:
+            print("🔴 %s · DEC-CON-001 · %s" % (rel, msg))
+        print("\n%d violations · rule: rules/contract-adr.md" % len(bad))
+        return 1
+    if not quiet and files:
+        print("✅ 0 violations")
+    return 0
+
+
+if __name__ == "__main__":
+    try:
+        sys.exit(main())
+    except Exception as e:
+        # CHK-CAU-002 · a crash reports nothing, and "nothing reported" reads
+        # exactly like "nothing wrong". Turn it into a finding, not a trace.
+        print("🔴 %s crashed · %s: %s"
+              % (os.path.basename(__file__), type(e).__name__, e))
+        sys.exit(1)

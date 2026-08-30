@@ -1,0 +1,80 @@
+#!/usr/bin/env python3
+"""probe-adr-wiring — proves check-adr-wiring detects a consequence that resolves to nothing."""
+import os, sys
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from harness import Probe, ROOT, MARK          # noqa: E402
+
+D = os.path.join(ROOT, "rules", "decisions")
+p = Probe("check-adr-wiring", "DEC")
+
+GOOD = """# 950 · A probe fixture decision
+
+date: 2026-01-15
+status: accepted
+implementation: implemented
+decided-by: x
+supersedes: —
+superseded-by: —
+applies-to: the fixture
+does-not-apply-to: everything else
+
+## Context
+
+A fixture used to prove the checker detects what it claims to.
+
+## Decision
+
+One thing.
+
+## Rejected alternatives
+
+- the other thing, which loses the graph
+
+## Rationale
+
+Because.
+
+## Evidence
+
+Measured once.
+
+## Consequences
+
+%(con)s
+
+## What would change this decision
+
+Nothing observed.
+
+## Reverting
+
+Undo it.
+"""
+
+
+def put(con):
+    q = p.track(os.path.join(D, "950-" + MARK + ".md"))
+    open(q, "w", encoding="utf-8").write(GOOD % {"con": con})
+
+
+print("═══ SABOTAJE · check-adr-wiring ═══\n")
+p.baseline()
+
+p.case("① una consecuencia que ninguna regla declara",
+       lambda: put("- `ZZZ-XXX-999` — a rule nobody wrote"), "DEC-CON-001")
+
+p.case("② un artefacto citado que no existe",
+       lambda: put("- `bin/no-such-tool` — a validator nobody built"), "DEC-CON-001")
+
+# ⭐ Both inverses matter: the check must resolve REAL references silently, or
+# every record with consequences becomes a finding and the check gets ignored.
+p.inverse("③ un id de regla REAL no dispara",
+          lambda: put("- `DOC-SIZ-001` — a rule that exists"))
+p.inverse("④ un artefacto REAL no dispara",
+          lambda: put("- `bin/check-document` — a validator that exists"))
+p.inverse("⑤ sin sección de consecuencias, nada que resolver",
+          lambda: put("—"))
+
+p.crash_guard()
+sys.exit(0 if p.report() else 1)
