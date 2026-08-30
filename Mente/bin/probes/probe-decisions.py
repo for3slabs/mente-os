@@ -132,6 +132,15 @@ p.case("⑰d SRC · dos registros vigentes sobre el mismo asunto",
                 put(GOOD.replace("# 901 ·", "# 902 ·"), "902-" + MARK + ".md")),
        "DEC-SRC-003")
 
+p.case("⑰e NUM · el nombre del archivo nombra a quien decidió",
+       lambda: put(GOOD.replace("decided-by: the owner", "decided-by: alexandra"),
+                   "903-" + MARK + "-alexandra-decides.md"), "DEC-NUM-004")
+
+# ⭐ the inverse: the same owner, a filename that names the DECISION — must not fire.
+p.inverse("⑰f NUM · el mismo dueño, nombre que describe la decisión",
+          lambda: put(GOOD.replace("decided-by: the owner", "decided-by: alexandra"),
+                      "904-" + MARK + "-one-file-per-record.md"))
+
 p.inverse("⑰ un registro CORRECTO", lambda: put(GOOD))
 p.crash_guard()
 

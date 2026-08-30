@@ -342,7 +342,18 @@ ship was rejected by its own check.**
 ⭐ **And a template date is not a broken date.** `{{date}}` is the placeholder every engine
 document carries; rejecting it would leave the engine unable to ship a single decision of its own.
 | `DEC-NUM-002` | ⛔ **A number is never reused** | 🔒 | ⭐ not even for a reverted decision |
+| `DEC-NUM-004` | ⛔ **A filename never names a PERSON** | 🔒 | ⭐ name the decision; who took it goes in `decided-by`, where it is data |
 | `DEC-NUM-003` | ⭐ **A reverted decision keeps its file and its number** | 🔒 | ⛔ with `status: reverted` |
+
+### ⛔ WHY A NAME IN A FILENAME IS DIFFERENT FROM A NAME IN A FIELD
+
+⭐ **`decided-by` is DATA — it can be read, filtered, and it belongs to one installation.** ⛔ **A
+filename is a permanent label**, cited by rules and commits, and it outlives whoever installed the
+system.
+
+⚠️ **Measured: a real record was named after the person who took the decision.** ⭐ **The decision
+it recorded — that the criterion belongs to the installation's owner — is universal; the name made
+it look personal**, and a clone reading it would inherit somebody else's name as part of its law.
 
 ⭐ **`DEC-NUM-002` exists because a number is an address.** Something cites it — a rule, a commit,
 a review. ⛔ **Reusing it makes every one of those citations resolve to the wrong decision, and

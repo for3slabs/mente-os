@@ -59,7 +59,7 @@ context reset.
 - `rules/contract-quality-verdict.md` §5 — layer 2: the six dimensions and their required evidence
 - `QLT-LAY-002` — ⬜ **the criterion is the installation's**, and a dimension without one reports
   `⬜`, never a pass
-- `ADR-014` — who supplies that criterion, ⭐ **which is a different question from whether it exists**
+- `ADR-014-the-criterion-belongs-to-the-owner.md` — who supplies that criterion, ⭐ **which is a different question from whether it exists**
 
 ## What would change this decision
 
@@ -76,5 +76,5 @@ invisibly, because each individual verdict still sounds confident.**
 ---
 
 Related: `ADR-012-few-gates-block-the-rest-warn.md` (⭐ a red verdict LABELS, it does not block) ·
-`ADR-014` (⬜ who supplies the criterion) ·
+`ADR-014-the-criterion-belongs-to-the-owner.md` (⬜ whose criterion it is) ·
 `../contract-quality-verdict.md` (both layers, in full) · `../contract-adr.md`.
