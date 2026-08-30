@@ -607,5 +607,25 @@ need an owner.
 
 ---
 
+## E-37 · A reusable CASE is not a document type here
+
+- **Surfaced by:** ADR-021 — the third record to ship `implementation: not-started`
+- **Affects:** `rules/README.md` (the type table) · a shape that does not exist yet
+- **Closes when:** a case has its own type with a declared shape, an entry filter, and a cap
+
+**Why it matters.** ⭐ **Measured in a real installation: the three-question filter admitted
+exactly ONE error as a case over months — and that case is cited by nineteen files.** ⛔ The filter
+works, and the engine cannot offer it: a case is none of its three document types.
+
+⚠️ **What happens without it, and it is not a disaster:** a case-shaped document is written as a
+rule with a story in it. ⭐ **That works and loses the filter** — nothing asks the three questions,
+so the next installation records errors by instinct.
+
+⭐ **The cap was never tested**, because the filter was strict enough that nothing approached it.
+⛔ **Worth remembering when building this:** the limit that did the work was the FILTER, not the
+ceiling — building the ceiling first would protect against a problem that has never occurred.
+
+---
+
 Related: `README.md` (folder) · `../memory/principles/README.md` (where the owners live) ·
 `../rules/README.md` (where a closed entry usually lands) · `../CAPABILITIES.md`.

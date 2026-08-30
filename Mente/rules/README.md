@@ -55,6 +55,7 @@ that turned out wrong is **superseded** by a new ADR, and both stay.
 | how something must be done | rule | `rule-<behavior>.md` |
 | why a choice was made | ADR | `decisions/ADR-NNN-<slug>.md` |
 | a standard method for large work | neither prefix — a named method | `<METHOD_NAME>.md` |
+| ⬜ an error worth reusing | ⛔ **not yet a type here** — see `decisions/ADR-021-an-error-becomes-a-case-only-if-it-passes-three.md` | ⚠️ a rule with a story in it |
 
 ---
 
