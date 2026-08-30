@@ -75,6 +75,7 @@ thousand requests to notice the first time.**
 
 ---
 
-Related: `ADR-001-work-unit-is-the-block.md` (the block that declares) ·
+Related: `ADR-012-few-gates-block-the-rest-warn.md` (⭐ **layer 3 INJECTS, it does not block** — read together, or a reader counts four gates where there are not four) ·
+`ADR-001-work-unit-is-the-block.md` (the block that declares) ·
 `../rule-inheritance.md` (⭐ the router layer, and why a rule written there has no level) ·
 `../contract-block.md` `§D` (the declaration layer 3 would read) · `../contract-adr.md`.
