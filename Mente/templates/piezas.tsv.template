@@ -158,6 +158,7 @@ adr-015	rules/decisions/ADR-015-nesting-is-bounded-at-three.md	engine	canonical	
 adr-019	rules/decisions/ADR-019-a-validator-completes-what-is-derivable.md	engine	canonical	what a validator may complete, and what it must never derive — ⬜ decided, not yet built
 adr-020	rules/decisions/ADR-020-a-block-emits-an-approval-receipt.md	engine	canonical	⛔ superseded — the receipt whose FORM assumed an interface that does not exist
 adr-021	rules/decisions/ADR-021-an-error-becomes-a-case-only-if-it-passes-three.md	engine	canonical	when an error is worth reusing — ⬜ decided, the type does not exist yet
+adr-022	rules/decisions/ADR-022-a-rule-is-flagged-at-n-distinct-blocks.md	engine	canonical	when a rule has earned a review — counted over DISTINCT blocks, never raw repetitions
 adr-030	rules/decisions/ADR-030-the-block-message-is-the-receipt.md	engine	canonical	what a refusal must say — piece, reason, assessment, and the way out
 decisions-readme	rules/decisions/README.md	engine	canonical	the append-only folder — ships empty, the records are yours
 check-handoff	bin/check-handoff	engine	executable	validates a delegation manifest and binds it against reality
