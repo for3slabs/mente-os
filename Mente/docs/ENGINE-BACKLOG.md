@@ -630,5 +630,28 @@ ceiling — building the ceiling first would protect against a problem that has 
 
 ---
 
+## E-38 · Nothing audits the system unasked
+
+- **Surfaced by:** ADR-024 — no health check, and no hook that runs one at session start
+- **Affects:** `bin/` (a health check that does not exist) · `hooks/` (a startup hook)
+- **Closes when:** a health check runs by itself when a session opens, obeying both constraints
+
+**Why it matters.** ⭐ **Measured: three distinct failures each lived for WEEKS, and all three were
+found by somebody ASKING.** ⛔ None was hidden — every one was visible to a check that existed and
+was not run.
+
+> ⛔ **IF YOU HAVE TO ASK FOR IT, IT IS NOT AUTOMATED.**
+
+⭐ **The two constraints already ship as rules**, ahead of the tool: never block the session at
+startup, and speak only when something is wrong. ⚠️ **That order is deliberate** — a startup check
+that blocks, or that prints on every healthy run, is removed within a week, and then the engine
+has neither the tool nor the rule.
+
+🔴 **The line that must not move:** an audit REPORTS. ⛔ It never deletes what it finds — a
+self-cleaning audit destroys the evidence of how the state was reached, and makes a recurring
+fault look like a healthy system.
+
+---
+
 Related: `README.md` (folder) · `../memory/principles/README.md` (where the owners live) ·
 `../rules/README.md` (where a closed entry usually lands) · `../CAPABILITIES.md`.
