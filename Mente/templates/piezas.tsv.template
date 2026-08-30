@@ -65,7 +65,7 @@ instalador	bin/init	engine	canonical	generates the instance files from templates
 puerta-critica	hooks/gate-critical.py	engine	canonical	blocks a destructive change with no rollback, and an insufficient close
 pre-edit	hooks/pre-edit-standards.py	engine	canonical	injects the block's standards before an edit
 pre-commit	hooks/pre-commit.sh	engine	canonical	blocks a commit that violates the block's contract
-session-start	hooks/session-start.sh	engine	canonical	health + structure + indexes at session start
+session-start	hooks/session-start.sh	engine	canonical	runs every validator at session start — ⭐ silent unless something is wrong
 # ── engine · the contracts + inheritance model ──
 contrato-bloque	rules/contract-block.md	engine	canonical	which fields a block carries (§A-K)
 contrato-campana	rules/contract-campaign.md	engine	canonical	which fields a campaign carries, and its lower ceiling
@@ -187,6 +187,7 @@ probe-declared	bin/probes/probe-declared.py	engine	executable	proves check-decla
 rule-shipping	rules/rule-shipping.md	engine	canonical	how a change leaves the workspace — loop, base, grouping, cleanup, session close
 check-shipping	bin/check-shipping	engine	executable	enforces the lock rows of the shipping rule
 probe-shipping	bin/probes/probe-shipping.py	engine	executable	proves check-shipping detects what the shipping rule claims
+probe-session-start	bin/probes/probe-session-start.py	engine	executable	proves the startup hook is silent when healthy, loud when not, and never blocks
 hook-pre-commit	hooks/pre-commit.sh	engine	executable	refuses a commit on the base branch — SHP-LCK-001
 contract-archive	rules/contract-archive.md	engine	canonical	what survives when a block closes — the three files and what goes inside them
 check-archive	bin/check-archive	engine	executable	enforces the lock rules of the archive contract

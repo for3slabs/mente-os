@@ -93,8 +93,16 @@ def stem(c):
 
 missing = [c for c in checkers
            if stem(c) not in covered and stem(c) != "s"]
+# ⭐ Not every probe covers a VALIDATOR. A hook has no findings of its own —
+# what its probe proves is BEHAVIOUR — so counting it against the validator
+# total reported "15 validators, 16 probes" and read as an inconsistency.
+hook_probes = [q for q in probes
+               if os.path.exists(os.path.join(os.path.dirname(BIN), "hooks",
+                                              os.path.basename(q)[len("probe-"):-3] + ".sh"))]
 print("\n  ── cobertura")
-print("     validadores: %d · con sonda: %d" % (len(checkers), len(probes)))
+print("     validadores: %d · con sonda: %d%s"
+      % (len(checkers), len(probes) - len(hook_probes),
+         " · + %d sonda(s) de hook" % len(hook_probes) if hook_probes else ""))
 for c in missing:
     print("     ⬜ %s · NO PROBADO — un validador sin sonda no esta demostrado" % c)
 

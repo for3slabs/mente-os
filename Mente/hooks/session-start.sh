@@ -1,0 +1,60 @@
+#!/usr/bin/env bash
+# session-start — the system reports its own state without being asked.
+#
+# Implements ADR-024 · the audit runs by itself; asking for it means it is not
+# automated. The reasoning, the evidence and what would retire this decision
+# live in that record — ⛔ not here. A hook is not a diary.
+#
+# Two constraints this file exists to obey, both stated in hooks/README:
+#   1 · NEVER block the session. Failing must not stop the work.
+#   2 · Speak ONLY when something is wrong. Silence is the healthy output.
+set -uo pipefail
+MENTE="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+
+# ── ⬜ WHAT RUNS AT STARTUP IS THE INSTALLATION'S ────────────────────────────
+# MENTE_STARTUP_CHECKS: space-separated validator names. Unset means DISCOVER
+# every `check-*` in bin/ — ⭐ so adding a validator does not mean editing this
+# hook. ⛔ Naming them here would make this file grow with every new check,
+# which is the shape that turns a hook into a list nobody maintains.
+read -ra CHECKS <<< "${MENTE_STARTUP_CHECKS:-}"
+if [ "${#CHECKS[@]}" -eq 0 ]; then
+  for c in "$MENTE"/bin/check-*; do
+    [ -x "$c" ] && CHECKS+=("$(basename "$c")")
+  done
+fi
+
+# ── THE HEARTBEAT · written FIRST, before anything can fail ──────────────────
+# ⛔ This hook is silent when all is well — and equally silent if it is dead.
+# ⭐ Healthy silence and dead silence are indistinguishable from the inside, but
+# a stamp makes them distinguishable AFTERWARDS: "it said nothing" becomes "it
+# has said nothing since <date>".
+date -u +%Y-%m-%d > "$MENTE/.heartbeat" 2>/dev/null || true
+
+# ── WHICH SESSION IS THIS ────────────────────────────────────────────────────
+# ⬜ The host may hand a session id on stdin. Read it if present, and say so if
+# not: ⛔ guessing which session is current produces alarms about a transcript
+# nobody is writing to. A validator run by hand falls back to its own default
+# and knows that it did.
+payload="$(timeout 2 cat 2>/dev/null || true)"
+MENTE_SESSION_ID="$(printf '%s' "$payload" \
+  | grep -o '"session_id"[[:space:]]*:[[:space:]]*"[^"]*"' \
+  | head -1 | sed 's/.*"\([^"]*\)"$/\1/')"
+export MENTE_SESSION_ID
+
+# ── THE AUDIT · one loop, no per-validator branches ──────────────────────────
+# ⭐ Every validator obeys the same contract: 0 clean · non-zero has findings ·
+# `--quiet` suppresses the healthy line. ⛔ Because the contract is uniform, this
+# needs no knowledge of what any of them checks — that is what makes it scale.
+found=0
+for name in "${CHECKS[@]}"; do
+  bin="$MENTE/bin/$name"
+  [ -x "$bin" ] || continue          # ⬜ declared but absent · skipped, counted below
+  out="$("$bin" --quiet 2>/dev/null)" || {
+    [ -n "$out" ] && { printf '⚠️  %s\n' "$name"; printf '%s\n' "$out" | head -4; }
+    found=$((found + 1))
+  }
+done
+
+[ "$found" -gt 0 ] && printf '\n👉 run: Mente/bin/probes/run-all.py\n'
+
+exit 0   # ⛔ always 0 — this hook informs, it never blocks
