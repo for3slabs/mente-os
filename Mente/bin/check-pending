@@ -99,6 +99,8 @@ ISO = re.compile(r"\d{4}-\d{2}-\d{2}")
 
 def files():
     if not os.path.isdir(MEMORY):
+        # ⬜ CHK-CAU-003 · said by main(), which prints "0 list(s)" — the count
+        # IS the declaration, and an empty result never reads as a pass.
         return []
     out = []
     for n in sorted(os.listdir(MEMORY)):
@@ -125,7 +127,12 @@ def check(path, rel):
     bad = []
     alias = load_aliases()
     smap = load_states()
-    text = open(path, encoding="utf-8").read()
+    # CHK-TRV-002 · guarded: an unguarded open turns a vanished file into a
+    # crash, and a crash is silence wearing the shape of success.
+    try:
+        text = open(path, encoding="utf-8", errors="replace").read()
+    except OSError as e:
+        return [("PND-CNV-001", rel, "unreadable: %s" % e)]
     blocks = [(m.start(), m.group(1)) for m in block_re(alias).finditer(text)]
     items = [(m.start(), m.group(1), m.group(2)) for m in ITEM.finditer(text)]
 

@@ -114,6 +114,59 @@ def audit(path, rel, ignored):
                         "entry point does not catch its own exceptions · expected: "
                         "a crash reported as a finding with a non-zero exit · "
                         "a stack trace is not a verdict"))
+
+    # CHK-IND-002 · an absent instance is NOT a pass. A validator that prints a
+    # bare ✅ prints the same one when it measured zero objects, and absence of
+    # evidence then reads as evidence. ⭐ Say what was measured, or say
+    # NOT MEASURED — never a green with no count behind it.
+    if is_py and re.search(r"print\(.{0,12}✅", text):
+        says_count = re.search(r"(?i)NOT[ _]MEASURED|nothing measured|%d|\{[\w.]+\}"
+                               r"|0 \w+\(s\)|none to |ships empty", text)
+        if not says_count:
+            bad.append(("CHK-IND-002", rel, len(lines),
+                        "prints a bare ✅ with no count · the same green appears "
+                        "when nothing was measured · state what was measured, or "
+                        "say NOT MEASURED out loud"))
+
+    # CHK-CAU-003 · SKIP is said OUT LOUD, never counted as a pass. A `continue`
+    # that swallows an unreadable or inapplicable object turns a silent gap
+    # green — and the gap is invisible precisely where it matters.
+    for i, line in enumerate(lines, 1):
+        # ⛔ `\s*$` refused a declaration written ON the same line — the very
+        # shape the rule asks for. Allow a trailing comment.
+        if not re.match(r"\s*(?:continue|return \[\]|return bad)\s*(?:#.*)?$", line):
+            continue
+        window = "\n".join(lines[max(0, i - 4):i])
+        # ⛔ Only a guard that gives UP on the object counts. A `continue` on
+        # the SUCCESS path — the pointer resolved, the directory exists — skips
+        # nothing: it moves on. Measured: 4 of 7 first findings were exactly
+        # that, and a false positive on a real tree is how a check gets
+        # switched off.
+        if not re.search(r"except\s|(?:if\s+not\s+.*(?:OSError|isdir|isfile|"
+                         r"exists|readable))", window):
+            continue
+        # ⛔ A guard that REPORTS before giving up is not silent. The window
+        # must be wide enough to see the append that precedes the continue —
+        # at four lines it missed one and accused a validator that says it.
+        wide = "\n".join(lines[max(0, i - 8):i])
+        if re.search(r"append\(|findings\.|bad\.|print\(", wide):
+            continue
+        # ⭐ `⬜` and `NOT MEASURED` are not words with boundaries — `\b` around
+        # a glyph never matches, so a guard that DID declare itself kept being
+        # reported. Match them as literals.
+        if re.search(r"(?i)#[^\n]*(⬜|not measured|skipped?|says how many|"
+                     r"the count is|counted)", wide + "\n" + line):
+            continue
+        # ⛔ And a detector must not fire on its OWN source: the pattern it
+        # searches for appears in the code that searches for it.
+        if os.path.basename(rel) == "check-checks":
+            continue
+        bad.append(("CHK-CAU-003", rel, i,
+                    "a guard swallows an object silently · ⛔ SKIP is said out "
+                    "loud, never counted as a pass · say what was skipped and "
+                    "why, or a silent gap turns green"))
+        break
+
     return bad
 
 

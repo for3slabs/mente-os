@@ -70,8 +70,12 @@ def main():
         return 2
 
     missing = []
+
+    scanned = 0
+    skipped = []
     for folder, exts in SCAN.items():
         if not os.path.isdir(folder):
+            skipped.append(folder)      # ⬜ CHK-CAU-003 · said out loud below
             continue
         for name in sorted(os.listdir(folder)):
             path = os.path.join(folder, name)
@@ -79,12 +83,24 @@ def main():
                 continue
             if not is_declarable(name, exts):
                 continue
+            scanned += 1
             if path not in declared:
                 missing.append(path)
 
+    # CHK-IND-002 · say WHAT WAS MEASURED, never a bare ✅. ⛔ If the walk
+    # found nothing, this printed the same green — absence of evidence read as
+    # evidence, which is the exact failure the quality contract names.
     if not missing:
         if not quiet:
-            print(f"✅ every engine file is declared in {TABLE}")
+            for sk in skipped:
+                print("⬜ NOT MEASURED · %s does not exist · nothing in it was "
+                      "checked" % sk)
+            if not scanned:
+                print("⬜ NOT MEASURED · no engine file was found to check · "
+                      "a green over zero files is not a pass")
+            else:
+                print("✅ %d engine file(s) checked · every one is declared in %s"
+                      % (scanned, TABLE))
         return 0
 
     if quiet:

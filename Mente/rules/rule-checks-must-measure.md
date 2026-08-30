@@ -96,7 +96,7 @@ else entirely** — and a red for the wrong reason looks exactly like detection.
 |---|---|---|---|
 | `CHK-CAU-001` | ⭐ **A red counts only when the message names the intended cause** | 📖 | ⛔ read the message, not the exit code |
 | `CHK-CAU-002` | 🔴 **A crash is not a detection** | 🔒 | ⭐ a validator that dies reports nothing |
-| `CHK-CAU-003` | ⛔ **SKIP is said out loud, never counted as PASS** | 🔒 | ⚠️ a silent gap turned green |
+| `CHK-CAU-003` | ⛔ **SKIP is said out loud, never counted as PASS** | 🔒 | `bin/check-checks` · ⚠️ measured: 6 guards swallowed an object in silence |
 
 ### ⭐ WHY `CRASH` DESERVES ITS OWN NAME
 
@@ -242,7 +242,7 @@ writing a check, not after finding the defect.
 | ID | Rule | Enf | Verify |
 |---|---|---|---|
 | `CHK-IND-001` | ⭐ **A check's verdict does not change with the amount of work already done** | 📖 | ⛔ would this be the same in an empty tree? |
-| `CHK-IND-002` | ⭐ **Absent instance → verify the BEHAVIOUR instead** | 🔒 | ⚠️ not *"skip the check"* |
+| `CHK-IND-002` | ⭐ **Absent instance → verify the BEHAVIOUR instead** | 🔒 | `bin/check-checks` · ⛔ a bare ✅ prints the same over zero objects |
 | `CHK-IND-003` | ⛔ **A check is proven on a clean clone, not only where it was written** | 📖 | ⭐ nothing verifies this yet |
 
 ⭐ **`CHK-IND-002` is what keeps this from becoming an excuse.** ⛔ **The way out is never to stop

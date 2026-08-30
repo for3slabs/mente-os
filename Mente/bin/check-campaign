@@ -75,7 +75,13 @@ def block_exists(bid):
 
 def check(path, rel, cap, owners):
     bad = []
-    t = open(path, encoding="utf-8").read()
+    # CHK-TRV-002 · a listed file can vanish between the listing and the read.
+    # ⛔ An unguarded open reports a CRASH, not a finding — and a crash reports
+    # nothing, which reads exactly like nothing wrong.
+    try:
+        t = open(path, encoding="utf-8", errors="replace").read()
+    except OSError as e:
+        return [("CHK-TRV-002", rel, "unreadable: %s" % e)]
     n = len(t.splitlines())
 
     # CMP-FRM-003 · the ceiling is a default with a DECLARED exit
