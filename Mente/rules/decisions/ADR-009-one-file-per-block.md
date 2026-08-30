@@ -62,7 +62,7 @@ scatter was.**
 - `BLK-SHP-001` 🔒 — a sibling document beside the block file is a finding
 - `BLK-SHP-002` 🔒 — the sections keep their order
 - `DOC-SIZ-001` 🔒 — ⭐ the ceiling is DECLARED in the contract and READ from it, never repeated
-- ⬜ `ADR-027` (planned) — ceilings per document type, ⭐ this decision generalised
+- `ADR-027-ceilings-are-per-document-type.md` — ⭐ ceilings per document type, this generalised
 
 ## What would change this decision
 
