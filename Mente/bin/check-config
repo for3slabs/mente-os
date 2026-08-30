@@ -28,7 +28,16 @@ SECRET = re.compile(
     r"(?!\$)[^'\"]{8,}['\"]", re.I)
 
 # CFG-SUR-003 · a grant for a shell interpreter makes every denial decorative
-SHELL_WRAPPER = re.compile(r"^Bash\((?:ba)?sh\s*\*?\)$|^Bash\((?:ba)?sh\b", re.I)
+# CFG-SUR-003 · a grant for an UNBOUNDED shell. ⛔ The distinction is the whole
+# rule: `Bash(bash:*)` authorizes anything, `Bash(bash hooks/start.sh)`
+# authorizes ONE script. Measured on a real configuration: the loose pattern
+# reported six bounded grants as open doors — the loose-comparison family this
+# system names first, and a false positive on a real tree is how a check gets
+# switched off.
+SHELL_WRAPPER = re.compile(
+    r"^Bash\(\s*(?:ba)?sh\s*\)$"          # the bare shell
+    r"|^Bash\(\s*(?:ba)?sh\s*:?\s*\*\s*\)$"   # bash:*  ·  bash *
+    r"|^Bash\(\s*(?:ba)?sh\s+-c\s*:?\s*\*\s*\)$", re.I)
 UNBOUNDED_RM = re.compile(r"^Bash\(rm\s+-[rf]{1,2}\s*\*?\)$", re.I)
 
 # CFG-SUR-001 · the channels a protected target is reachable by
@@ -53,9 +62,13 @@ def find_configs():
 
 
 def protected_targets():
-    """CFG-SUR-002 · DISCOVER what is protected. A fixed list of what is
-    dangerous is a hole with a schedule: the guard must find what exists, not
-    consult what somebody remembered."""
+    """CFG-LST-001 / CFG-SUR-002 · DISCOVER what is protected, never consult a
+    written list. A fixed list of what is dangerous is a hole with a schedule:
+    the guard must find what EXISTS, not what somebody remembered.
+
+    ⭐ The test that decides: if this list is short by one, does the system
+    become more PERMISSIVE or more STRICT? More permissive → it must be
+    measured. More strict → writing it is fine."""
     found = set()
     if os.path.exists(GITIGNORE):
         for line in open(GITIGNORE, encoding="utf-8"):
@@ -122,7 +135,12 @@ def check(path, rel, targets):
     # a real defect named by the wrong cause is still a wrong cause.
     mech = {}
     for entry in allow:
-        m2 = re.match(r"Bash\(\s*(?:\./)?(?:[\w.-]+/)*([\w.-]+)", str(entry))
+        # ⛔ Skip a leading VAR=value prefix. `Bash(VAR=x ./tool sub)` is an
+        # invocation of `tool`, not of `VAR` — grouping on the variable named a
+        # mechanism that does not exist, and reported nine invocations of one
+        # tool as nine of a thing nobody can grant.
+        cmd = re.sub(r"^Bash\(\s*(?:[A-Z_][A-Z0-9_]*=\S*\s+)+", "Bash(", str(entry))
+        m2 = re.match(r"Bash\(\s*(?:\./)?(?:[\w.-]+/)*([\w.-]+)", cmd)
         if m2:
             mech.setdefault(m2.group(1), 0)
             mech[m2.group(1)] += 1
@@ -166,6 +184,19 @@ def check(path, rel, targets):
             bad.append(("CFG-PRT-001", rel,
                         "absolute home path in %r · this configuration "
                         "measures one machine" % str(entry)[:50]))
+            break
+
+    # CFG-LST-002 · a list of the PERMITTED must fail CLOSED on the unknown.
+    # ⛔ A wildcard inside an allow entry turns the allowlist into a list of
+    # the protected in disguise: everything it did not think of is granted.
+    # ⭐ The test: short by one, does this become more permissive or stricter?
+    for entry in allow:
+        e = str(entry)
+        if re.search(r"\(\s*\*\s*\)$|^\s*\*\s*$|\(\*\*?\)", e):
+            bad.append(("CFG-LST-002", rel,
+                        "%r grants by wildcard alone · an allowlist short by "
+                        "one must become STRICTER, never more permissive — "
+                        "this one grants whatever nobody thought of" % e[:44]))
             break
 
     # CFG-SUR-001 · every reach channel to a protected target is denied
