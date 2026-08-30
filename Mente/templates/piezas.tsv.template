@@ -145,6 +145,7 @@ check-decisions	bin/check-decisions	engine	executable	enforces the lock rules of
 contract-adr	rules/contract-adr.md	engine	canonical	the shape of a decision already taken — append-only, never edited
 adr-001	rules/decisions/ADR-001-work-unit-is-the-block.md	engine	canonical	why the unit of work has TWO levels — the decision behind contract-block
 adr-004	rules/decisions/ADR-004-three-friction-lanes.md	engine	canonical	why three lanes, and why propagation chooses one — the decision behind WRK-LAN-*
+adr-005	rules/decisions/ADR-005-friction-protocol.md	engine	canonical	why friction is logged and the work continues — the decision behind WRK-FRI-*
 decisions-readme	rules/decisions/README.md	engine	canonical	the append-only folder — ships empty, the records are yours
 check-handoff	bin/check-handoff	engine	executable	validates a delegation manifest and binds it against reality
 contract-handoff	rules/contract-handoff.md	engine	canonical	bounded delegation — what a specialist may read, write, and when it stops
