@@ -131,6 +131,7 @@ decisiones	docs/DECISIONS.md	shared	generated	every ADR — bin/generate-index
 workspace	docs/WORKSPACE.md	owner	canonical	which repo is which on THIS machine — gitignored, never travels
 check-document	bin/check-document	engine	executable	enforces the lock rules of the document contract
 contract-document	rules/contract-document.md	engine	canonical	the shape a document must have — header, ceilings, names, moving
+blockread	bin/blockread.py	engine	executable	ONE reader for a block's sections — shared, because four copies had diverged
 check-block	bin/check-block	engine	executable	enforces the lock rules of the block contract
 contract-block	rules/contract-block.md	engine	canonical	one unit of work, one file — shape, opening, blocked, closing, archive
 check-work	bin/check-work	engine	executable	enforces the lock rules of working inside a block
