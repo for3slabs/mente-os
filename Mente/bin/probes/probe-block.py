@@ -33,6 +33,16 @@ def _re(bid, pat, rep, flags=re.S):
 def _strip(bid, head):
     _re(bid, re.escape(head) + r" ·.*?\n\n.*?\n\n", "")
 
+# ⭐ BLK-OPN-002 requires a block to be named by an index. The fixtures are
+# real blocks as far as the checker is concerned, so the probe declares them
+# where blocks are listed — ⛔ otherwise every clean case fails a rule it was
+# not testing, which is the probe's defect, not the checker's.
+_idx = os.path.join(BLOCKS, "README.md")
+_had_idx = os.path.exists(_idx)
+_orig_idx = open(_idx, encoding="utf-8").read() if _had_idx else None
+open(_idx, "w", encoding="utf-8").write(
+    (_orig_idx or "# Blocks\n") + "\n- %s-a\n- %s-b\n- %s-c\n" % (MARK, MARK, MARK))
+
 print("═══ A · SABOTAJE · check-block ═══\n")
 p.baseline()
 
@@ -106,6 +116,20 @@ finally:
     open(_c, "w", encoding="utf-8").write(_o)
     p.clean()
 
+p.case("㉒ SHP · un documento hermano junto al BLOCK.md",
+       lambda: (block(p, "a"),
+                open(os.path.join(BLOCKS, MARK + "-a", "notes.md"), "w",
+                     encoding="utf-8").write("# notes\n")), "BLK-SHP-001")
+
+p.case("㉓ OPN · un bloque que ningún índice nombra",
+       lambda: block(p, "z"), "BLK-OPN-002")
+
+p.case("㉔ BLK · bloqueado más allá del periodo declarado",
+       lambda: _re(block(p, "a", status="blocked",
+                         fric="- blocked by: the other team"),
+                   r"updated: \d{4}-\d\d-\d\d", "updated: 2026-01-01"),
+       "BLK-BLK-002")
+
 p.inverse("㉑ un bloque CORRECTO", lambda: block(p, "a"))
 p.crash_guard()
 
@@ -139,5 +163,10 @@ if real:
         print("       %-14s %d" % (k, by[k]))
 else:
     print("  ⑯ ⬜ NOT_MEASURED · set %s to a tree of real blocks" % "MENTE_CROSSRUN_BLOCKS")
+
+if _had_idx:
+    open(_idx, "w", encoding="utf-8").write(_orig_idx)
+else:
+    os.remove(_idx)
 
 sys.exit(0 if p.report() else 1)
