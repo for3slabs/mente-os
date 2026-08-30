@@ -28,6 +28,11 @@ SCAN = {
     "templates": (".template",),
     "memory/principles": (".md",),
     "memory/principles/expertise": (".md",),
+    # ⭐ The engine now ships decisions of its own, and an undeclared one would
+    # be invisible to the piece table. ⛔ But this folder must start EMPTY in an
+    # installation, so only what the engine SHIPS is checked — a record the
+    # owner writes there is theirs and is not declarable.
+    "rules/decisions": (".md",),
 }
 # ⛔ `docs/architecture` was listed here and exists nowhere — not in the tree,
 # not in piezas.tsv, not created by anything. Every clean clone printed

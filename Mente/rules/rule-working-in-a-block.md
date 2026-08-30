@@ -586,6 +586,8 @@ was supposed to produce.**
 
 ---
 
+**Decided by:** `decisions/ADR-001-work-unit-is-the-block.md` — ⭐ **why there are TWO levels**, what a single level loses, and how the decision is undone.
+
 Related: `README.md` (⭐ the three document types) · `contract-block.md` (⭐ **the lane lives in §A,
 the connections in §C, the friction log in §H — this file writes into all three**) ·
 `rule-inheritance.md` (⭐ why rules add up only through a declared connection, and §4 the order of

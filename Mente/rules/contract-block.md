@@ -684,6 +684,8 @@ measured in whether anyone ever responds.
 
 ---
 
+**Decided by:** `decisions/ADR-001-work-unit-is-the-block.md` — ⭐ **why there are TWO levels**, what a single level loses, and how the decision is undone.
+
 Related: `contract-quality-verdict.md` (⭐ **the §K verdict, measured — `bin/grade-block` is
 its layer 1**) · `README.md` (⭐ **the three document types**) · `contract-document.md` (⭐ the shape and
 the ceilings this file obeys) · `contract-adr.md` (⭐ where a §G decision graduates to when it
