@@ -169,3 +169,6 @@ probe-pending	bin/probes/probe-pending.py	engine	executable	proves check-pending
 rule-config-hygiene	rules/rule-config-hygiene.md	engine	canonical	a permission surface is complete, portable and free of pasted secrets
 check-config	bin/check-config	engine	executable	enforces the lock rules of the config-hygiene rule
 probe-config	bin/probes/probe-config.py	engine	executable	proves check-config detects what the config-hygiene rule claims
+contract-campaign	rules/contract-campaign.md	engine	canonical	what holds several blocks together when one is not enough and a project is too much
+check-campaign	bin/check-campaign	engine	executable	enforces the lock rules of the campaign contract
+probe-campaign	bin/probes/probe-campaign.py	engine	executable	proves check-campaign detects what the campaign contract claims
