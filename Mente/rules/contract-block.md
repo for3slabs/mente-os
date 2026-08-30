@@ -684,7 +684,8 @@ measured in whether anyone ever responds.
 
 ---
 
-**Decided by:** `decisions/ADR-001-work-unit-is-the-block.md` — ⭐ **why there are TWO levels**, what a single level loses, and how the decision is undone.
+**Decided by:** `decisions/ADR-009-one-file-per-block.md` — ⭐ **why ONE file**, why tiers are an order and not a boundary, and why the ceiling is read from here instead of repeated.
+**Also decided by:** `decisions/ADR-001-work-unit-is-the-block.md` — ⭐ **why there are TWO levels**, what a single level loses, and how the decision is undone.
 
 Related: `contract-quality-verdict.md` (⭐ **the §K verdict, measured — `bin/grade-block` is
 its layer 1**) · `README.md` (⭐ **the three document types**) · `contract-document.md` (⭐ the shape and

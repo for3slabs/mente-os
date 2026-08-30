@@ -116,6 +116,30 @@ correct, and together they make the folder unreadable.**
 | `DEC-ONE-001` | ⭐ **One decision per file** | 🔒 | ⛔ a table row cannot carry evidence or a way back |
 | `DEC-ONE-002` | **The index is generated, never hand-written** | 📖 | ⚠️ nothing verifies this yet |
 | `DEC-ONE-003` | ⛔ **An accepted record is never edited in place** | 📖 | ⭐ see below |
+| `DEC-ONE-004` | ⚠️ **A number inside a decision may be AMENDED — the decision may not** | 📖 | ⭐ dated, attributed, and stating what did NOT change |
+
+### ⚠️ THE CASE RULE 3 DOES NOT COVER — and it happens
+
+⛔ **Sometimes the decision holds and a NUMBER inside it stops fitting.** Superseding the whole
+record then buries a decision that is still correct, ⭐ **and re-deciding something nobody disputes
+costs more history than it saves.**
+
+**So an AMENDMENT is allowed, under three conditions:**
+
+| | ⭐ Required |
+|---|---|
+| **dated** | when it moved |
+| **attributed** | ⬜ who moved it |
+| ⭐ **scoped** | ⛔ **an explicit line saying what did NOT change** |
+
+> ## ⛔ AN AMENDMENT WITHOUT THAT THIRD LINE IS AN EDIT WEARING A LABEL.
+> ⚠️ **The reader cannot tell whether the decision moved with the number** — and that is exactly
+> the history rule 3 exists to protect.
+
+⭐ **Measured — the shape that works:** a real record raised a ceiling from one number to another
+and wrote *"the decision itself is untouched; only the number moved"*, with the reason the old
+number no longer fitted. ⚠️ **The record stayed defensible because the amendment said what it was
+NOT.**
 
 ### ⚠️ Rule 1 exists because the alternative was measured
 
