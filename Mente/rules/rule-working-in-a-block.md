@@ -586,7 +586,8 @@ was supposed to produce.**
 
 ---
 
-**Decided by:** `decisions/ADR-001-work-unit-is-the-block.md` — ⭐ **why there are TWO levels**, what a single level loses, and how the decision is undone.
+**Decided by:** `decisions/ADR-004-three-friction-lanes.md` — ⭐ **why THREE lanes**, why the agent must not estimate one, and what a single lane costs in both directions.
+**Also decided by:** `decisions/ADR-001-work-unit-is-the-block.md` — ⭐ **why there are TWO levels**, what a single level loses, and how the decision is undone.
 
 Related: `README.md` (⭐ the three document types) · `contract-block.md` (⭐ **the lane lives in §A,
 the connections in §C, the friction log in §H — this file writes into all three**) ·
