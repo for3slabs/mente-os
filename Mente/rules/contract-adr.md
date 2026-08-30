@@ -395,6 +395,33 @@ written at all.**
 
 ---
 
+## ⭐ THE TWELVE QUESTIONS A RECORD MUST SURVIVE
+
+⛔ **A record that passes its validator is well-formed, not useful.** These are what separate the
+two, and the last five are the ones a script cannot ask.
+
+| # | Question | ⛔ What its absence costs |
+|---|---|---|
+| 1 | does its FORM pass the check? | it cannot be read by anything |
+| 2 | is the decision IMPLEMENTED? | ⚠️ a record of something that never happened |
+| 3 | does the rule CITE it? | ⭐ **the rule is one argument from being reverted by somebody who does not know what caused it** |
+| 4 | is any INSTANCE data left? | it does not travel |
+| 5 | do its POINTERS resolve here? | a promise to a reader who will follow it |
+| 6 | does it CONTRADICT another? | two records, one question, nothing says which |
+| 7 | does it say what the rule does NOT? | ⛔ otherwise it is a duplicate, not traceability |
+| **8** | ⭐ does it name the REJECTED alternative, and why? | ⛔ the decision cannot be re-examined — it gets argued from zero |
+| **9** | is its EVIDENCE measured, or an opinion? | ⚠️ a number, a file, a command — ⭐ **or the words admitting there is none** |
+| **10** | is the REVERSION real? | ⛔ "go back" without saying what is lost is an exit nobody can take |
+| **11** | does it declare its BOUNDARY? | ⚠️ a decision with none gets applied where it was never meant to |
+| **12** | ⭐ does it survive without its original CONTEXT? | ⛔ if it only makes sense to whoever was there that day, it does not travel |
+
+> ## ⭐ 8 TO 12 ARE NOT VERIFIABLE BY A SCRIPT, AND THAT IS WHY THEY ARE WRITTEN DOWN.
+> ⚠️ **A check can see that `Rejected alternatives` exists.** ⛔ **It cannot see that what is in it
+> would let somebody re-open the question honestly** — and that is the whole reason the section
+> is there.
+
+---
+
 Related: `README.md` (⭐ **the three document types — this is the append-only one**) ·
 `contract-document.md` (⭐ the header and the ceiling this file obeys) · `contract-block.md`
 (⭐ §G — a decision inside a block, which graduates here when it outlives the block) ·
