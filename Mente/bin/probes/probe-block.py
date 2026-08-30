@@ -76,7 +76,37 @@ p.case("⑬ intent no es una frase",
 p.case("⑭ id ausente", lambda: _re(block(p, "a"), r"^id: .*\n", "", flags=re.M),
        "BLK-IDN-001")
 
-p.inverse("⑮ un bloque CORRECTO", lambda: block(p, "a"))
+p.case("⑮ §C vacía — nadie contestó la pregunta",
+       lambda: _re(block(p, "a"), r"(## C · Connections\n).*?(?=\n## D)",
+                   r"\1\n"), "BLK-CON-001")
+p.case("⑯ §C nombra un bloque que no existe",
+       lambda: _re(block(p, "a"), r"(## C · Connections\n\n).*?(?=\n## D)",
+                   r"\1- DEPENDS ON: %s-ghost\n" % MARK), "BLK-CON-002")
+p.case("⑰ §D sin ningún estándar",
+       lambda: _sub(block(p, "a"), "- `rules/contract-block.md`", "—"),
+       "BLK-STD-001")
+p.case("⑱ closed sin aceptación NI suficiencia",
+       lambda: _sub(block(p, "a", status="closed"),
+                    "## H · Friction log",
+                    "## K · Closing\n\ncompleted: the thing\n"
+                    "not completed: nothing\n\n## H · Friction log"),
+       "BLK-TRN-001")
+
+# ⬜ CEILINGS · declared as 0 (not measured) by default, so the probe must
+# prove BOTH: silent with none declared, firing when one is.
+_c = os.path.join(ROOT, "rules", "contract-block.md")
+_o = open(_c, encoding="utf-8").read()
+try:
+    p.inverse("⑲ sin techo declarado, NADA se mide", lambda: block(p, "a"))
+    open(_c, "w", encoding="utf-8").write(
+        _o.replace("| ⬜ E `State` | 0 |", "| ⬜ E `State` | 2 |"))
+    p.case("⑳ §E pasa su techo, con techo declarado",
+           lambda: block(p, "a"), "BLK-STA-001")
+finally:
+    open(_c, "w", encoding="utf-8").write(_o)
+    p.clean()
+
+p.inverse("㉑ un bloque CORRECTO", lambda: block(p, "a"))
 p.crash_guard()
 
 
