@@ -3,6 +3,7 @@
 **Status:** current · **Type:** contract · **Updated:** {{date}} · **Owner:** {{owner}}
 **Applies to:** every file at `campaigns/<name>/CAMPAIGN.md`
 **Enforcement:** 🔒 partial — `bin/check-campaign`
+**Level:** 🌐 universal — ⭐ travels identical to every clone; a lower level may ADD or TIGHTEN, never loosen
 **Verified by:** `bin/check-campaign` · `bin/probes/probe-campaign.py`
 
 ## Purpose

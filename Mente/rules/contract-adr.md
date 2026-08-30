@@ -3,6 +3,7 @@
 **Status:** current · **Type:** contract · **Updated:** {{date}} · **Owner:** {{owner}}
 **Applies to:** every file in `rules/decisions/`
 **Enforcement:** 🔒 lock — `bin/check-decisions`
+**Level:** 🌐 universal — ⭐ travels identical to every clone; a lower level may ADD or TIGHTEN, never loosen
 **Verified by:** `bin/check-decisions` · `bin/probes/probe-decisions.py`
 **Governance:** `engine` in the piece table · ✅ ships identical to every clone
 

@@ -11,8 +11,11 @@ REF = os.environ.get("MENTE_CROSSRUN_RULES", "")
 ORIG_BASE = open(BASE, encoding="utf-8").read()
 ORIG_ROUTER = open(ROUTER, encoding="utf-8").read()
 
+# ⭐ Probe failure mode #3: a filter narrower than what the probe touches.
+# Three cases EDIT rules/rule-inheritance.md, and its findings carry no marker —
+# filtering on the marker alone reported a working check as undetected.
 p = Probe("check-inheritance", "INH",
-          also=("base-rules.md", "CLAUDE-MENTE-OS.md"))
+          also=("base-rules.md", "CLAUDE-MENTE-OS.md", "rule-inheritance.md"))
 _clean = p.clean
 
 
@@ -72,11 +75,70 @@ p.inverse("⑩ cadena SIN ciclo · A → B → C",
           lambda: (block(p, "a", conn="- DEPENDS ON: %s-b" % MARK),
                    block(p, "b", conn="- DEPENDS ON: %s-c" % MARK),
                    block(p, "c")))
+# ── the four rules implemented in audit 7/13
+_rules_dir = os.path.join(ROOT, "rules")
+_victim = os.path.join(_rules_dir, "rule-inheritance.md")
+_orig_rule = open(_victim, encoding="utf-8").read()
+
+# ⭐ This probe EDITS a real rule file, so its cleaner must restore it too —
+# a cleaner that misses one leaves the next case reading stale state.
+_prev_clean = p.clean
+
+
+def clean_with_rule():
+    open(_victim, "w", encoding="utf-8").write(_orig_rule)
+    _prev_clean()
+
+
+p.clean = clean_with_rule
+
+p.case("⑪ LVL · una regla sin nivel declarado",
+       lambda: open(_victim, "w", encoding="utf-8").write(
+           _orig_rule.replace("**Level:** 🌐 universal", "**Scope:** the engine", 1)
+                     .replace("🌐", "·").replace("🏢", "·").replace("📦", "·")
+                     .replace("universal", "wide").replace("project-level", "narrow")),
+       "INH-LVL-001")
+
+p.case("⑫ PRC · una fila de regla que promedia",
+       lambda: open(_victim, "w", encoding="utf-8").write(
+           _orig_rule + "\n| `INH-ZZZ-999` | a middle ground between both | 🔒 | x |\n"),
+       "INH-PRC-002")
+
+p.case("⑬ RTR · el enrutador no nombra los tres niveles",
+       lambda: open(ROUTER, "w", encoding="utf-8").write(
+           re.sub(r"(?i)block|📦", "thing", ORIG_ROUTER)), "INH-RTR-002")
+
+def cite_in_d(conn="- none"):
+    """⛔ The fixture already HAS a §D, so appending another plants the defect
+    in a section body_of never reads — the case tested nothing and reported
+    the check as broken. Replace the existing one instead."""
+    bid = block(p, "a", conn=conn)
+    q = os.path.join(BLOCKS, bid, "BLOCK.md")
+    t = open(q, encoding="utf-8").read()
+    open(q, "w", encoding="utf-8").write(
+        t.replace("- `rules/contract-block.md`",
+                  "- `work/blocks/other-block/BLOCK.md`"))
+    return bid
+
+
+p.case("⑭ SUM · §D cita otro bloque sin declararlo en §C",
+       lambda: cite_in_d(), "INH-SUM-001")
+
+# ⭐ the inverse: the same citation WITH the dependency declared must not fire.
+p.inverse("⑮ SUM · la misma cita, con la conexión declarada",
+          lambda: cite_in_d(conn="- DEPENDS ON: other-block"))
+
 p.crash_guard()
 
 print("\n═══ B · CORRIDA CRUZADA · el base-rules REAL de otra instancia ═══\n")
 p.clean()
 if REF and os.path.exists(REF):
+    # ⛔ A directory here crashed the probe with a bare traceback. A crash
+    # reports nothing, and "nothing reported" reads like "nothing wrong".
+    if os.path.isdir(REF):
+        print("  ⑪ ⬜ NOT_MEASURED · MENTE_CROSSRUN_RULES must name a "
+              "base-rules FILE, not a folder: %s" % REF)
+        raise SystemExit(0 if p.report() else 1)
     shutil.copy(REF, BASE)
     code, out, err = p.run()
     rows = [l for l in out.splitlines() if "🔴" in l]

@@ -3,6 +3,7 @@
 **Status:** current · **Type:** rule · **Updated:** {{date}} · **Owner:** {{owner}}
 **Applies to:** every rule in the system — ⭐ **including the ones in this folder**
 **Enforcement:** 🔒 partial — `bin/check-inheritance`
+**Level:** 🌐 universal — ⭐ travels identical to every clone; a lower level may ADD or TIGHTEN, never loosen
 **Verified by:** `bin/check-inheritance` · `bin/probes/probe-inheritance.py`
 **Governance:** `engine` in the piece table · ✅ ships identical to every clone
 
@@ -88,9 +89,9 @@ session of every project.**
 
 | ID | Rule | Enf | Verify |
 |---|---|---|---|
-| `INH-LVL-001` | ⭐ **Every rule declares its level** | 🔒 | ⛔ no level means it applies everywhere by accident |
+| `INH-LVL-001` | ⭐ **Every rule declares its level** | 🔒 | `bin/check-inheritance` · ⛔ measured: 13 of 13 declared none |
 | `INH-LVL-002` | ⛔ **A universal rule never names a specific thing** | 🔒 | ⚠️ a path, a service, a repository — ⭐ then it is not universal |
-| `INH-LVL-003` | **A project rule that holds anywhere belongs one level up** | 🟡 | apply the test above |
+| `INH-LVL-003` | **A project rule that holds anywhere belongs one level up** | 🔒 | `bin/check-inheritance` · a row marked project-level inside the universal file |
 
 ⭐ **`INH-LVL-002` is the one a script can actually catch**, and it catches the exact defect that
 produced this rule: **a rule naming one place, living where every place reads it.**
@@ -183,7 +184,7 @@ interpretation.**
 | ID | Rule | Enf | Verify |
 |---|---|---|---|
 | `INH-PRC-001` | ⭐ **On conflict, the strongest effect wins** | 🔒 | ⛔ by this table, never by reading |
-| `INH-PRC-002` | ⛔ **Two effects never average out** | 🔒 | ⚠️ ⭐ see below |
+| `INH-PRC-002` | ⛔ **Two effects never average out** | 🔒 | ⚠️ the SIGNAL is measured — hedging inside a rule row — never the reasoning |
 | `INH-PRC-003` | ⭐ **A rule whose effect cannot be classified is DENY** | 📖 | see §7 |
 
 > ## ⭐ "THE STRICTER ONE WINS" IS NOT A TIEBREAK — IT IS THE WHOLE MODEL
@@ -209,7 +210,7 @@ effective set = universal + project + (this block) + (a block it DECLARES)
 | ID | Rule | Enf | Verify |
 |---|---|---|---|
 | `INH-SUM-001` | ⭐ **Rules add up only through a DECLARED connection** | 🔒 | ⚠️ the connection exists in the block |
-| `INH-SUM-002` | ⭐ **Conflicts resolve by §5, never by judgement** | 🔒 | ⛔ classify both effects first |
+| `INH-SUM-002` | ⭐ **Conflicts resolve by §5, never by judgement** | 📖 | ⚠️ **nothing verifies this** — ⛔ a script sees the outcome, never which method produced it |
 | `INH-SUM-003` | 🔴 **A dependency cycle is invalid** | 🔒 | ⭐ see below |
 
 ### ⭐ WHAT `DEPENDS ON` MEANS — and what it does NOT
@@ -274,7 +275,7 @@ hold them.**
 | ID | Rule | Enf | Verify |
 |---|---|---|---|
 | `INH-RTR-001` | ⭐ **No rule is written in the router** | 🔒 | ⛔ a rule there has no declared level |
-| `INH-RTR-002` | **The router names all three levels** | 🔒 | ⚠️ a level nobody points at is a level nobody reads |
+| `INH-RTR-002` | **The router names all three levels** | 🔒 | `bin/check-inheritance` · ⚠️ a level nobody points at is a level nobody reads |
 
 > ## ⭐ THIS IS THE BUG THIS FILE FIXES
 > ⚠️ **A rule written in the router has no level** — so it applies to everything, everywhere,
