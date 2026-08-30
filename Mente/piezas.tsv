@@ -138,6 +138,8 @@ adr-013	rules/decisions/ADR-013-the-verdict-has-two-layers.md	engine	canonical	w
 adr-014	rules/decisions/ADR-014-the-criterion-belongs-to-the-owner.md	engine	canonical	whose criterion layer 2 is — and why an agent writing its own has written a linter
 adr-015	rules/decisions/ADR-015-nesting-is-bounded-at-three.md	engine	canonical	why nesting is bounded at three — ⬜ decided, not yet built
 adr-019	rules/decisions/ADR-019-a-validator-completes-what-is-derivable.md	engine	canonical	what a validator may complete, and what it must never derive — ⬜ decided, not yet built
+adr-020	rules/decisions/ADR-020-a-block-emits-an-approval-receipt.md	engine	canonical	⛔ superseded — the receipt whose FORM assumed an interface that does not exist
+adr-030	rules/decisions/ADR-030-the-block-message-is-the-receipt.md	engine	canonical	what a refusal must say — piece, reason, assessment, and the way out
 decisions-readme	rules/decisions/README.md	engine	canonical	the append-only folder — ships empty, the records are yours
 check-handoff	bin/check-handoff	engine	executable	validates a delegation manifest and binds it against reality
 contract-handoff	rules/contract-handoff.md	engine	canonical	bounded delegation — what a specialist may read, write, and when it stops

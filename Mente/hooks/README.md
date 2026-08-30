@@ -71,7 +71,8 @@ Before a gate blocks, measure how often the path it guards is actually walked. T
 **if a gate obstructs more than it protects, it degrades to a warning.** A system that gets in the
 way gets switched off, and a switched-off gate protects nothing.
 
-**Decided by:** `../rules/decisions/ADR-012-few-gates-block-the-rest-warn.md` — ⭐ **why the blocking set stays small**, and what happens to the right gates when a wrong one is added.
+**Decided by:** `../rules/decisions/ADR-030-the-block-message-is-the-receipt.md` — ⭐ **what a refusal must SAY**: piece, reason, what to assess, and the way out.
+**Also decided by:** `../rules/decisions/ADR-012-few-gates-block-the-rest-warn.md` — ⭐ **why the blocking set stays small**, and what happens to the right gates when a wrong one is added.
 
 | Measured situation | Level it earns |
 |---|---|
