@@ -351,6 +351,9 @@ time. ⭐ **A ceiling nobody can measure is indistinguishable from no ceiling at
 - **Affects:** `templates/RETOMAR.md.template` · `templates/PENDIENTES.md.template` ·
   `templates/ARQUITECTURA.md.template` · and `piezas.tsv` itself
 - **Closes when:** the owner decides — rename, or declare the names deliberate
+- ⭐ **The criterion this was missing:** `../rules/decisions/ADR-023-instructions-are-in-one-language.md`
+  — ⚠️ **a filename is an instruction**: it is resolved and cited, so it follows the instruction
+  language even when the content it names is a translated thought.
 
 **Why it matters.** ⭐ Every rule in this engine is written in one language, and every filename
 follows it — except four. ⚠️ **A clone in another country receives file names it cannot read**,
