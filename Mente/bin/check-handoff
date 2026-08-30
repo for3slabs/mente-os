@@ -28,6 +28,10 @@ WRITE_MODES = {"create-only", "append-only"}
 COORDINATOR_ONLY = {"a", "b", "c", "d", "e", "g",
                     "identity", "scope", "connections",
                     "required standards", "state", "decisions"}
+# ⬜ The agent types this installation recognises. ⛔ The list is not the gate:
+# HND-GAT-001 makes anything OUTSIDE it a writer, so adding a type is a
+# permission decision, and forgetting to add one fails CLOSED.
+AGENT_TYPES = {"reader", "writer", "reviewer", "coordinator", "specialist"}
 VAGUE = re.compile(r"^(when (done|finished|complete)|asap|as needed|n/?a|tbd)\.?$", re.I)
 
 
@@ -87,6 +91,10 @@ def items(v):
 def check(path, rel):
     """Returns (malformed, binding) finding lists."""
     mal, bind = [], []
+    try:
+        raw = open(path, encoding="utf-8", errors="replace").read()
+    except OSError:
+        raw = ""
     d = parse(path)
 
     # HND-MAN-001 · every required field
@@ -160,6 +168,38 @@ def check(path, rel):
                     "no declared capabilities · expected agent.capabilities "
                     "with read and write · a name list is correct exactly "
                     "until somebody adds another agent type"))
+    # HND-GAT-005 · an UNDECLARED capability is assumed PRESENT. ⛔ Fail
+    # closed: the safe reading of silence is the permissive one being absent,
+    # never the restriction being absent.
+    if isinstance(caps, dict):
+        for cap in ("read", "write"):
+            if cap not in caps:
+                mal.append(("HND-GAT-005", rel,
+                            "capability %r is not declared · an undeclared "
+                            "capability is assumed PRESENT — declare it false "
+                            "rather than leaving it out" % cap))
+
+    # HND-GAT-001 · an unknown agent type is treated as a WRITER. ⭐ A name
+    # list is correct exactly until somebody adds a fourth type, and then the
+    # gate is silently permissive for it.
+    atype = (agent.get("type") if isinstance(agent, dict) else None) or ""
+    if atype and atype.lower() not in AGENT_TYPES:
+        if not (isinstance(caps, dict) and caps.get("write") is False):
+            mal.append(("HND-GAT-001", rel,
+                        "unknown agent type %r · an unrecognised type is "
+                        "treated as a WRITER · declare capabilities.write "
+                        "explicitly rather than relying on the name" % atype))
+
+    # HND-GAT-002 · the gate verifies the MANIFEST, not its presence. ⭐ An
+    # unfilled template is a file that exists and answers nothing — and
+    # "a file is there" reads exactly like "the question was answered".
+    holes = re.findall(r"(?m)^\s*[\w_]+:\s*(?:⬜|<[^>]*>|TODO|TBD|\.\.\.)\s*$", raw)
+    if holes:
+        mal.append(("HND-GAT-002", rel,
+                    "%d field(s) still carry the template placeholder · a "
+                    "manifest that exists and answers nothing must not open "
+                    "the gate" % len(holes)))
+
     for entry in items(wb.get("also_append")):
         low = entry.lower()
         for banned in COORDINATOR_ONLY:
@@ -257,6 +297,21 @@ def postflight(path, rel):
         bad.append(("HND-PST-001", rel,
                     "status %r is not one of %s · prose cannot be dispatched on"
                     % (st, sorted(STATUSES))))
+
+    # 5 · HND-STP-003 · a BOUNDARY stop names exactly what it lacked.
+    # ⛔ "I could not continue" is not a report: it tells the coordinator that
+    # something is missing without telling it what, so the only possible next
+    # move is to ask — which is the round trip the handoff existed to avoid.
+    if st == "blocked":
+        blk = (m.group(1) if m else "")
+        named = re.search(r"(need|requires?|missing|lack|outside|no access|"
+                          r"waiting on|blocked by)\b[^\n]{6,}", blk, re.I)
+        if not named:
+            bad.append(("HND-STP-003", rel,
+                        "a boundary stop that does not name what it lacked · "
+                        "⛔ \"could not continue\" is not a report: say what "
+                        "was needed and where it lives, or the coordinator's "
+                        "only move is to ask"))
 
     # 8 · no coordinator-owned section was touched
     for entry in items(wb.get("also_append")):

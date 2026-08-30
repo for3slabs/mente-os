@@ -144,6 +144,15 @@ case("⑩ binding · el id no coincide",
 case("⑪ binding · una ruta de lectura no resuelve",
      GOOD.replace("    - BLOCK.md", "    - MISSING.md"), "HND-BND-001", 3)
 
+case("⑪b GATE · una capacidad NO declarada",
+     GOOD.replace("    read: true\n", ""), "HND-GAT-005", 2)
+case("⑪c GATE · un tipo de agente desconocido",
+     GOOD.replace("agent:\n  capabilities:",
+                  "agent:\n  type: auditor\n  capabilities:")
+         .replace("    write: false", "    write: true"), "HND-GAT-001", 2)
+case("⑪d GATE · un campo con el marcador de la plantilla",
+     GOOD.replace('block: "%s"' % BID, "block: ⬜"), "HND-GAT-002", 2)
+
 p.inverse("⑫ un manifiesto CORRECTO", lambda: put(GOOD))
 
 
@@ -176,6 +185,29 @@ post("⑮ status fuera del conjunto",
 post("⑯ secciones fuera de orden",
      RETURN.replace("## work", "## zz").replace("## findings", "## work")
            .replace("## zz", "## findings"), "HND-PST-001", 3)
+
+post("⑯b STP · un stop de frontera sin decir qué le faltó",
+     RETURN.replace("## status\n\ndone\n",
+                    "## status\n\nblocked\n\nI could not continue.\n"),
+     "HND-STP-003", 3)
+# ⭐ the inverse: a boundary stop that DOES name what it lacked must not fire.
+# Without it the rule is only proven on broken input, and a check that fires on
+# every blocked return is a check that gets switched off.
+p.clean()
+put(GOOD)
+open(os.path.join(BLOCKS, BID, "handoffs", "return.md"), "w",
+     encoding="utf-8").write(
+    RETURN.replace("## status\n\ndone\n",
+                   "## status\n\nblocked\n\nneeds the schema at "
+                   "db/schema.sql, outside the read scope\n"))
+_r = subprocess.run([sys.executable, "bin/check-handoff", "--postflight", "--quiet"],
+                    cwd=ROOT, capture_output=True, text=True)
+_ok = "HND-STP-003" not in _r.stdout
+print("  %-44s %s %s" % ("⑯c STP · un stop que SÍ nombra lo que faltó",
+                         "✅" if _ok else "🔴",
+                         "NO dispara (correcto)" if _ok else _r.stdout.strip()[:70]))
+p.results.append(("boundary stop names it", "PASS" if _ok else "FALSE_POSITIVE"))
+p.clean()
 
 # ⭐ la prueba inversa del post-flight
 p.clean()

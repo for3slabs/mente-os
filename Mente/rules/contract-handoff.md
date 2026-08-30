@@ -311,8 +311,8 @@ never leaves the context.
 
 | ID | Rule | Enf | Verify |
 |---|---|---|---|
-| `HND-BND-001` | ⭐ **The checks run in this order** | 📖 | ⛔ see below |
-| `HND-BND-002` | **A failed binding aborts before any action** | 🔒 | ⚠️ nothing is written on a mismatch |
+| `HND-BND-001` | ⭐ **The checks run in this order** | 🔒 | `bin/check-handoff` · ⛔ the first failure returns, so the order IS enforced |
+| `HND-BND-002` | **A failed binding aborts before any action** | 🔒 | ⭐ performed by `HND-BND-001` — the same return, not a second check |
 
 ⚠️ **Why the order matters:** ⭐ **checking the id before checking the file exists produces a
 confusing error instead of the real one.** Each check assumes the previous one passed — ⛔ and a
