@@ -586,7 +586,8 @@ was supposed to produce.**
 
 ---
 
-**Decided by:** `decisions/ADR-004-three-friction-lanes.md` — ⭐ **why THREE lanes**, why the agent must not estimate one, and what a single lane costs in both directions.
+**Decided by:** `decisions/ADR-022-a-rule-is-flagged-at-n-distinct-blocks.md` — ⭐ **why DISTINCT blocks**, and why a mechanism needing judgment to fire does not fire.
+**Also decided by:** `decisions/ADR-004-three-friction-lanes.md` — ⭐ **why THREE lanes**, why the agent must not estimate one, and what a single lane costs in both directions.
 **Also decided by:** `decisions/ADR-005-friction-protocol.md` — ⭐ **why friction is LOGGED and the work continues**, and why the proposal waits for the close.
 **Also decided by:** `decisions/ADR-001-work-unit-is-the-block.md` — ⭐ **why there are TWO levels**, what a single level loses, and how the decision is undone.
 
