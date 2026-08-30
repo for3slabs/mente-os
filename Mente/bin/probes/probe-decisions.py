@@ -106,9 +106,52 @@ p.case("⑯ alternativas rechazadas sin nombrar",
                           "## Rejected alternatives\n\nwe looked at some others\n\n",
                           GOOD, flags=re.S)), "DEC-FLD-005")
 
+p.case("⑰b ONE · la decisión es una TABLA de filas",
+       lambda: put(GOOD.replace(
+           "One decision is one file.",
+           "| # | choice |\n|---|---|\n| 1 | this |\n| 2 | that |\n| 3 | other |")),
+       "DEC-ONE-001")
+
+p.case("⑰c NUM · revertida sin decir por qué",
+       lambda: put(GOOD.replace("status: accepted", "status: reverted")
+                       .replace("## Rationale\n\nA file carries its evidence, "
+                                "its boundary and its exit; a row carries none.\n", "")),
+       "DEC-NUM-003")
+
+p.case("⑰d SRC · dos registros vigentes sobre el mismo asunto",
+       lambda: (put(GOOD),
+                put(GOOD.replace("# 001 ·", "# 002 ·"), "002-" + MARK + ".md")),
+       "DEC-SRC-003")
+
 p.inverse("⑰ un registro CORRECTO", lambda: put(GOOD))
 p.crash_guard()
 
-print("\n  ⚠️ sin corrida cruzada: la carpeta de decisiones de otra instancia\n"
-      "     no es comparable — sus registros son suyos. NOT_MEASURED, dicho.")
+# ── B · CORRIDA CRUZADA
+# ⛔ This said "another instance's decisions are not comparable — their records
+# are theirs". That was an excuse, not a reason: what is theirs is the CONTENT;
+# the SHAPE is exactly what this contract fixes, and 30 real records carry it.
+# A cross-run declined on a made-up reason is the emptiest NOT_MEASURED there is.
+print("\n═══ B · CORRIDA CRUZADA · registros reales de otra instancia ═══\n")
+p.clean()
+REF = os.environ.get("MENTE_CROSSRUN_DECISIONS", "")
+real = sorted(glob.glob(os.path.join(REF, "*.md"))) if REF else []
+real = [q for q in real if not os.path.basename(q).upper().startswith("README")]
+if real:
+    for i, q in enumerate(real[:8]):
+        put(open(q, encoding="utf-8").read(),
+            "%03d-%s-x.md" % (900 + i, MARK))
+    code, out, err = p.run()
+    mine = [l for l in out.splitlines() if MARK in l]
+    by = {}
+    for l in mine:
+        for m in re.findall(r"DEC-[A-Z]+-\d+", l):
+            by[m] = by.get(m, 0) + 1
+    print("  ⑱ %d registros REALES · %d hallazgos" % (min(len(real), 8), len(mine)))
+    for k in sorted(by):
+        print("       %-14s %d" % (k, by[k]))
+    for l in mine[:4]:
+        print("     " + l.split(" · ", 2)[-1][:94])
+else:
+    print("  ⑱ ⬜ NOT_MEASURED · set MENTE_CROSSRUN_DECISIONS to a real decisions/ folder")
+p.clean()
 sys.exit(0 if p.report() else 1)
