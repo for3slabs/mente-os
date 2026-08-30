@@ -270,6 +270,8 @@ preserved.**
 
 ---
 
+**Decided by:** `decisions/ADR-007-a-closed-block-is-archived.md` — ⭐ **why a closing is not a deletion**, and what stops resolving the moment archives are removed.
+
 Related: `README.md` (⭐ the three document types) · `contract-block.md` (⭐ **§13 — the transition
 that lands here, and §K whose content this consolidates**) · `contract-document.md` (⭐ the header
 the two written files must carry) · `contract-adr.md` (⭐ where a repeated lesson graduates to) ·
