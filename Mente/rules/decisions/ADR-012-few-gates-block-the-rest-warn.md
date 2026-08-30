@@ -2,7 +2,7 @@
 
 date: {{date}}
 status: accepted
-implementation: in-progress
+implementation: implemented
 decided-by: ⬜ declare
 supersedes: —
 superseded-by: —
@@ -58,8 +58,8 @@ disabling a mechanism because it warned too much** — the reports are always ab
 - `BLK-TRN-001` 🔒 — ⭐ closing requires acceptance AND sufficiency: **the "cannot be resumed"
   case, enforced**
 - `SHP-LCK-001` 🔒 — a commit on the base branch is refused, with a real hook behind it
-- ⬜ the **no-undo** case — the engine states the criterion; **an installation names the actions
-  it applies to**, because what is destructive depends on what is being built
+- ⭐ **`hooks/gate-critical.py`** — the gate itself · ⬜ `MENTE_IRREVERSIBLE_PATTERN` names the
+  no-undo case, because what is destructive depends on what is being built
 - ⚠️ `WRK-IMP-001` 📖 — measuring dependents before editing is discipline here, not a gate
 
 ## What would change this decision

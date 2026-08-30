@@ -54,7 +54,12 @@ STALE_DAYS, CEILINGS = declared()
 # The banner form must be a BANNER, not any comment that happens to contain a
 # capital letter: an ordinary comment mentioning a tool name was being read as a
 # section, which reported the sections out of order on a correctly ordered block.
-FIELD = re.compile(r"^[ \t]*(id|type|intent|status|lane|owner|created|updated):"
+# ⛔ A field after a `·` on the same line was invisible: `^` anchored to the
+# line start, so `created: X · updated: Y` reported "no updated date" while the
+# date sat in plain view. Measured on real blocks, which write it that way.
+# ⭐ Same defect corrected in check-campaign — one shape, two readers, and only
+# one had been fixed.
+FIELD = re.compile(r"(?:^|·)[ \t]*(id|type|intent|status|lane|owner|created|updated):"
                    r"[ \t]*([^\n·]*?)[ \t]*(?=·|$)", re.M)
 ISO = re.compile(r"\d{4}-\d{2}-\d{2}")
 
