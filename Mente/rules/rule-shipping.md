@@ -400,6 +400,8 @@ happened in it.**
 
 ---
 
+**Decided by:** `decisions/ADR-006-work-lives-in-version-control.md` — ⭐ **why the work itself is versioned**, and what every gate loses without a previous state to refuse back to.
+
 Related: `README.md` (⭐ the three document types) · `contract-block.md` (⭐ **§K — the last
 proposal of a block is its closure**) · `rule-working-in-a-block.md` (⭐ §3 the lane that decides
 how much process, §6 the friction this file will produce) · `contract-document.md` ·
