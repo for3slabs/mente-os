@@ -5,7 +5,8 @@ A green here means each validator has been SEEN to fail on a state that
 breaks what it claims to measure, with the message naming the real cause.
 ⛔ A validator with no probe is unproven, and this reports that too.
 """
-import os, re, subprocess, sys, glob
+import os, re, subprocess, sys, glob, shutil, tempfile
+from concurrent.futures import ThreadPoolExecutor
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 BIN = os.path.dirname(HERE)
@@ -19,12 +20,58 @@ VALIDATORS = ("check-", "grade-")
 checkers = sorted(f for f in os.listdir(BIN)
                   if f.startswith(VALIDATORS) and os.path.isfile(os.path.join(BIN, f)))
 
-print("═══ TODAS LAS SONDAS ═══\n")
+# ⭐ WHY EACH PROBE GETS ITS OWN COPY OF THE TREE
+#
+# Five probes edit SHARED state — base-rules, a contract, the project rules —
+# to plant their defect. Run side by side in one tree they overwrite each
+# other, and the result is not slow: it is FALSE.
+#
+# ⛔ Measured, before choosing this: running the nine isolated ones in parallel
+# and the five sharing ones in series took 14.2s against 11.1s in plain
+# sequence — disk contention ate the gain. Copying the whole tree costs 0.04s
+# for ~100 files, so isolation is cheaper than the contention it removes.
+#
+#    plain sequence  11.1s  ·  hybrid  14.2s  ·  isolated + parallel  4.5s
+#
+# ⬜ MENTE_PROBES_SERIAL=1 forces the old behaviour, for debugging a probe
+# whose failure only appears in the real tree.
+ROOT = os.path.dirname(BIN)
+SERIAL = os.environ.get("MENTE_PROBES_SERIAL") == "1"
+_IGNORE = shutil.ignore_patterns(".git", "__pycache__", "cache", "*.pyc")
+
+
+def run_probe(q):
+    """Run one probe. In isolated mode it gets a private copy of the tree, so
+    what it edits cannot reach any other probe — ⛔ and cannot reach the real
+    tree either, which is the second reason this is worth the copy."""
+    name = os.path.basename(q)[:-3]
+    if SERIAL:
+        return name, subprocess.run([sys.executable, q],
+                                    capture_output=True, text=True)
+    d = tempfile.mkdtemp(prefix="mente-probe-")
+    try:
+        tree = os.path.join(d, os.path.basename(ROOT))
+        shutil.copytree(ROOT, tree, ignore=_IGNORE)
+        return name, subprocess.run(
+            [sys.executable, os.path.join(tree, "bin", "probes", name + ".py")],
+            cwd=tree, capture_output=True, text=True,
+            env=dict(os.environ, MENTE_PROBE_ISOLATED="1"))
+    finally:
+        shutil.rmtree(d, ignore_errors=True)
+
+
+print("═══ TODAS LAS SONDAS ═══%s\n"
+      % ("" if not SERIAL else "  (serial · MENTE_PROBES_SERIAL=1)"))
 total = failed = 0
 rows = []
-for q in probes:
-    name = os.path.basename(q)[:-3]
-    r = subprocess.run([sys.executable, q], capture_output=True, text=True)
+
+if SERIAL:
+    results = [run_probe(q) for q in probes]
+else:
+    with ThreadPoolExecutor(max_workers=min(8, len(probes))) as _ex:
+        results = list(_ex.map(run_probe, probes))
+
+for name, r in results:
     m = re.search(r"➜ (\d+) de (\d+) correctos", r.stdout)
     good, all_ = (int(m.group(1)), int(m.group(2))) if m else (0, 0)
     leftovers = "restos: ninguno" not in r.stdout
