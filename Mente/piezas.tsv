@@ -136,6 +136,7 @@ adr-011	rules/decisions/ADR-011-four-layers-guarantee-reading.md	engine	canonica
 adr-012	rules/decisions/ADR-012-few-gates-block-the-rest-warn.md	engine	canonical	why the blocking set stays small — and what a switched-off gate protects
 adr-013	rules/decisions/ADR-013-the-verdict-has-two-layers.md	engine	canonical	why a verdict has two layers — measured and criterion, and why neither alone works
 adr-014	rules/decisions/ADR-014-the-criterion-belongs-to-the-owner.md	engine	canonical	whose criterion layer 2 is — and why an agent writing its own has written a linter
+adr-015	rules/decisions/ADR-015-nesting-is-bounded-at-three.md	engine	canonical	why nesting is bounded at three — ⬜ decided, not yet built
 decisions-readme	rules/decisions/README.md	engine	canonical	the append-only folder — ships empty, the records are yours
 check-handoff	bin/check-handoff	engine	executable	validates a delegation manifest and binds it against reality
 contract-handoff	rules/contract-handoff.md	engine	canonical	bounded delegation — what a specialist may read, write, and when it stops
