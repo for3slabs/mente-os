@@ -3,6 +3,7 @@
 **Status:** current · **Type:** contract · **Updated:** {{date}} · **Owner:** {{owner}}
 **Applies to:** every `BLOCK.md` — open, blocked, closed or archived
 **Enforcement:** 🔒 lock — `bin/check-block`
+**Verified by:** `bin/check-block` · `bin/probes/probe-block.py`
 **Governance:** `engine` in the piece table · ✅ ships identical to every clone
 **Size:** ⭐ **this is a BASE file — it ships whole.** See `contract-document.md` §3: the ceiling
 governs a document as it is *used*, and a standard that arrived pre-split would deliver two halves

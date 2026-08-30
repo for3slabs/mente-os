@@ -81,6 +81,36 @@ measured base rate. If a rule matters enough to write down, the next question is
 
 ---
 
+## What is in here today
+
+⛔ **No counts.** The piece table declares every file, and the generated metrics carry the numbers —
+a total written here would be correct exactly once.
+
+| Document | Governs | Enforced by |
+|---|---|---|
+| `contract-document.md` | the shape every document must have, and its ceiling | `bin/check-document` |
+| `contract-block.md` | the unit of work: its sections, its states, its closing | `bin/check-block` |
+| `contract-campaign.md` | what holds several blocks together, and how they share facts | `bin/check-campaign` |
+| `contract-archive.md` | what a closed block leaves behind for whoever finds it later | `bin/check-archive` |
+| `contract-pending.md` | the shape of a debt that outlives its session, and its rotation | `bin/check-pending` |
+| `contract-handoff.md` | delegating work: what is granted, what is refused, what comes back | `bin/check-handoff` |
+| `contract-adr.md` | a decision recorded so nobody re-argues it | `bin/check-decisions` |
+| `rule-inheritance.md` | the three levels, and why a lower one may tighten but never loosen | `bin/check-inheritance` |
+| `rule-working-in-a-block.md` | how work behaves inside a block: lane, isolation, friction, stop | `bin/check-work` |
+| `rule-shipping.md` | how a change leaves: branch, verify, batch, merge, clean up, close | `bin/check-shipping` |
+| `rule-checks-must-measure.md` | ⭐ the rule the validators are held to — a check that cannot fail | `bin/check-checks` |
+| `rule-config-hygiene.md` | a permission surface: complete, portable, and free of pasted secrets | `bin/check-config` |
+
+⭐ **Every one of them carries a `Verified by:` line naming both its validator and the probe that
+proves the validator works.** A validator with no probe has never been shown to fail — and a check
+that cannot fail is decoration.
+
+> ## ⛔ THE PROBE IS NOT OPTIONAL.
+> ⚠️ **A green light from an unproven validator is indistinguishable from a green light from a
+> broken one** — and the second one is silent for exactly as long as nobody sabotages it on purpose.
+
+---
+
 ## What goes in here, and what does not
 
 | ✅ Belongs here | ⛔ Does not |

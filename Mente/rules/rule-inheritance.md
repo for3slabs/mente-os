@@ -3,6 +3,7 @@
 **Status:** current · **Type:** rule · **Updated:** {{date}} · **Owner:** {{owner}}
 **Applies to:** every rule in the system — ⭐ **including the ones in this folder**
 **Enforcement:** 🔒 partial — `bin/check-inheritance`
+**Verified by:** `bin/check-inheritance` · `bin/probes/probe-inheritance.py`
 **Governance:** `engine` in the piece table · ✅ ships identical to every clone
 
 ---

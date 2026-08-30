@@ -3,6 +3,7 @@
 **Status:** current · **Type:** rule · **Updated:** {{date}} · **Owner:** {{owner}}
 **Applies to:** ⭐ **every discipline** — a change ships the same way whatever it touches
 **Enforcement:** 🔒 partial — `bin/check-shipping` · ⚠️ **several rows here are 📖**
+**Verified by:** `bin/check-shipping` · `bin/probes/probe-shipping.py`
 **Governance:** `engine` in the piece table · ✅ ships identical to every clone
 **Size:** ⭐ **a BASE file — it ships whole.** See `contract-document.md` §4.
 

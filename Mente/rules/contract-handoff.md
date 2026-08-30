@@ -3,6 +3,7 @@
 **Status:** current · **Type:** contract · **Updated:** {{date}} · **Owner:** {{owner}}
 **Applies to:** every delegation to another agent
 **Enforcement:** 🔒 lock — `bin/check-handoff` · ⭐ **and a gate before the delegation runs**
+**Verified by:** `bin/check-handoff` · `bin/probes/probe-handoff.py`
 **Governance:** `engine` in the piece table · ✅ ships identical to every clone
 
 ---

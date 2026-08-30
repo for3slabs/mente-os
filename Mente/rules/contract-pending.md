@@ -3,6 +3,7 @@
 **Status:** current · **Type:** contract · **Updated:** {{date}} · **Owner:** {{owner}}
 **Applies to:** every open item that outlives the session that found it
 **Enforcement:** 🔒 lock — `bin/check-pending`
+**Verified by:** `bin/check-pending` · `bin/probes/probe-pending.py`
 **Governance:** `engine` in the piece table · ✅ ships identical to every clone
 
 ---
