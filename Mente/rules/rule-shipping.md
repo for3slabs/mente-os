@@ -333,9 +333,28 @@ general advice is safe only under a condition most workspaces do not meet.**
 | 5 | the findings that are not urgent |
 | 6 | ⭐ **the active block** — its state, its decisions, its context consolidated |
 
+### ⬜ WHERE EACH ONE LIVES
+
+⛔ **The rule demanded six artifacts and named the location of none**, so nothing could check that
+any of them existed. A lock over an artifact with no declared address is not a lock.
+
+| # | ⬜ Path | Ships as |
+|---|---|---|
+| 1 | ⬜ session record | ⬜ declare it — the engine ships no default |
+| 2 | ⬜ cold-start brief | `templates/RETOMAR.md.template` → the instance names where it lands |
+| 6 | ⬜ the active block | ⭐ resolved from the block itself, never declared here |
+
+⭐ **The engine fixes that there IS a place, never which one.** ⛔ A path missing from this table
+is ⬜ NOT MEASURED, and the check says so rather than passing in silence.
+
+⚠️ **These are INSTANCE files.** They are born from a template at install time, so an
+un-instantiated engine legitimately has none — ⛔ **and a check that demanded them would report
+every fresh clone as broken.** What is verified is that the path is DECLARED, and that a declared
+one resolves.
+
 | ID | Rule | Enf | Verify |
 |---|---|---|---|
-| `SHP-CLS-001` | 🔴 **No context reset before the session is recorded** | 🔒 | ⛔ a check refuses while it is missing |
+| `SHP-CLS-001` | 🔴 **No context reset before the session is recorded** | 🔒 | `bin/check-shipping` · against the ⬜ paths above |
 | `SHP-CLS-002` | ⭐ **The record states what the session COST, not only what it did** | 🟡 | ⚠️ size, duration, peak context |
 | `SHP-CLS-003` | ⭐ **The cold-start brief is refreshed, not appended to** | 📖 | ⛔ a brief that grows stops being read |
 

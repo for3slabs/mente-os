@@ -7,7 +7,7 @@ place, and that nothing here contradicts them.
 
 Exit: 0 clean · 1 violations · 2 the rule itself is missing
 """
-import os, re, sys
+import os, re, sys, subprocess
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 RULE = os.path.join(ROOT, "rules", "rule-shipping.md")
@@ -28,6 +28,47 @@ DEFAULT_CEILING = 4
 def grouping_ceiling(text):
     m = re.search(r"items_per_proposal\s*[:=]\s*(\d+)", text, re.I)
     return (int(m.group(1)), "declared") if m else (DEFAULT_CEILING, "engine default")
+
+
+def sh(*cmd):
+    """git, read-only. ⛔ Never fails the check because git is absent: a
+    validator that requires a tool to exist measures the toolchain, not the
+    work — and reports a clean tree as broken on a machine without it."""
+    try:
+        r = subprocess.run(cmd, cwd=ROOT, capture_output=True, text=True,
+                           timeout=20)
+        return r.stdout.strip() if r.returncode == 0 else None
+    except Exception:
+        return None
+
+
+def ok(*cmd):
+    """git's EXIT STATUS as THREE states: True · False · None.
+
+    ⛔ Folding these into two is the clobbered-value family. `merge-base
+    --is-ancestor` answers by exit code with NO output, so a function that
+    returns the output cannot tell "the answer is no" from "git did not run":
+    both come back None, and a mis-cut branch reads as clean. Measured — the
+    first version of this check failed to detect exactly that."""
+    try:
+        r = subprocess.run(cmd, cwd=ROOT, capture_output=True, text=True,
+                           timeout=20)
+        return r.returncode == 0
+    except Exception:
+        return None
+
+
+def base_branch():
+    """⬜ The base branch is the installation's to name. Same resolution as the
+    hook — declared first, then the conventional names. ⛔ Returning None means
+    NOT MEASURED, and it is said out loud, never treated as a pass."""
+    declared = os.environ.get("MENTE_BASE_BRANCH", "").strip()
+    if declared:
+        return declared, "declared"
+    for c in ("main", "master", "trunk"):
+        if ok("git", "show-ref", "--verify", "--quiet", "refs/heads/" + c):
+            return c, "conventional"
+    return None, "none"
 
 
 def main():
@@ -54,6 +95,78 @@ def main():
             findings.append(("SHP-CYC-001", "rules/rule-shipping.md",
                              "stage %r has no owner · expected the rule that "
                              "governs it" % st))
+
+    # ── the three rules that need the REPOSITORY, not the document
+    base, how = base_branch()
+    branch = sh("git", "symbolic-ref", "--quiet", "--short", "HEAD")
+
+    if base is None:
+        # ⬜ NOT_MEASURED, said out loud. ⛔ Silence here reads as "the base is
+        # fine", which is the exact failure SHP-BAS-001 exists to prevent.
+        findings.append(("SHP-BAS-001", "(repository)",
+                         "⬜ no base branch resolves · declare MENTE_BASE_BRANCH "
+                         "· until then the base cannot be checked, and an "
+                         "unchecked base is not a correct one"))
+    elif branch and branch != base:
+        # SHP-BAS-001 · the base is checked BEFORE anything opens. A branch that
+        # does not descend from the base was cut from somewhere else, and after
+        # the merge that is not recoverable.
+        descends = ok("git", "merge-base", "--is-ancestor", base, "HEAD")
+        if descends is False:
+            findings.append(("SHP-BAS-001", "(repository)",
+                             "branch %r does not descend from the base %r · it "
+                             "was cut from somewhere else, and a wrong base is "
+                             "not recoverable after the merge" % (branch, base)))
+
+    # SHP-BAS-003 · detection, not only prevention: a branch whose ancestor is
+    # ANOTHER open branch is chained, and chaining is what the rule forbids.
+    if base and branch and branch != base:
+        others = [b.strip().lstrip("* ") for b in (sh("git", "branch") or "").splitlines()]
+        for other in others:
+            if other in (branch, base) or not other:
+                continue
+            if ok("git", "merge-base", "--is-ancestor", other, "HEAD") is not True:
+                continue          # not an ancestor of this branch
+            if ok("git", "merge-base", "--is-ancestor", other, base) is not False:
+                continue          # already in the base — not a chain
+            findings.append(("SHP-BAS-003", "(repository)",
+                             "%r is chained on the open branch %r · a real "
+                             "dependency is resolved by WAITING and rebasing, "
+                             "never by stacking" % (branch, other)))
+            break
+
+    # SHP-CLS-001 · the artifacts a reset must not happen without.
+    # ⛔ The rule listed six and named the location of none: nothing could
+    # check that any existed. ⬜ The paths are declared in the rule now, and a
+    # path absent from that table is NOT MEASURED — said out loud, never
+    # silently passed.
+    declared_paths = [(lbl, path) for lbl, cell in
+                      re.findall(r"\|\s*\d+\s*\|\s*⬜ ([^|]+?)\s*\|\s*([^|]+?)\s*\|", text)
+                      for path in (re.findall(r"`([^`]+)`", cell) or [None])
+                      if path]
+    if not declared_paths:
+        findings.append(("SHP-CLS-001", "rules/rule-shipping.md",
+                         "⬜ no closing artifact declares a path · a lock over "
+                         "an artifact with no address is not a lock"))
+    # ⚠️ These are INSTANCE files, born from a template at install time. An
+    # un-instantiated engine legitimately has none, so demanding them would
+    # report every fresh clone as broken. What is checked is that a DECLARED
+    # path resolves — the declaration is the engine's, the file is the
+    # instance's.
+    for label, rel_path in declared_paths:
+        if rel_path.startswith("templates/"):
+            if not os.path.exists(os.path.join(ROOT, rel_path)):
+                findings.append(("SHP-CLS-001", rel_path,
+                                 "%s names a template that does not exist · "
+                                 "the instance would have nothing to create it "
+                                 "from" % label.strip()))
+            continue
+        parent = os.path.dirname(os.path.join(ROOT, rel_path))
+        if parent and not os.path.isdir(parent):
+            findings.append(("SHP-CLS-001", rel_path,
+                             "%s declares a path whose folder does not exist · "
+                             "a context reset would have nowhere to write it"
+                             % label.strip()))
 
     ceiling, origin = grouping_ceiling(text)
     # SHP-GRP-001 · the ceiling is declared, never inferred

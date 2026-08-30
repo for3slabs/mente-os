@@ -116,8 +116,72 @@ try:
                              "permitida y con rastro" if bypassed
                              else "un candado sin salida se borra"))
     p.results.append(("⑧ vía de escape", "PASS" if bypassed else "FALSE_POSITIVE"))
+    # ── SHP-BAS-001 / 003 · they read the REPOSITORY, not the document, so the
+    # checker is pointed at this temp repo instead of the engine tree.
+    import importlib.machinery as _m, importlib.util as _u
+    _ld = _m.SourceFileLoader("cs", os.path.join(ROOT, "bin", "check-shipping"))
+    cs = _u.module_from_spec(_u.spec_from_loader("cs", _ld))
+    _ld.exec_module(cs)
+    cs.ROOT = tmp
+
+    run("git", "commit", "-qm", "second", "--no-verify", "--allow-empty")
+    run("git", "checkout", "-q", "-b", "cut-wrong", "HEAD~1")
+    _ok = cs.ok("git", "merge-base", "--is-ancestor", "main", "HEAD") is False
+    print("  %-46s %s %s" % ("⑨ BAS · una rama cortada de la base equivocada",
+                             "✅" if _ok else "🔴",
+                             "detectada" if _ok
+                             else "no distingue 'no desciende' de 'git no corrió'"))
+    p.results.append(("⑨ base equivocada", "PASS" if _ok else "NOT_DETECTED"))
+
+    # ⭐ the inverse: a branch cut from the base must NOT fire. Without it the
+    # rule is proven only on broken input, and it would pass while always
+    # returning False.
+    run("git", "checkout", "-q", "main")
+    run("git", "checkout", "-q", "-b", "cut-right")
+    _ok2 = cs.ok("git", "merge-base", "--is-ancestor", "main", "HEAD") is True
+    print("  %-46s %s %s" % ("⑩ BAS · una rama cortada BIEN no dispara",
+                             "✅" if _ok2 else "🔴",
+                             "NO dispara (correcto)" if _ok2 else "falso positivo"))
+    p.results.append(("⑩ base correcta", "PASS" if _ok2 else "FALSE_POSITIVE"))
+
+    # SHP-BAS-003 · chained on another open branch
+    open(os.path.join(tmp, "g.txt"), "w").write("g\n")
+    run("git", "add", "-A")
+    run("git", "commit", "-qm", "on cut-right", "--no-verify")
+    run("git", "checkout", "-q", "-b", "chained")
+    _chain = (cs.ok("git", "merge-base", "--is-ancestor", "cut-right", "HEAD") is True
+              and cs.ok("git", "merge-base", "--is-ancestor", "cut-right", "main") is False)
+    print("  %-46s %s %s" % ("⑪ BAS · encadenada sobre otra rama abierta",
+                             "✅" if _chain else "🔴",
+                             "detectada" if _chain else "no la ve"))
+    p.results.append(("⑪ encadenamiento", "PASS" if _chain else "NOT_DETECTED"))
+
 finally:
     shutil.rmtree(tmp, ignore_errors=True)
+
+# ── SHP-CLS-001 · the declared closing artifacts resolve
+_rule = os.path.join(ROOT, "rules", "rule-shipping.md")
+_orig = open(_rule, encoding="utf-8").read()
+try:
+    open(_rule, "w", encoding="utf-8").write(
+        _orig.replace("`templates/RETOMAR.md.template`", "`templates/ghost.template`"))
+    _c, _o, _e = p.run()
+    _hit = "SHP-CLS-001" in _o
+    print("  %-46s %s %s" % ("⑫ CLS · una ruta declarada que no resuelve",
+                             "✅" if _hit else "🔴",
+                             "detectada" if _hit else "no la ve"))
+    p.results.append(("⑫ ruta de cierre", "PASS" if _hit else "NOT_DETECTED"))
+
+    # ⭐ the inverse: the real declaration must NOT fire
+    open(_rule, "w", encoding="utf-8").write(_orig)
+    _c, _o, _e = p.run()
+    _quiet = "SHP-CLS-001" not in _o
+    print("  %-46s %s %s" % ("⑬ CLS · la declaración real no dispara",
+                             "✅" if _quiet else "🔴",
+                             "NO dispara (correcto)" if _quiet else "falso positivo"))
+    p.results.append(("⑬ cierre correcto", "PASS" if _quiet else "FALSE_POSITIVE"))
+finally:
+    open(_rule, "w", encoding="utf-8").write(_orig)
 
 p.crash_guard()
 sys.exit(0 if p.report() else 1)
