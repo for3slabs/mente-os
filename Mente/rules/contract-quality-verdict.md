@@ -270,6 +270,8 @@ BLOCK <name> · type: code — measured quality · <date>
 
 ---
 
+**Decided by:** `decisions/ADR-013-the-verdict-has-two-layers.md` — ⭐ **why two layers**, what each one fails at alone, and the nine minutes that produced the decision.
+
 Related: `rules/contract-block.md` (the closing that carries this verdict) ·
 `rules/rule-checks-must-measure.md` (why layer 1 must be able to fail) ·
 `rules/rule-config-hygiene.md` (the pasted-secret rule this enforces per block) ·

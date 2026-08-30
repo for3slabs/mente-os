@@ -152,6 +152,7 @@ adr-009	rules/decisions/ADR-009-one-file-per-block.md	engine	canonical	why one b
 adr-010	rules/decisions/ADR-010-cheap-to-open-expensive-to-close.md	engine	canonical	why opening costs four fields and closing costs everything
 adr-011	rules/decisions/ADR-011-four-layers-guarantee-reading.md	engine	canonical	why four layers, and which one the engine does not ship
 adr-012	rules/decisions/ADR-012-few-gates-block-the-rest-warn.md	engine	canonical	why the blocking set stays small — and what a switched-off gate protects
+adr-013	rules/decisions/ADR-013-the-verdict-has-two-layers.md	engine	canonical	why a verdict has two layers — measured and criterion, and why neither alone works
 decisions-readme	rules/decisions/README.md	engine	canonical	the append-only folder — ships empty, the records are yours
 check-handoff	bin/check-handoff	engine	executable	validates a delegation manifest and binds it against reality
 contract-handoff	rules/contract-handoff.md	engine	canonical	bounded delegation — what a specialist may read, write, and when it stops
