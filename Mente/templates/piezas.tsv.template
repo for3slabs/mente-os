@@ -67,6 +67,8 @@ pre-edit	hooks/pre-edit-standards.py	engine	canonical	injects the block's standa
 pre-commit	hooks/pre-commit.sh	engine	canonical	blocks a commit that violates the block's contract
 session-start	hooks/session-start.sh	engine	canonical	runs every validator at session start — ⭐ silent unless something is wrong
 pre-edit-standards	hooks/pre-edit-standards.py	engine	executable	names a block's standards before its files are touched — ⭐ layer 3 of ADR-011
+gate-critical	hooks/gate-critical.py	engine	executable	the few actions that BLOCK — ⬜ what is irreversible is the installation's
+probe-gate-critical	bin/probes/probe-gate-critical.py	engine	executable	proves the gate blocks what it must and NOTHING else — 5 inverses to 4 blocks
 probe-pre-edit	bin/probes/probe-pre-edit-standards.py	engine	executable	proves the injection hook names the RIGHT block, and never blocks
 # ── engine · the contracts + inheritance model ──
 contrato-bloque	rules/contract-block.md	engine	canonical	which fields a block carries (§A-K)

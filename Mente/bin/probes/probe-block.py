@@ -130,6 +130,13 @@ p.case("㉔ BLK · bloqueado más allá del periodo declarado",
                    r"updated: \d{4}-\d\d-\d\d", "updated: 2026-01-01"),
        "BLK-BLK-002")
 
+# ⛔ A field after a `·` on one line was invisible to the reader: real blocks
+# write `created: X · updated: Y`, and it reported "no updated date".
+p.inverse("㉕ un campo tras un `·` en la misma línea se LEE",
+          lambda: _re(block(p, "a"), r"updated: \d{4}-\d\d-\d\d",
+                      "created: 2026-01-10 · updated: " +
+                      __import__("datetime").date.today().isoformat()))
+
 p.inverse("㉑ un bloque CORRECTO", lambda: block(p, "a"))
 p.crash_guard()
 
