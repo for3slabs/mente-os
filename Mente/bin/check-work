@@ -13,6 +13,15 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 RULE = os.path.join(ROOT, "rules", "rule-working-in-a-block.md")
 BLOCKS = os.path.join(ROOT, "work", "blocks")
 
+# ⭐ ONE reader for a block's sections — bin/blockread.py. It lived as four
+# copies here and the comparable ones had already diverged: two could not see a
+# section headed by its NAME, so every section read empty and the checks
+# reported findings against a file they had never read.
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from blockread import (sections, order, body_of, SEC, NAMES,   # noqa: E402,F401
+                       DEPENDS, dependencies)
+
+
 LANES = {"direct", "task", "full-block"}
 # WRK-FRI-003 · the threshold is the OWNER's, declared in the rule — never a
 # constant here. A validator that decides a number the doctrine says belongs to
@@ -38,15 +47,6 @@ FIELD = re.compile(r"\b(id|lane|status):\s*([^\n·]+?)\s*(?=·|$)", re.M)
 FRICTION = re.compile(r"^\s*[-*]?\s*(\d{4}-\d{2}-\d{2})\s*·\s*rule:\s*([^·\n]+?)\s*·"
                       r".*?reason:\s*(\S.*)$", re.M | re.I)
 FRICTION_LOOSE = re.compile(r"^\s*[-*]?\s*\d{4}-\d{2}-\d{2}\s*·", re.M)
-DEPENDS = re.compile(r"^\s*[-*]\s*(?:DEPENDS ON|depends on|requires):\s*(\S+)", re.M)
-
-
-def body_of(text, letter):
-    m = re.search(r"^##\s*%s\s*[·.:-].*?$" % letter, text, re.M)
-    if not m:
-        return ""
-    nxt = re.search(r"^##\s*[A-K]\s*[·.:-]", text[m.end():], re.M)
-    return text[m.end(): m.end() + nxt.start()] if nxt else text[m.end():]
 
 
 def main():
@@ -89,7 +89,7 @@ def main():
                              % ("|".join(sorted(LANES)), lane)))
 
         # WRK-LAN-002 · declared dependents force full-block
-        deps = DEPENDS.findall(body_of(text, "C"))
+        deps = dependencies(body_of(text, "C"))
         if deps and lane and lane != "full-block":
             findings.append(("WRK-LAN-002", rel,
                              "%d declared dependent(s) but lane is %r · "
@@ -105,7 +105,7 @@ def main():
         # already says the piece has dependents; §C and §F are where that lands,
         # and a full-block with neither declares a propagation it never mapped.
         if lane == "full-block":
-            has_c = bool(DEPENDS.findall(body_of(text, "C")))
+            has_c = bool(dependencies(body_of(text, "C")))
             has_f = bool(re.search(r"^\|.*\|.*\|", body_of(text, "F"), re.M))
             if not has_c and not has_f:
                 findings.append(("WRK-FIX-003", rel,

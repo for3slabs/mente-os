@@ -123,7 +123,11 @@ if real:
         shutil.copy(q, os.path.join(d, "BLOCK.md"))
     code, out, err = p.run()
     mine = [l for l in out.splitlines() if MARK in l]
-    shape = [l for l in mine if "BLK-OPN-001" in l or "BLK-SHP-002" in l]
+    # ⛔ Only OPN-001 signals an unreadable file: it means the four opening
+    # sections were not found at all. SHP-002 (sections out of order) is a
+    # REAL finding — a real block carries `A B G C D…` with G duplicated — and
+    # counting it as illegibility hid a genuine defect behind a probe warning.
+    shape = [l for l in mine if "BLK-OPN-001" in l]
     print("  ⑯ %d bloques reales · %d hallazgos" % (len(real), len(mine)))
     print("     ⭐ de FORMA (el detector no los lee): %d %s"
           % (len(shape), "✅" if not shape else "🔴"))

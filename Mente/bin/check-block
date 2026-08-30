@@ -12,6 +12,15 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 CONTRACT = os.path.join(ROOT, "rules", "contract-block.md")
 BLOCKS = os.path.join(ROOT, "work", "blocks")
 
+# ⭐ ONE reader for a block's sections — bin/blockread.py. It lived as four
+# copies here and the comparable ones had already diverged: two could not see a
+# section headed by its NAME, so every section read empty and the checks
+# reported findings against a file they had never read.
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from blockread import (sections, order, body_of, SEC, NAMES,   # noqa: E402,F401
+                       DEPENDS, dependencies)
+
+
 STATUSES = {"active", "blocked", "closed"}
 TYPES = {"code", "docs", "infra", "data"}
 LANES = {"direct", "task", "full-block"}
@@ -44,24 +53,9 @@ STALE_DAYS, CEILINGS = declared()
 # The banner form must be a BANNER, not any comment that happens to contain a
 # capital letter: an ordinary comment mentioning a tool name was being read as a
 # section, which reported the sections out of order on a correctly ordered block.
-SEC = re.compile(r"^(?:##[ \t]*([A-K])[ \t]*[·.:-]"
-                 r"|<!--[ \t]*[═=─-]{2,}[ \t]*([A-K])[ \t]*[·.:-])", re.M)
-# fields may share a line separated by · — match each one wherever it appears
-# A field value ends at a · separator or the end of the line, and never swallows
-# the prose that follows it: a value read past its boundary reports a defect that
-# is not there, and a check that flags what is correct gets switched off.
 FIELD = re.compile(r"^[ \t]*(id|type|intent|status|lane|owner|created|updated):"
                    r"[ \t]*([^\n·]*?)[ \t]*(?=·|$)", re.M)
 ISO = re.compile(r"\d{4}-\d{2}-\d{2}")
-
-
-def sections(text):
-    return {(m.group(1) or m.group(2)) for m in SEC.finditer(text)}
-
-
-def order(text):
-    return [(m.group(1) or m.group(2)) for m in SEC.finditer(text)]
-
 
 # ⬜ What a section is CALLED belongs to the installation; the engine fixes
 # only WHAT must be answered. Measured: real blocks head their closing
@@ -71,35 +65,6 @@ NAMES = {"A": "identity", "B": "scope", "C": "connections",
          "D": "required standards", "E": "state", "F": "sub-?blocks",
          "G": "decisions", "H": "friction", "I": "checkpoints",
          "J": "context", "K": "closing"}
-
-
-def body_of(text, letter):
-    """Everything between this section's marker and the next one, in any shape:
-    `## K · …`, an HTML marker, or the section's NAME with no letter."""
-    m = re.search(r"^(?:##\s*%s\s*[·.:-]|<!--[^\n]*?\b%s\s*[·.:-][^\n]*?-->"
-                  r"|##\s*%s\b).*?$"
-                  % (letter, letter, NAMES.get(letter, letter)),
-                  text, re.M | re.I)
-    if not m:
-        return ""
-    rest = text[m.end():]
-    nxt = SEC.search(rest)
-    # ⛔ A name-headed section is not matched by SEC, so the body would run to
-    # the end of the file and swallow every section after it.
-    # ⚠️ But a real block writes an HTML marker AND the visible heading of the
-    # SAME section right after it. Cutting at the first `## …` cut one
-    # character in, and every section came back empty while the checker
-    # reported nine blocks with an empty §C that was plainly full.
-    # ⭐ When the section was found by an HTML marker, the markers ARE the
-    # boundaries: every `## …` until the next marker is a SUBSECTION of this
-    # one. A real §B holds `## ✅ IN` and `## ⛔ OUT` and no heading of its
-    # own — cutting at the first `##` returned an empty scope for every block.
-    alt = None
-    if not m.group(0).lstrip().startswith("<!--"):
-        alt = re.search(r"^##\s+\S.*$", rest, re.M)
-    ends = [x.start() for x in (nxt, alt) if x]
-    return rest[:min(ends)] if ends else rest
-
 
 def check(path, rel, ids):
     bad = []
@@ -238,10 +203,7 @@ def check(path, rel, ids):
     # blocks. Six false positives, and a false positive on a real tree is how
     # a check gets switched off.
     # ⬜ The "none" word is the installation's language; the SHAPE is not.
-    for dep in re.findall(r"(?:DEPENDS ON|BLOCKED BY|FEEDS)\s*:?\s*"
-                          r"`?([A-Za-z0-9][\w-]*(?:[-_][\w-]+)+)`?", cbody, re.I):
-        if re.fullmatch(r"(none|nothing|nada|n/?a|tbd|pending)\W?", dep, re.I):
-            continue
+    for dep in dependencies(cbody):
         if not ids or dep in ids:
             continue
         bad.append(("BLK-CON-002", rel,

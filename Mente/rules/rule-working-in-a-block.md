@@ -45,6 +45,26 @@ can check that a friction was logged; it cannot check that the work stopped to t
 
 **IDs are permanent.** `WRK-<area>-<nnn>` — ⛔ never renumbered, never reused.
 
+### ⭐ THE SIX AREAS, AND WHY THEY LIVE IN ONE FILE
+
+| Area | What it governs | The question it answers |
+|---|---|---|
+| `LAN` | **lane** | how much ceremony does this change need? |
+| `ISO` | **isolation** | how far does this block reach? |
+| `IMP` | **impact** | who else is affected, measured before touching anything |
+| `FIX` | **fix, not patch** | is the cause resolved, or one symptom? |
+| `FRI` | **friction** | the rule obstructed the work — now what? |
+| `STP` | **stop** | when to stop, and what a stop must say |
+
+⛔ **They were four separate files, and separate is exactly how they went wrong:** ⭐ the lane is
+chosen FROM the impact map, the impact map is bounded BY isolation, and a fix that skips a
+consumer is a patch. ⚠️ **Split across four documents, each was read alone** — and the order
+between them, which is the part that matters, belonged to no file.
+
+> ## ⭐ THE ORDER IS THE RULE.
+> ⛔ **Measure the dependents → choose the lane → resolve every required block → only then edit.**
+> ⚠️ **The natural order is the exact opposite**, and `WRK-LAN-005` exists because of it.
+
 ---
 
 ## 2 · ⭐ THE THREE WORDS THIS FILE RESTS ON
@@ -411,7 +431,7 @@ or merely costs time.**
 |---|---|---|---|
 | `WRK-FIX-001` | ⭐ **Every consumer measured before the fix** | 📖 | ⛔ nothing verifies this |
 | `WRK-FIX-002` | ⭐ **Every AFFECTED consumer resolved — only affected copies changed** | 📖 | ⚠️ ⛔ see below |
-| `WRK-FIX-003` | **The propagation is declared in the block** | 🟡 | connections and sub-blocks updated |
+| `WRK-FIX-003` | **The propagation is declared in the block** | 🔒 | connections and sub-blocks updated |
 | `WRK-FIX-004` | ⭐ **A different route is allowed, and often correct** | 📖 | ⛔ see below |
 
 ### ⭐ THE SAME BUG, BOTH WAYS

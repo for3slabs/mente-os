@@ -13,6 +13,14 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 RULE = os.path.join(ROOT, "rules", "rule-inheritance.md")
 BASE = os.path.join(ROOT, "base-rules.md")
 BLOCKS = os.path.join(ROOT, "work", "blocks")
+
+# ⭐ ONE reader for a block's sections — bin/blockread.py. It lived as four
+# copies here and the comparable ones had already diverged: two could not see a
+# section headed by its NAME, so every section read empty and the checks
+# reported findings against a file they had never read.
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from blockread import sections, order, body_of, SEC, NAMES   # noqa: E402,F401
+
 ROUTERS = ["CLAUDE-MENTE-OS.md"]
 
 # INH-LVL-002 · a universal rule naming one specific place is not universal.
@@ -54,15 +62,6 @@ DEPENDS = re.compile(r"^\s*[-*]\s*(?:DEPENDS ON|depends on|requires):\s*(\S+)", 
 LOOSEN = re.compile(
     r"\b(may now|is allowed here|exempt|does not apply here|waived|"
     r"overrides? the (?:universal|project))\b", re.I)
-
-
-def body_of(text, letter):
-    m = re.search(r"^##\s*%s\s*[·.:-].*?$" % letter, text, re.M)
-    if not m:
-        return ""
-    nxt = re.search(r"^##\s*[A-K]\s*[·.:-]", text[m.end():], re.M)
-    return text[m.end(): m.end() + nxt.start()] if nxt else text[m.end():]
-
 
 def effect_of(line):
     """Classify what a rule line DOES. Order matters: deny wins over may."""
