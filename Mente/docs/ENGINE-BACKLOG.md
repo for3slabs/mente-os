@@ -585,5 +585,27 @@ how the second one gets tested.
 
 ---
 
+## E-36 · Nothing completes what is derivable — the generators do not exist
+
+- **Surfaced by:** ADR-019 — the second record to ship `implementation: not-started`
+- **Affects:** `bin/` — the `generate-*` family that `bin/README` and `CAPABILITIES.md` both name
+- **Closes when:** at least one generator exists, announces every file it touches, and derives
+  nothing that requires judgment
+
+**Why it matters.** ⭐ **Measured: not one of the 14 validators writes anything.** ⛔ Every check
+reports and stops, so a gap it finds stays a gap until somebody acts — and the acting is the part
+that was measured failing five times out of eleven.
+
+⭐ **The naming rule already ships**, which is the right order: `check-*` and `grade-*` read,
+`generate-*` writes, and each announces what it touched. ⚠️ **The rule governs tools that do not
+exist yet** — ⛔ but writing it after the first generator would mean the first one set the
+precedent instead of following it.
+
+🔴 **The line that must not move:** a generator may derive a graph, an index or a draft. ⛔ **It
+may never derive a criterion, a scope or a verdict** — if those could be computed, they would not
+need an owner.
+
+---
+
 Related: `README.md` (folder) · `../memory/principles/README.md` (where the owners live) ·
 `../rules/README.md` (where a closed entry usually lands) · `../CAPABILITIES.md`.

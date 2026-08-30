@@ -76,7 +76,8 @@ disabled whole, so the three that were right disappear with the seventeen that w
 
 ---
 
-Related: `ADR-011-four-layers-guarantee-reading.md` (⭐ **its layer 3 INJECTS, it does not block** —
+Related: `ADR-019-a-validator-completes-what-is-derivable.md` (⭐ **completion is the OTHER answer to a warning that gets ignored** — read together, or blocking looks like the only option) ·
+`ADR-011-four-layers-guarantee-reading.md` (⭐ **its layer 3 INJECTS, it does not block** —
 the two decisions govern different budgets and do not compete) ·
 `../contract-block.md` (the closing gate) · `../rule-shipping.md` (the shipping gate) ·
 `../contract-adr.md`.
