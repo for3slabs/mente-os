@@ -330,6 +330,8 @@ green for exactly as long as it is useless.**
 
 ---
 
+**Decided by:** `decisions/ADR-025-config-hygiene-needs-a-mechanism.md` (⭐ **the four rules, and why discipline was not enough**) · `decisions/ADR-026-permission-granularity-is-the-mechanism.md` (⭐ rule 3 in full).
+
 Related: `README.md` (⭐ the three document types) · `rule-checks-must-measure.md` (⭐ **the sibling
 rule — this one governs LISTS, that one the other ways a check goes blind**) ·
 `contract-document.md` (⭐ §9 — no credential, not even as an example) · `contract-archive.md`

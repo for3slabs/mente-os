@@ -265,6 +265,8 @@ title: a bare list of names is a table of contents, not an index.
 
 ---
 
+**Decided by:** `../../rules/decisions/ADR-018-the-system-governs-how-it-communicates.md` — ⭐ **why the rules are NEGATIVE and checkable**, and what vague guidance produces.
+
 Related: `owner-0-voice.md` (⭐ how a sentence is written) · `README.md` (the parent) ·
 `owner-1-docs.md` · `owner-3-validation.md` (what a verdict must show) ·
 `../../docs/ENGINE-BACKLOG.md`.

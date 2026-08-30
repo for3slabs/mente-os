@@ -270,7 +270,8 @@ BLOCK <name> · type: code — measured quality · <date>
 
 ---
 
-**Decided by:** `decisions/ADR-014-the-criterion-belongs-to-the-owner.md` — ⭐ **whose criterion layer 2 is**, and why an agent writing its own dimensions has written a linter.
+**Decided by:** `decisions/ADR-028-the-type-changes-the-ruler.md` — ⭐ **why the type changes the RULER and never the BAR**, and why `n/a` is never green.
+**Also decided by:** `decisions/ADR-014-the-criterion-belongs-to-the-owner.md` — ⭐ **whose criterion layer 2 is**, and why an agent writing its own dimensions has written a linter.
 **Also decided by:** `decisions/ADR-013-the-verdict-has-two-layers.md` — ⭐ **why two layers**, what each one fails at alone, and the nine minutes that produced the decision.
 
 Related: `rules/contract-block.md` (the closing that carries this verdict) ·
