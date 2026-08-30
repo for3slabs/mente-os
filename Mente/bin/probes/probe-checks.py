@@ -40,6 +40,43 @@ p.case("⑥ CAU · entrada sin guardia de excepción",
                      'if __name__ == "__main__":\n    sys.exit(main())\n'),
        "CHK-CAU-002")
 
+p.case("⑥b IND · un ✅ pelado, sin decir qué midió",
+       lambda: plant('import sys\n\n\ndef main():\n'
+                     '    print("✅ everything is fine")\n    return 0\n\n\n'
+                     'if __name__ == "__main__":\n'
+                     '    try:\n        sys.exit(main())\n'
+                     '    except Exception as e:\n        print(e)\n'
+                     '        sys.exit(1)\n'),
+       "CHK-IND-002")
+
+p.case("⑥c CAU · un guardia que se traga el objeto en silencio",
+       lambda: plant('import os, sys\n\n\ndef main():\n'
+                     '    for f in os.listdir("."):\n'
+                     '        try:\n'
+                     '            open(f, encoding="utf-8").read()\n'
+                     '        except OSError:\n'
+                     '            continue\n'
+                     '    print("✅ %d checked" % 1)\n    return 0\n\n\n'
+                     'if __name__ == "__main__":\n'
+                     '    try:\n        sys.exit(main())\n'
+                     '    except Exception as e:\n        print(e)\n'
+                     '        sys.exit(1)\n'),
+       "CHK-CAU-003")
+
+# ⭐ the inverse of ⑥c: the SAME guard, with its skip declared, must not fire.
+p.inverse("⑥d CAU · el mismo guardia, con su salto declarado",
+          lambda: plant('import os, sys\n\n\ndef main():\n'
+                        '    for f in os.listdir("."):\n'
+                        '        try:\n'
+                        '            open(f, encoding="utf-8").read()\n'
+                        '        except OSError:\n'
+                        '            continue  # ⬜ unreadable, skipped · counted below\n'
+                        '    print("✅ %d checked" % 1)\n    return 0\n\n\n'
+                        'if __name__ == "__main__":\n'
+                        '    try:\n        sys.exit(main())\n'
+                        '    except Exception as e:\n        print(e)\n'
+                        '        sys.exit(1)\n'))
+
 p.inverse("⑦ un validador CORRECTO",
           lambda: plant('import os, sys\n\n\ndef main():\n'
                         '    P = "some/config.json"\n'

@@ -179,7 +179,7 @@ def dead_code(dirs, root):
         try:
             src = open(f, encoding="utf-8", errors="replace").read()
         except OSError:
-            continue
+            continue          # ⬜ unreadable, skipped · the measured count says how many
         inc = ["--include=*%s" % e for e in CODE_EXT]
         for name in re.findall(
                 r"^export\s+(?:async\s+)?(?:function|const|class)\s+(\w+)"
@@ -201,6 +201,9 @@ def duplication(dirs, root):
             lines = [l.strip() for l in open(f, encoding="utf-8", errors="replace")
                      if l.strip() and not l.strip().startswith(("#", "//", "*", "/*"))]
         except OSError:
+            # ⬜ CHK-CAU-003 · an unreadable file is skipped, and the scope
+            # line of the report says how many files were measured — so a
+            # skipped one never disappears into a green.
             continue
         for i in range(len(lines) - WINDOW + 1):
             seen["\n".join(lines[i:i + WINDOW])].append(
@@ -216,6 +219,8 @@ def cycles(dirs, root):
         try:
             src = open(f, encoding="utf-8", errors="replace").read()
         except OSError:
+            # ⬜ CHK-CAU-003 · unreadable, skipped · the measured-file count in
+            # the report is what keeps this from turning into a silent green.
             continue
         for m in re.finditer(r"(?:from|import)\s+[\"']?[\w./]*?([\w-]+)[\"']?", src):
             t = m.group(1)
@@ -235,7 +240,7 @@ def broken_links(dirs, root):
         try:
             src = open(f, encoding="utf-8", errors="replace").read()
         except OSError:
-            continue
+            continue          # ⬜ unreadable, skipped · the measured count says how many
         for tgt in re.findall(r"\[[^\]]*\]\(([^)#][^)]*)\)", src):
             if tgt.startswith(("http", "mailto:")):
                 continue
@@ -264,7 +269,7 @@ def infra_evidence(dirs, root, block_dir=None):
         try:
             t = open(f, encoding="utf-8", errors="replace").read().lower()
         except OSError:
-            continue
+            continue          # ⬜ unreadable, skipped · the measured count says how many
         if re.search(r"\brunbook\b|## *how to run|## *operation", t):
             ev["runbook"] = True
         if re.search(r"\brollback\b|\brevert\b|\bundo\b", t):
@@ -281,7 +286,7 @@ def data_evidence(dirs, root):
         try:
             t = open(f, encoding="utf-8", errors="replace").read().lower()
         except OSError:
-            continue
+            continue          # ⬜ unreadable, skipped · the measured count says how many
         if re.search(r"\bdown\b|\brollback\b|\bdrop\b|\brevert\b", t):
             ev["reversible"] += 1
     return ev
@@ -293,7 +298,7 @@ def pasted_secrets(dirs, root):
         try:
             src = open(f, encoding="utf-8", errors="replace").read()
         except (OSError, UnicodeDecodeError):
-            continue
+            continue          # ⬜ unreadable, skipped · the count says how many
         for m in SECRET.finditer(src):
             out.append("%s:%d" % (f.replace(root.rstrip("/") + "/", ""),
                                   src[:m.start()].count("\n") + 1))
@@ -343,7 +348,11 @@ def main():
     if note and not quiet and not as_json:
         print("   (archived: grading %s)" % note)
 
-    text = open(path, encoding="utf-8", errors="replace").read()
+    try:                                       # CHK-TRV-002
+        text = open(path, encoding="utf-8", errors="replace").read()
+    except OSError as e:
+        print("🔴 %s: cannot read its BLOCK.md · %s" % (args[0], e))
+        return 1
     dirs = resolve_scope(scope_dirs(text), root)
 
     # 🔴 QLT-TYP-001 · the type decides the ruler
