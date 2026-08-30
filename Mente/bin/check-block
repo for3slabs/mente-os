@@ -16,7 +16,27 @@ STATUSES = {"active", "blocked", "closed"}
 TYPES = {"code", "docs", "infra", "data"}
 LANES = {"direct", "task", "full-block"}
 OPEN_SECTIONS = ["A", "B", "C", "D"]
-STALE_DAYS = 14
+
+
+def declared():
+    """⬜ Read the thresholds FROM the contract. ⛔ A threshold that lives only
+    in code is a decision nobody knows was taken — and two rules here said
+    "a declared period" while the period was a literal in this file."""
+    days, ceil = 0, {}
+    try:
+        t = open(CONTRACT, encoding="utf-8", errors="replace").read()
+    except OSError:
+        return days, ceil
+    m = re.search(r"⬜ stale period[^|]*\|\s*(\d+)", t)
+    if m:
+        days = int(m.group(1))
+    for sec, n in re.findall(r"\|\s*⬜ ([A-K]) `[^`]+`\s*\|\s*(\d+)\s*\|", t):
+        if int(n) > 0:
+            ceil[sec] = int(n)
+    return days, ceil
+
+
+STALE_DAYS, CEILINGS = declared()
 
 # A section is marked either as a markdown heading (## A · Identity) or as a
 # banner comment (<!-- ══ A · IDENTITY ══ -->). Reading only one shape reports
@@ -43,14 +63,42 @@ def order(text):
     return [(m.group(1) or m.group(2)) for m in SEC.finditer(text)]
 
 
+# ⬜ What a section is CALLED belongs to the installation; the engine fixes
+# only WHAT must be answered. Measured: real blocks head their closing
+# `## Closing`, with no letter — and a reader that requires `## K ·` finds
+# nothing there, so four closed blocks passed a check that never ran.
+NAMES = {"A": "identity", "B": "scope", "C": "connections",
+         "D": "required standards", "E": "state", "F": "sub-?blocks",
+         "G": "decisions", "H": "friction", "I": "checkpoints",
+         "J": "context", "K": "closing"}
+
+
 def body_of(text, letter):
-    """Everything between this section's marker and the next one, in either shape."""
-    m = re.search(r"^(?:##\s*%s\s*[·.:-]|<!--[^\n]*?\b%s\s*[·.:-][^\n]*?-->).*?$"
-                  % (letter, letter), text, re.M)
+    """Everything between this section's marker and the next one, in any shape:
+    `## K · …`, an HTML marker, or the section's NAME with no letter."""
+    m = re.search(r"^(?:##\s*%s\s*[·.:-]|<!--[^\n]*?\b%s\s*[·.:-][^\n]*?-->"
+                  r"|##\s*%s\b).*?$"
+                  % (letter, letter, NAMES.get(letter, letter)),
+                  text, re.M | re.I)
     if not m:
         return ""
-    nxt = SEC.search(text[m.end():])
-    return text[m.end(): m.end() + nxt.start()] if nxt else text[m.end():]
+    rest = text[m.end():]
+    nxt = SEC.search(rest)
+    # ⛔ A name-headed section is not matched by SEC, so the body would run to
+    # the end of the file and swallow every section after it.
+    # ⚠️ But a real block writes an HTML marker AND the visible heading of the
+    # SAME section right after it. Cutting at the first `## …` cut one
+    # character in, and every section came back empty while the checker
+    # reported nine blocks with an empty §C that was plainly full.
+    # ⭐ When the section was found by an HTML marker, the markers ARE the
+    # boundaries: every `## …` until the next marker is a SUBSECTION of this
+    # one. A real §B holds `## ✅ IN` and `## ⛔ OUT` and no heading of its
+    # own — cutting at the first `##` returned an empty scope for every block.
+    alt = None
+    if not m.group(0).lstrip().startswith("<!--"):
+        alt = re.search(r"^##\s+\S.*$", rest, re.M)
+    ends = [x.start() for x in (nxt, alt) if x]
+    return rest[:min(ends)] if ends else rest
 
 
 def check(path, rel, ids):
@@ -171,6 +219,71 @@ def check(path, rel, ids):
             bad.append(("BLK-BLK-001", rel,
                         "blocked with no unblocker named · "
                         "'waiting' is not a blocker"))
+
+    # BLK-CON-001 · every dependency named. ⛔ An empty connections section is
+    # not "no dependencies" — it is a question nobody answered.
+    cbody = body_of(text, "C")
+    if "C" in have and not re.sub(r"[\s·—-]", "", cbody):
+        bad.append(("BLK-CON-001", rel,
+                    "section C is empty · declare the dependencies, or write "
+                    "'none' with its reason — blank and 'checked, none' are "
+                    "indistinguishable"))
+
+    # BLK-CON-002 · every id cited exists. ⛔ A dependency on a block that is
+    # not on disk is context pointing at nothing, and it only surfaces when
+    # somebody tries to follow it.
+    # ⛔ Only a value that LOOKS like a block id is treated as one. Measured on
+    # nine real blocks: `nada`, `nothing`, `the` — the word "none" in two
+    # languages and an article from a prose sentence — all read as missing
+    # blocks. Six false positives, and a false positive on a real tree is how
+    # a check gets switched off.
+    # ⬜ The "none" word is the installation's language; the SHAPE is not.
+    for dep in re.findall(r"(?:DEPENDS ON|BLOCKED BY|FEEDS)\s*:?\s*"
+                          r"`?([A-Za-z0-9][\w-]*(?:[-_][\w-]+)+)`?", cbody, re.I):
+        if re.fullmatch(r"(none|nothing|nada|n/?a|tbd|pending)\W?", dep, re.I):
+            continue
+        if not ids or dep in ids:
+            continue
+        bad.append(("BLK-CON-002", rel,
+                    "names a block that exists in no state: %r · a dependency "
+                    "on nothing reads as a satisfied one" % dep))
+
+    # BLK-STD-001 · at least one standard declared. ⛔ None means there is no
+    # basis on which anything could be rejected.
+    dbody = body_of(text, "D")
+    if "D" in have and not re.search(r"[\w]", dbody.replace("—", "")):
+        bad.append(("BLK-STD-001", rel,
+                    "section D declares no standard · with none, nothing in "
+                    "this block can be rejected on any basis"))
+
+    # BLK-TRN-001 · `closed` requires acceptance AND sufficiency — never one.
+    if st == "closed":
+        kb = body_of(text, "K")
+        has_acc = re.search(r"accept|acceptance|verdict|criteri", kb, re.I)
+        has_suf = re.search(r"sufficien|resumable|can be resumed", kb, re.I)
+        if not (has_acc and has_suf):
+            missing = " and ".join(
+                x for x, ok in (("acceptance", has_acc), ("sufficiency", has_suf))
+                if not ok)
+            bad.append(("BLK-TRN-001", rel,
+                        "closed without %s · ⛔ neither one alone closes a "
+                        "block: accepted-but-unresumable and resumable-but-"
+                        "unaccepted are both open" % missing))
+
+    # ⬜ CEILINGS · BLK-CTX-001 · BLK-STA-001 · BLK-SHP-003
+    # ⛔ Three rules said "within its ceiling" and no ceiling was declared.
+    # A `0` in the table means NOT MEASURED, and this loop measures nothing.
+    for sec, cap in sorted(CEILINGS.items()):
+        if sec not in have:
+            continue
+        n = len([l for l in body_of(text, sec).splitlines() if l.strip()])
+        if n > cap:
+            rid = {"J": "BLK-CTX-001", "E": "BLK-STA-001"}.get(sec, "BLK-SHP-003")
+            bad.append((rid, rel,
+                        "section %s runs %d lines against a declared %d · at "
+                        "close, curate it — the ceiling forces curation over "
+                        "what is written, never censorship while writing"
+                        % (sec, n, cap)))
 
     # BLK-CLS-001 / 002 · closing
     if st == "closed":

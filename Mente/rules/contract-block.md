@@ -174,6 +174,27 @@ resume safely. ⛔ **A reader who must open three files to know where the work s
 > ceiling exists to force curation over what is already written, ⚠️ **never to censor while
 > writing.**
 
+### ⬜ THE CEILINGS, DECLARED
+
+⛔ **Three rules in this contract say "within its ceiling" and nothing said what the ceiling was.**
+A limit named but never given a number is not a limit — it is a word.
+
+| ⬜ Section | Lines | Why this one is bounded |
+|---|---|---|
+| ⬜ A `Identity` | 0 | ⛔ `0` = NOT MEASURED, and the rule says so |
+| ⬜ B `Scope` | 0 | ⬜ declare it |
+| ⬜ C `Connections` | 0 | ⬜ declare it |
+| ⬜ D `Required standards` | 0 | ⬜ declare it |
+| ⬜ E `State` | 0 | ⭐ the one section always read first — it stays short or it stops being read |
+| ⬜ F `Sub-blocks` | 0 | ⬜ declare it |
+| ⬜ J `Context` | 0 | ⚠️ a context that grows with every message is a transcript, not a context |
+
+⭐ **`0` means NOT MEASURED — ⛔ it does not mean unlimited.** An engine that picked a number would
+be sizing somebody else's work, and a number invented on the spot becomes the standard by accident.
+
+> ## ⛔ A CEILING NAMED WITHOUT A NUMBER IS THE SAME AS NO CEILING — EXCEPT IT LOOKS LIKE ONE.
+> ⚠️ **And that is worse:** a reader believes the section is bounded and never checks.
+
 ⚠️ **And a measured warning about sizing them:** ⭐ **a validator counts every non-empty line, so
 the headings themselves consume part of the ceiling.** ⛔ **A block omitting an `OUT` limit for
 lack of room is worse than a §B a few lines over: an OUT that is not written is a boundary that
@@ -579,7 +600,22 @@ would unblock it.*
 | ID | Rule | Enf | Verify |
 |---|---|---|---|
 | `BLK-BLK-001` | ⭐ **A blocked block names WHAT would unblock it** | 🔒 | ⛔ *"waiting"* is not a blocker |
-| `BLK-BLK-002` | ⭐ **Blocked past a declared period → it is asked about** | 🔒 | ⚠️ see below |
+| `BLK-BLK-002` | ⭐ **Blocked past a declared period → it is asked about** | 🔒 | `bin/check-block`, against the ⬜ period below |
+
+### ⬜ THE PERIOD, DECLARED
+
+| ⬜ Declaration | Days | Why it is not the engine's |
+|---|---|---|
+| ⬜ stale period | 14 | ⛔ a fast project goes stale in a week; a slow one does not in a month |
+
+⭐ **The same number answers two rules:** how long a block may sit untouched (`BLK-IDN-005`) and
+how long it may stay blocked before somebody is asked (`BLK-BLK-002`). ⛔ **It lived hardcoded in
+the validator** — a threshold nobody knew had been chosen.
+
+> ## ⭐ THE QUESTION IS "IS THIS STILL CURRENT?", NEVER AN ACCUSATION.
+> ⚠️ **A blocked block is not a failure.** What is a failure is a block blocked for a month that
+> nobody ever asks about — it stops being blocked and starts being abandoned, and the two look
+> identical from outside.
 
 > ## ⭐ AT THE THRESHOLD: ASK, DO NOT ACCUSE
 > ⚠️ **A block sitting blocked for weeks is not necessarily neglect.** ⭐ **The prompt asks whether
