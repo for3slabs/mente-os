@@ -77,6 +77,7 @@ where two files disagree and neither is wrong on its own.
 
 ---
 
-Related: `ADR-001-work-unit-is-the-block.md` (what a block IS) ·
+Related: `ADR-010-cheap-to-open-expensive-to-close.md` (⭐ **the eleven sections are the FINAL shape, never the entry cost** — read together or this record reads stricter than it is) ·
+`ADR-001-work-unit-is-the-block.md` (what a block IS) ·
 `ADR-007-a-closed-block-is-archived.md` (the closing that made the ceiling move) ·
 `../contract-block.md` (the sections and the live ceiling) · `../contract-adr.md`.
