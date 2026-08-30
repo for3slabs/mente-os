@@ -82,6 +82,33 @@ measured base rate. If a rule matters enough to write down, the next question is
 
 ---
 
+## ⭐ HOW `rules/` AND `decisions/` TALK TO EACH OTHER
+
+⛔ **A folder inside a folder is where things go to be forgotten**, so the traffic between these
+two is stated rather than assumed.
+
+| Direction | ⭐ What it means | ⛔ When it is missing |
+|---|---|---|
+| **a rule names its decision** | *"this exists because of that"* — the rule can be argued with | ⚠️ the rule is one argument from being reverted by somebody who does not know what caused it |
+| **a decision names its consequence** | *"this produced that"* — the decision is not a wish | ⛔ a record of something that never happened |
+
+⭐ **`bin/check-adr-wiring` enforces the second direction**: every consequence a record claims must
+resolve to a rule id or an artefact that exists.
+
+### ⚠️ NOT EVERY RULE HAS A DECISION, AND THAT IS NOT A GAP
+
+⭐ **Some rules were distilled from PRACTICE and never had a separate decision to record** — their
+reasoning is in their own text, in the measured failure each one names.
+
+> ## ⛔ WHAT WOULD BE A GAP IS A RULE WHOSE REASON IS NOWHERE.
+> ⚠️ **A rule with no ADR and no measured failure in its own body is the one to look at** — not a
+> rule that simply carries its reasoning inline.
+
+⭐ **The asymmetry is deliberate in the other direction too:** a decision with no consequence is
+always suspect, ⛔ **a rule with no decision often is not.**
+
+---
+
 ## What is in here today
 
 ⛔ **No counts.** The piece table declares every file, and the generated metrics carry the numbers —
