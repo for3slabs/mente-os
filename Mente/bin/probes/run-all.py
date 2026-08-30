@@ -96,9 +96,14 @@ missing = [c for c in checkers
 # ⭐ Not every probe covers a VALIDATOR. A hook has no findings of its own —
 # what its probe proves is BEHAVIOUR — so counting it against the validator
 # total reported "15 validators, 16 probes" and read as an inconsistency.
+# ⛔ A hook may be a script in any language — looking only for `.sh` counted a
+# python hook's probe against the VALIDATOR total and reported an inconsistency
+# that was the counter's, not the tree's.
+HOOKS = os.path.join(os.path.dirname(BIN), "hooks")
 hook_probes = [q for q in probes
-               if os.path.exists(os.path.join(os.path.dirname(BIN), "hooks",
-                                              os.path.basename(q)[len("probe-"):-3] + ".sh"))]
+               if any(os.path.exists(os.path.join(HOOKS,
+                       os.path.basename(q)[len("probe-"):-3] + ext))
+                      for ext in (".sh", ".py"))]
 print("\n  ── cobertura")
 print("     validadores: %d · con sonda: %d%s"
       % (len(checkers), len(probes) - len(hook_probes),
