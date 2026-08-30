@@ -26,7 +26,8 @@ Python 3 standard library and bash, nothing else. No `pip install`, no `requirem
 vendored package. A validator that needs an install is a validator that does not run on a fresh
 clone — and the first thing a new user does is clone.
 
-**2 · A validator never writes, unless its name says so.**
+**2 · A validator never writes, unless its name says so.**  
+⭐ Decided in `../rules/decisions/ADR-019-a-validator-completes-what-is-derivable.md` — **what is derivable gets completed; criterion, scope and verdict never are.**
 `check-*` and `grade-*` read the tree and report. Only `init`, `new-block` and `generate-*` write,
 and each announces every file it touches. A read-only command that silently modified something
 would make the whole set untrustworthy.
