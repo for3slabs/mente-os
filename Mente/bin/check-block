@@ -6,7 +6,8 @@ the one found, so it is actionable without opening this file.
 
 Exit: 0 clean · 1 violations · 2 the contract itself is missing
 """
-import os, re, sys, datetime
+import os, re, sys, glob, datetime
+from datetime import date
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 CONTRACT = os.path.join(ROOT, "rules", "contract-block.md")
@@ -184,6 +185,52 @@ def check(path, rel, ids):
             bad.append(("BLK-BLK-001", rel,
                         "blocked with no unblocker named · "
                         "'waiting' is not a blocker"))
+
+    # BLK-SHP-001 · ONE file per block. ⛔ Splitting a short file adds places
+    # to look without adding anything to read, and the reader who must open
+    # three files to know where the work stands opens none.
+    sibs = [n for n in os.listdir(os.path.dirname(path))
+            if n.endswith(".md") and n != "BLOCK.md"
+            and not n.upper().startswith("README")]
+    if sibs:
+        bad.append(("BLK-SHP-001", rel,
+                    "%d sibling document(s) beside BLOCK.md (%s) · one file per "
+                    "block: a reader who must open three to know where the work "
+                    "stands opens none" % (len(sibs), ", ".join(sorted(sibs)[:3]))))
+
+    # BLK-OPN-002 · the block is declared where blocks are LISTED.
+    # ⛔ A block on disk that no index names is a block nothing knows exists:
+    # it is never picked up, never closed, and never missed.
+    # ⬜ Where blocks are listed is the installation's: any campaign, or a
+    # blocks README. ⛔ With no index at all this is NOT MEASURED, not a pass.
+    if st != "closed" and bid:
+        indexes = glob.glob(os.path.join(ROOT, "work", "campaigns", "*",
+                                         "CAMPAIGN.md"))
+        readme = os.path.join(BLOCKS, "README.md")
+        if os.path.exists(readme):
+            indexes.append(readme)
+        if indexes and not any(
+                bid in open(q, encoding="utf-8", errors="replace").read()
+                for q in indexes):
+            bad.append(("BLK-OPN-002", rel,
+                        "%r is on disk and no index names it · nothing knows it "
+                        "exists, so nobody picks it up and nobody misses it"
+                        % bid))
+
+    # BLK-BLK-002 · blocked past the ⬜ declared period → it is ASKED about.
+    # ⚠️ Not accused: a blocked block is not a failure. What is a failure is one
+    # blocked for a month nobody ever asks about — it stops being blocked and
+    # starts being abandoned, and the two look identical from outside.
+    if st == "blocked" and STALE_DAYS:
+        m_up = re.search(r"^updated:\s*(\d{4}-\d{2}-\d{2})", text, re.M)
+        if m_up:
+            age = (date.today() - date.fromisoformat(m_up.group(1))).days
+            if age > STALE_DAYS:
+                bad.append(("BLK-BLK-002", rel,
+                            "blocked and untouched for %d days (threshold %d) · "
+                            "is it still current? — a block nobody asks about "
+                            "stops being blocked and starts being abandoned"
+                            % (age, STALE_DAYS)))
 
     # BLK-CON-001 · every dependency named. ⛔ An empty connections section is
     # not "no dependencies" — it is a question nobody answered.

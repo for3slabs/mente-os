@@ -49,7 +49,7 @@ between was a context reset.
 |---|---|---|---|
 | `QLT-LAY-001` | 🔴 **Layer 1 is measured by a script, never asserted** | 🔒 | `bin/grade-block` |
 | `QLT-LAY-002` | ⭐ **Layer 2 criterion is declared by the installation, never by the agent** | 📖 | ⬜ each dimension carries a declared criterion or stays `⬜` |
-| `QLT-LAY-003` | **A closing verdict names BOTH layers** | 🟡 | ⛔ one layer alone is half a verdict |
+| `QLT-LAY-003` | **A closing verdict names BOTH layers** | 🔒 | `bin/grade-block` prints layer 2's state beside layer 1's |
 
 ---
 
@@ -86,6 +86,16 @@ reason it does not apply, so a reader can tell "checked, clean" from "never look
 ⛔ **Measured:** a block whose declared scope resolved to **nothing** had zero broken links and
 zero orphan documents — and scored 🟢 **PRODUCT**.
 
+### ⚠️ AND HALF A SCOPE IS THE HARDER CASE
+
+⛔ **Measured on a real block: three paths declared, one resolved, verdict 🟢 PRODUCT.** Two
+thirds of what the block claims to own was never looked at — ⭐ **and every number in the report
+was correct.**
+
+> ## ⛔ ZERO FILES IS CAUGHT BY THE COUNT. HALF A SCOPE IS NOT.
+> ⚠️ **The count was not zero, so the rule above stayed silent** — and a partial measurement
+> reported as a full one is the shape nobody thinks to check.
+
 > ## ⭐ A VERDICT OVER ZERO MEASURED FILES IS NOT A PASS. IT IS `NOTHING MEASURED`.
 > ⚠️ **This is the emptiest kind of green, and the hardest to notice**, because every number in
 > the report is genuinely correct.
@@ -94,6 +104,7 @@ zero orphan documents — and scored 🟢 **PRODUCT**.
 |---|---|---|---|
 | `QLT-EVD-001` | 🔴 **Zero measured files is `NOTHING MEASURED`, never a pass** | 🔒 | `bin/grade-block` |
 | `QLT-EVD-002` | **The report names the scope it measured** | 🔒 | ⛔ a verdict whose scope is unstated cannot be reproduced |
+| `QLT-EVD-003` | 🔴 **A scope that resolves PARTLY is not a scope that resolved** | 🔒 | `bin/grade-block` · ⛔ measured: 3 paths declared, 1 resolved, verdict 🟢 |
 
 ---
 
@@ -132,7 +143,7 @@ else's work — and grades it *favourably*, which is the direction nobody checks
 
 | ID | Rule | Enf | Verify |
 |---|---|---|---|
-| `QLT-VRD-001` | ⭐ **An MVP closes with its debt LISTED, never with it hidden** | 🟡 | ⛔ a debt not written down is a debt nobody inherits |
+| `QLT-VRD-001` | ⭐ **An MVP closes with its debt LISTED, never with it hidden** | 🔒 | `bin/grade-block` names the rows that must appear in the closing |
 | `QLT-VRD-002` | **The verdict is reproducible: same code, same verdict** | 🔒 | ⛔ that is the failure this contract exists for |
 
 ---
@@ -187,7 +198,7 @@ dimension nobody will notice is missing.
 | ID | Rule | Enf | Verify |
 |---|---|---|---|
 | `QLT-DIM-001` | 🔴 **A dimension is answered with EVIDENCE, never with an assertion** | 📖 | ⛔ "looks fine" is not an answer |
-| `QLT-DIM-002` | ⭐ **A dimension with no declared criterion stays `⬜`** | 🟡 | ⛔ never rendered as a pass |
+| `QLT-DIM-002` | ⭐ **A dimension with no declared criterion stays `⬜`** | 🔒 | `bin/grade-block` counts them and says how many |
 | `QLT-DIM-003` | ⚠️ **Dimension 3 evaluates BOTH sides** | 📖 | ⛔ hunting duplication alone passes the abstraction built for one caller |
 
 ### ⚠️ WHY DIMENSION 3 CUTS BOTH WAYS

@@ -158,6 +158,10 @@ case("⑧ data · una migración sin vuelta atrás",
 
 # ── B · the two failures the contract records
 print()
+case("⑧b EVD · un scope que resuelve A MEDIAS",
+     CLEAN, "MVP", "scope paths that do not resolve",
+     scope="%s\n- `work/%s-nowhere`" % (REL, MARK))
+
 case("⑨ ⛔ scope VACÍO no es un aprobado", {}, "NOTHING MEASURED",
      btype="docs", scope="work/%s-nowhere" % MARK)
 
@@ -193,6 +197,18 @@ try:
 finally:
     open(CONTRACT, "w", encoding="utf-8").write(orig)
     clean()
+
+# QLT-VRD-001 · an MVP names the debt it closes with. ⛔ A verdict printed
+# without the rows behind it leaves a debt nobody inherits — the same as never
+# having found it.
+plant(dict(CLEAN, **{"orphan.py": "def x():\n    return 1\n"}), "code")
+_c, _out = run()
+_ok = "Closing as MVP requires" in _out and "dead code" in _out
+print("  %-46s %s %s" % ("⑫b VRD · el MVP nombra su deuda",
+                         "✅" if _ok else "🔴",
+                         "listada en el reporte" if _ok else "el veredicto no la nombra"))
+results.append(("MVP names its debt", _ok))
+clean()
 
 # ── the criterion counter must MOVE when a dimension is declared
 orig2 = open(CONTRACT, encoding="utf-8").read()
@@ -264,8 +280,9 @@ if real:
                                     (r.stdout or r.stderr).strip().splitlines()[0][:60]))
         shutil.rmtree(d, ignore_errors=True)
         shown += 1
-        if shown >= 4:
-            break
+        # ⛔ No cap. Capping at four was the short-reach family: the blocks that
+        # are alphabetically last are not the least interesting, and a
+        # cross-run that stops early reports a partial measurement as a full one.
 else:
     print("  ⬜ NOT_MEASURED · set MENTE_CROSSRUN_BLOCKS to a real blocks/ folder")
 

@@ -120,6 +120,11 @@ def resolve_scope(dirs, root):
 
 
 def files_in(dirs, root, ext=None):
+    """QLT-SCP-001 / QLT-SCP-002 · every metric is measured INSIDE the declared
+    scope. ⛔ Counting outside it borrows another block's evidence, and borrows
+    it FAVOURABLY — measured: test files counted repo-wide reported 152 where
+    the block's own scope held 4. A block with no tests passed the row because
+    a different block had them."""
     out = []
     skip = set(CFG["exclude"].split())
     for d in dirs:
@@ -372,7 +377,11 @@ def main():
     rows, reds, yels = [], [], []
 
     def row(label, value, red_if=False, yel_if=False, na=None):
-        """⭐ na = the reason this does not apply. QLT-TYP-002: never a green."""
+        """QLT-LAY-001 · layer 1 is MEASURED, never asserted: every row carries
+        a number a script produced. QLT-VRD-002 · and because the number comes
+        from the tree and not from a reading, the same code yields the same
+        verdict — which is the failure this whole contract exists for.
+        ⭐ na = the reason this does not apply. QLT-TYP-002: never a green."""
         rows.append((label, value, na, red_if, yel_if))
         if na is None:
             if red_if:
@@ -430,6 +439,18 @@ def main():
     # 🔴 QLT-EVD-001 · absence of evidence is not evidence. Measured: an empty
     # scope had zero broken links and zero orphans, and scored 🟢 PRODUCT.
     measured = len(files_in(dirs, root))
+
+    # 🔴 QLT-EVD-003 · a scope that resolves PARTLY is not a scope that resolved.
+    # ⛔ Measured on a real block: 3 paths declared, 1 resolved, verdict 🟢
+    # PRODUCT. Two thirds of what the block claims to own was never looked at,
+    # and every number in the report was correct — the emptiest kind of green,
+    # and QLT-EVD-001 does not catch it because the count was not zero.
+    unresolved = [d for d in dirs if not os.path.exists(os.path.join(root, d))]
+    if unresolved and not as_json:
+        rows.append(("scope paths that do not resolve", len(unresolved),
+                     None, True, False))
+        reds.append("scope paths that do not resolve")
+
     if measured == 0:
         verdict, code = "NOTHING MEASURED", 1
     else:
@@ -449,6 +470,8 @@ def main():
 
     print("\nBLOCK %s · type: %s — measured quality · %s"
           % (args[0], btype, date.today().isoformat()))
+    # QLT-EVD-002 · the report NAMES the scope it measured. ⛔ A verdict whose
+    # scope is unstated cannot be reproduced, and cannot be argued with either.
     print("  scope: %s\n" % (", ".join(dirs) or "(none declared)"))
     for label, value, na, r, y in rows:
         dots = "." * max(2, 42 - len(label))
@@ -489,6 +512,11 @@ def main():
                                     errors="replace").read()))
     except OSError:
         holes = -1
+    # QLT-DIM-002 · an undeclared dimension is reported as ⬜, never rendered
+    # as a pass — the count below says how many, so silence is impossible.
+    # QLT-LAY-003 · and the verdict names BOTH layers: layer 1 above, layer 2
+    # here. ⛔ One layer alone is half a verdict, and half a verdict reads as a
+    # whole one unless the other half is printed next to it.
     where = "rules/contract-quality-verdict.md §5"
     if holes == 0:
         print("  Layer 2 (criterion) is %s — DECLARED: run it at close." % where)
@@ -497,7 +525,13 @@ def main():
               % (where, holes))
     else:
         print("  Layer 2 (criterion) is %s — could not read it." % where)
+    # QLT-VRD-001 · an MVP closes with its debt LISTED. The red rows above ARE
+    # that list — ⛔ printing the verdict without them would leave a debt
+    # nobody inherits, which is the same as not having found it.
     print("  ⭐ A 🔴 does not forbid closing the block. It forbids closing it AS A PRODUCT.")
+    if reds:
+        print("  ⛔ Closing as MVP requires these %d listed in §K: %s"
+              % (len(reds), ", ".join(reds)))
     return code
 
 
