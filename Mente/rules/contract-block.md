@@ -492,7 +492,7 @@ sufficiency:          pass | fail
 | `BLK-CLS-002` | **No open sub-block in §F** | 🔒 | ⚠️ closing over an open task hides it |
 | `BLK-CLS-003` | ⭐ **What was NOT done is stated** | 🔒 | ⛔ silence reads as completeness |
 | `BLK-CLS-004` | ⭐ **The verdict cites its evidence** | 🟡 | see `../memory/principles/expertise/val-functional.md` §2.1 |
-| `BLK-CLS-005` | ⭐ **The quality verdict is MEASURED, never asserted** | 🟡 | `bin/grade-block` is layer 1 · `rules/contract-quality-verdict.md` is the criterion |
+| `BLK-CLS-006` | ⭐ **The quality verdict is MEASURED, never asserted** | 🟡 | `bin/grade-block` is layer 1 · `rules/contract-quality-verdict.md` is the criterion |
 | `BLK-CLS-005` | ⭐ **The invariants of §B were re-checked** | 🟡 | ⚠️ still true after the changes? |
 
 ⭐ **`BLK-CLS-003` is what makes an archive worth reading.** ⛔ **A closing that lists only
