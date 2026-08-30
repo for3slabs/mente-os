@@ -458,7 +458,7 @@ completed:            <what was done>
 learned:              <what the next block should know>
 evidence:             <what proves it>
 connections affected: <who inherits something>
-quality verdict:      <the measured table>
+quality verdict:      <the measured table — `bin/grade-block <name>` produces it>
 sufficiency:          pass | fail
 ```
 
@@ -468,6 +468,7 @@ sufficiency:          pass | fail
 | `BLK-CLS-002` | **No open sub-block in §F** | 🔒 | ⚠️ closing over an open task hides it |
 | `BLK-CLS-003` | ⭐ **What was NOT done is stated** | 🔒 | ⛔ silence reads as completeness |
 | `BLK-CLS-004` | ⭐ **The verdict cites its evidence** | 🟡 | see `../memory/principles/expertise/val-functional.md` §2.1 |
+| `BLK-CLS-005` | ⭐ **The quality verdict is MEASURED, never asserted** | 🟡 | `bin/grade-block` is layer 1 · `rules/contract-quality-verdict.md` is the criterion |
 | `BLK-CLS-005` | ⭐ **The invariants of §B were re-checked** | 🟡 | ⚠️ still true after the changes? |
 
 ⭐ **`BLK-CLS-003` is what makes an archive worth reading.** ⛔ **A closing that lists only
@@ -646,7 +647,8 @@ measured in whether anyone ever responds.
 
 ---
 
-Related: `README.md` (⭐ **the three document types**) · `contract-document.md` (⭐ the shape and
+Related: `contract-quality-verdict.md` (⭐ **the §K verdict, measured — `bin/grade-block` is
+its layer 1**) · `README.md` (⭐ **the three document types**) · `contract-document.md` (⭐ the shape and
 the ceilings this file obeys) · `contract-adr.md` (⭐ where a §G decision graduates to when it
 outlives the block) · `contract-handoff.md` (⭐ what binds to a block, and the only sections a
 specialist may append to) · `rule-inheritance.md` (⭐ **the three levels behind §B's two-levels

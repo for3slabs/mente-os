@@ -100,6 +100,7 @@ a total written here would be correct exactly once.
 | `rule-shipping.md` | how a change leaves: branch, verify, batch, merge, clean up, close | `bin/check-shipping` |
 | `rule-checks-must-measure.md` | ⭐ the rule the validators are held to — a check that cannot fail | `bin/check-checks` |
 | `rule-config-hygiene.md` | a permission surface: complete, portable, and free of pasted secrets | `bin/check-config` |
+| `contract-quality-verdict.md` | ⭐ **is this a product or an MVP** — two layers, measured and criterion | `bin/grade-block` |
 
 ⭐ **Every one of them carries a `Verified by:` line naming both its validator and the probe that
 proves the validator works.** A validator with no probe has never been shown to fail — and a check
