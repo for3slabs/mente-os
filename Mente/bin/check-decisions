@@ -120,6 +120,22 @@ def main():
                              "record holds ONE decision: a row cannot carry "
                              "evidence or a way back" % (len(rows) - 1)))
 
+        # DEC-NUM-004 · a filename never names a PERSON. ⛔ Not detectable by a
+        # list of names — detectable by COMPARISON: if the filename contains the
+        # value of `decided-by`, the person is in the name. ⬜ The engine cannot
+        # know what a person is called; it can see that this file was named
+        # after whoever took the decision.
+        owner = f.get("decided-by", "").strip().strip("`*").lower()
+        if owner and not owner.startswith("⬜") and owner not in NONE:
+            first = re.split(r"[\s,·]", owner)[0]
+            if len(first) > 2 and re.search(r"(^|-)%s(-|$)" % re.escape(first),
+                                            name, re.I):
+                findings.append(("DEC-NUM-004", rel,
+                                 "the filename names the person who decided (%r) "
+                                 "· ⭐ name the DECISION — who took it belongs in "
+                                 "`decided-by`, where it is data instead of a "
+                                 "permanent label the file outlives" % first))
+
         # DEC-FLD-001 · the five header fields
         missing = [k for k in ("date", "status", "decided-by",
                                "supersedes", "superseded-by") if k not in f]
