@@ -65,9 +65,21 @@ answers exactly one question. None of them decides anything: they check what is 
 ⬜ | `bin/check-links` | does every internal pointer resolve to something that exists |
 ⬜ | `bin/check-structure` | is the tree the one `piezas.tsv` declares |
 | `bin/check-declared` | ⭐ does every engine file have its row in `piezas.tsv` — the disk-side check |
+| `bin/check-document` | does every document carry its header, its ceiling and pointers that resolve |
+| `bin/check-block` | does every block meet its contract — sections, states, closing |
+| `bin/check-campaign` | does a campaign name real blocks, and does it close only when they do |
+| `bin/check-work` | is the work inside a block staying inside it |
+| `bin/check-inheritance` | do the three rule levels add up without a lower one loosening a higher |
+| `bin/check-checks` | ⭐ **the validators themselves** — can each one actually fail |
+| `bin/check-decisions` | is every decision recorded once, and never rewritten |
+| `bin/check-handoff` | is a delegation granted, bounded and accounted for |
+| `bin/check-shipping` | does a change leave the way the rule says it must |
+| `bin/check-archive` | does a closed block leave behind what the next reader needs |
+| `bin/check-pending` | is a debt written in the shape somebody else can pick up |
+| `bin/check-config` | is the permission surface complete, portable and free of pasted secrets |
+| `bin/grade-block <block>` | ⭐ **product or MVP — measured**, never opinion (layer 1) |
 ⬜ | `bin/check-blocks` | do the open blocks meet their contract |
 ⬜ | `bin/check-sufficiency <block>` | can this block be resumed from disk alone (§A-E) |
-⬜ | ⬜ a block grader | product or MVP — **measured**, never opinion |
 ⬜ | `bin/check-clear-ready` | would a `/clear` lose anything |
 ⬜ | `bin/check-all` | ⭐ the whole system · *the only thing that matters is `failed: 0`* |
 

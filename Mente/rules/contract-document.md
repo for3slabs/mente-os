@@ -188,7 +188,7 @@ canonical source  ──▶  the value
 
 | ID | Rule | Enf | Verify |
 |---|---|---|---|
-| `DOC-CAN-001` | ⛔ **A document MUST NOT reproduce a live value when a canonical source exists** | 🔒 | ⭐ see below |
+| `DOC-CAN-001` | ⛔ **A document MUST NOT reproduce a live value when a canonical source exists** | 📖 | ⚠️ **nothing verifies this** — see below |
 | `DOC-CAN-002` | ⭐ **It MAY describe what the value MEANS. It MUST point at the source** | 📖 | ⚠️ the meaning is stable; the number is not |
 | `DOC-CAN-003` | ⭐ **A dated snapshot MAY be copied when the historical value IS the evidence** | 📖 | ⛔ and it is marked `dated` |
 
@@ -384,13 +384,27 @@ draft ──▶ current ──▶ superseded ──▶ fossil
 
 | ID | Rule | Enf | Verify |
 |---|---|---|---|
-| `DOC-LIF-001` | ⭐ **`current` with an old `Updated` is stale, not current** | 🔒 | ⛔ re-verify or restate |
+| `DOC-LIF-001` | ⭐ **`current` with an old `Updated` is stale, not current** | 🔒 | `bin/check-document`, against the ⬜ threshold below |
 | `DOC-LIF-002` | **A fossil is archived, never removed** | 📖 | ⚠️ nothing checks this |
 | `DOC-LIF-003` | ⭐ **A fossil MUST NOT be used as a current authority** | 📖 | §6, row 6 |
 
 ⭐ **What `current` promises:** somebody verified it, its date reflects the last real change, its
 type declares its limits, and someone identified keeps it true. ⛔ **Missing one, it promises
 nothing.**
+
+### ⬜ HOW OLD IS TOO OLD
+
+| ⬜ Declaration | Value | Why it is not the engine's |
+|---|---|---|
+| ⬜ staleness threshold | 0 days | ⛔ a fast-moving project goes stale in weeks; a stable reference does not go stale in a year |
+
+⭐ **`0` means NOT MEASURED, and the rule says so** — ⛔ it does not mean "nothing is ever stale".
+An engine that picked a number would be measuring somebody else's pace, and a threshold invented
+on the spot becomes the standard by accident.
+
+> ## ⛔ A STALE `current` IS WORSE THAN NO STATUS AT ALL.
+> ⚠️ **Because it is believed.** A document with no status gets verified before it is used; one
+> that says `current` gets used.
 
 ---
 
@@ -435,7 +449,7 @@ overwritten by its generator, so an edit there is work that disappears silently.
 | ID | Rule | Enf | Verify |
 |---|---|---|---|
 | `DOC-MOV-001` | ⭐ **A tracked file is moved by version control** | 📖 | ⛔ nothing checks this |
-| `DOC-MOV-002` | **Zero orphaned pointers after a move** | 🔒 | ⭐ every reference resolves |
+| `DOC-MOV-002` | **Zero orphaned pointers after a move** | 🔒 | ⭐ performed by `DOC-CNT-004` — the same check, not a second one |
 
 ⚠️ **Step 1 is the one that gets skipped**, and its cost is invisible: everything works, and the
 history of that file is gone. ⭐ **Nothing fails, so nothing tells you.**

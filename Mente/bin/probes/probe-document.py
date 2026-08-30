@@ -78,7 +78,32 @@ p.case("⑬ nombre con guion bajo", lambda: put(GOOD, MARK + "-a_b.md"), "DOC-NA
 p.case("⑭ fecha en el nombre",
        lambda: put(GOOD, MARK + "-2026-01-15-thing.md"), "DOC-NAM-003")
 
-p.inverse("⑮ un documento CORRECTO", lambda: put(GOOD))
+p.case("⑮ una credencial pegada en el cuerpo",
+       lambda: put(GOOD.replace("Nothing of consequence.",
+                                'Run it with `--token=abc123def456ghi789`.')),
+       "DOC-CNT-005")
+p.case("⑯ el nombre del archivo nombra a una persona",
+       lambda: put(GOOD.replace("**Owner:** someone", "**Owner:** alexandra"),
+                   MARK + "-alexandra-notes.md"), "DOC-NAM-007")
+
+# ⭐ DOC-LIF-001 · the threshold is DECLARED, so the probe declares it too:
+# with none declared nothing is measured, and the probe must prove BOTH — that
+# it fires when a threshold exists, and that it stays silent when none does.
+_contract = os.path.join(ROOT, "rules", "contract-document.md")
+_orig = open(_contract, encoding="utf-8").read()
+try:
+    p.inverse("⑰ sin umbral declarado, NADA se mide (fecha vieja)",
+              lambda: put(GOOD))
+    open(_contract, "w", encoding="utf-8").write(
+        _orig.replace("| ⬜ staleness threshold | 0 days |",
+                      "| ⬜ staleness threshold | 30 days |"))
+    p.case("⑱ `current` con fecha vieja, con umbral declarado",
+           lambda: put(GOOD), "DOC-LIF-001")
+finally:
+    open(_contract, "w", encoding="utf-8").write(_orig)
+    p.clean()
+
+p.inverse("⑲ un documento CORRECTO", lambda: put(GOOD))
 p.crash_guard()
 
 print("\n═══ B · CORRIDA CRUZADA · documentos reales de otra instancia ═══\n")
@@ -87,14 +112,14 @@ real = sorted(glob.glob(os.path.join(REF, "*.md")))[:10] if REF else []
 for i, q in enumerate(real):
     shutil.copy(q, p.track(os.path.join(D, "%s-x%02d-%s" % (MARK, i, os.path.basename(q)))))
 if not real:
-    print("  ⑯ ⬜ NOT_MEASURED · set MENTE_CROSSRUN_DOCS to a tree of real documents")
+    print("  ⑳ ⬜ NOT_MEASURED · set MENTE_CROSSRUN_DOCS to a tree of real documents")
 code, out, err = p.run()
 mine = p._mine(out) if real else []
 by = {}
 for l in mine:
     for m in re.findall(r"DOC-[A-Z]+-\d+", l):
         by[m] = by.get(m, 0) + 1
-print("  ⑯ %d documentos reales · %d hallazgos" % (len(real), len(mine)))
+print("  ⑳ %d documentos reales · %d hallazgos" % (len(real), len(mine)))
 for k in sorted(by):
     print("       %-14s %d" % (k, by[k]))
 
