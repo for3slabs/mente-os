@@ -3,6 +3,7 @@
 **Status:** current · **Type:** contract · **Updated:** {{date}} · **Owner:** {{owner}}
 **Applies to:** every closed block, once it moves to the archive
 **Enforcement:** 🔒 lock — `bin/check-archive`
+**Verified by:** `bin/check-archive` · `bin/probes/probe-archive.py`
 **Governance:** `engine` in the piece table · ✅ ships identical to every clone
 
 ---

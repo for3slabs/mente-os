@@ -3,6 +3,7 @@
 **Status:** current · **Type:** rule · **Updated:** {{date}} · **Owner:** {{owner}}
 **Applies to:** every change made while a block is open
 **Enforcement:** 🔒 partial — `bin/check-work` · ⚠️ **several rows here are 📖**
+**Verified by:** `bin/check-work` · `bin/probes/probe-work.py`
 **Governance:** `engine` in the piece table · ✅ ships identical to every clone
 **Size:** ⭐ **a BASE file — it ships whole.** See `contract-document.md` §4.
 

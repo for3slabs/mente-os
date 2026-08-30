@@ -3,6 +3,7 @@
 **Status:** current · **Type:** contract · **Updated:** {{date}} · **Owner:** {{owner}}
 **Applies to:** every document in the system · ⭐ **including this one**
 **Enforcement:** 🔒 lock — `bin/check-document`
+**Verified by:** `bin/check-document` · `bin/probes/probe-document.py`
 **Governance:** `engine` in the piece table · ✅ ships identical to every clone
 
 ---
