@@ -20,6 +20,7 @@ ALIAS = {
     "mission":   ("mission", "misión", "mision"),
     "authority": ("authority", "autoridad"),
     "blocks":    ("blocks", "bloques"),
+    "standards": ("standards", "required standards", "estándares", "estandares"),
     "context":   ("shared context", "contexto compartido", "context"),
     "channel":   ("channel", "canal"),
     "closing":   ("closing", "cierre"),
@@ -146,6 +147,48 @@ def check(path, rel, cap, owners):
                         "%r is already claimed by %s · two campaigns over one "
                         "block is two authorities" % (b, owners[b])))
         owners.setdefault(b, rel)
+
+    # CMP-STD-001 / 002 · standards are INHERITED, never copied.
+    # ⛔ A child that omits an inherited standard REMOVED it, and removing is
+    # privilege escalation. A child that reproduces one VERBATIM copied it —
+    # and the two lists then diverge silently, because both look right.
+    camp_std = [l.strip(" -*`") for l in (section(t, "standards") or "").splitlines()
+                if l.strip().startswith(("-", "*"))]
+    for b in bl:
+        bt = ""
+        for state in ("active", "blocked", "archive", "closed", ""):
+            q = os.path.join(BLOCKS, state, b, "BLOCK.md")
+            if os.path.exists(q):
+                try:
+                    bt = open(q, encoding="utf-8", errors="replace").read()
+                except OSError:
+                    continue      # ⬜ unreadable, skipped · counted by the total
+                break
+        if not bt or not camp_std:
+            continue
+        child = "\n".join(l for l in bt.splitlines())
+        # CMP-STD-001 · a child ADDS; it never removes.
+        # ⛔ Removal cannot be detected by ABSENCE: inheriting means NOT
+        # repeating, so "the child does not name the campaign's standards" is
+        # the CORRECT state — measuring it that way contradicts CMP-STD-002 in
+        # the same breath, and the two rules then cannot both be satisfied.
+        # ⭐ What IS detectable is a child that says out loud it drops one.
+        drops = re.search(r"(?im)^[-*]\s*(?:does not apply|not applicable|"
+                          r"exempt from|waives?|drops?|overrides?)\b[^\n]*",
+                          child.split("## D")[1] if "## D" in child else "")
+        if drops:
+            bad.append(("CMP-STD-001", rel,
+                        "%r declares it drops an inherited standard (%r) · a "
+                        "child ADDS, it never removes — removing an inherited "
+                        "constraint is privilege escalation, however it is "
+                        "worded" % (b, drops.group(0).strip()[:44])))
+
+        copied = [x for x in camp_std if x and len(x) > 12 and x in child]
+        if copied:
+            bad.append(("CMP-STD-002", rel,
+                        "%r reproduces %d campaign standard(s) VERBATIM · "
+                        "inherit, do not copy: two lists diverge silently "
+                        "because both look right" % (b, len(copied))))
 
     # CMP-CHN-001 / 002 · a fact names who contributes it and who needs it
     chn = section(t, "channel")

@@ -36,6 +36,10 @@ What it pursues, and the condition under which it is finished.
 
 The yardstick that settles a contradiction between two documents.
 
+## Standards
+
+%(std)s
+
 ## Blocks
 
 | block | what it pursues | state |
@@ -68,12 +72,17 @@ status: closed
 
 - this file
 
+## D · Required standards
+
+%(std)s
+
 %(impact)s
 """
 
 
 def put(name=MARK + "-camp", **kw):
     d = dict(m=MARK, status="active", exempt="", bid=MARK + "-child",
+             std="- `rules/contract-block.md`",
              bstate="active", context="One paragraph of shared context.",
              fact="a fact, in one sentence", **{"from": MARK + "-child"},
              to="another block", closing="The verdict.")
@@ -84,11 +93,12 @@ def put(name=MARK + "-camp", **kw):
         GOOD % d)
 
 
-def child(bid=MARK + "-child", impact="", state="active"):
+def child(bid=MARK + "-child", impact="", state="active",
+          std="- `rules/contract-document.md`   (its own, ADDED)"):
     d = p.track(os.path.join(BDIR, state, bid))
     os.makedirs(d, exist_ok=True)
     open(os.path.join(d, "BLOCK.md"), "w", encoding="utf-8").write(
-        BLOCK % {"id": bid, "impact": impact})
+        BLOCK % {"id": bid, "impact": impact, "std": std})
 
 
 def drop(field):
@@ -158,6 +168,14 @@ p.case("⑫ IMP · un hijo cerrado sin declarar impacto",
 p.case("⑬ IMP · un impacto declarado VACÍO",
        lambda: (child(state="archive", impact="### Impact on the campaign\n"),
                 put(bstate="closed")), "CMP-IMP-002")
+
+p.case("⑬b STD · el hijo COPIA literal un estándar de la campaña",
+       lambda: (child(std="- `rules/contract-block.md`"), put()),
+       "CMP-STD-002")
+
+p.case("⑬c STD · el hijo declara que se exime de uno",
+       lambda: (child(std="- does not apply here: `rules/contract-block.md`"),
+                put()), "CMP-STD-001")
 
 p.inverse("⑭ una campaña CORRECTA", lambda: (child(), put()))
 p.crash_guard()

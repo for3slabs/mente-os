@@ -106,8 +106,8 @@ same defect as any duplicated table, and the divergence is silent because both s
 
 | ID | Rule | Enf | Verify |
 |---|---|---|---|
-| `CMP-STD-001` | ⭐ **A child ADDS standards; it never removes one** | 🟡 | ⛔ removing is privilege escalation |
-| `CMP-STD-002` | **A standard copied verbatim into a child is a defect** | 📖 | 🔬 the removal test above |
+| `CMP-STD-001` | ⭐ **A child ADDS standards; it never removes one** | 🔒 | `bin/check-campaign` · ⛔ removing is privilege escalation, however it is worded |
+| `CMP-STD-002` | **A standard copied verbatim into a child is a defect** | 🔒 | `bin/check-campaign` · 🔬 and the removal test above stays the human check |
 
 ---
 
