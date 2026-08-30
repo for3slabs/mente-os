@@ -357,8 +357,10 @@ the reader remembers.**
 
 > ## ⭐ THIS FIELD EXISTS BECAUSE A STANDARD THAT IS MERELY FINDABLE IS NOT READ.
 > ⚠️ **Measured: a method that existed, was locatable, and went unread in most sessions.**
-> ⭐ **Declared here, the gate injects it before the edit** — the standard travels with the work
-> instead of sitting in an index nobody opens.
+> ⭐ **Declared here, the standard travels WITH the work**, instead of sitting in an index nobody
+> opens. ⬜ **The engine ships this declaration, not the gate that would inject it** — ⛔ claiming
+> an injection no hook performs would have a reader trust a layer that is not there
+> (`decisions/ADR-011-four-layers-guarantee-reading.md`).
 
 ---
 
@@ -684,9 +686,8 @@ measured in whether anyone ever responds.
 
 ---
 
-**Decided by:** `decisions/ADR-010-cheap-to-open-expensive-to-close.md` — ⭐ **why only four sections are required at open**, and what a heavy open costs in blocks that never exist.
-**Also decided by:** `decisions/ADR-009-one-file-per-block.md` — ⭐ **why ONE file**, why tiers are an order and not a boundary, and why the ceiling is read from here instead of repeated.
-**Also decided by:** `decisions/ADR-001-work-unit-is-the-block.md` — ⭐ **why there are TWO levels**, what a single level loses, and how the decision is undone.
+**Decided by:** `decisions/ADR-001` (⭐ why TWO levels) · `ADR-009` (why ONE file) · `ADR-010`
+(⭐ why only four sections at open) — ⛔ **each names what is lost if it is reverted.**
 
 Related: `contract-quality-verdict.md` (⭐ **the §K verdict, measured — `bin/grade-block` is
 its layer 1**) · `README.md` (⭐ **the three document types**) · `contract-document.md` (⭐ the shape and

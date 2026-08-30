@@ -156,9 +156,28 @@ def check(path, rel, ceilings, quiet):
     # DOC-SIZ-001 · the ceiling for its type
     cap = ceilings.get(ty)
     if cap and len(lines) > cap:
-        bad.append(("DOC-SIZ-001", rel, len(lines),
-                    "over its ceiling · type %s allows %d · got: %d · "
-                    "pending split (see doc-structure.md §2.1)" % (ty, cap, len(lines))))
+        # ⭐ DOC-SIZ-001 says a file over its ceiling owes a SPLIT, and that the
+        # split is NAMED WORK rather than a warning. ⛔ Until now the rule only
+        # printed that sentence — nothing checked the work was ever named, so
+        # the honest answer and the ignored one looked identical.
+        # ⬜ Where pending work is recorded is the installation's; the engine
+        # fixes that it IS recorded, and that the record names this file.
+        named = False
+        for q in (os.path.join(ROOT, "docs", "ENGINE-BACKLOG.md"),
+                  os.path.join(ROOT, "memory", "PENDIENTES.md")):
+            try:
+                if os.path.basename(rel) in open(q, encoding="utf-8",
+                                                 errors="replace").read():
+                    named = True
+                    break
+            except OSError:
+                continue      # ⬜ no such record here · nothing to read
+        if not named:
+            bad.append(("DOC-SIZ-001", rel, len(lines),
+                        "over its ceiling · type %s allows %d · got: %d · ⛔ and "
+                        "the split is NOT named anywhere · a ceiling crossed "
+                        "without recorded work is a limit that stopped being one"
+                        % (ty, cap, len(lines))))
 
     # DOC-BOD-001 · Purpose and Related
     if not re.search(r"^#{2,3}.*\b(Purpose|WHAT THIS FILE IS|What (this|a|an) )\b", text, re.M | re.I):

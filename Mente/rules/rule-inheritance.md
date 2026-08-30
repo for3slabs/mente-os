@@ -310,6 +310,8 @@ hold them.**
 
 ---
 
+**Decided by:** `decisions/ADR-011-four-layers-guarantee-reading.md` — ⭐ **why the router only POINTS**, and what the three layers behind it catch that it cannot.
+
 Related: `README.md` (⭐ **the three document types, and the law that rules tighten and never
 loosen**) · `contract-block.md` (⭐ §B the scope and its two-levels test, §C the declared
 connections that let rules add up) · `rule-working-in-a-block.md` (⭐ §3 isolation — why rules do
