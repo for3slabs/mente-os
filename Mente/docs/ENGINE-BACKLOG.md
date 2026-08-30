@@ -544,5 +544,29 @@ the dependency now, in both places that needed it.
 
 ---
 
+## E-34 · `contract-block` is at its ceiling and owes a split
+
+- **Surfaced by:** wiring ADR-011 — the file crossed its declared ceiling by one line
+- **Affects:** `rules/contract-block.md`
+- **Closes when:** the contract is split by topic and each part is under its own ceiling
+
+**Why it matters.** ⭐ **`DOC-SIZ-001` does not say "raise the ceiling" — it says a file over its
+ceiling owes a SPLIT, and that the split is named work rather than a warning.**
+
+⛔ **The ceiling was already raised once this period**, from a smaller number to the current one.
+⚠️ **Raising it again for one line would be conceding to the file instead of measuring it** — and
+the second raise is always easier than the first, which is how a limit stops being one.
+
+⭐ **What was tried first, and is the right order:** compress the prose that could be compressed
+(the wiring block, three lines into one), and only then record the split. ⛔ **What was NOT done
+is delete content to fit** — a contract that loses a rule to satisfy its own size limit has
+traded the wrong thing.
+
+⚠️ **The candidate split is visible:** the block contract holds both the SHAPE of a block and the
+LIFECYCLE of one — sections and fields on one side, opening, transitions and closing on the
+other. ⭐ **Two topics, and the contract itself says `split by topic`.**
+
+---
+
 Related: `README.md` (folder) · `../memory/principles/README.md` (where the owners live) ·
 `../rules/README.md` (where a closed entry usually lands) · `../CAPABILITIES.md`.

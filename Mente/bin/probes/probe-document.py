@@ -78,6 +78,17 @@ p.case("⑬ nombre con guion bajo", lambda: put(GOOD, MARK + "-a_b.md"), "DOC-NA
 p.case("⑭ fecha en el nombre",
        lambda: put(GOOD, MARK + "-2026-01-15-thing.md"), "DOC-NAM-003")
 
+# ⭐ DOC-SIZ-001 now checks that the SPLIT was named, not just that the ceiling
+# was crossed. Both directions matter: an over-ceiling file with no recorded
+# work is a finding; the same file WITH the work recorded is not.
+# ⛔ 300 lines does NOT cross a `rule` ceiling of 700 — the first version of
+# this case planted the defect where no ceiling was, and read the working check
+# as broken. The count must exceed the ceiling of the fixture's OWN type.
+p.case("⑭b SIZ · pasa el techo y nadie nombró la división",
+       lambda: put(GOOD.replace("Nothing of consequence.",
+                                "\n".join("line %d" % i for i in range(750)))),
+       "DOC-SIZ-001")
+
 p.case("⑮ una credencial pegada en el cuerpo",
        lambda: put(GOOD.replace("Nothing of consequence.",
                                 'Run it with `--token=abc123def456ghi789`.')),
