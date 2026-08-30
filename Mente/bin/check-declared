@@ -28,8 +28,12 @@ SCAN = {
     "templates": (".template",),
     "memory/principles": (".md",),
     "memory/principles/expertise": (".md",),
-    "docs/architecture": (".md",),
 }
+# ⛔ `docs/architecture` was listed here and exists nowhere — not in the tree,
+# not in piezas.tsv, not created by anything. Every clean clone printed
+# "⬜ NOT MEASURED · docs/architecture does not exist" on its first run, which
+# is a validator complaining about its own configuration. ⭐ A scan target that
+# nothing produces is not a gap in the tree; it is a gap in the scan.
 
 # Never a declarable piece: runtime artefacts, folder documentation, and the
 # per-folder READMEs, which are declared as a group rather than one by one.

@@ -400,12 +400,29 @@ unguarded `open()` calls sat in the code.
 
 ---
 
-## E-27 · Nothing verifies a check on a CLEAN CLONE
+## E-27 · ✅ CLOSED — a clean clone now runs the whole suite
 
 - **Surfaced by:** `rules/rule-checks-must-measure.md` `CHK-IND-003`, still 📖
 - **Affects:** all 14 validators
-- **Closes when:** the suite can run from a fresh clone with no instance files, and says which
-  checks became NOT MEASURED there
+- **Closed by:** running it. ⭐ **The whole suite passes on a fresh clone with `failed: 0`**, and
+  the clone is left byte-identical afterwards. ⛔ The count is not repeated here — it is a live
+  number, and this file would be wrong the next time a probe is added.
+
+⚠️ **What it found, and none of it was visible in the tree where it was written:**
+
+| Found only on the clone | Why it was invisible |
+|---|---|
+| 7 documents cited an instance file the clone legitimately lacks | ⛔ the files were present where the checker was written |
+| a scan target (`docs/architecture`) that exists nowhere and nothing creates | ⚠️ every clone printed NOT MEASURED on its first run |
+| `probe-archive` crashed and left its fixture behind | ⭐ it scored 14/14 in the working tree |
+| a declared piece with no template — a clone could not create it | ⛔ nothing said so; the file was simply there |
+
+⭐ **The exemption for instance files is DERIVED now, not listed:** if `templates/` produces it,
+the file belongs to the installation and a clean clone is right not to have it. ⛔ A hand-kept
+list of what is fine is a hole with a schedule.
+
+⚠️ **What stays open:** `CHK-IND-003` is still 📖. Running the clone was manual — ⭐ **nothing
+makes it happen again**, and the next piece added can break it silently.
 
 **Why it matters.** ⚠️ **Everything verified in this audit ran in the tree where it was written.**
 ⛔ A validator proven only there has been proven on one instance — which is the exact family the

@@ -63,8 +63,32 @@ PLANNED = re.compile(r"⬜[^\n]{0,90}$")
 # install time, and a bare mention of one is not a pointer to anything.
 # A checker that cannot tell "points at a file" from "names a type of file"
 # reports every mention as broken — which is the loudest way to be ignored.
-GENERIC = {"CLAUDE.md", "BLOCK.md", "README.md", "PROJECT-RULES.md",
-           "SUMMARY.md", "connections.md", "CHANGELOG.md", "MEMORY.md", "VERSION"}
+# ⭐ Names that denote a KIND of file the INSTANCE creates, never one the
+# engine ships. ⛔ Hand-maintaining this list is the trap rule-config-hygiene
+# names: a fixed list of what is fine is a hole with a schedule. So the
+# instance-created half is DERIVED from templates/ — if a template exists, the
+# file it produces is the instance's and a clean clone legitimately lacks it.
+#
+# Measured on a clean clone: seven documents cited `mente.config.yml` and
+# `cuentas.tsv`, both correctly .gitignored as instance files, and the checker
+# called all seven broken pointers. ⚠️ In the tree where it was written it
+# reported zero — the files were there.
+_SHAPES = {"BLOCK.md", "README.md", "SUMMARY.md", "connections.md",
+           "CHANGELOG.md", "MEMORY.md", "VERSION"}
+
+
+def _instance_files():
+    """Every file a template produces — declared by templates/, not by a list."""
+    out = set()
+    tdir = os.path.join(ROOT, "templates")
+    if os.path.isdir(tdir):
+        for n in os.listdir(tdir):
+            if n.endswith(".template"):
+                out.add(n[:-len(".template")])
+    return out
+
+
+GENERIC = _SHAPES | _instance_files()
 
 
 def read_ceilings(text):
@@ -158,8 +182,15 @@ def check(path, rel, ceilings, quiet):
     here = os.path.dirname(path)
     for m in re.finditer(r"`([A-Za-z0-9_][A-Za-z0-9_./-]*\.(?:md|template|tsv|yml|py|sh))`", text):
         ref = m.group(1)
-        if os.path.basename(ref) == ref and ref in GENERIC:
+        if os.path.basename(ref) == ref and ref in _SHAPES:
             continue          # a kind of file, not a pointer to one
+        # ⭐ An INSTANCE file stays an instance file when cited with its path.
+        # ⛔ Requiring a bare name conflated two different exemptions: "this
+        # names a type" and "this names a file the installation creates".
+        # Measured on a clean clone: `Mente/cuentas.tsv` was reported broken
+        # while the bare `cuentas.tsv` was not, for the same missing file.
+        if os.path.basename(ref) in _instance_files():
+            continue
         if any(os.path.exists(os.path.join(b, ref))
                for b in (here, ROOT, os.path.join(here, ".."),
                          os.path.join(here, "../.."), os.path.join(here, "../../.."))):

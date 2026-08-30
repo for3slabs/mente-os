@@ -106,6 +106,7 @@ tpl-piezas	templates/piezas.tsv.template	engine	canonical	the blueprint for this
 # ── shared · engine gives the form, owner writes the content ──
 piezas	piezas.tsv	shared	canonical	this table — where each key piece lives
 registro-cuentas	cuentas.tsv	shared	canonical	which account governs each repo — ⛔ never a token
+tpl-cuentas	templates/cuentas.tsv.template	engine	canonical	the blueprint for the account register — ⛔ ships with no rows
 indice	docs/INDEX.md	shared	generated	every document — bin/generate-index
 estados	docs/STATES.md	shared	generated	blocks + health — bin/generate-index
 metricas	docs/METRICS.md	shared	generated	every live number — bin/generate-metrics

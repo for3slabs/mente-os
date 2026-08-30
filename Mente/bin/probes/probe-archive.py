@@ -143,8 +143,16 @@ p.inverse("⑧ un archivo COMPLETO", lambda: plant())
 # the key pattern stopped at the first space and every field name is several
 # words. Measured on a real archive: declaring three aliases changed nothing.
 # These two cases keep it connected.
+# ⛔ PROJECT-RULES.md is an INSTANCE file — born from a template at install
+# time — so a clean clone does not have it. Measured: this probe crashed there
+# with a bare traceback and left its fixture behind, while scoring 14/14 in the
+# tree where it was written. That is CHK-TRV-002, in the probe itself.
 _pr = os.path.join(ROOT, "PROJECT-RULES.md")
-_orig_pr = open(_pr, encoding="utf-8").read()
+try:
+    _orig_pr = open(_pr, encoding="utf-8").read()
+    _had_pr = True
+except OSError:
+    _orig_pr, _had_pr = "", False
 _renamed = SUMMARY.replace("## What was built", "## Qué se hizo")
 try:
     p.case("⑧b ALIAS · una sección renombrada, sin alias declarado",
@@ -155,7 +163,10 @@ try:
     p.inverse("⑧c ALIAS · la misma sección, CON su alias declarado",
               lambda: plant(summary=_renamed))
 finally:
-    open(_pr, "w", encoding="utf-8").write(_orig_pr)
+    if _had_pr:
+        open(_pr, "w", encoding="utf-8").write(_orig_pr)
+    elif os.path.exists(_pr):
+        os.remove(_pr)        # ⬜ it did not exist here; leave the clone as found
     p.clean()
 
 p.crash_guard()
