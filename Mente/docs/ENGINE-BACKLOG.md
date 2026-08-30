@@ -568,5 +568,22 @@ other. ⭐ **Two topics, and the contract itself says `split by topic`.**
 
 ---
 
+## E-35 · Nesting has no bound, and the intermediate level was never built
+
+- **Surfaced by:** ADR-015 — the first decision brought in with `implementation: not-started`
+- **Affects:** `rules/contract-block.md` · a rule that does not exist yet
+- **Closes when:** a rule counts nesting depth and refuses beyond the declared bound, and the
+  block contract defines the intermediate level
+
+**Why it matters.** ⭐ **Measured: real blocks reach fourteen flat sub-blocks**, which is the exact
+failure the decision predicted for two fixed levels. ⛔ **The intermediate level was decided and
+never built**, so large work flattened instead of grouping.
+
+⚠️ **Not urgent, and the record says why:** fourteen flat sub-blocks proves the level is NEEDED —
+⛔ **it does not prove it would be USED.** ⭐ Those are different claims, and building the level is
+how the second one gets tested.
+
+---
+
 Related: `README.md` (folder) · `../memory/principles/README.md` (where the owners live) ·
 `../rules/README.md` (where a closed entry usually lands) · `../CAPABILITIES.md`.

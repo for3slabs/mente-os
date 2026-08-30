@@ -56,5 +56,6 @@ reads it: the lane, the impact map, and the closing that names who inherits what
 
 ---
 
-Related: `../contract-block.md` (the shape this decision produced) ·
+Related: `ADR-015-nesting-is-bounded-at-three.md` (⭐ **two levels are the normal case; three is the CEILING** — read together, or these two records look like they disagree) ·
+`../contract-block.md` (the shape this decision produced) ·
 `../rule-working-in-a-block.md` (the propagation it makes possible) · `../contract-adr.md`.
