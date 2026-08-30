@@ -227,6 +227,7 @@ periods are frozen history and are not corrected** — the trail must show what 
 | ID | Rule | Enf | Verify |
 |---|---|---|---|
 | `PND-CNV-001` | ⭐ **Each item is verified against reality before carrying** | 📖 | ⛔ nothing verifies this |
+| `PND-SHP-001` | **A list that cannot be read is reported, never skipped** | 🔒 | ⛔ an unreadable list and an empty one must not look alike |
 | `PND-CNV-002` | ⭐ **Only one list receives writes** | 🔒 | ⚠️ two live lists diverge |
 
 ---
@@ -281,6 +282,21 @@ does not say what it is about**, and a reader scanning fifty of them retains non
 | the fields, the four verbs, the rotation mechanism | whoever maintains the engine, through a recorded decision |
 | ⛔ dropping an item with no written reason | **nobody** — ⭐ it comes back as a new finding |
 | ⛔ carrying an item without verifying it | **nobody** — ⚠️ ⭐ that is how false debt spreads |
+
+---
+
+## ⭐ ONE DEFECT REPEATED IS ONE DEFECT
+
+⛔ **Measured on a real list: 590 findings — and five distinct shapes.** Four missing fields across
+118 items is not 472 problems; it is four, times a list that was written before this contract
+existed.
+
+> ## ⛔ A REPORT NOBODY FINISHES IS A REPORT NOBODY APPLIES.
+> ⚠️ **The same argument this folder makes against long documents applies to its own output.**
+
+⭐ **So repeated findings are grouped:** the shape once, its count, and one example. The total is
+still stated — ⛔ **grouping is not hiding**, and a reader who wants every line still has the
+number that says how many there are.
 
 ---
 

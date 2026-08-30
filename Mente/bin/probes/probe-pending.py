@@ -102,6 +102,19 @@ p.case("⑨ un abierto que apunta al periodo anterior",
 p.case("⑩ dos listas vivas",
        lambda: (put(), put(name=MARK + "-pending-two.md")), "PND-CNV-002")
 
+p.case("⑪b ROT · un item CERRADO que viaja de periodo",
+       lambda: put(GOOD.replace("- State: open", "- State: closed")
+                       .replace("- Carried from: — (born here)",
+                                "- Carried from: the previous period")),
+       "PND-ROT-002")
+
+# ⭐ the inverse: a closed item that stayed where it died must not fire.
+# ⛔ A closed item also needs its closing date — leaving it out planted a
+# DIFFERENT defect and the inverse failed for a reason it was not testing.
+p.inverse("⑪c ROT · un item cerrado que NO viajó",
+          lambda: put(GOOD.replace("- State: open", "- State: closed")
+                          .replace("Closed: —", "Closed: 2026-01-16")))
+
 p.inverse("⑪ una lista CORRECTA", lambda: put())
 p.crash_guard()
 

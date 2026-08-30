@@ -132,7 +132,7 @@ def check(path, rel):
     try:
         text = open(path, encoding="utf-8", errors="replace").read()
     except OSError as e:
-        return [("PND-CNV-001", rel, "unreadable: %s" % e)]
+        return [("PND-SHP-001", rel, "unreadable: %s" % e)]
     blocks = [(m.start(), m.group(1)) for m in block_re(alias).finditer(text)]
     items = [(m.start(), m.group(1), m.group(2)) for m in ITEM.finditer(text)]
 
@@ -149,6 +149,19 @@ def check(path, rel):
             bad.append(("PND-BLK-001", rel,
                         "%s belongs to no block · a loose item has no subject, "
                         "and a reader scanning fifty retains none" % iid))
+
+        # PND-ROT-002 · a CLOSED item does not travel. ⛔ It stays in the
+        # period it died in: carrying it forward makes the new list longer
+        # every rotation while saying nothing new, and the reader learns to
+        # skim — which is how the open ones stop being read too.
+        st = canon(f.get("state", ""), smap) if "state" in f else ""
+        if st in ("closed", "dropped", "finished") and \
+                f.get("carried from", "").strip() not in ("", "—", "-") and \
+                not re.match(r"(?i)^\s*(—|-|none|born here)", f.get("carried from", "")):
+            bad.append(("PND-ROT-002", rel,
+                        "%s is %s and was carried from a previous period · a "
+                        "closed item stays where it died: carrying it forward "
+                        "grows the list without adding anything" % (iid, st)))
 
         # PND-FLD-001 · every field present
         for field in ("priority", "state", "created", "carried from"):
@@ -250,9 +263,22 @@ def main():
         print("check-pending · %d list(s)%s"
               % (len(found), " · nothing measured" if not found else ""))
     if findings:
+        # ⛔ A list of 590 lines is a report nobody finishes, and one nobody
+        # finishes is one nobody applies — the same argument this folder makes
+        # against long documents. ⭐ One defect repeated across a hundred items
+        # is ONE defect: show it once, with its count and an example.
+        groups = {}
         for cid, rel, msg in findings:
-            print("🔴 %s · %s · %s" % (rel, cid, msg))
-        print("\n%d violations · rule: rules/contract-pending.md" % len(findings))
+            key = (cid, rel, re.sub(r"\b[A-Z][\w-]*\d+\b", "<item>", msg))
+            groups.setdefault(key, []).append(msg)
+        for (cid, rel, shape), all_msgs in groups.items():
+            if len(all_msgs) == 1:
+                print("🔴 %s · %s · %s" % (rel, cid, all_msgs[0]))
+            else:
+                print("🔴 %s · %s · ×%d · %s" % (rel, cid, len(all_msgs), shape))
+                print("      e.g. %s" % all_msgs[0][:96])
+        print("\n%d violation(s) in %d distinct shape(s) · rule: "
+              "rules/contract-pending.md" % (len(findings), len(groups)))
         return 1
     if not quiet and found:
         print("✅ 0 violations")
