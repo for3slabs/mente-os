@@ -2,7 +2,7 @@
 
 date: {{date}}
 status: accepted
-implementation: in-progress
+implementation: implemented
 decided-by: ⬜ declare
 supersedes: —
 superseded-by: —
@@ -53,7 +53,8 @@ run** — which is the entire argument.
 
 ## Consequences
 
-- ⬜ **The health check does not exist here yet** — `in-progress`, and the engine says so
+- ⭐ **`hooks/session-start.sh`** — the audit, running unasked · ⬜ it DISCOVERS the validators
+  rather than naming them, so adding one does not edit the hook
 - ⭐ **The principle already ships:** a validator audits the validators themselves, so the
   self-audit idea is proven even where the startup hook is not
 - ⚠️ **The two constraints ship as rules, ahead of the tool they govern:** ⛔ never block the

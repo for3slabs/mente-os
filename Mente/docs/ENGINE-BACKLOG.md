@@ -630,11 +630,20 @@ ceiling — building the ceiling first would protect against a problem that has 
 
 ---
 
-## E-38 · Nothing audits the system unasked
+## E-38 · ✅ CLOSED — the startup audit runs, and it discovers rather than lists
 
 - **Surfaced by:** ADR-024 — no health check, and no hook that runs one at session start
-- **Affects:** `bin/` (a health check that does not exist) · `hooks/` (a startup hook)
-- **Closes when:** a health check runs by itself when a session opens, obeying both constraints
+- **Affects:** `hooks/session-start.sh`
+- **Closed by:** the hook exists, obeys both constraints, and is verified in three states
+
+⭐ **What it does NOT do, deliberately:** it names no validator. ⛔ Listing them would make the
+hook grow with every check added, which is how a hook becomes a list nobody maintains. It
+DISCOVERS every `check-*` in `bin/`, and ⬜ an installation may override the set.
+
+⚠️ **What remains open is smaller and was never the point of this entry:** there is no single
+`check-health` that summarises. ⭐ The loop over every validator answers the same question without
+one — and a summary command that repeats what the loop already reports would be the redundancy
+this engine keeps removing.
 
 **Why it matters.** ⭐ **Measured: three distinct failures each lived for WEEKS, and all three were
 found by somebody ASKING.** ⛔ None was hidden — every one was visible to a check that existed and
