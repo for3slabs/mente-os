@@ -47,7 +47,11 @@ NO_EVIDENCE = re.compile(r"\bnone\b.*\bjudg?ment call\b", re.I)
 FIELD = re.compile(r"^(date|status|implementation|decided-by|supersedes|"
                    r"superseded-by|applies-to|does-not-apply-to):\s*(.*?)\s*$", re.M)
 ISO = re.compile(r"^\d{4}-\d{2}-\d{2}$")
-NUM = re.compile(r"^(\d{3,})[-_ ]")
+# ⛔ The folder README declares `ADR-NNN-<slug>.md` and this pattern required a
+# leading digit — the two contradicted each other and the contract arbitrated
+# neither. ⬜ The prefix is the installation's; what the engine fixes is that
+# the number is SEQUENTIAL and ZERO-PADDED, so a listing sorts correctly.
+NUM = re.compile(r"^(?:[A-Za-z]+[-_])?(\d{3,})[-_ ]")
 
 
 def body_of(text, name):
@@ -124,7 +128,12 @@ def main():
                              "missing header field(s): %s · expected all five"
                              % ", ".join(missing)))
 
-        if not ISO.match(f.get("date", "")):
+        # ⭐ `{{date}}` is the template placeholder every engine document uses;
+        # an un-instantiated record carrying it is not malformed, it is
+        # un-instantiated. ⛔ Rejecting it would make the engine unable to ship
+        # a single decision of its own.
+        _d = f.get("date", "")
+        if _d.strip() not in ("{{date}}",) and not ISO.match(_d):
             findings.append(("DEC-FLD-001", rel,
                              "date not ISO · expected YYYY-MM-DD · got: %r"
                              % f.get("date", "")))

@@ -20,6 +20,13 @@ FALLBACK_CEILINGS = {}
 
 SKIP_DIRS = {".git", "__pycache__", "node_modules", ".venv", "cache"}
 SKIP_NAMES = {"CHANGELOG.md"}
+# ⛔ A decision record is NOT a document in this contract's sense: it carries
+# `date/status/decided-by`, never `Status/Type/Updated/Owner`, and its shape is
+# governed by contract-adr.md with its own validator. Measured: the first
+# record the engine shipped was rejected here for missing a header its own
+# contract never asks for. ⭐ One shape, one contract — the same boundary that
+# keeps check-decisions on its own reader.
+SKIP_DIR_PATHS = {"rules/decisions"}
 
 # DOC-CNT-005 · a credential shape. ⛔ `-p` is deliberately absent: a
 # one-letter flag matched a directory name in a real file (rule-config-hygiene §2).
@@ -306,6 +313,9 @@ def main():
     checked = 0
     for dirpath, dirnames, filenames in os.walk(ROOT):
         dirnames[:] = [d for d in dirnames if d not in SKIP_DIRS]
+        _rel = os.path.relpath(dirpath, ROOT).replace(os.sep, "/")
+        if _rel in SKIP_DIR_PATHS:
+            continue          # ⬜ governed by contract-adr.md, not by this one
         for name in sorted(filenames):
             if not name.endswith(".md"):
                 continue

@@ -302,7 +302,21 @@ is a defect in one of the two, and silently obeying the record hides which.
 
 | ID | Rule | Enf | Verify |
 |---|---|---|---|
-| `DEC-NUM-001` | **Sequential, zero-padded** | 🔒 | ⚠️ so a listing sorts correctly |
+| `DEC-NUM-001` | **Sequential, zero-padded** | 🔒 | ⚠️ so a listing sorts correctly · ⬜ an optional letter prefix is allowed |
+
+### ⬜ WHAT A RECORD IS CALLED, AND WHEN IT HAS NO DATE
+
+| ⬜ Declaration | Engine default | Why it is not fixed |
+|---|---|---|
+| ⬜ filename prefix | `ADR-` | ⭐ the NUMBER is what must sort; the prefix is a reading convenience |
+| ⬜ un-instantiated date | `{{date}}` | ⛔ a record shipped by the engine has no date until an installation has one |
+
+⛔ **Measured:** the folder README declared `ADR-NNN-<slug>.md` while the validator required a
+leading digit, and the contract arbitrated neither — ⚠️ **so the first record the engine tried to
+ship was rejected by its own check.**
+
+⭐ **And a template date is not a broken date.** `{{date}}` is the placeholder every engine
+document carries; rejecting it would leave the engine unable to ship a single decision of its own.
 | `DEC-NUM-002` | ⛔ **A number is never reused** | 🔒 | ⭐ not even for a reverted decision |
 | `DEC-NUM-003` | ⭐ **A reverted decision keeps its file and its number** | 🔒 | ⛔ with `status: reverted` |
 

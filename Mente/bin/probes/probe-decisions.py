@@ -7,7 +7,10 @@ from harness import Probe, ROOT, MARK
 D = os.path.join(ROOT, "rules", "decisions")
 p = Probe("check-decisions", "DEC")
 
-GOOD = """# 001 · Keep one decision in one file
+# ⭐ Fixtures number from 900 up: the engine now ships records of its own, and
+# 001 collided with a REAL one. The collision was correctly reported — ⛔ but it
+# was the probe reusing a number, not the checker misbehaving.
+GOOD = """# 901 · Keep one decision in one file
 
 date: 2026-01-15
 status: accepted
@@ -49,7 +52,7 @@ Merge the files back into a table, losing evidence and reverting fields.
 """
 
 
-def put(text, name="001-" + MARK + ".md"):
+def put(text, name="901-" + MARK + ".md"):
     q = p.track(os.path.join(D, name))
     open(q, "w", encoding="utf-8").write(text)
     return q
@@ -71,22 +74,28 @@ p.case("⑤ Evidence vacío",
        "DEC-FLD-004")
 p.case("⑥ nombre sin número", lambda: put(GOOD, MARK + "-thing.md"), "DEC-NUM-001")
 p.case("⑦ número reutilizado",
-       lambda: (put(GOOD, "001-" + MARK + "-a.md"), put(GOOD, "001-" + MARK + "-b.md")),
+       lambda: (put(GOOD, "901-" + MARK + "-a.md"), put(GOOD, "901-" + MARK + "-b.md")),
        "DEC-NUM-002")
 p.case("⑧ enlace supersede de un solo lado",
-       lambda: (put(GOOD.replace("superseded-by: —", "superseded-by: 002"),
-                    "001-" + MARK + "-a.md"),
-                put(GOOD.replace("# 001 ·", "# 002 ·"), "002-" + MARK + "-b.md")),
+       lambda: (put(GOOD.replace("superseded-by: —", "superseded-by: 902"),
+                    "901-" + MARK + "-a.md"),
+                put(GOOD.replace("# 901 ·", "# 902 ·")
+                    .replace("applies-to: every decision record in this installation",
+                             "applies-to: a different subject entirely"),
+                    "902-" + MARK + "-b.md")),
        "DEC-SUP-001")
 p.case("⑨ supersede a un registro inexistente",
        lambda: put(GOOD.replace("supersedes: —", "supersedes: 099"),
-                   "001-" + MARK + "-a.md"), "DEC-SUP-002")
+                   "901-" + MARK + "-a.md"), "DEC-SUP-002")
 p.case("⑩ superseded pero status accepted",
-       lambda: (put(GOOD.replace("superseded-by: —", "superseded-by: 002"),
-                    "001-" + MARK + "-a.md"),
-                put(GOOD.replace("# 001 ·", "# 002 ·").replace("supersedes: —",
-                                                               "supersedes: 001"),
-                    "002-" + MARK + "-b.md")), "DEC-SUP-003")
+       lambda: (put(GOOD.replace("superseded-by: —", "superseded-by: 902"),
+                    "901-" + MARK + "-a.md"),
+                put(GOOD.replace("# 901 ·", "# 902 ·")
+                    .replace("applies-to: every decision record in this installation",
+                             "applies-to: a different subject entirely")
+                    .replace("supersedes: —",
+                                                               "supersedes: 901"),
+                    "902-" + MARK + "-b.md")), "DEC-SUP-003")
 
 # ── las 5 reglas nuevas
 p.case("⑪ sin estado de implementación",
@@ -120,7 +129,7 @@ p.case("⑰c NUM · revertida sin decir por qué",
 
 p.case("⑰d SRC · dos registros vigentes sobre el mismo asunto",
        lambda: (put(GOOD),
-                put(GOOD.replace("# 001 ·", "# 002 ·"), "002-" + MARK + ".md")),
+                put(GOOD.replace("# 901 ·", "# 902 ·"), "902-" + MARK + ".md")),
        "DEC-SRC-003")
 
 p.inverse("⑰ un registro CORRECTO", lambda: put(GOOD))
