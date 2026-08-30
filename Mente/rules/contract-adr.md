@@ -48,7 +48,7 @@ SEARCH ──▶ UNDERSTAND ──▶ REUSE ──▶ CHECK FOR CONFLICT ──�
 |---|---|---|---|
 | `DEC-SRC-001` | ⭐ **The existing records are searched first** | 📖 | ⛔ nothing verifies this |
 | `DEC-SRC-002` | ⭐ **A question already answered is REUSED, never re-decided** | 📖 | ⚠️ cite the record instead |
-| `DEC-SRC-003` | ⛔ **A record that contradicts a current one is a CONFLICT** | 🔒 | ⭐ see §7 |
+| `DEC-SRC-003` | ⛔ **A record that contradicts a current one is a CONFLICT** | 🔒 | ⚠️ the SIGNAL is measured — two current records on one subject — never the semantics |
 
 ⚠️ **What happens without this, and it is the failure that costs most quietly:**
 
@@ -182,8 +182,8 @@ How to undo it if it turns out wrong. ⛔ If it cannot be undone, say so.
 | **Evidence** | a number, a file, a command — ⭐ or the words that admit there is none |
 | ⭐ **`implementation`** | ⚠️ **a decision and its implementation are not the same thing** — see §6 |
 | ⭐ **`applies-to` / `does-not-apply-to`** | ⛔ a decision with no boundary gets applied where it was never meant to |
-| **Rejected alternatives** | ⭐ **each one named** — see below |
-| **Consequences** | ⭐ what it obliges, and what proves it is in place |
+| **Rejected alternatives** ⚠️ *recommended* | ⭐ **each one named** — see below |
+| **Consequences** ⚠️ *recommended* | ⭐ what it obliges, and what proves it is in place |
 | **Reverting** | ⚠️ **and if it cannot be undone, that is the most important sentence in the file** |
 
 | ID | Rule | Enf | Verify |
@@ -191,10 +191,11 @@ How to undo it if it turns out wrong. ⛔ If it cannot be undone, say so.
 | `DEC-FLD-001` | **All five header fields present** | 🔒 | ⛔ missing one, it cannot be read by anything |
 | `DEC-FLD-002` | **`status` is one of the four** | 🔒 | ⚠️ free text means nothing can sort them |
 | `DEC-FLD-003` | **All five sections present** | 🔒 | Context · Decision · Rationale · Evidence · Reverting |
+| `DEC-FLD-003b` | ⭐ **`Rejected alternatives` and `Consequences` are RECOMMENDED, not required** | 📖 | ⚠️ their absence is not a violation — ⛔ but when present, `DEC-FLD-005` applies |
 | `DEC-FLD-004` | ⭐ **`Evidence` is filled, or explicitly says there is none** | 🔒 | ⛔ an empty field reads as *not yet written* |
-| `DEC-FLD-005` | ⭐ **Rejected alternatives are named, one per line** | 🟡 | ⚠️ without them, the reasoning cannot be re-examined |
-| `DEC-FLD-006` | ⭐ **`supersedes` states WHY, not only WHAT** | 🟡 | ⛔ *"replaced by 008"* does not say what changed |
-| `DEC-FLD-007` | ⭐ **A record declares where it applies** | 🟡 | ⚠️ and where it explicitly does not |
+| `DEC-FLD-005` | ⭐ **Rejected alternatives are named, one per line** | 🔒 | ⚠️ without them, the reasoning cannot be re-examined |
+| `DEC-FLD-006` | ⭐ **`supersedes` states WHY, not only WHAT** | 🔒 | ⛔ *"replaced by 008"* does not say what changed |
+| `DEC-FLD-007` | ⭐ **A record declares where it applies** | 🔒 | ⚠️ and where it explicitly does not |
 
 > ## ⭐ `Evidence` AND `Reverting` ARE WHAT MAKE THIS MORE THAN A CHANGELOG
 > ⛔ **A decision with no evidence is an opinion. A decision with no exit is a trap.**
@@ -225,7 +226,16 @@ whether it happened.**
 |---|---|---|---|
 | `DEC-IMP-001` | ⭐ **Both states are declared** | 🔒 | ⛔ one of them alone is half an answer |
 | `DEC-IMP-002` | ⭐ **`verified` names what demonstrates it** | 🟡 | ⚠️ a validator, a test, a measurement |
-| `DEC-IMP-003` | 🔴 **`accepted` + `not-started`, long enough, is asked about** | 📖 | ⭐ see below |
+| `DEC-IMP-003` | 🔴 **`accepted` + `not-started`, long enough, is asked about** | 🔒 | `bin/check-decisions`, against the ⬜ period below |
+
+### ⬜ HOW LONG IS LONG ENOUGH
+
+| ⬜ Declaration | Days | Why it is not the engine's |
+|---|---|---|
+| ⬜ pending period | 90 | ⛔ deciding months before building is normal in one project and a warning sign in another |
+
+⭐ **It is not forbidden** — ⛔ **it must not read the same as one that was done.** The record is
+asked about, never rejected.
 
 > ## 🔴 AN ACCEPTED DECISION THAT WAS NEVER IMPLEMENTED
 > ⛔ **From the outside it reads exactly like one that was.** ⚠️ The record says

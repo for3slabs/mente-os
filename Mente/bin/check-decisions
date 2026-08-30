@@ -15,12 +15,32 @@ DECISIONS = os.path.join(ROOT, "rules", "decisions")
 
 STATUSES = {"proposed", "accepted", "superseded", "reverted"}
 IMPL_STATES = {"not-started", "in-progress", "implemented", "verified"}
-SECTIONS = ["Context", "Decision", "Rejected alternatives", "Rationale",
-            "Evidence", "Consequences", "Reverting"]
+# DEC-FLD-003 · the FIVE the contract names, and only those. ⛔ This list held
+# seven: the contract says "all five" and lists five, and the two extras were a
+# stricter rule than the one written down. Eight real records were reported
+# incomplete for sections their contract never required — a validator stricter
+# than its own contract is a rule nobody agreed to.
+SECTIONS = ["Context", "Decision", "Rationale", "Evidence", "Reverting"]
+# ⭐ Recommended, never required: their absence is not a violation, and
+# DEC-FLD-005 still governs the alternatives WHEN they are named.
+OPTIONAL_SECTIONS = ["Rejected alternatives", "Consequences"]
 # DEC-IMP-003 · a decision accepted long ago and never started is asked about.
 # Not forbidden — deciding before building is normal — but it must not read
 # the same as one that was done.
-PENDING_DAYS = 90
+def pending_period():
+    """⬜ Read from the contract. ⛔ A threshold that lives only in code is a
+    decision nobody knows was taken — and deciding months before building is
+    normal in one project and a warning sign in another."""
+    try:
+        t = open(os.path.join(ROOT, "rules", "contract-adr.md"),
+                 encoding="utf-8", errors="replace").read()
+        m = re.search(r"⬜ pending period[^|]*\|\s*(\d+)", t)
+        return int(m.group(1)) if m else 0
+    except OSError:
+        return 0
+
+
+PENDING_DAYS = pending_period()
 NONE = {"—", "-", "none", "n/a", ""}
 NO_EVIDENCE = re.compile(r"\bnone\b.*\bjudg?ment call\b", re.I)
 
@@ -83,6 +103,19 @@ def main():
             else:
                 seen_num[num] = rel
 
+        # DEC-ONE-001 · ONE decision per file. ⛔ Decisions kept as rows in a
+        # shared table end up in TWO tables, and the two diverge without
+        # either looking wrong on its own. A row cannot carry its evidence,
+        # its rationale, or the way to undo it — a file can.
+        dec = body_of(text, "Decision") or ""
+        rows = [l for l in dec.splitlines()
+                if re.match(r"^\s*\|.*\|.*\|", l) and not re.match(r"^\s*\|[\s:|-]+\|$", l)]
+        if len(rows) > 2:
+            findings.append(("DEC-ONE-001", rel,
+                             "the decision section is a table of %d rows · one "
+                             "record holds ONE decision: a row cannot carry "
+                             "evidence or a way back" % (len(rows) - 1)))
+
         # DEC-FLD-001 · the five header fields
         missing = [k for k in ("date", "status", "decided-by",
                                "supersedes", "superseded-by") if k not in f]
@@ -105,6 +138,12 @@ def main():
 
         # DEC-FLD-003 · the five sections
         bodies = {}
+        # ⭐ The optional ones are READ but never required: their absence is
+        # not a violation, and DEC-FLD-005 still governs the alternatives when
+        # they ARE named. Reading only the required list made the optional
+        # rule silently unmeasurable — a check that cannot fire.
+        for s in OPTIONAL_SECTIONS:
+            bodies[s] = body_of(text, s)
         for s in SECTIONS:
             b = body_of(text, s)
             bodies[s] = b
@@ -175,6 +214,9 @@ def main():
             "rel": rel, "status": st,
             "supersedes": f.get("supersedes", "").strip(),
             "superseded_by": f.get("superseded-by", "").strip(),
+            # DEC-NUM-003 / DEC-SRC-003 need these across records, not per file
+            "applies_to": f.get("applies-to", "").strip(),
+            "reason": (body_of(text, "Rationale") or "").strip(),
         }
 
     # DEC-SUP-* · symmetry, existence, and status
@@ -209,6 +251,37 @@ def main():
                                      "superseded by %s but status is %r · expected: "
                                      "superseded · two records both read as current"
                                      % (by, r["status"])))
+
+    # DEC-NUM-003 · a REVERTED decision keeps its file and its number.
+    # ⛔ Deleting it makes every citation resolve to nothing, and nothing says
+    # the decision was ever taken — the reversal loses its own history.
+    for num, r in records.items():
+        if r["status"] == "reverted" and not r.get("reason"):
+            findings.append(("DEC-NUM-003", r["rel"],
+                             "reverted with no reason recorded · the record and "
+                             "its number stay; what must be added is WHY, or the "
+                             "reversal is indistinguishable from a mistake"))
+
+    # DEC-SRC-003 · a record that contradicts a CURRENT one is a conflict.
+    # ⚠️ What a script can measure is the SIGNAL, never the semantics: two
+    # current records claiming the same subject. It reports a conflict to
+    # resolve, never a verdict on which is right.
+    current = [(n, r) for n, r in records.items()
+               if r["status"] == "accepted" and r.get("applies_to")]
+    by_subject = {}
+    for n, r in current:
+        for subj in re.split(r"[,·]", r["applies_to"]):
+            subj = subj.strip().strip("`").lower()
+            if len(subj) < 3:
+                continue
+            by_subject.setdefault(subj, []).append(n)
+    for subj, nums in sorted(by_subject.items()):
+        if len(nums) > 1:
+            findings.append(("DEC-SRC-003", records[nums[0]]["rel"],
+                             "%s current records claim the same subject (%r): %s · "
+                             "⛔ two records, one question, and nothing says which "
+                             "is current · supersede one or narrow their scope"
+                             % (len(nums), subj[:40], ", ".join(sorted(nums)))))
 
     if not quiet:
         print("check-decisions · %d record(s)%s"
