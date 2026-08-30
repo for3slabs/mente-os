@@ -85,6 +85,27 @@ p.case("⑨ SHR · una negación que vive solo en el archivo local",
        lambda: put(local={"permissions": {"deny": ["Read(private/**)"]}}),
        "CFG-SHR-001")
 
+p.case("⑨b LST · un permiso concedido solo por comodín",
+       lambda: put(lambda c: c["permissions"]["allow"].append("Bash(*)")),
+       "CFG-LST-002")
+
+# ⭐ The inverse that matters most here: a BOUNDED shell grant must NOT fire.
+# Measured on a real configuration — the first pattern reported six bounded
+# grants (`bash hooks/start.sh`) as open doors. `bash:*` authorizes anything;
+# `bash <one script>` authorizes one script, and conflating them is the
+# loose-comparison family this very rule names first.
+p.inverse("⑨c SUR · un shell ACOTADO a un script no dispara",
+          lambda: put(lambda c: c["permissions"]["allow"].extend(
+              ["Bash(bash hooks/session-start.sh)", "Bash(bash -n bin/thing)",
+               "Bash(sh -c 'python3 tools/x.py')"])))
+
+# ⭐ And the grouping must not name a mechanism that does not exist: an
+# environment prefix is not the command being run.
+p.inverse("⑨d ONE · un prefijo VAR= no es un mecanismo",
+          lambda: put(lambda c: c["permissions"]["allow"].extend(
+              ["Bash(V=a ./tool one)", "Bash(V=b ./tool two)",
+               "Bash(V=c ./tool three)"])))
+
 p.inverse("⑩ una configuración CORRECTA", lambda: put())
 p.crash_guard()
 

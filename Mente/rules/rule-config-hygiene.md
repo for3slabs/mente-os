@@ -54,7 +54,7 @@ the file whose name promised them did not contain them.
 | ID | Rule | Enf | Verify |
 |---|---|---|---|
 | `CFG-SEC-001` | 🔴 **No secret in an approved command** | 🔒 | ⛔ see below |
-| `CFG-SEC-002` | 🔴 **No secret in a configuration file** | 🔒 | ⚠️ not even a placeholder that once held one |
+| `CFG-SEC-002` | 🔴 **No secret in a configuration file** | 🔒 | ⭐ performed by `CFG-SEC-001` — one search, not two |
 | `CFG-SEC-003` | ⭐ **A leaked secret is ROTATED, never just deleted** | 📖 | ⛔ purging does not invalidate |
 
 ### ⭐ WHY THIS IS A RULE AND NOT ADVICE
@@ -155,7 +155,7 @@ else can use that configuration** — and nothing said so.
 
 | ID | Rule | Enf | Verify |
 |---|---|---|---|
-| `CFG-PRT-001` | ⭐ **A path is written relative to the project** | 🟡 | ⛔ an absolute one measures one machine |
+| `CFG-PRT-001` | ⭐ **A path is written relative to the project** | 🔒 | ⛔ an absolute one measures one machine |
 | `CFG-PRT-002` | ⭐ **A genuinely non-portable path is DECLARED as such** | 📖 | ⚠️ see below |
 
 > ## ⭐ A DECLARED LIMIT IS ENGINEERING. A HIDDEN ONE IS DEBT.
