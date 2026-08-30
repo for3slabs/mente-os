@@ -1,0 +1,247 @@
+#!/usr/bin/env python3
+"""check-campaign — enforces the 🔒 rows of rules/contract-campaign.md
+
+⭐ Written against a defect this contract itself carried: a per-section ceiling
+that lived only in the document. A limit nobody measures is not a limit, so
+every ceiling here is read FROM the contract, never hardcoded.
+
+Exit: 0 clean · 1 violations · 2 the contract is missing
+"""
+import os, re, sys
+
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+CONTRACT = os.path.join(ROOT, "rules", "contract-campaign.md")
+CAMPAIGNS = os.path.join(ROOT, "work", "campaigns")
+BLOCKS = os.path.join(ROOT, "work", "blocks")
+
+# ⬜ What the sections are CALLED is the installation's. The engine fixes WHAT
+# must be answered, never the label the installation gives it.
+ALIAS = {
+    "mission":   ("mission", "misión", "mision"),
+    "authority": ("authority", "autoridad"),
+    "blocks":    ("blocks", "bloques"),
+    "context":   ("shared context", "contexto compartido", "context"),
+    "channel":   ("channel", "canal"),
+    "closing":   ("closing", "cierre"),
+}
+IDENTITY = ("id", "status", "created", "updated")
+
+
+def ceilings():
+    """⭐ Read the limits from the CONTRACT. §8 records what happens otherwise:
+    a section limit written only in prose ran to 112 lines against 40, and
+    nothing said a word."""
+    out = {"file": 150, "context": 40}
+    if not os.path.exists(CONTRACT):
+        return out
+    t = open(CONTRACT, encoding="utf-8").read()
+    m = re.search(r"[Dd]efault ceiling:\s*\*{0,2}(\d+)", t)
+    if m:
+        out["file"] = int(m.group(1))
+    return out
+
+
+def section(text, key):
+    for name in ALIAS[key]:
+        m = re.search(r"^##+\s*(?:[A-Z]\s*·\s*)?%s\b[^\n]*\n(.*?)(?=^##\s|\Z)"
+                      % re.escape(name), text, re.M | re.S | re.I)
+        if m:
+            return m.group(1)
+    return None
+
+
+def blocks_of(text):
+    body = section(text, "blocks") or ""
+    out = []
+    for row in re.findall(r"^\|\s*([^|\s][^|]*?)\s*\|", body, re.M):
+        r = row.strip().strip("`*")
+        if r and not re.match(r"^-+$", r) and r.lower() not in ("block", "bloque"):
+            out.append(r)
+    return out
+
+
+def block_state(text, bid):
+    body = section(text, "blocks") or ""
+    m = re.search(r"^\|\s*%s\s*\|[^|]*\|\s*([^|]+)\|" % re.escape(bid), body, re.M)
+    return m.group(1).strip() if m else ""
+
+
+def block_exists(bid):
+    for state in ("active", "blocked", "archive", "closed"):
+        if os.path.isdir(os.path.join(BLOCKS, state, bid)):
+            return True
+    return os.path.isdir(os.path.join(BLOCKS, bid))
+
+
+def check(path, rel, cap, owners):
+    bad = []
+    t = open(path, encoding="utf-8").read()
+    n = len(t.splitlines())
+
+    # CMP-FRM-003 · the ceiling is a default with a DECLARED exit
+    exempt = re.search(r"^exempt:\s*size\b", t, re.M)
+    if n > cap["file"] and not exempt:
+        bad.append(("CMP-FRM-003", rel,
+                    "%d lines over a ceiling of %d and no `exempt: size` · a "
+                    "limit raised by declaring is still a limit; one raised by "
+                    "ignoring is not a limit at all" % (n, cap["file"])))
+
+    # CMP-FRM-002 · identity as FIELDS — the shape the contract and the code
+    # must agree on. §8 records what their disagreement cost.
+    # ⛔ Not anchored to start-of-line only. A real campaign wrote
+    # `created: … · updated: …` on ONE line, and anchoring reported `updated`
+    # as missing when it was right there — a short-reach read, the family
+    # rule-checks-must-measure §5 names first.
+    head = t.split("\n## ", 1)[0]
+    missing = [f for f in IDENTITY
+               if not re.search(r"(?:^|·\s*)%s:\s*\S" % f, head, re.M)]
+    if missing:
+        bad.append(("CMP-FRM-002", rel,
+                    "identity field(s) missing: %s · required to OPEN"
+                    % ", ".join(missing)))
+
+    # CMP-FRM-001 · the three sections required to open
+    for key in ("mission", "authority", "blocks"):
+        if section(t, key) is None:
+            bad.append(("CMP-FRM-001", rel,
+                        "no %s section · required to OPEN: without it nobody "
+                        "knows what it pursues or by which yardstick" % key))
+
+    aut = section(t, "authority")
+    if aut is not None and not aut.strip():
+        bad.append(("CMP-CLS-002", rel,
+                    "the authority section is empty · nobody would know which "
+                    "yardstick was used"))
+
+    # the per-section ceiling that used to live only in prose
+    ctx = section(t, "context")
+    if ctx is not None and not exempt:
+        cn = len([l for l in ctx.splitlines() if l.strip()])
+        if cn > cap["context"]:
+            bad.append(("CMP-FRM-003", rel,
+                        "the shared-context section runs %d lines against %d · "
+                        "declare `exempt: size` or split it"
+                        % (cn, cap["context"])))
+
+    # CMP-BLK-001 / 002 / 003
+    bl = blocks_of(t)
+    if not bl:
+        bad.append(("CMP-BLK-001", rel,
+                    "no block declared · a campaign with no blocks orders "
+                    "nothing: it is a title"))
+    for b in bl:
+        if not block_exists(b):
+            bad.append(("CMP-BLK-002", rel,
+                        "names a block that exists in no state: %r · the "
+                        "shared context points at nothing, and it only shows "
+                        "when somebody tries to pick it up cold" % b))
+        if b in owners and owners[b] != rel:
+            bad.append(("CMP-BLK-003", rel,
+                        "%r is already claimed by %s · two campaigns over one "
+                        "block is two authorities" % (b, owners[b])))
+        owners.setdefault(b, rel)
+
+    # CMP-CHN-001 / 002 · a fact names who contributes it and who needs it
+    chn = section(t, "channel")
+    if chn:
+        for row in re.findall(r"^\|(.+)\|\s*$", chn, re.M):
+            cells = [c.strip() for c in row.split("|")]
+            if len(cells) < 3 or re.match(r"^-+$", cells[0]) or not cells[0]:
+                continue
+            if cells[0].lower() in ("fact", "hecho"):
+                continue
+            if not cells[1] or cells[1] in ("—", "-"):
+                bad.append(("CMP-CHN-001", rel,
+                            "the fact %r does not name the block that "
+                            "contributes it · an unattributed fact has nobody "
+                            "to correct it" % cells[0][:44]))
+            if len(cells) > 2 and (not cells[2] or cells[2] in ("—", "-")):
+                bad.append(("CMP-CHN-002", rel,
+                            "the fact %r does not name who needs it · a fact "
+                            "nobody needs is noise in the shared context"
+                            % cells[0][:44]))
+
+    closed = bool(re.search(r"^status:\s*closed", t, re.M))
+
+    # CMP-CLS-001 / 003
+    if closed:
+        open_children = [b for b in bl
+                         if block_state(t, b).lower() in ("active", "blocked")]
+        if open_children:
+            bad.append(("CMP-CLS-001", rel,
+                        "closed with %d child still open (%s) · the same "
+                        "reason a block does not close over open sub-blocks"
+                        % (len(open_children), ", ".join(open_children[:3]))))
+        if section(t, "closing") is None:
+            bad.append(("CMP-CLS-003", rel,
+                        "closed with no closing section · without a verdict "
+                        "it is abandoned, not closed"))
+
+    # CMP-IMP-001 / 002 · a closed child declares its impact on the siblings
+    for b in bl:
+        if block_state(t, b).lower() != "closed":
+            continue
+        bt = ""
+        for state in ("archive", "closed", "active", "blocked", ""):
+            q = os.path.join(BLOCKS, state, b, "BLOCK.md")
+            if os.path.exists(q):
+                bt = open(q, encoding="utf-8").read()
+                break
+        if not bt:
+            continue
+        m = re.search(r"^###+\s*(?:impact on the campaign|impacto en la campa)"
+                      r"[^\n]*\n(.*?)(?=^#{2,3}\s|\Z)", bt, re.M | re.S | re.I)
+        if not m:
+            bad.append(("CMP-IMP-001", rel,
+                        "%r closed without declaring its impact on the "
+                        "siblings · a closing that does not look sideways is "
+                        "work done blind" % b))
+        elif not m.group(1).strip():
+            bad.append(("CMP-IMP-002", rel,
+                        "%r declares an EMPTY impact · \"none\" is valid with "
+                        "its reason; blank is indistinguishable from forgetting"
+                        % b))
+    return bad
+
+
+def main():
+    quiet = "--quiet" in sys.argv
+    if not os.path.exists(CONTRACT):
+        print("🔴 the contract itself is missing: rules/contract-campaign.md")
+        return 2
+
+    cap = ceilings()
+    files = []
+    if os.path.isdir(CAMPAIGNS):
+        for n in sorted(os.listdir(CAMPAIGNS)):
+            q = os.path.join(CAMPAIGNS, n, "CAMPAIGN.md")
+            if os.path.exists(q):
+                files.append(q)
+
+    owners, findings = {}, []
+    for q in files:
+        findings += check(q, os.path.relpath(q, ROOT), cap, owners)
+
+    if not quiet:
+        print("check-campaign · %d campaign(s) · ceiling %d/%d (file/context)%s"
+              % (len(files), cap["file"], cap["context"],
+                 " · nothing measured" if not files else ""))
+    if findings:
+        for cid, rel, msg in findings:
+            print("🔴 %s · %s · %s" % (rel, cid, msg))
+        print("\n%d violations · rule: rules/contract-campaign.md" % len(findings))
+        return 1
+    if not quiet and files:
+        print("✅ 0 violations")
+    return 0
+
+
+if __name__ == "__main__":
+    try:
+        sys.exit(main())
+    except Exception as e:
+        # CHK-CAU-002 · a crash reports nothing, and "nothing reported" reads
+        # exactly like "nothing wrong". Turn it into a finding, not a trace.
+        print("🔴 %s crashed · %s: %s"
+              % (os.path.basename(__file__), type(e).__name__, e))
+        sys.exit(1)
