@@ -53,6 +53,13 @@ commits in that period were fixes** — of the fix.
 - ⭐ `WRK-LAN-005` — **nothing is edited before the scope is known**: the lane must be chosen
   first, which is only possible because the graph is measured first
 
+## What would change this decision
+
+⭐ **It stops being right if the lane never changes the work.** ⚠️ If `full-block` and `task`
+produce the same behaviour in practice — same measurement, same care — then the lanes are labels,
+not lanes. ⛔ **The test is not how often each is chosen; it is whether choosing differently
+changed what was done.**
+
 ## Reverting
 
 ⛔ **Collapse to one lane.** ⚠️ Whichever weight is chosen is wrong for half the work: heavy means

@@ -52,7 +52,7 @@ than merely believed.
 - `ARC-SHP-001` 🔒 — an archive carries all three of its files, or it is not consultable
 - `ARC-LRN-001` 🔒 — ⭐ **"what was learned" is never empty**: the one section that is not a copy
 - `BLK-CLS-001` 🔒 — a closing section exists before the block may be marked closed
-- `ADR-021` — an error becomes a reusable case, which needs somewhere to live
+- ⬜ `ADR-021` (planned) — an error becomes a reusable case, ⭐ which needs somewhere to live
 
 ## What would change this decision
 

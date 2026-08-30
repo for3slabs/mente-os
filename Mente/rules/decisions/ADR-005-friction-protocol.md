@@ -64,6 +64,13 @@ honest answer at the time.
 - `WRK-FRI-003` 🔒 — ⬜ a rule is flagged at a **declared** number of frictions in DISTINCT blocks
 - `WRK-FRI-004` 📖 — a flagged rule is never changed automatically; it escalates
 
+## What would change this decision
+
+⭐ **It stops being right if logged frictions never produce a rule change.** ⚠️ The protocol trades
+an immediate fix for a later, evidence-based one — ⛔ **if the later one never arrives, the trade
+was a way of not answering.** The signal is frictions accumulating past the declared threshold with
+no proposal raised at any close.
+
 ## Reverting
 
 ⛔ **Remove the log.** ⚠️ Rule evolution stops being evidence-based and becomes whoever argued last

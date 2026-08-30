@@ -141,6 +141,16 @@ p.inverse("⑰f NUM · el mismo dueño, nombre que describe la decisión",
           lambda: put(GOOD.replace("decided-by: the owner", "decided-by: alexandra"),
                       "904-" + MARK + "-one-file-per-record.md"))
 
+p.case("⑰g SUP · cita en prosa un ADR que no existe",
+       lambda: put(GOOD.replace("## Rationale",
+                                "## Consequences\n\n- `ADR-777` — something\n\n## Rationale")),
+       "DEC-SUP-004")
+
+# ⭐ the inverse: the same citation marked ⬜ planned must NOT fire.
+p.inverse("⑰h SUP · la misma cita, marcada ⬜ planned",
+          lambda: put(GOOD.replace("## Rationale",
+                                   "## Consequences\n\n- ⬜ `ADR-777` (planned) — something\n\n## Rationale")))
+
 p.inverse("⑰ un registro CORRECTO", lambda: put(GOOD))
 p.crash_guard()
 

@@ -148,7 +148,7 @@ Does the target have DECLARED DEPENDENTS in the graph?
 
 | ID | Rule | Enf | Verify |
 |---|---|---|---|
-| `WRK-LAN-001` | ⭐ **The lane comes from the dependency graph, not an estimate** | 🟡 | ⛔ *"it looks small"* is not an input |
+| `WRK-LAN-001` | ⭐ **The lane comes from the dependency graph, not an estimate** | 🔒 | ⭐ enforced by `WRK-LAN-002` — the measurable half: declared dependents force the lane |
 | `WRK-LAN-002` | **Declared dependents → `full-block`, always** | 🔒 | ⚠️ count them before choosing |
 | `WRK-LAN-003` | **The lane is written in the block's identity** | 🔒 | the field is present and valid |
 | `WRK-LAN-004` | ⭐ **The graph is re-measured before the lane is chosen** | 📖 | ⛔ a stale graph picks the wrong lane |
