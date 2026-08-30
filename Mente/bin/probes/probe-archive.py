@@ -78,8 +78,9 @@ status: closed
 
 ## K · Closing
 
+closed: 2026-01-20
 not completed: the second half
-""" % (MARK, MARK)
+""" % (MARK + "-block", MARK + "-block")
 
 
 def plant(summary=SUMMARY, conns=CONNECTIONS, block=BLOCK, files=3):
@@ -119,7 +120,44 @@ p.case("⑦ una credencial en el archivo",
        lambda: plant(block=BLOCK + "\napi_key: sk-abcdefghijklmnop\n"),
        "ARC-NEV-001")
 
+p.case("⑦b DEL · la carpeta no coincide con el id del bloque",
+       lambda: plant(block=BLOCK.replace("id: " + MARK + "-block",
+                                         "id: something-else")),
+       "ARC-DEL-002")
+p.case("⑦c SHP · el periodo de la carpeta no es el del cierre",
+       lambda: plant(block=BLOCK.replace("closed: 2026-01-20",
+                                         "closed: 2026-07-20")),
+       "ARC-SHP-003")
+# ⛔ Replace the line, never add to it: the fixture already says "moved to",
+# so appending a second line left the answer in place and the case planted
+# nothing. A probe that adds where it should replace tests the clean state.
+p.case("⑦d CON · algo sigue abierto y no dice a dónde se movió",
+       lambda: plant(conns=CONNECTIONS.replace(
+           "- nothing; the remainder moved to another block",
+           "- the second half of the migration")),
+       "ARC-CON-003")
+
 p.inverse("⑧ un archivo COMPLETO", lambda: plant())
+
+# ── ⬜ the alias mechanism · it existed, was documented, and never matched:
+# the key pattern stopped at the first space and every field name is several
+# words. Measured on a real archive: declaring three aliases changed nothing.
+# These two cases keep it connected.
+_pr = os.path.join(ROOT, "PROJECT-RULES.md")
+_orig_pr = open(_pr, encoding="utf-8").read()
+_renamed = SUMMARY.replace("## What was built", "## Qué se hizo")
+try:
+    p.case("⑧b ALIAS · una sección renombrada, sin alias declarado",
+           lambda: plant(summary=_renamed), "ARC-SUM-001")
+
+    open(_pr, "w", encoding="utf-8").write(
+        _orig_pr + "\narchive_field what was built = (qué se hizo|what was built)\n")
+    p.inverse("⑧c ALIAS · la misma sección, CON su alias declarado",
+              lambda: plant(summary=_renamed))
+finally:
+    open(_pr, "w", encoding="utf-8").write(_orig_pr)
+    p.clean()
+
 p.crash_guard()
 
 print("\n═══ B · CORRIDA CRUZADA · archivos reales de otra instancia ═══\n")
@@ -127,9 +165,17 @@ p.clean()
 real = sorted(glob.glob(os.path.join(REF, "*"))) if REF else []
 real = [d for d in real if os.path.isdir(d)]
 if real:
+    # ⛔ The marker cannot ride in the NAME at all: a prefix makes ARC-DEL-002
+    # see a renamed block, and a suffix makes ARC-SHP-003 see an invalid
+    # period. Measured: 5 false findings each way. ⭐ A cross-run copies the
+    # real object VERBATIM, and the filter widens to reach it — the probe
+    # adapts to the rules, never the objects to the probe.
+    copied = []
     for q in real:
-        d = p.track(os.path.join(ARCHIVE, MARK + "-" + os.path.basename(q)))
+        d = p.track(os.path.join(ARCHIVE, os.path.basename(q)))
         shutil.copytree(q, d, dirs_exist_ok=True)
+        copied.append(os.path.basename(q))
+    p.also = tuple(p.also) + tuple(copied)
     code, out, err = p.run()
     mine = p._mine(out)
     by = {}
