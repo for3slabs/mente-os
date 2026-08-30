@@ -89,6 +89,18 @@ p.case("⑭b SIZ · pasa el techo y nadie nombró la división",
                                 "\n".join("line %d" % i for i in range(750)))),
        "DOC-SIZ-001")
 
+# ⭐ DOC-IDS-001 · an id is an address. Measured: a real contract carried one
+# twice after a rule was added beside an existing one.
+p.case("⑭c IDS · el mismo id en dos filas",
+       lambda: put(GOOD.replace("Nothing of consequence.",
+                                "| `ABC-XYZ-001` | first | 🔒 | x |\n"
+                                "| `ABC-XYZ-001` | second | 🔒 | y |")),
+       "DOC-IDS-001")
+p.inverse("⑭d IDS · dos ids distintos no disparan",
+          lambda: put(GOOD.replace("Nothing of consequence.",
+                                   "| `ABC-XYZ-001` | first | 🔒 | x |\n"
+                                   "| `ABC-XYZ-002` | second | 🔒 | y |")))
+
 p.case("⑮ una credencial pegada en el cuerpo",
        lambda: put(GOOD.replace("Nothing of consequence.",
                                 'Run it with `--token=abc123def456ghi789`.')),

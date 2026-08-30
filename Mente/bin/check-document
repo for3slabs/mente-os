@@ -230,6 +230,24 @@ def check(path, rel, ceilings, quiet):
                     % ref))
         break
 
+    # DOC-IDS-001 · an id is an ADDRESS. ⛔ Two rows sharing one id means a
+    # citation resolves to whichever the reader finds first, and both rules
+    # look correct in isolation. ⚠️ Measured: a contract carried the same id
+    # twice after a rule was added beside an existing one, and nothing said so.
+    seen_ids = {}
+    for i, line in enumerate(text.split("\n"), 1):
+        m = re.match(r"\|\s*`([A-Z]{3}-[A-Z]+-\d+)`\s*\|", line)
+        if not m:
+            continue
+        if m.group(1) in seen_ids:
+            bad.append(("DOC-IDS-001", rel, i,
+                        "id %s is used twice (also line %d) · ⭐ an id is an "
+                        "ADDRESS: two rows sharing one means a citation "
+                        "resolves to whichever is found first, and both rules "
+                        "read as correct alone" % (m.group(1), seen_ids[m.group(1)])))
+            break
+        seen_ids[m.group(1)] = i
+
     # DOC-CNT-005 · no credential, not even as an example. ⛔ What is written
     # into a document stays in history: purging the file does not un-publish it.
     for i, line in enumerate(text.split("\n"), 1):
