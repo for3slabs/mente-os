@@ -2,7 +2,7 @@
 
 date: {{date}}
 status: accepted
-implementation: in-progress
+implementation: implemented
 decided-by: ⬜ declare
 supersedes: —
 superseded-by: —
@@ -55,8 +55,8 @@ layer 3.**
 
 - ⭐ layer 1 — the router points, it does not hold rules (`INH-RTR-*`)
 - layer 2 — `BLK-STD-001` 🔒 · at least one standard declared, or nothing can be rejected
-- ⬜ layer 3 — **the engine ships the DECLARATION, not the gate**: an installation wires a
-  pre-edit hook that reads what the block declared
+- ⭐ layer 3 — **`hooks/pre-edit-standards.py`**: it reads what the block declared and names it
+  back before the edit · ⛔ it never blocks — an unbearable guard is deleted
 - layer 4 — `BLK-CLS-*` 🔒 · the closing is checked, and it catches what the others let through
 
 ## What would change this decision
