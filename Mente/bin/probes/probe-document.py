@@ -146,4 +146,70 @@ print("  ⑳ %d documentos reales · %d hallazgos" % (len(real), len(mine)))
 for k in sorted(by):
     print("       %-14s %d" % (k, by[k]))
 
+# ── DOC-CAP-001/002 · the map and the tree must agree, BOTH ways ────────────
+# ⭐ Run against an ISOLATED COPY: the subject is a fixed file at the root, and
+# editing the real one would leave the working tree carrying a fixture.
+# ⛔ The second direction is the one that gets forgotten — a piece that exists
+# and is never named works fine, points at nothing, and gets rebuilt by somebody
+# who could not find it. Reading the map cannot reveal what the map left out.
+import shutil as _sh, subprocess as _sp, tempfile as _tf, os as _os
+
+_W = _tf.mkdtemp(prefix="mente-cap-")
+_T = _os.path.join(_W, "Mente")
+_sh.copytree(ROOT, _T, ignore=_sh.ignore_patterns(
+    "__pycache__", ".beats", ".test-lock", ".git"))
+_CAP = _os.path.join(_T, "CAPABILITIES.md")
+
+
+def _run_cap():
+    return _sp.run([sys.executable, _os.path.join(_T, "bin", "check-document")],
+                   cwd=_T, capture_output=True, text=True).stdout
+
+
+def _cap(label, ok, detail=""):
+    print("  %-52s %s %s" % (label, "✅" if ok else "🔴", detail))
+    p.results.append((label, "FAIL" if ok else "NOT_DETECTED"))
+
+
+_base = open(_CAP, encoding="utf-8").read()
+_cap("㉑ el mapa real coincide con el árbol", "DOC-CAP" not in _run_cap())
+
+# 🔴 a row naming a piece that does not exist, and NOT marked as planned
+open(_CAP, "w", encoding="utf-8").write(
+    _base + "\n| `bin/check-zzprobe` | a command that is not there |\n")
+_cap("㉒ 🔴 nombra una pieza inexistente sin ⬜ → detectado",
+     "DOC-CAP-001" in _run_cap())
+
+# ⭐ and the SAME row marked ⬜ is correct: the map may describe what is planned,
+# as long as the reader can tell that from what exists today
+open(_CAP, "w", encoding="utf-8").write(
+    _base + "\n⬜ | `bin/check-zzprobe` | planned, not built |\n")
+_cap("㉓ ⭐ la misma fila marcada ⬜ es correcta",
+     "DOC-CAP-001" not in _run_cap())
+
+# ⛔ the other direction · a real, executable piece the map never names
+open(_CAP, "w", encoding="utf-8").write(_base)
+_extra = _os.path.join(_T, "bin", "check-zzunnamed")
+open(_extra, "w").write("#!/usr/bin/env python3\n")
+_os.chmod(_extra, 0o755)
+_cap("㉔ ⛔ una pieza REAL que el mapa no nombra → detectado",
+     "DOC-CAP-002" in _run_cap())
+
+# ⚠️ but a shared helper is not a capability: demanding it be listed would turn
+# the map into a file listing, and a map that lists everything guides nobody
+_os.remove(_extra)
+_helper = _os.path.join(_T, "hooks", "_zzhelper.py")
+open(_helper, "w").write("# shared\n")
+_os.chmod(_helper, 0o755)
+_cap("㉕ ⚠️ un helper `_` NO se exige en el mapa",
+     "DOC-CAP-002" not in _run_cap())
+_os.remove(_helper)
+
+# ⬜ no map at all → NOT MEASURED, never a silent pass
+_os.remove(_CAP)
+_cap("㉖ ⬜ sin CAPABILITIES.md → lo dice, no calla",
+     "NOT MEASURED" in _run_cap())
+
+_sh.rmtree(_W, ignore_errors=True)
+
 sys.exit(0 if p.report() else 1)
