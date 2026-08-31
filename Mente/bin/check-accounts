@@ -1,0 +1,231 @@
+#!/usr/bin/env python3
+"""check-accounts — enforces the 🔒 rows of rules/rule-accounts.md
+
+Verifies the registry that says which account governs which repository, and
+measures the rows against the machine rather than believing them.
+
+⭐ WHY MEASURING MATTERS HERE. A renamed or transferred repository usually keeps
+redirecting from its old address: both names resolve, both look alive, and a
+stale row points at a dead repository while everything appears to work. ⛔ A row
+nobody checks is a claim, and a claim that looks like a fact is worse than a gap.
+
+⬜ The registry is INSTANCE data — a clone receives the header and zero rows. An
+empty registry is reported as NOT MEASURED, never as a pass: a green over zero
+rows is exactly what a completely unconfigured installation would print.
+
+Usage: check-accounts [--quiet]
+Exit: 0 clean or nothing to measure · 1 violations · 2 the rule itself is missing
+"""
+import os
+import re
+import sys
+
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+RULE = os.path.join(ROOT, "rules", "rule-accounts.md")
+REG = os.environ.get("MENTE_ACCOUNTS") or os.path.join(ROOT, "cuentas.tsv")
+TEMPLATE = os.path.join(ROOT, "templates", "cuentas.tsv.template")
+
+COLUMNS = ["repo", "cuenta", "rol", "remoto", "ruta_local", "por_que_existe", "guia"]
+# ⭐ ACC-REG-004 · the roles are DISCOVERED from the template's own declaration,
+# never hardcoded here. ⛔ A list in the validator and a list in the template are
+# two lists, and two lists diverge — then a role is legal in one place and
+# invisible in the other.
+ROLE_LINE = re.compile(r"^#\s{3}(\w+)\s{2,}")
+RETIRED = "archivado"
+
+# ⛔ ACC-REG-003 · the shape of a credential. Deliberately the same family the
+# config rule uses: a value long enough to be real, assigned to a secret-shaped
+# name, or a token carrying its own unmistakable prefix.
+SECRET = re.compile(
+    r"(?i)\b(?:pass(?:word|wd)?|secret|token|api[_-]?key|credential)\b\s*[:=]\s*\S{8,}"
+    r"|\b(?:sk|pk)-[A-Za-z0-9_-]{16,}"
+    r"|\bgh[pousr]_[A-Za-z0-9]{20,}"
+    r"|\bAKIA[0-9A-Z]{12,}")
+
+
+def declared_roles():
+    """The roles the registry's own template declares. Empty if it is absent."""
+    out = set()
+    try:
+        started = False
+        for line in open(TEMPLATE, encoding="utf-8", errors="replace"):
+            if "THE ROLES" in line:
+                started = True
+                continue
+            if started:
+                if not line.startswith("#"):
+                    break
+                m = ROLE_LINE.match(line)
+                if m:
+                    out.add(m.group(1).lower())
+    except OSError:
+        pass
+    return out
+
+
+def rows():
+    """Every data row → (line number, fields). The header and comments are not
+    data. ⬜ Returns None when the registry is absent, which is not a failure:
+    an installation that pushes nowhere has nothing to declare."""
+    if not os.path.exists(REG):
+        return None
+    out = []
+    for n, line in enumerate(open(REG, encoding="utf-8", errors="replace"), 1):
+        if line.startswith("#") or not line.strip():
+            continue
+        f = [c.strip() for c in line.rstrip("\n").split("\t")]
+        if f and f[0] == "repo":
+            continue                       # the header names the columns
+        out.append((n, f))
+    return out
+
+
+def check(n, f, roles):
+    bad = []
+    where = "%s:%d" % (os.path.basename(REG), n)
+
+    if len(f) != len(COLUMNS):
+        # ⛔ A short row is not a small problem: the columns shift, and a value
+        # lands in the wrong field where it will be read as something else.
+        return [("ACC-REG-001", where,
+                 "%d column(s), expected %d · a shifted row is read as another "
+                 "row entirely · columns are TAB-separated"
+                 % (len(f), len(COLUMNS)))]
+    repo, cuenta, rol, remoto, ruta, why, guia = f
+
+    if not repo or not cuenta:
+        bad.append(("ACC-REG-001", where,
+                    "a row with no repository or no account declares nothing"))
+
+    # ACC-REG-004 · a role the validator does not know is a role it cannot check
+    if roles and rol.lower() not in roles:
+        bad.append(("ACC-REG-004", where,
+                    "role %r is not declared in the registry's own header · an "
+                    "undeclared role passes silently, and that is how a retired "
+                    "repository keeps receiving work" % rol))
+
+    # ACC-REG-002 · a repository that cannot justify itself
+    if not why or why == "-":
+        bad.append(("ACC-REG-002", where,
+                    "no reason to exist · ⛔ a repository that cannot justify "
+                    "itself is either duplicated work or abandoned work, and "
+                    "nothing distinguishes the two later"))
+
+    # ACC-REG-003 · the pointer, never the credential
+    m = SECRET.search("\t".join(f))
+    if m:
+        bad.append(("ACC-REG-003", where,
+                    "a credential-shaped value is in this row · the `guia` "
+                    "column POINTS at a file under secrets/ · ⛔ what is written "
+                    "here stays in history, so this is ROTATED, not deleted"))
+
+    # ACC-VRF-001 / 002 · measured against the machine, or said to be unmeasured
+    if ruta and ruta != "-":
+        p = os.path.expanduser(ruta)
+        if not os.path.isdir(p):
+            bad.append(("ACC-VRF-001", where,
+                        "declared local path does not exist: %s · the row was "
+                        "never verified against this machine" % ruta))
+    return bad
+
+
+def layer2_wired():
+    """ACC-LYR-004 · is the unavoidable layer actually going to run?
+
+    🔴 THE FAILURE THIS CATCHES LOOKS EXACTLY LIKE SUCCESS. The hook file exists,
+    its code is correct and its probe passes — but if nothing linked it into the
+    tool's hook directory, ⛔ it never runs. The layer that cannot be walked
+    around is then not running at all, and only layer 1 remains: the one that a
+    pattern over command text can never fully cover.
+
+    ⚠️ Reported as a GAP, never as a violation. An installation may deliberately
+    not use git, or wire it elsewhere; ⬜ what must not happen is believing it is
+    protected when it is not.
+    """
+    src = os.path.join(ROOT, "hooks", "pre-push.sh")
+    if not os.path.exists(src):
+        return None                    # nothing to wire — reported by the caller
+    git = os.path.join(os.path.dirname(ROOT), ".git")
+    if not os.path.isdir(git):
+        return None                    # ⬜ not a git tree · nothing to measure
+    link = os.path.join(git, "hooks", "pre-push")
+    if not os.path.exists(link):
+        return ("not linked · hooks/pre-push.sh exists but nothing runs it · "
+                "only layer 1 protects, and layer 1 can be walked around")
+    # ⭐ Linked to the RIGHT file: an old copy left in place is worse than none,
+    # because it looks wired and enforces a registry that may have moved.
+    if os.path.realpath(link) != os.path.realpath(src):
+        return ("linked to %s, not to hooks/pre-push.sh · an old copy looks "
+                "wired and enforces something else" % os.path.realpath(link))
+    return ""                          # wired correctly
+
+
+def main():
+    quiet = "--quiet" in sys.argv
+    if not os.path.exists(RULE):
+        print("🔴 the rule itself is missing: rules/rule-accounts.md")
+        return 2
+
+    data = rows()
+    roles = declared_roles()
+    # ⭐ ACC-LYR-004 · measured FIRST, and independently of the registry. An
+    # unwired layer 2 is a gap whether or not any repository is declared yet —
+    # ⛔ returning early on an empty registry would hide the one finding that
+    # says the unavoidable defence is not running.
+    wiring = layer2_wired()
+    if wiring:
+        print("⬜ ACC-LYR-004 · layer 2 is %s" % wiring)
+
+    # ⬜ CHK-IND-002 · say WHAT WAS MEASURED. A green over zero rows is the same
+    # report a completely unconfigured installation would print.
+    if data is None:
+        if not quiet:
+            print("⬜ NOT MEASURED · no %s · this installation declares no push "
+                  "target · nothing was checked" % os.path.basename(REG))
+        return 0
+    if not data:
+        if not quiet:
+            print("⬜ NOT MEASURED · %s has no rows · a clone starts empty on "
+                  "purpose · nothing was checked" % os.path.basename(REG))
+        return 0
+    if not roles and not quiet:
+        # ⬜ Without the template the role check cannot run, and saying so is the
+        # difference between "every role is fine" and "roles were not checked".
+        print("⬜ NOT MEASURED · %s is absent · roles were not checked"
+              % os.path.relpath(TEMPLATE, ROOT))
+
+    findings = []
+    for n, f in data:
+        findings += check(n, f, roles)
+
+    # ACC-ARC-001 · reported here as INFORMATION, not as a violation: a retired
+    # repository is meant to stay declared. ⭐ What must not happen is a push,
+    # and that is the gates' job — this only makes sure the reader knows which
+    # rows are dead, because a dead row looks exactly like a live one.
+    retired = [f[0] for _, f in data if len(f) > 2 and f[2].lower() == RETIRED]
+
+    if not quiet:
+        print("check-accounts · %d repositor%s declared · %d role(s) known%s"
+              % (len(data), "y" if len(data) == 1 else "ies", len(roles),
+                 " · %d retired" % len(retired) if retired else ""))
+        for r in retired:
+            print("   ⬜ %s is RETIRED · it receives no work (ACC-ARC-001)" % r)
+
+    if findings:
+        for cid, where, msg in findings:
+            print("🔴 %s · %s · %s" % (where, cid, msg))
+        print("\n%d violations · rule: rules/rule-accounts.md" % len(findings))
+        return 1
+    if not quiet:
+        print("✅ 0 violations")
+    return 0
+
+
+if __name__ == "__main__":
+    try:
+        sys.exit(main())
+    except Exception as e:                                     # noqa: BLE001
+        # CHK-CAU-002 · a crash reports nothing, and nothing reads as fine.
+        print("🔴 %s crashed · %s: %s"
+              % (os.path.basename(__file__), type(e).__name__, e))
+        sys.exit(1)

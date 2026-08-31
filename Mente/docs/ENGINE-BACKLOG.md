@@ -685,5 +685,51 @@ makes the fix idempotent and independent of how the tree arrived.
 would fight an owner who hardened it further, and it only tightens, never
 loosens.
 
+---
+
+## E-40 · ⬜ What the accounts system still owes — and what depends on it
+
+**Found:** while building the two layers, 2026-08-30.
+
+The registry, its validator and both gates exist. ⭐ Three things do not, and
+each one is a place where something else will attach.
+
+### ⬜ 1 · Nothing WIRES layer 2 · the one that matters today
+
+`hooks/pre-push.sh` cannot be walked around — but only once it is linked into
+the tool's hook directory. ⛔ Until then the file exists, the code is correct,
+its probe passes, and it never runs. `ACC-LYR-004` now REPORTS that, which is
+the honest half; the missing half is the piece that DOES it.
+
+⚠️ It belongs with whatever performs installation, alongside the secrets-folder
+hardening that `bin/secrets-lease` already does for itself. ⭐ The pattern that
+worked there is the one to repeat: the piece that owns the thing installs it,
+rather than an installer that runs once and knows about everything.
+
+### ⬜ 2 · `bin/conectar-cuenta` · promised by name, does not exist
+
+The registry's own header names it as the piece that RESOLVES which account
+governs a repository. ⛔ A template that ships a name for something absent is a
+promise the reader cannot tell from a fact. Either build it or stop naming it —
+⚠️ and the second option loses the reason it was named.
+
+### ⬜ 3 · Nothing measures the registry against the remotes that exist
+
+`ACC-VRF-001` checks a declared local path. ⛔ Nothing compares the registry with
+what the machine's remotes actually say, which is where the drift the rule
+describes actually happens: the remote, the documentation and someone's memory
+disagree, and none of them knows.
+
+⚠️ This one needs a decision first, not code: reading real remotes means running
+the host's tool, and that is the frontier this engine does not cross without
+declaring it.
+
+### ⭐ WHY THIS ENTRY MATTERS MORE THAN ITS SIZE
+
+The accounts registry is where the piece table, the shipping rule and the secrets
+guides all meet: `piezas.tsv` says what a piece IS, `cuentas.tsv` says where its
+work GOES, and the `guia` column says where the access to it LIVES. ⛔ A gap here
+is not local to this file.
+
 Related: `README.md` (folder) · `../memory/principles/README.md` (where the owners live) ·
 `../rules/README.md` (where a closed entry usually lands) · `../CAPABILITIES.md`.
