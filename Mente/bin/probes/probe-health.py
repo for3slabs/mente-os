@@ -125,7 +125,12 @@ case("⑮ ⭐ TODO medido y sano → ahora sí un ✅ completo",
 # first version returned early on that and ignored the environment entirely —
 # ⛔ reporting "nothing declared" while the operator had declared everything,
 # which is a health report wrong in the confident direction.
-os.remove(os.path.join(TREE, "mente.config.yml"))
+# ⚠️ A clean clone HAS no config — it is gitignored. Removing one that may not
+# be there is the same assumption the defect was made of, so this only ensures
+# the absent state rather than assuming the present one.
+_cfg = os.path.join(TREE, "mente.config.yml")
+if os.path.exists(_cfg):
+    os.remove(_cfg)
 r = run(MENTE_HOOK_REGISTRY=registry(hooks[:-1]), MENTE_SESSION_DIR=SESS,
         MENTE_SESSION_ID="huge")
 case("⑰ 🔴 SIN config, el entorno sigue mandando", r.returncode == 1,

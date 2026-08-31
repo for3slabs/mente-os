@@ -73,8 +73,22 @@ else:
 
 for name, r in results:
     m = re.search(r"➜ (\d+) de (\d+) correctos", r.stdout)
-    good, all_ = (int(m.group(1)), int(m.group(2))) if m else (0, 0)
     leftovers = "restos: ninguno" not in r.stdout
+    if not m:
+        # 🔴 A PROBE THAT NEVER REPORTED ITS TALLY DID NOT RUN — it crashed, or
+        # it died before its last line. ⛔ Scored as (0, 0) this passed the
+        # `good == all_` test and printed "0/0", which reads as "no cases" and
+        # not as "it died"; worse, it contributed NOTHING to the total, so the
+        # battery's headline number shrank silently while still saying 0 failed.
+        # ⚠️ Found on a clean clone: a probe assumed an instance file existed.
+        # ⭐ Counted as ONE failure so the total can never quietly shrink.
+        crash = (r.stderr.strip().splitlines() or ["no output"])[-1]
+        total += 1
+        failed += 1
+        rows.append((name, 0, 1, False, leftovers))
+        print("  %-24s 🔴 CRASHED · %s" % (name, crash[:60]))
+        continue
+    good, all_ = int(m.group(1)), int(m.group(2))
     ok = r.returncode == 0 and good == all_ and not leftovers
     total += all_
     failed += all_ - good
