@@ -1,0 +1,220 @@
+#!/usr/bin/env python3
+"""check-health — the two things no other validator watches.
+
+⭐ WHAT THIS IS NOT. It is deliberately NOT "run every validator": the startup
+hook already discovers and runs them all, and a second piece doing the same
+thing would be a copy that drifts. ⛔ Measured before writing it: 8 of the 10
+concerns a health check would cover are already owned by a specific validator,
+and duplicating them would mean two answers to one question.
+
+Two are not owned by anything, and both are about the SYSTEM rather than its
+contents:
+
+  ① ⭐ ARE THE HOOKS ACTUALLY WIRED · three validators each check one hook.
+     Nothing checks the SET. ⛔ A hook that exists and is not registered with the
+     host never runs, and looks installed — the failure that reads as success.
+
+  ② 🔴 IS THIS SESSION STILL SAFE TO CONTINUE · nothing measures it. A past
+     incident came from a session that grew for days: the work degrades long
+     before anything breaks, and there is no error to notice.
+
+⬜ Everything host-specific is DECLARED, never assumed: where transcripts live,
+where the host registers hooks, and the thresholds. Unset means NOT MEASURED,
+said out loud — ⛔ a health check that stays quiet because it could not look is
+worse than none, since silence is what health looks like.
+
+Usage: check-health [--quiet]
+Exit: 0 healthy or nothing measurable · 1 something needs attention
+"""
+import json
+import os
+import re
+import sys
+
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+CONFIG = os.path.join(ROOT, "mente.config.yml")
+HOOKS = os.path.join(ROOT, "hooks")
+
+findings, gaps = [], []
+
+
+def red(msg):
+    findings.append(msg)
+
+
+def gap(msg):
+    gaps.append(msg)
+
+
+def config():
+    """The declared values. ⭐ A two-level reader, deliberately not a general
+    YAML parser: a hand-written general parser is a bug generator, and this file
+    has one shape."""
+    out, section = {}, None
+    try:
+        for line in open(CONFIG, encoding="utf-8", errors="replace"):
+            raw = line.rstrip("\n")
+            if not raw.strip() or raw.lstrip().startswith("#"):
+                continue
+            if not raw.startswith((" ", "\t")):
+                section = raw.split(":")[0].strip()
+                continue
+            m = re.match(r"\s+([\w_]+):\s*(.*?)\s*$", raw)
+            if m and section:
+                v = m.group(2).strip().strip('"\'')
+                out["%s.%s" % (section, m.group(1))] = v
+    except OSError:
+        return None
+    return out
+
+
+# ── ① ARE THE HOOKS WIRED ───────────────────────────────────────────────────
+def hooks_wired(cfg):
+    """⭐ The SET of hooks, not one of them.
+
+    ⬜ MENTE_HOOK_REGISTRY · the file where the host records which hooks it runs.
+    Unset means NOT MEASURED: this engine does not know how any particular host
+    registers a hook, and guessing would produce a confident wrong answer.
+
+    ⚠️ Reports a hook the registry never NAMES. It cannot report one the host
+    silently ignores — that is outside anything this engine can see, and the
+    limit is stated rather than hidden.
+    """
+    reg = os.environ.get("MENTE_HOOK_REGISTRY") or (cfg or {}).get("hooks.registry")
+    if not reg:
+        gap("hook wiring · ⬜ no registry declared (MENTE_HOOK_REGISTRY or "
+            "hooks.registry) · whether the hooks run was NOT checked")
+        return
+    path = reg if os.path.isabs(reg) else os.path.join(os.path.dirname(ROOT), reg)
+    if not os.path.exists(path):
+        gap("hook wiring · ⬜ declared registry does not exist: %s" % reg)
+        return
+    try:
+        text = open(path, encoding="utf-8", errors="replace").read()
+    except OSError as e:
+        gap("hook wiring · ⬜ registry unreadable (%s)" % e.__class__.__name__)
+        return
+
+    try:
+        names = sorted(n for n in os.listdir(HOOKS)
+                       if not n.startswith(("_", "."))
+                       and n != "README.md"
+                       and os.path.isfile(os.path.join(HOOKS, n)))
+    except OSError:
+        gap("hook wiring · ⬜ hooks/ unreadable · nothing was compared")
+        return
+
+    absent = [n for n in names if n not in text]
+    if absent:
+        red("%d hook(s) exist and the registry never names them: %s\n"
+            "   ⛔ A hook the host does not know about NEVER RUNS, and looks "
+            "installed.\n"
+            "   Registry: %s" % (len(absent), ", ".join(absent), reg))
+
+
+# ── ② IS THIS SESSION STILL SAFE ────────────────────────────────────────────
+def session(cfg):
+    """🔴 The guard that exists because of a past incident.
+
+    ⚠️ The damage is not a crash. A session that grows for days degrades the
+    work long before anything breaks — the scope drifts, earlier decisions stop
+    being visible, and there is NO error to notice. ⛔ By the time something
+    fails, the wrong answers have already been given.
+
+    ⬜ Where transcripts live is the host's, and the thresholds are the
+    installation's.
+    """
+    d = os.environ.get("MENTE_SESSION_DIR") or (cfg or {}).get("session.project_dir")
+    if not d or d == "null":
+        gap("session weight · ⬜ no transcript directory declared "
+            "(MENTE_SESSION_DIR or session.project_dir) · session size was NOT "
+            "measured")
+        return
+    d = os.path.expanduser(d)
+    if not os.path.isdir(d):
+        gap("session weight · ⬜ declared transcript directory does not exist: "
+            "%s" % d)
+        return
+
+    def num(key, default):
+        try:
+            return float((cfg or {}).get(key) or default)
+        except (TypeError, ValueError):
+            return float(default)
+
+    warn = num("session.size_warn_mb", 15)
+    stop = num("session.size_red_mb", 50)
+
+    # ⭐ The CURRENT session, named by the host when it can. ⛔ Taking the newest
+    # file by modification time is a guess, and it is wrong in exactly the window
+    # that matters: right after a reset the new transcript is small and loses to
+    # the previous one — so the guard measures a session that already ended and
+    # announces an age nobody is living.
+    live = os.environ.get("MENTE_SESSION_ID")
+    files = []
+    try:
+        for n in os.listdir(d):
+            p = os.path.join(d, n)
+            if os.path.isfile(p):
+                files.append(p)
+    except OSError:
+        gap("session weight · ⬜ transcript directory unreadable")
+        return
+    if not files:
+        gap("session weight · ⬜ no transcript in %s · nothing to measure" % d)
+        return
+
+    target = None
+    if live:
+        target = next((p for p in files if live in os.path.basename(p)), None)
+    guessed = target is None
+    if target is None:
+        target = max(files, key=os.path.getmtime)
+
+    mb = os.path.getsize(target) / (1024 * 1024)
+    how = " (guessed — the host named no session)" if guessed else ""
+    if mb >= stop:
+        red("this session is %.0f MB, past the %.0f MB limit%s\n"
+            "   ⛔ The work degrades before anything breaks, and there is no "
+            "error to notice.\n"
+            "   Record what matters and start a fresh session." % (mb, stop, how))
+    elif mb >= warn:
+        red("this session is %.0f MB — watch it (limit %.0f)%s" % (mb, stop, how))
+
+
+def main():
+    quiet = "--quiet" in sys.argv
+    cfg = config()
+    if cfg is None:
+        gap("⬜ no mente.config.yml · nothing is declared here yet · health was "
+            "not measured")
+    else:
+        hooks_wired(cfg)
+        session(cfg)
+
+    if not quiet:
+        for g in gaps:
+            print("⬜ NOT MEASURED · %s" % g)
+    if findings:
+        for f in findings:
+            print("🔴 %s" % f)
+        print("\n%d finding(s) · check-health" % len(findings))
+        return 1
+    if not quiet and not gaps:
+        print("✅ hooks wired · session within its limits")
+    elif not quiet:
+        # ⛔ Never a bare ✅ over checks that could not run: absence of evidence
+        # read as evidence is the failure this whole system names first.
+        print("· %d of 2 concern(s) measured · nothing wrong in those"
+              % (2 - len(gaps)))
+    return 0
+
+
+if __name__ == "__main__":
+    try:
+        sys.exit(main())
+    except Exception as e:                                     # noqa: BLE001
+        # CHK-CAU-002 · a crash reports nothing, and nothing reads as fine.
+        print("🔴 %s crashed · %s: %s"
+              % (os.path.basename(__file__), type(e).__name__, e))
+        sys.exit(1)

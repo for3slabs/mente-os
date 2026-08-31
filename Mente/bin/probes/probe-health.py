@@ -1,0 +1,136 @@
+#!/usr/bin/env python3
+"""probe-health — proves the two system-level concerns are measured, or said to be unmeasured.
+
+⭐ THIS VALIDATOR'S HARDEST REQUIREMENT IS NOT DETECTION — it is refusing to
+print a green over a check that could not run. ⛔ A health report is trusted more
+than any other output, and the one thing a healthy system and a blind one have
+in common is silence.
+
+⚠️ Both concerns depend on host-specific paths, so most cases here measure the
+NOT MEASURED path: what happens when the engine cannot see.
+"""
+import os, shutil, subprocess, sys, tempfile
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from harness import ROOT                       # noqa: E402
+
+results = []
+WORK = tempfile.mkdtemp(prefix="mente-health-")
+TREE = os.path.join(WORK, "Mente")
+shutil.copytree(ROOT, TREE, ignore=shutil.ignore_patterns(
+    "__pycache__", ".beats", ".test-lock", ".git"))
+CHECK = os.path.join(TREE, "bin", "check-health")
+SESS = os.path.join(WORK, "transcripts")
+os.makedirs(SESS)
+REG = os.path.join(WORK, "registry.json")
+
+
+def case(label, ok, detail=""):
+    print("  %-58s %s %s" % (label, "✅" if ok else "🔴", detail))
+    results.append((label, ok))
+
+
+def run(**env):
+    return subprocess.run([sys.executable, CHECK], cwd=TREE,
+                          capture_output=True, text=True,
+                          env=dict(os.environ, **env))
+
+
+def transcript(name, mb):
+    p = os.path.join(SESS, name)
+    with open(p, "wb") as fh:
+        fh.write(b"x" * int(mb * 1024 * 1024))
+    return p
+
+
+def registry(names):
+    import json
+    open(REG, "w").write(json.dumps({"hooks": list(names)}))
+    return REG
+
+
+print("═══ SONDA · check-health ═══\n")
+
+# ── ⛔ THE HARDEST REQUIREMENT · never a green over what could not run ──────
+r = run()
+case("① ⬜ sin nada declarado → dice qué NO midió",
+     "NOT MEASURED" in r.stdout and "✅" not in r.stdout, "exit=%d" % r.returncode)
+case("② ⛔ y NO imprime un ✅ sobre lo no medido",
+     "0 of 2 concern(s) measured" in r.stdout)
+
+# ── ① HOOK WIRING · the failure that reads as success ──────────────────────
+hooks = sorted(n for n in os.listdir(os.path.join(TREE, "hooks"))
+               if not n.startswith(("_", ".")) and n != "README.md")
+r = run(MENTE_HOOK_REGISTRY=registry(hooks))
+case("③ ⭐ todos los hooks registrados → sin hallazgo",
+     "🔴" not in r.stdout, "exit=%d" % r.returncode)
+
+r = run(MENTE_HOOK_REGISTRY=registry(hooks[:-2]))
+case("④ 🔴 dos hooks que el registro no nombra → detectado",
+     r.returncode == 1 and "NEVER RUNS" in r.stdout, "exit=%d" % r.returncode)
+case("⑤ ⭐ y los NOMBRA, no solo cuenta", hooks[-1] in r.stdout)
+
+# ⬜ a registry that was declared and is not there is a GAP, not a pass
+r = run(MENTE_HOOK_REGISTRY="/nowhere/registry.json")
+case("⑥ ⬜ registro declarado y ausente → hueco, no ✅",
+     r.returncode == 0 and "does not exist" in r.stdout)
+
+# ── ② SESSION WEIGHT · the guard a past incident paid for ──────────────────
+transcript("small.jsonl", 1)
+r = run(MENTE_SESSION_DIR=SESS, MENTE_SESSION_ID="small")
+case("⑦ ⭐ una sesión pequeña no molesta", "🔴" not in r.stdout)
+
+transcript("heavy.jsonl", 20)
+r = run(MENTE_SESSION_DIR=SESS, MENTE_SESSION_ID="heavy")
+case("⑧ ⚠️ pasado el aviso → lo dice", r.returncode == 1 and "watch it" in r.stdout,
+     "exit=%d" % r.returncode)
+
+transcript("huge.jsonl", 55)
+r = run(MENTE_SESSION_DIR=SESS, MENTE_SESSION_ID="huge")
+case("⑨ 🔴 pasado el límite → hallazgo", r.returncode == 1 and "past the" in r.stdout,
+     "exit=%d" % r.returncode)
+case("⑩ ⭐ y explica que el trabajo se degrada ANTES de que algo falle",
+     "no error to notice" in r.stdout)
+
+# ⭐ THE RESOLVER · without a named session the newest file is a GUESS, and the
+# guess is wrong exactly after a reset: the new transcript is small and loses to
+# the previous one. ⛔ So the guess is declared as one.
+r = run(MENTE_SESSION_DIR=SESS)
+case("⑪ ⭐ sin sesión nombrada, dice que ADIVINÓ", "guessed" in r.stdout)
+
+r = run(MENTE_SESSION_DIR=SESS, MENTE_SESSION_ID="small")
+case("⑫ ⭐ con la sesión nombrada mide LA VIVA, no la más pesada",
+     "🔴" not in r.stdout)
+
+# ⬜ declared and absent · a gap
+r = run(MENTE_SESSION_DIR="/nowhere/at/all")
+case("⑬ ⬜ directorio declarado y ausente → hueco, no ✅",
+     r.returncode == 0 and "does not exist" in r.stdout)
+
+# ⭐ an empty directory is not a healthy session — it is nothing to measure
+empty = os.path.join(WORK, "empty")
+os.makedirs(empty, exist_ok=True)
+r = run(MENTE_SESSION_DIR=empty)
+case("⑭ ⬜ directorio vacío → nada que medir, no un ✅",
+     "no transcript" in r.stdout)
+
+# ── ⭐ both measured and healthy → the only case that earns a green ─────────
+r = run(MENTE_HOOK_REGISTRY=registry(hooks), MENTE_SESSION_DIR=SESS,
+        MENTE_SESSION_ID="small")
+case("⑮ ⭐ TODO medido y sano → ahora sí un ✅ completo",
+     "✅" in r.stdout and r.returncode == 0)
+
+# ── ⛔ robustness ───────────────────────────────────────────────────────────
+open(os.path.join(TREE, "mente.config.yml"), "wb").write(b"\xff\xfe\x00")
+r = run()
+case("⑯ ⛔ una configuración ilegible no revienta la comprobación",
+     "Traceback" not in r.stderr)
+
+shutil.rmtree(WORK, ignore_errors=True)
+good = sum(1 for _, ok in results if ok)
+print("\n  ➜ %d de %d correctos" % (good, len(results)))
+for l, ok in results:
+    if not ok:
+        print("     🔴 %s" % l)
+print("  restos: %s" % ("ninguno" if not os.path.exists(WORK) else "🔴 copia"))
+sys.exit(0 if good == len(results) else 1)

@@ -61,9 +61,9 @@ answers exactly one question. None of them decides anything: they check what is 
 
 | Command | The question it answers |
 |---|---|
-⬜ | `bin/check-health` | is anything wrong right now — ⭐ **start here** |
+| `bin/check-health` | ⭐ **the two things no other validator watches** — are the hooks WIRED, and is this session still safe to continue |
 ⬜ | `bin/check-links` | does every internal pointer resolve to something that exists |
-⬜ | `bin/check-structure` | is the tree the one `piezas.tsv` declares |
+| `bin/check-structure` | ⭐ does every row in `piezas.tsv` still have its file — the table-side check |
 | `bin/check-declared` | ⭐ does every engine file have its row in `piezas.tsv` — the disk-side check |
 | `bin/check-document` | does every document carry its header, its ceiling and pointers that resolve |
 | `bin/check-block` | does every block meet its contract — sections, states, closing |

@@ -195,3 +195,4 @@ gate-accounts	hooks/gate-accounts.py	engine	executable	layer 1 · explains befor
 pre-push	hooks/pre-push.sh	engine	executable	layer 2 · runs inside the push with the destination resolved — ⭐ cannot be walked around
 probe-gate-accounts	bin/probes/probe-gate-accounts.py	engine	executable	proves both layers, and proves WHY there are two: 5 evasions walk past layer 1
 probe-structure	bin/probes/probe-structure.py	engine	executable	proves a stale row is told from a legitimate absence — most absences are correct
+probe-health	bin/probes/probe-health.py	engine	executable	proves a green is never printed over a check that could not run
