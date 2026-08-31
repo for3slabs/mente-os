@@ -213,3 +213,6 @@ probe-grade	bin/probes/probe-grade.py	engine	executable	proves grade-block measu
 beat	hooks/_beat.py	engine	executable	the shared stamp every gate leaves — ⭐ turns a gate's silence into something measurable
 check-gates	bin/check-gates	engine	executable	names a gate that stopped firing — ⛔ silence from a dead gate reads exactly like silence from a quiet one
 probe-gates	bin/probes/probe-gates.py	engine	executable	proves the reader tells a dead gate from a quiet week
+secrets-lease	bin/secrets-lease	engine	executable	issues the read permission for secrets/ — ⭐ tied to the context load, never to a clock
+gate-secrets	hooks/gate-secrets.py	engine	executable	refuses a secret VALUE before it reaches disk, and governs secrets/ — ⛔ the only gate that fails CLOSED
+probe-gate-secrets	bin/probes/probe-gate-secrets.py	engine	executable	proves the leak check refuses a real secret and never a placeholder
