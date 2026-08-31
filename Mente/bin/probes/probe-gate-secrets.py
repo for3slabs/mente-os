@@ -157,6 +157,47 @@ case("🔐 la bitácora nace 600, no 644",
      os.path.exists(LOG) and oct(os.stat(LOG).st_mode)[-3:] == "600",
      oct(os.stat(LOG).st_mode)[-3:] if os.path.exists(LOG) else "—")
 
+# ── E-39 · THE GRANTOR HARDENS THE FOLDER IT GUARDS ────────────────────────
+# ⭐ Git cannot carry a 700, so every clone arrives world-readable. ⛔ A report
+# is not a repair: check-config names it, and the folder stays open until
+# somebody reads the finding. The grantor closes it before issuing, because a
+# permission granted over a world-readable folder grants nothing.
+import stat as _stat
+SDIR = os.path.join(TREE, "secrets")
+
+
+def mode_of(p):
+    return oct(_stat.S_IMODE(os.stat(p).st_mode))[-3:]
+
+
+os.chmod(SDIR, 0o755)
+lease("open")
+case("🔐 E-39 · un 755 se cierra a 700 al conceder", mode_of(SDIR) == "700",
+     mode_of(SDIR))
+
+# ⚠️ AND IT ONLY TIGHTENS. An owner who hardened further made a decision this
+# grantor knows nothing about — resetting it to 700 would silently undo it.
+os.chmod(SDIR, 0o500)
+lease("open")
+case("⚠️ un 500 (más duro) NO se ablanda a 700", mode_of(SDIR) == "500",
+     mode_of(SDIR))
+os.chmod(SDIR, 0o700)
+
+# ⛔ a real file left readable is closed too — that is where a credential lives
+kf = os.path.join(SDIR, "key-note.md")
+open(kf, "w").write("where the key lives")
+os.chmod(kf, 0o644)
+lease("open")
+case("🔐 un archivo 644 dentro se cierra a 600", mode_of(kf) == "600",
+     mode_of(kf))
+os.remove(kf)
+
+# ⛔ but README.md is left alone: it ships in git, which cannot carry a 600, so
+# tightening it is undone by the next pull — and a fix that does not survive is
+# noise. check-config exempts it for the same reason.
+case("⛔ README.md se deja en paz (git no lleva 600)",
+     mode_of(os.path.join(SDIR, "README.md")) != "600")
+
 # ── FAIL CLOSED · the case that decides whether this is real ────────────────
 # 🔴 If the grantor cannot answer, permission must NOT be granted. A grant issued
 # because a check broke is the exact failure the gate exists to prevent.
