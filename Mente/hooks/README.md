@@ -117,9 +117,10 @@ date and make a dead gate on your machine look alive.
 |---|---|---|
 | `session-` | when a session opens | `session-start.sh` · ⛔ never blocks (rule 1) |
 | `pre-edit-` | before a file is written | `pre-edit-standards.py` · injects the standards that apply |
-| `gate-` | before a risky action | `gate-critical.py` · 🔴 **may block** |
+| `gate-` | before a risky action | `gate-critical.py` · `gate-secrets.py` · 🔴 **may block** |
 | `pre-commit` / `pre-push` | git's own hooks, on the real operation | 🔴 **may block** |
 | `watch-` | observes and records; decides nothing | `watch-external.py` · ⬜ WHAT it watches is declared |
+| `_` | ⭐ **not a hook** — a helper the hooks share | `_beat.py` · the stamp that makes a gate's silence measurable |
 | `_` | ⚠️ **not a hook** — a shared helper other hooks import | — |
 
 ⭐ **Why `pre-push` matters more than it looks:** a gate that reads the *text* of a command can be
