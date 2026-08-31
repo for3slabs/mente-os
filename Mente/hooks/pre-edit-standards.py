@@ -13,6 +13,8 @@ Contract: a PreToolUse payload on stdin · always exit 0.
 import os, re, sys, glob, json
 
 MENTE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from _beat import beat                                         # noqa: E402
 sys.path.insert(0, os.path.join(MENTE, "bin"))
 from blockread import body_of                                  # noqa: E402
 
@@ -78,6 +80,9 @@ def campaign_of(block):
 
 
 def main():
+    # ⭐ Proof this hook still fires — see bin/check-gates. An injector that
+    # stops running looks exactly like a session where nothing was owned.
+    beat(MENTE, "pre-edit-standards")
     try:
         payload = json.load(sys.stdin)
     except Exception:

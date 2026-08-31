@@ -44,8 +44,6 @@ gen-indice	bin/generate-index	engine	canonical	produces INDEX.md and STATES.md f
 gen-metricas	bin/generate-metrics	engine	canonical	re-measures and republishes METRICS.md
 instalador	bin/init	engine	canonical	generates the instance files from templates/
 # ── engine · the gates + hooks ──
-puerta-critica	hooks/gate-critical.py	engine	canonical	blocks a destructive change with no rollback, and an insufficient close
-pre-edit	hooks/pre-edit-standards.py	engine	canonical	injects the block's standards before an edit
 pre-commit	hooks/pre-commit.sh	engine	canonical	blocks a commit that violates the block's contract
 session-start	hooks/session-start.sh	engine	canonical	runs every validator at session start — ⭐ silent unless something is wrong
 pre-edit-standards	hooks/pre-edit-standards.py	engine	executable	names a block's standards before its files are touched — ⭐ layer 3 of ADR-011
@@ -55,11 +53,6 @@ probe-watch-external	bin/probes/probe-watch-external.py	engine	executable	proves
 probe-gate-critical	bin/probes/probe-gate-critical.py	engine	executable	proves the gate blocks what it must and NOTHING else — 5 inverses to 4 blocks
 probe-pre-edit	bin/probes/probe-pre-edit-standards.py	engine	executable	proves the injection hook names the RIGHT block, and never blocks
 # ── engine · the contracts + inheritance model ──
-contrato-bloque	rules/contract-block.md	engine	canonical	which fields a block carries (§A-K)
-contrato-campana	rules/contract-campaign.md	engine	canonical	which fields a campaign carries, and its lower ceiling
-contrato-doc	rules/contract-document.md	engine	canonical	the shape every document in the system follows
-contrato-adr	rules/contract-adr.md	engine	canonical	the shape of a recorded decision
-herencia	rules/rule-inheritance.md	engine	canonical	the 3 levels and how rules add up
 ciclo-bloque	rules/block-lifecycle.md	engine	canonical	how a block opens and closes
 regla-cierre	rules/rule-session-close.md	engine	canonical	register the session before a reset
 convencion-nombres	rules/NAMING_CONVENTION.md	engine	canonical	how pieces are named
@@ -176,7 +169,6 @@ rule-shipping	rules/rule-shipping.md	engine	canonical	how a change leaves the wo
 check-shipping	bin/check-shipping	engine	executable	enforces the lock rows of the shipping rule
 probe-shipping	bin/probes/probe-shipping.py	engine	executable	proves check-shipping detects what the shipping rule claims
 probe-session-start	bin/probes/probe-session-start.py	engine	executable	proves the startup hook is silent when healthy, loud when not, and never blocks
-hook-pre-commit	hooks/pre-commit.sh	engine	executable	refuses a commit on the base branch — SHP-LCK-001
 contract-archive	rules/contract-archive.md	engine	canonical	what survives when a block closes — the three files and what goes inside them
 check-archive	bin/check-archive	engine	executable	enforces the lock rules of the archive contract
 probe-archive	bin/probes/probe-archive.py	engine	executable	proves check-archive detects what the archive contract claims
@@ -192,3 +184,6 @@ probe-campaign	bin/probes/probe-campaign.py	engine	executable	proves check-campa
 contract-quality-verdict	rules/contract-quality-verdict.md	engine	canonical	is this a product or an MVP — two layers, measured and criterion
 grade-block	bin/grade-block	engine	executable	layer 1 of the quality verdict: answers with numbers, never an opinion
 probe-grade	bin/probes/probe-grade.py	engine	executable	proves grade-block measures what the quality contract claims
+beat	hooks/_beat.py	engine	executable	the shared stamp every gate leaves — ⭐ turns a gate's silence into something measurable
+check-gates	bin/check-gates	engine	executable	names a gate that stopped firing — ⛔ silence from a dead gate reads exactly like silence from a quiet one
+probe-gates	bin/probes/probe-gates.py	engine	executable	proves the reader tells a dead gate from a quiet week

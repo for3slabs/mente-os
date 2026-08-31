@@ -210,3 +210,6 @@ probe-campaign	bin/probes/probe-campaign.py	engine	executable	proves check-campa
 contract-quality-verdict	rules/contract-quality-verdict.md	engine	canonical	is this a product or an MVP — two layers, measured and criterion
 grade-block	bin/grade-block	engine	executable	layer 1 of the quality verdict: answers with numbers, never an opinion
 probe-grade	bin/probes/probe-grade.py	engine	executable	proves grade-block measures what the quality contract claims
+beat	hooks/_beat.py	engine	executable	the shared stamp every gate leaves — ⭐ turns a gate's silence into something measurable
+check-gates	bin/check-gates	engine	executable	names a gate that stopped firing — ⛔ silence from a dead gate reads exactly like silence from a quiet one
+probe-gates	bin/probes/probe-gates.py	engine	executable	proves the reader tells a dead gate from a quiet week

@@ -297,6 +297,8 @@ when a document grew past its shape and nobody wanted to renumber. ⚠️ **It i
 | `DOC-CNT-003` | **Point, never copy** | 📖 | ⚠️ a duplicated table desynchronises |
 | `DOC-CNT-004` | ⭐ **Every path MUST be written from the system root** | 🔒 | ⛔ a bare filename cannot be resolved |
 | `DOC-IDS-001` | ⭐ **An id is an ADDRESS — never used twice** | 🔒 | ⛔ measured: one contract carried the same id in two rows, and both read as correct alone |
+| `DOC-IDS-002` | ⭐ **A path is declared ONCE in the piece table** | 🔒 | ⛔ measured: eight paths carried a placeholder row AND the real one — different name, class and description |
+| `DOC-IDS-003` | ⭐ **The piece table and its template declare the same ENGINE pieces** | 🔒 | ⛔ they were kept in step by hand; a piece missing from the template is missing from every fresh install |
 | `DOC-CNT-005` | ⛔ **No credential, not even as an example** | 🔒 | ⚠️ what is written stays in history |
 | `DOC-CNT-006` | ⭐ **A quotation is verbatim, or it is not a quotation** | 📖 | ⛔ see below |
 

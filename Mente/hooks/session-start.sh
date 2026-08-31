@@ -28,7 +28,10 @@ fi
 # ⭐ Healthy silence and dead silence are indistinguishable from the inside, but
 # a stamp makes them distinguishable AFTERWARDS: "it said nothing" becomes "it
 # has said nothing since <date>".
-date -u +%Y-%m-%d > "$MENTE/.heartbeat" 2>/dev/null || true
+# ⚠️ LOCAL, not `date -u`. Every reader of this stamp compares it against the
+# local date; writing UTC here made the two halves of one subtraction use two
+# clocks, and the gap read one day too old west of UTC.
+date +%Y-%m-%d > "$MENTE/.heartbeat" 2>/dev/null || true
 
 # ── WHICH SESSION IS THIS ────────────────────────────────────────────────────
 # ⬜ The host may hand a session id on stdin. Read it if present, and say so if
