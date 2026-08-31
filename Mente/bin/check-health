@@ -35,7 +35,13 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 CONFIG = os.path.join(ROOT, "mente.config.yml")
 HOOKS = os.path.join(ROOT, "hooks")
 
-findings, gaps = [], []
+findings, gaps, notes = [], [], []
+
+
+# ⭐ A NOTE IS NOT A GAP, and conflating them produced "-1 of 2 concerns
+# measured". A gap is a CONCERN that could not be checked; a note is context
+# about how the checking was configured. ⛔ Counting a note as a gap makes the
+# summary arithmetic lie, and a health summary that cannot count is not read.
 
 
 def red(msg):
@@ -44,6 +50,10 @@ def red(msg):
 
 def gap(msg):
     gaps.append(msg)
+
+
+def note(msg):
+    notes.append(msg)
 
 
 def config():
@@ -184,15 +194,24 @@ def session(cfg):
 
 def main():
     quiet = "--quiet" in sys.argv
+    # ⛔ AN ABSENT CONFIG IS NOT A REASON TO MEASURE NOTHING. Found on a clean
+    # clone, invisible here: mente.config.yml is an instance file, so a clone
+    # legitimately lacks one — and returning early meant the environment
+    # variables were ignored too. ⚠️ The checks then reported "nothing declared"
+    # while the operator had declared everything, which is a health report that
+    # is wrong in the confident direction.
+    # ⭐ An empty config is the right default: each check already says what it
+    # could not see.
     cfg = config()
     if cfg is None:
-        gap("⬜ no mente.config.yml · nothing is declared here yet · health was "
-            "not measured")
-    else:
-        hooks_wired(cfg)
-        session(cfg)
+        note("no mente.config.yml · only what the environment declares was read")
+        cfg = {}
+    hooks_wired(cfg)
+    session(cfg)
 
     if not quiet:
+        for n in notes:
+            print("· %s" % n)
         for g in gaps:
             print("⬜ NOT MEASURED · %s" % g)
     if findings:

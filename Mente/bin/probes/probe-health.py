@@ -120,6 +120,19 @@ r = run(MENTE_HOOK_REGISTRY=registry(hooks), MENTE_SESSION_DIR=SESS,
 case("⑮ ⭐ TODO medido y sano → ahora sí un ✅ completo",
      "✅" in r.stdout and r.returncode == 0)
 
+# ── 🔴 THE DEFECT THE CLEAN CLONE FOUND, INVISIBLE IN THE WORKING TREE ─────
+# mente.config.yml is an INSTANCE file, so a clone legitimately lacks one. The
+# first version returned early on that and ignored the environment entirely —
+# ⛔ reporting "nothing declared" while the operator had declared everything,
+# which is a health report wrong in the confident direction.
+os.remove(os.path.join(TREE, "mente.config.yml"))
+r = run(MENTE_HOOK_REGISTRY=registry(hooks[:-1]), MENTE_SESSION_DIR=SESS,
+        MENTE_SESSION_ID="huge")
+case("⑰ 🔴 SIN config, el entorno sigue mandando", r.returncode == 1,
+     "exit=%d" % r.returncode)
+case("⑱ ⭐ y el resumen sabe contar (una NOTA no es un hueco)",
+     "-1 of" not in r.stdout and "of 2 concern" not in r.stdout)
+
 # ── ⛔ robustness ───────────────────────────────────────────────────────────
 open(os.path.join(TREE, "mente.config.yml"), "wb").write(b"\xff\xfe\x00")
 r = run()
