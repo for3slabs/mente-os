@@ -1,0 +1,156 @@
+#!/usr/bin/env python3
+"""check-gates — is every gate still firing, or has one gone quiet?
+
+⭐ THE DEFECT THIS EXISTS FOR. A gate has two silences and they look identical:
+nothing needed blocking, and the gate is not running. The second one is how a
+system loses a guard without noticing — the host's settings change, a matcher
+stops matching, a file is renamed, and every block that gate would have raised
+simply never happens. ⛔ Nothing complains, because a gate's success IS silence.
+
+⭐ HOW IT IS MADE MEASURABLE. Each gate stamps a date through hooks/_beat.py.
+This validator compares those stamps against the STARTUP stamp — never against
+today. ⚠️ That distinction is the whole design: gates only fire while somebody
+works, so quiet over a week nobody was here is not a fault. The fault is a gate
+quiet on days the session itself was alive.
+
+⭐ WHICH GATES IT EXPECTS IS DISCOVERED, NOT LISTED. It reads hooks/ for the
+files that can fire, so adding a gate never means editing this file. ⛔ A
+hardcoded roster is a list that goes stale, and a stale roster reports a healthy
+gate as missing and a deleted one as fine.
+
+⬜ MENTE_GATE_SILENT_DAYS · how many live days of silence is a fault. Default 7.
+
+Exit: 0 clean or nothing measurable · 1 a gate has gone silent
+"""
+import os
+import re
+import sys
+from datetime import date
+
+MENTE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, os.path.join(MENTE, "hooks"))
+from _beat import all_beats                                    # noqa: E402
+
+HOOKS = os.path.join(MENTE, "hooks")
+HEARTBEAT = os.path.join(MENTE, ".heartbeat")
+# ⬜ The installation decides how much silence is too much. 7 days of live
+# sessions without one edit or one blocked action is implausible anywhere.
+try:
+    LIMIT = int(os.environ.get("MENTE_GATE_SILENT_DAYS", "7") or 7)
+except ValueError:
+    LIMIT = 7
+
+# A gate is a hook that CALLS beat(). ⭐ Discovered by reading the files, so the
+# roster cannot drift from the folder — the failure a hardcoded list guarantees.
+CALLS_BEAT = re.compile(r"^\s*beat\s*\(", re.M)
+
+
+def gates():
+    """Every gate that can stamp → its filename, plus the files that could not
+    be read. ⛔ CHK-CAU-003 · an unreadable hook is NOT nothing: it is the exact
+    shape of a gate that may be dead, so it is reported, never dropped."""
+    out, unreadable = {}, []
+    try:
+        names = sorted(os.listdir(HOOKS))
+    except OSError as e:
+        return out, ["· the folder itself is unreadable (%s)" % e.__class__.__name__]
+    for n in names:
+        if n.startswith("_") or n in ("README.md",):
+            continue
+        p = os.path.join(HOOKS, n)
+        if not os.path.isfile(p):
+            # ⬜ Not a regular file — a directory, or a symlink pointing at
+            # nothing. ⚠️ A broken link where a gate used to be is exactly an
+            # unwatched gate, so it is named rather than skipped in silence.
+            unreadable.append("%s · not a regular file" % n)
+            continue
+        try:
+            txt = open(p, encoding="utf-8", errors="replace").read()
+        except OSError as e:
+            unreadable.append("%s · unreadable (%s)" % (n, e.__class__.__name__))
+            continue
+        m = re.search(r'beat\s*\(\s*MENTE\s*,\s*["\']([^"\']+)["\']', txt)
+        if CALLS_BEAT.search(txt) and m:
+            out[m.group(1)] = n
+    return out, unreadable
+
+
+def main():
+    quiet = "--quiet" in sys.argv
+    expected, unreadable = gates()
+
+    # ⬜ CHK-CAU-003 · what could not be read is named before any verdict, so a
+    # gap can never be absorbed into a green.
+    if unreadable and not quiet:
+        for u in unreadable:
+            print("⬜ NOT MEASURED · hooks/%s · whether it is a gate is "
+                  "unknown" % u)
+
+    # ⬜ CHK-CAU-003 · nothing to measure is said out loud, never shown green.
+    # ⛔ A pass over zero gates is exactly the report a fully unwired system
+    # would produce, which is the failure this validator exists to catch.
+    if not expected:
+        if not quiet:
+            print("⬜ NOT MEASURED · no hook in hooks/ records a beat · "
+                  "gate liveness is not being watched")
+        return 0
+
+    try:
+        started = date.fromisoformat(
+            open(HEARTBEAT, encoding="utf-8", errors="replace").read().strip())
+    except (OSError, ValueError):
+        started = None
+
+    if started is None:
+        if not quiet:
+            print("⬜ NOT MEASURED · no readable .heartbeat · without a date for "
+                  "the last live session,\n   a quiet gate cannot be told from a "
+                  "quiet week · %d gate(s) known" % len(expected))
+        return 0
+
+    beats = all_beats(MENTE)
+    silent, never = [], []
+    for gate, filename in sorted(expected.items()):
+        stamped = beats.get(gate)
+        if stamped is None:
+            never.append((gate, filename))
+            continue
+        gap = (started - stamped).days
+        if gap >= LIMIT:
+            silent.append((gate, filename, stamped, gap))
+
+    if not silent and not never:
+        if not quiet:
+            print("✅ %d gate(s) checked · every one fired within %d day(s) of "
+                  "the last session (%s)" % (len(expected), LIMIT, started))
+        return 0
+
+    if quiet and not silent:
+        return 0            # ⬜ never-fired alone is a gap, not a finding
+    if quiet:
+        return 1
+
+    for gate, filename in never:
+        print("⬜ NOT MEASURED · gate `%s` (hooks/%s) has never fired here.\n"
+              "   Expected on a fresh install; otherwise its matcher in the "
+              "host's hook settings never ran it." % (gate, filename))
+
+    for gate, filename, stamped, gap in silent:
+        print("🔴 GATE SILENT · `%s` (hooks/%s) last fired %s — %d day(s) "
+              "before the last session.\n"
+              "   A gate that stopped running is indistinguishable from one "
+              "with nothing to block,\n"
+              "   until something gets through. Verify it is still wired in the "
+              "host's hook settings." % (gate, filename, stamped, gap))
+
+    return 1 if silent else 0
+
+
+if __name__ == "__main__":
+    try:
+        sys.exit(main())
+    except Exception as e:                                     # noqa: BLE001
+        # CHK-CAU-002 · a crash reports nothing, and nothing reads as fine.
+        print("🔴 %s crashed · %s: %s"
+              % (os.path.basename(__file__), type(e).__name__, e))
+        sys.exit(1)

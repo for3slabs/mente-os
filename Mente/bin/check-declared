@@ -18,6 +18,10 @@ MENTE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 os.chdir(MENTE)
 
 TABLE = "piezas.tsv"
+# ⭐ The table an installation RECEIVES. bin/init copies it, so a row that lives
+# in one and not the other means a fresh install starts with a different map
+# than the one verified here — and nothing downstream would ever say so.
+TEMPLATE = os.path.join("templates", "piezas.tsv.template")
 
 # Folders walked, and which file extensions count as a declarable piece there.
 # An empty tuple means every file counts.
@@ -46,17 +50,25 @@ SKIP_NAMES = {"README.md", "__pycache__", ".gitkeep", ".DS_Store"}
 SKIP_SUFFIX = (".pyc", ".pyo", ".swp", "~")
 
 
-def declared_paths():
-    """Every path the table declares, normalised."""
-    if not os.path.exists(TABLE):
+def declared_paths(table=None):
+    """Every path the table declares → the rows that declare it.
+
+    ⭐ A dict of LISTS, not a set. The set this returned could not represent the
+    one defect it was standing over: eight paths declared twice, each pair with a
+    different name, class and description. A repeat was absorbed on the way in, so
+    the walk below compared against a table that looked clean by construction.
+    ⛔ A reader that cannot represent a defect can never report it.
+    """
+    table = table or TABLE
+    if not os.path.exists(table):
         return None
-    out = set()
-    for line in open(TABLE, encoding="utf-8", errors="replace"):
+    out = {}
+    for n, line in enumerate(open(table, encoding="utf-8", errors="replace"), 1):
         if line.startswith("#") or not line.strip():
             continue
         f = [c.strip() for c in line.rstrip("\n").split("\t")]
         if len(f) >= 2 and f[0] != "pieza":
-            out.add(f[1].replace("repo:", "").lstrip("./"))
+            out.setdefault(f[1].replace("repo:", "").lstrip("./"), []).append((n, f[0]))
     return out
 
 
@@ -77,6 +89,34 @@ def main():
             print(f"🔴 {TABLE} not found — nothing can tell a declared piece "
                   f"from an undeclared one.", file=sys.stderr)
         return 2
+
+    # DOC-IDS-002 · ONE PATH, ONE ROW. Two rows for the same file are two answers
+    # to "what is this piece", and whoever reads the first never learns there is a
+    # second. Measured here: eight paths carried a placeholder row written before
+    # the piece existed AND the real row — different name, different class,
+    # different description. ⚠️ Same shape as a duplicated decision table: the
+    # copies do not stay equal, they diverge, and nothing says which one is true.
+    repeats = {p: rows for p, rows in declared.items() if len(rows) > 1}
+
+    # DOC-IDS-003 · THE TABLE AND ITS TEMPLATE DECLARE THE SAME ENGINE PIECES.
+    # ⛔ They were kept in step by hand, which is the arrangement that holds
+    # until the day it does not. A piece present in the live table and absent
+    # from the template is a piece every fresh install is missing from its map,
+    # and the install itself cannot notice: it has nothing to compare against.
+    # ⚠️ One direction only — the live table legitimately grows with the
+    # owner's own pieces, and those must NOT be pushed back into the template.
+    drift = []
+    tpl = declared_paths(TEMPLATE)
+    if tpl is None:
+        drift = None                      # ⬜ said out loud below, not a pass
+    else:
+        # ⭐ Only paths under a SCANNED folder count — those are the engine's
+        # own. ⛔ Without that filter every row an owner adds for their project
+        # would be reported as template drift, and a checker that fires on
+        # correct behaviour is one that gets switched off.
+        drift = sorted(p for p in declared
+                       if p not in tpl and p.split("/")[0] in
+                       {f.split("/")[0] for f in SCAN})
 
     missing = []
 
@@ -99,7 +139,7 @@ def main():
     # CHK-IND-002 · say WHAT WAS MEASURED, never a bare ✅. ⛔ If the walk
     # found nothing, this printed the same green — absence of evidence read as
     # evidence, which is the exact failure the quality contract names.
-    if not missing:
+    if not missing and not repeats and not drift:
         if not quiet:
             for sk in skipped:
                 print("⬜ NOT MEASURED · %s does not exist · nothing in it was "
@@ -113,6 +153,31 @@ def main():
         return 0
 
     if quiet:
+        return 1
+
+    if drift is None:
+        print(f"⬜ NOT MEASURED · {TEMPLATE} is absent · whether a fresh install "
+              "receives the same map cannot be checked\n")
+    elif drift:
+        print(f"🟡 {len(drift)} engine piece(s) are in {TABLE} and not in "
+              f"{TEMPLATE}.\n")
+        print("   bin/init copies the template, so a fresh install starts with a")
+        print("   map missing these — and has nothing to compare against.\n")
+        for p in drift:
+            print(f"   ⬜ {p}")
+        print(f"\n   Copy the row into {TEMPLATE}.\n")
+
+    if repeats:
+        print(f"🟡 {len(repeats)} path(s) are declared more than once in {TABLE}.\n")
+        print("   Two rows for one path are two answers to what that piece is, and")
+        print("   the reader of the first never learns the second exists.\n")
+        for path, rows in sorted(repeats.items()):
+            print(f"   ⬜ {path}")
+            for n, name in rows:
+                print(f"        line {n}: {name}")
+        print("\n   Keep the row the rest of the tree refers to; delete the other.\n")
+
+    if not missing:
         return 1
 
     print(f"🟡 {len(missing)} file(s) exist and {TABLE} does not declare them.\n")

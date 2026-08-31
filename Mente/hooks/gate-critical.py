@@ -15,6 +15,8 @@ Contract: a PreToolUse payload on stdin · exit 0 allow · exit 2 BLOCK.
 import os, re, sys, json, subprocess
 
 MENTE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from _beat import beat                                         # noqa: E402
 sys.path.insert(0, os.path.join(MENTE, "bin"))
 from blockread import body_of                                  # noqa: E402
 
@@ -128,6 +130,11 @@ def warn_propagation(target):
 
 
 def main():
+    # ⭐ Proof this gate still fires. A gate is silent both when it has nothing
+    # to block and when it stopped running; the stamp is what separates those.
+    # Read by bin/check-gates — ⛔ never by this file, which must not depend on
+    # its own telemetry (hooks/_beat.py).
+    beat(MENTE, "gate-critical")
     try:
         payload = json.load(sys.stdin)
     except Exception:
