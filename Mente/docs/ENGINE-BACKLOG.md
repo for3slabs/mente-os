@@ -664,3 +664,17 @@ fault look like a healthy system.
 
 Related: `README.md` (folder) · `../memory/principles/README.md` (where the owners live) ·
 `../rules/README.md` (where a closed entry usually lands) · `../CAPABILITIES.md`.
+
+## E-39 · ⬜ `bin/init` must set `secrets/` to 700
+
+**Found:** while building `gate-secrets`, 2026-08-30.
+
+Git stores only the executable bit, so a cloned `secrets/` arrives at whatever
+the umask gives — measured here: `755`, world-readable, in a folder whose README
+promises `700`. ⛔ `CFG-SEC-004` now reports it, which is the right behaviour on
+an existing tree, but it means every fresh install starts red on a credential
+folder until somebody runs `chmod`.
+
+⭐ The fix belongs in `bin/init` (step 5): create the folder with mode 700, and
+tighten it if it already exists. ⚠️ Not in a hook — a permission applied on every
+session start would fight an owner who deliberately hardened it further.

@@ -7,7 +7,7 @@ and still be reachable by a channel nobody denied.
 
 Exit: 0 clean · 1 violations · 2 the rule itself is missing
 """
-import os, re, sys, json
+import os, stat, re, sys, json
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 RULE = os.path.join(ROOT, "rules", "rule-config-hygiene.md")
@@ -222,6 +222,73 @@ def check(path, rel, targets):
     return bad, deny, shared
 
 
+def secrets_permissions():
+    """CFG-SEC-004 · the real modes of the secrets folder, never the documented ones.
+
+    ⭐ A permission written in a README and never applied is exactly the class of
+    rule this system says gets followed 40-60% of the time — ⛔ and this is not a
+    folder where those odds are acceptable. Measured here: the folder shipped
+    `755`, world-readable, while its own README promised `700` and claimed the
+    battery checked it.
+
+    ⚠️ Reports the mode as a FINDING, never fixes it. A checker that silently
+    repairs teaches nobody, and the next clone arrives with the same 755.
+    """
+    out = []
+    d = os.environ.get("MENTE_SECRETS_DIR") or os.path.join(ROOT, "secrets")
+    if not os.path.isdir(d):
+        return out          # ⬜ no folder, nothing to measure — said by the caller
+    rel = os.path.relpath(d, ROOT)
+    try:
+        mode = stat.S_IMODE(os.stat(d).st_mode)
+    except OSError as e:
+        return [("CFG-SEC-004", rel,
+                 "cannot read the folder's mode (%s) · whether it is private "
+                 "is unknown" % e.__class__.__name__)]
+    # ⭐ The test is not equality but EXPOSURE: any bit granting group or other
+    # is a failure, and a stricter mode than 700 is fine. Demanding exactly 700
+    # would report a hardened installation as broken.
+    if mode & 0o077:
+        out.append(("CFG-SEC-004", rel,
+                    "the folder is %o · anyone on this machine can enter it · "
+                    "it must be 700, and a credential store is not a place to "
+                    "discover this after the fact" % mode))
+    for name in sorted(os.listdir(d)):
+        # ⛔ README.md is the one file in here that TRAVELS, and git stores only
+        # the executable bit — so it arrives 644 in every clone, always. Flagging
+        # it would make this validator red on every fresh install, which is how a
+        # check gets switched off and takes the real measurement with it.
+        # ⚠️ Safe precisely because it is engine doctrine: it explains what goes
+        # in the folder and contains no credential. Any OTHER file here is the
+        # owner's and must be 600.
+        if name == "README.md":
+            continue
+        f = os.path.join(d, name)
+        try:
+            m = stat.S_IMODE(os.stat(f).st_mode)
+        except OSError as e:
+            # ⬜ CHK-CAU-003 · a name whose mode cannot be read is not nothing:
+            # it may be a credential file, and unknown is not the same as safe.
+            out.append(("CFG-SEC-004", os.path.join(rel, name),
+                        "mode unreadable (%s) · whether it is private is "
+                        "unknown" % e.__class__.__name__))
+            continue
+        # ⭐ Directories are checked too, and with the FOLDER rule: a subfolder
+        # inside a credential store guards credentials. ⛔ Skipping non-files
+        # would have left everything inside one unmeasured.
+        if os.path.isdir(f):
+            if m & 0o077:
+                out.append(("CFG-SEC-004", os.path.join(rel, name),
+                            "the subfolder is %o · it lives inside a credential "
+                            "store and must be 700" % m))
+            continue
+        if m & 0o077:
+            out.append(("CFG-SEC-004", os.path.join(rel, name),
+                        "the file is %o · readable beyond its owner · it must "
+                        "be 600" % m))
+    return out
+
+
 def main():
     quiet = "--quiet" in sys.argv
     if not os.path.exists(RULE):
@@ -230,7 +297,10 @@ def main():
 
     configs = find_configs()
     targets = protected_targets()
-    findings = []
+    # CFG-SEC-004 · measured whether or not a configuration exists: the folder's
+    # exposure has nothing to do with how many config files there are, and a
+    # tree with none would otherwise skip the one check that cannot wait.
+    findings = secrets_permissions()
     denies = {}
     for p in configs:
         rel = os.path.relpath(p, ROOT)
@@ -257,16 +327,21 @@ def main():
                              "local file protects nobody else: mirror it into "
                              "the shared one" % len(only_local)))
 
+    secrets_dir = os.environ.get("MENTE_SECRETS_DIR") or os.path.join(ROOT, "secrets")
     if not quiet:
+        # ⬜ Say what was measured AND what was not. A tree with no configuration
+        # still had its secrets folder checked, and reporting "nothing measured"
+        # over a check that did run is how a green stops meaning anything.
         print("check-config · %d configuration(s) · %d protected target(s) "
-              "discovered%s" % (len(configs), len(targets),
-                                " · nothing measured" if not configs else ""))
+              "discovered · secrets folder %s"
+              % (len(configs), len(targets),
+                 "measured" if os.path.isdir(secrets_dir) else "⬜ absent"))
     if findings:
         for cid, rel, msg in findings:
             print("🔴 %s · %s · %s" % (rel, cid, msg))
         print("\n%d violations · rule: rules/rule-config-hygiene.md" % len(findings))
         return 1
-    if not quiet and configs:
+    if not quiet and (configs or os.path.isdir(secrets_dir)):
         print("✅ 0 violations")
     return 0
 

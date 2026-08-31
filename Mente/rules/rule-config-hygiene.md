@@ -56,6 +56,7 @@ the file whose name promised them did not contain them.
 | `CFG-SEC-001` | 🔴 **No secret in an approved command** | 🔒 | ⛔ see below |
 | `CFG-SEC-002` | 🔴 **No secret in a configuration file** | 🔒 | ⭐ performed by `CFG-SEC-001` — one search, not two |
 | `CFG-SEC-003` | ⭐ **A leaked secret is ROTATED, never just deleted** | 📖 | ⛔ purging does not invalidate |
+| `CFG-SEC-004` | 🔴 **The secrets folder is `700`, its files `600`** | 🔒 | ⭐ the real mode is measured, never the documented one |
 
 ### ⭐ WHY THIS IS A RULE AND NOT ADVICE
 
