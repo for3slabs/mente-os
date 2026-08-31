@@ -662,19 +662,28 @@ fault look like a healthy system.
 
 ---
 
-Related: `README.md` (folder) · `../memory/principles/README.md` (where the owners live) ·
-`../rules/README.md` (where a closed entry usually lands) · `../CAPABILITIES.md`.
+---
 
-## E-39 · ⬜ `bin/init` must set `secrets/` to 700
+## E-39 · ✅ CLOSED — `secrets/` is hardened by its own grantor, not by a future installer
 
-**Found:** while building `gate-secrets`, 2026-08-30.
+**Found and closed:** while building `gate-handoff`, 2026-08-30.
 
 Git stores only the executable bit, so a cloned `secrets/` arrives at whatever
-the umask gives — measured here: `755`, world-readable, in a folder whose README
-promises `700`. ⛔ `CFG-SEC-004` now reports it, which is the right behaviour on
-an existing tree, but it means every fresh install starts red on a credential
-folder until somebody runs `chmod`.
+the umask gives — measured: `755`, world-readable, in a folder whose README
+promises `700`. `CFG-SEC-004` reports it, which is right, but a report is not a
+repair: the folder stays open until somebody reads the finding and acts.
 
-⭐ The fix belongs in `bin/init` (step 5): create the folder with mode 700, and
-tighten it if it already exists. ⚠️ Not in a hook — a permission applied on every
-session start would fight an owner who deliberately hardened it further.
+⛔ FILED FIRST AS "bin/init should do it", AND THAT WAS WRONG TWICE. It defers a
+live exposure to a piece that does not exist yet, and it puts the knowledge in
+the installer instead of in the piece that owns the folder. ⚠️ An installer runs
+once; the exposure can return any time somebody recreates the folder.
+
+⭐ CLOSED IN `bin/secrets-lease` instead — the grantor already owns this folder
+and already runs before anything reads it. It hardens on every `open`, which
+makes the fix idempotent and independent of how the tree arrived.
+⛔ Deliberately NOT a hook on every session: a permission reapplied constantly
+would fight an owner who hardened it further, and it only tightens, never
+loosens.
+
+Related: `README.md` (folder) · `../memory/principles/README.md` (where the owners live) ·
+`../rules/README.md` (where a closed entry usually lands) · `../CAPABILITIES.md`.

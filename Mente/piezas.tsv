@@ -190,3 +190,5 @@ probe-gates	bin/probes/probe-gates.py	engine	executable	proves the reader tells 
 secrets-lease	bin/secrets-lease	engine	executable	issues the read permission for secrets/ — ⭐ tied to the context load, never to a clock
 gate-secrets	hooks/gate-secrets.py	engine	executable	refuses a secret VALUE before it reaches disk, and governs secrets/ — ⛔ the only gate that fails CLOSED
 probe-gate-secrets	bin/probes/probe-gate-secrets.py	engine	executable	proves the leak check refuses a real secret and never a placeholder
+gate-handoff	hooks/gate-handoff.py	engine	executable	refuses a specialist that may WRITE with no declared scope — ⭐ the level comes from capability, never from a name
+probe-gate-handoff	bin/probes/probe-gate-handoff.py	engine	executable	proves the gate bounds a writer and stays out of a reader's way

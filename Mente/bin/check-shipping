@@ -191,8 +191,26 @@ def main():
                 continue
             if os.path.isfile(p) and not n.endswith(".md"):
                 try:
-                    if re.search(r"\b(base|main|master|trunk)\b.*\b(commit|branch)\b",
-                                 open(p, encoding="utf-8").read(), re.I | re.S):
+                    # 🔴 THIS SPANNED THE WHOLE FILE. With re.S the `.*` crossed
+                    # every line, so ANY hook containing the word "main" — every
+                    # python file has `def main()` — and the word "commit"
+                    # anywhere else counted as the base-branch lock. Measured
+                    # the day a fourth hook was added: check-shipping reported
+                    # `gate: gate-handoff.py`, and the probe that hides the real
+                    # lock found the check still green.
+                    # ⚠️ THE DAMAGE IS THE INVERSE OF A FALSE ALARM: it reported
+                    # a lock as WIRED while the actual lock could be deleted, so
+                    # the one thing this rule protects would be gone and nothing
+                    # would say so.
+                    # ⭐ Matched per LINE now, and both halves must appear
+                    # together — that is what a branch guard actually looks
+                    # like, and prose about commits on another line no longer
+                    # counts as one.
+                    body = open(p, encoding="utf-8").read()
+                    if any(re.search(r"\b(base|main|master|trunk)\b", ln, re.I)
+                           and re.search(r"\b(commit|branch|push)\b", ln, re.I)
+                           and not ln.lstrip().startswith(("#", "//", "*"))
+                           for ln in body.splitlines()):
                         gate = n
                         break
                 except OSError:
