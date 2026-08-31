@@ -336,6 +336,71 @@ def check(path, rel, ceilings, quiet):
     return bad
 
 
+def capability_map():
+    """DOC-CAP-001/002 · does the capability map agree with the tree?
+
+    ⭐ TWO DIRECTIONS, AND THE SECOND IS THE ONE THAT GETS FORGOTTEN.
+      · a row that names a piece which does not exist, unmarked → the reader
+        runs a command that is not there
+      · ⛔ a piece that exists and the map never names → quieter and longer
+        lived: it works, nothing points at it, and somebody rebuilds it because
+        they could not find it
+
+    ⚠️ Only a script notices the second one — reading the map cannot reveal what
+    the map left out.
+
+    ⭐ `⬜` is the marker for "planned, not built", and a marked row is CORRECT:
+    the map is allowed to describe what the engine will enforce, as long as the
+    reader can tell that from what it enforces today.
+    """
+    cap = os.path.join(ROOT, "CAPABILITIES.md")
+    if not os.path.exists(cap):
+        return None                    # ⬜ said out loud by the caller
+    try:
+        lines = open(cap, encoding="utf-8", errors="replace").read().splitlines()
+    except OSError:
+        return None
+    bad = []
+    named = set()
+    for n, line in enumerate(lines, 1):
+        for m in re.finditer(r"`((?:bin|hooks)/[A-Za-z0-9_.-]+)", line):
+            piece = m.group(1)
+            named.add(piece)
+            if os.path.exists(os.path.join(ROOT, piece)):
+                continue
+            # ⭐ A row that MARKS itself as unbuilt is doing the right thing.
+            if "⬜" in line:
+                continue
+            bad.append(("DOC-CAP-001", "CAPABILITIES.md", n,
+                        "names %s, which does not exist and is not marked ⬜ · "
+                        "a planned row read as a working one sends the reader to "
+                        "run nothing" % piece))
+    # DOC-CAP-002 · the other direction. ⚠️ Only what an agent would RUN counts:
+    # a shared helper is not a capability, and demanding it be listed would turn
+    # the map into a file listing.
+    for folder in ("bin", "hooks"):
+        d = os.path.join(ROOT, folder)
+        if not os.path.isdir(d):
+            # ⬜ CHK-CAU-003 · a folder that is not there is not "nothing to
+            # check": it means NO capability from it can be verified, and a map
+            # measured against half the tree looks exactly like a correct one.
+            bad.append(("DOC-CAP-002", "CAPABILITIES.md", 0,
+                        "⬜ NOT MEASURED · %s/ does not exist · nothing in it "
+                        "was compared against the map" % folder))
+            continue
+        for name in sorted(os.listdir(d)):
+            f = os.path.join(d, name)
+            if (not os.path.isfile(f) or name.startswith(("_", "."))
+                    or name.endswith(".md") or not os.access(f, os.X_OK)):
+                continue
+            if "%s/%s" % (folder, name) not in named:
+                bad.append(("DOC-CAP-002", "CAPABILITIES.md", 0,
+                            "%s/%s exists, is executable, and the map never "
+                            "names it · a piece nobody can find is a piece "
+                            "nobody uses" % (folder, name)))
+    return bad
+
+
 def main():
     quiet = "--quiet" in sys.argv
     if not os.path.exists(CONTRACT):
@@ -346,7 +411,11 @@ def main():
         print("🔴 no ceiling table found in the contract · DOC-SIZ-001 cannot be checked")
         return 2
 
-    findings = []
+    cap = capability_map()
+    findings = list(cap) if cap else []
+    if cap is None and not quiet:
+        print("⬜ NOT MEASURED · no CAPABILITIES.md · whether the map matches "
+              "the tree was not checked")
     checked = 0
     for dirpath, dirnames, filenames in os.walk(ROOT):
         dirnames[:] = [d for d in dirnames if d not in SKIP_DIRS]

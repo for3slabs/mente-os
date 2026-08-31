@@ -299,12 +299,23 @@ when a document grew past its shape and nobody wanted to renumber. ⚠️ **It i
 | `DOC-IDS-001` | ⭐ **An id is an ADDRESS — never used twice** | 🔒 | ⛔ measured: one contract carried the same id in two rows, and both read as correct alone |
 | `DOC-IDS-002` | ⭐ **A path is declared ONCE in the piece table** | 🔒 | ⛔ measured: eight paths carried a placeholder row AND the real one — different name, class and description |
 | `DOC-IDS-003` | ⭐ **The piece table and its template declare the same ENGINE pieces** | 🔒 | ⛔ they were kept in step by hand; a piece missing from the template is missing from every fresh install |
+| `DOC-CAP-001` | ⭐ **A capability map marks what is NOT built** | 🔒 | ⛔ a planned row read as a working one sends the reader to run nothing |
+| `DOC-CAP-002` | ⭐ **A capability map names everything that IS built** | 🔒 | ⚠️ a piece nobody can find is a piece nobody uses |
 | `DOC-CNT-005` | ⛔ **No credential, not even as an example** | 🔒 | ⚠️ what is written stays in history |
 | `DOC-CNT-006` | ⭐ **A quotation is verbatim, or it is not a quotation** | 📖 | ⛔ see below |
 
 ⭐ **`DOC-CNT-006` matters more than it looks.** A paraphrase presented as a quote is the agent's
 reading standing in for someone's words — ⚠️ **and the reader cannot tell which they are getting.**
 ⛔ **Paraphrase freely; just do not put it in quotation marks.**
+
+> ## ⭐ `DOC-CAP-001` AND `DOC-CAP-002` ARE ONE RULE FROM TWO SIDES, and the second side is
+> the one that gets forgotten.
+> ⛔ **A map that promises what does not exist** sends the reader to run a command that is not
+> there. ⚠️ **A map that omits what DOES exist** is quieter and lasts longer: the piece works,
+> nothing points at it, and it is rebuilt by somebody who could not find it.
+>
+> ⭐ **Both are the same failure — the map and the tree disagreeing — and only a script notices**,
+> because reading the map cannot reveal what the map left out.
 
 ⭐ **`DOC-CNT-004` has a second half the checker enforces:** a path must not only carry a
 directory — ⛔ **it must RESOLVE.** ⚠️ A well-formed pointer to nothing reads as a promise.

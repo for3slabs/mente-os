@@ -37,7 +37,6 @@ val-salud	bin/check-health	engine	canonical	is the system healthy
 val-citas	bin/check-links	engine	canonical	every internal pointer resolves to something that exists
 val-estructura	bin/check-structure	engine	canonical	the tree is the one this table declares
 val-bloques	bin/check-blocks	engine	canonical	the blocks meet their contract
-val-campanas	bin/check-campaigns	engine	canonical	the campaigns meet their contract, and their blocks declare them back
 val-suficiencia	bin/check-sufficiency	engine	canonical	a block can be resumed from disk alone
 val-clear	bin/check-clear-ready	engine	canonical	refuses a reset if anything would be lost
 gen-indice	bin/generate-index	engine	canonical	produces INDEX.md and STATES.md from the tree
@@ -53,9 +52,6 @@ probe-watch-external	bin/probes/probe-watch-external.py	engine	executable	proves
 probe-gate-critical	bin/probes/probe-gate-critical.py	engine	executable	proves the gate blocks what it must and NOTHING else — 5 inverses to 4 blocks
 probe-pre-edit	bin/probes/probe-pre-edit-standards.py	engine	executable	proves the injection hook names the RIGHT block, and never blocks
 # ── engine · the contracts + inheritance model ──
-ciclo-bloque	rules/block-lifecycle.md	engine	canonical	how a block opens and closes
-regla-cierre	rules/rule-session-close.md	engine	canonical	register the session before a reset
-convencion-nombres	rules/NAMING_CONVENTION.md	engine	canonical	how pieces are named
 # ── engine · the reference docs ──
 capacidades	CAPABILITIES.md	engine	canonical	what may run and what must not be touched — engine vs instance
 readme-motor	README.md	engine	canonical	the engine's front page — from clone to working
@@ -198,3 +194,4 @@ probe-accounts	bin/probes/probe-accounts.py	engine	executable	proves an undeclar
 gate-accounts	hooks/gate-accounts.py	engine	executable	layer 1 · explains before a push leaves — ⚠️ reads the command, so it CAN be walked around
 pre-push	hooks/pre-push.sh	engine	executable	layer 2 · runs inside the push with the destination resolved — ⭐ cannot be walked around
 probe-gate-accounts	bin/probes/probe-gate-accounts.py	engine	executable	proves both layers, and proves WHY there are two: 5 evasions walk past layer 1
+probe-structure	bin/probes/probe-structure.py	engine	executable	proves a stale row is told from a legitimate absence — most absences are correct

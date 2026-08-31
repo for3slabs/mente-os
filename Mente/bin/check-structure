@@ -1,0 +1,164 @@
+#!/usr/bin/env python3
+"""check-structure — every row in the piece table has the file it declares.
+
+⭐ THE OTHER DIRECTION FROM check-declared, and both are needed. That one walks
+the DISK and asks whether each file has a row: it catches a piece built and never
+declared. This one walks the TABLE and asks whether each row has its file: ⛔ it
+catches a row that outlived what it described.
+
+⚠️ THE FAILURE IT CATCHES IS QUIET AND IT LASTS. Measured on this tree: after
+several files were merged into others, three rows survived the merge pointing at
+files that no longer existed. Nothing reported it, because reading the table
+cannot reveal which of its rows are lies — every row looks the same.
+
+⭐ AND MOST ABSENCES ARE LEGITIMATE, which is why this is not a one-line check.
+A row can point at something that does not exist yet for three different
+reasons, and only one is a defect:
+
+  ⬜ an INSTANCE file · produced at install or generated · absent in a clone
+     BY DESIGN, and reporting it would make every fresh clone start red
+  ⬜ a PLANNED piece · declared before it is built, on purpose
+  🔴 a STALE row · the file existed, something replaced it, the row stayed
+
+⛔ The first two are said out loud as gaps. Only the third fails.
+
+Usage: check-structure [--quiet]
+Exit: 0 clean · 1 stale rows · 2 the table is missing
+"""
+import os
+import sys
+
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+TABLE = os.path.join(ROOT, "piezas.tsv")
+TEMPLATES = os.path.join(ROOT, "templates")
+GITIGNORE = os.path.join(ROOT, ".gitignore")
+
+
+def instance_files():
+    """Everything an installation produces rather than receives.
+
+    ⭐ DERIVED, never listed. A hand-kept list of "files that may be missing" is
+    a hole with a schedule: the day somebody adds a generated file and forgets
+    the list, the validator reports a healthy tree as broken — and the fix is to
+    edit the list, which teaches everyone to edit the list.
+
+    Two sources, both already declarative:
+      · templates/ — if a template produces it, an install produces it
+      · .gitignore — if it must not travel, a clone legitimately lacks it
+    """
+    out = set()
+    try:
+        for n in os.listdir(TEMPLATES):
+            if n.endswith(".template"):
+                out.add(n[:-len(".template")])
+    except OSError:
+        pass
+    # ⚠️ Both the basename AND the path prefix are kept. A pattern like
+    # `connection/bridges/*` says everything UNDER that folder is the instance's
+    # — reducing it to a basename lost that, and a declared file inside an
+    # ignored folder was reported as stale.
+    prefixes = set()
+    try:
+        for line in open(GITIGNORE, encoding="utf-8", errors="replace"):
+            line = line.split("#")[0].strip()
+            if not line or line.startswith("!"):
+                continue
+            clean = line.lstrip("/").rstrip("/")
+            if clean.endswith("/*"):
+                prefixes.add(clean[:-2])
+            elif "/" in clean:
+                prefixes.add(clean)
+            out.add(clean.split("/")[-1])
+    except OSError:
+        pass
+    out.discard("")
+    return out, prefixes
+
+
+def planned():
+    """Pieces a capability map declares as not built. ⭐ Read from the map, so
+    declaring a piece as planned in one place is enough."""
+    out = set()
+    cap = os.path.join(ROOT, "CAPABILITIES.md")
+    try:
+        import re
+        for line in open(cap, encoding="utf-8", errors="replace"):
+            if "⬜" not in line:
+                continue
+            for m in re.finditer(r"`((?:bin|hooks)/[A-Za-z0-9_.-]+)", line):
+                out.add(m.group(1))
+    except OSError:
+        pass
+    return out
+
+
+def main():
+    quiet = "--quiet" in sys.argv
+    if not os.path.exists(TABLE):
+        print("🔴 piezas.tsv not found · nothing declares what this tree should "
+              "contain")
+        return 2
+
+    inst, inst_dirs = instance_files()
+    plan = planned()
+    rows, stale, gaps = 0, [], []
+
+    for n, line in enumerate(open(TABLE, encoding="utf-8", errors="replace"), 1):
+        if line.startswith("#") or not line.strip():
+            continue
+        f = [c.strip() for c in line.rstrip("\n").split("\t")]
+        if len(f) < 2 or f[0] == "pieza":
+            continue
+        rows += 1
+        # ⛔ `lstrip("./")` eats the leading dot of a DOTFILE: `.gitignore`
+        # became `gitignore`, which exists nowhere, and the validator reported
+        # its own tree's most fundamental file as a stale row. ⚠️ lstrip strips
+        # CHARACTERS, not a prefix — a mistake that only shows on a name that
+        # starts with one of them.
+        path = f[1].replace("repo:", "")
+        while path.startswith("./"):
+            path = path[2:]
+        if os.path.exists(os.path.join(ROOT, path)):
+            continue
+        base = os.path.basename(path)
+        under_instance = any(path == d or path.startswith(d + "/")
+                             for d in inst_dirs)
+        if base in inst or path in inst or under_instance:
+            gaps.append((path, "instance file · produced at install"))
+        elif path in plan:
+            gaps.append((path, "planned · declared before it is built"))
+        else:
+            # 🔴 Not generated, not planned, and not there. Something replaced
+            # it and the row stayed — a pointer that reads exactly like a fact.
+            stale.append((n, f[0], path))
+
+    if not quiet:
+        print("check-structure · %d row(s) · %d resolve · %d ⬜ expected absent"
+              % (rows, rows - len(gaps) - len(stale), len(gaps)))
+        for path, why in sorted(gaps):
+            print("   ⬜ %s · %s" % (path, why))
+
+    if stale:
+        print()
+        for n, name, path in stale:
+            print("🔴 piezas.tsv:%d · STR-ROW-001 · `%s` declares %s, which does "
+                  "not exist\n"
+                  "   It is neither generated nor planned — the file was "
+                  "replaced and the row stayed.\n"
+                  "   A row that outlived its file reads exactly like one that "
+                  "did not." % (n, name, path))
+        print("\n%d stale row(s) · rule: rules/contract-document.md" % len(stale))
+        return 1
+    if not quiet:
+        print("✅ 0 stale rows")
+    return 0
+
+
+if __name__ == "__main__":
+    try:
+        sys.exit(main())
+    except Exception as e:                                     # noqa: BLE001
+        # CHK-CAU-002 · a crash reports nothing, and nothing reads as fine.
+        print("🔴 %s crashed · %s: %s"
+              % (os.path.basename(__file__), type(e).__name__, e))
+        sys.exit(1)
