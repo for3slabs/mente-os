@@ -218,3 +218,9 @@ gate-secrets	hooks/gate-secrets.py	engine	executable	refuses a secret VALUE befo
 probe-gate-secrets	bin/probes/probe-gate-secrets.py	engine	executable	proves the leak check refuses a real secret and never a placeholder
 gate-handoff	hooks/gate-handoff.py	engine	executable	refuses a specialist that may WRITE with no declared scope — ⭐ the level comes from capability, never from a name
 probe-gate-handoff	bin/probes/probe-gate-handoff.py	engine	executable	proves the gate bounds a writer and stays out of a reader's way
+rule-accounts	rules/rule-accounts.md	engine	canonical	which account governs which repo — ⭐ two layers, because a text pattern can be walked around
+check-accounts	bin/check-accounts	engine	executable	verifies the registry against the machine — ⛔ a row nobody checks is a claim
+probe-accounts	bin/probes/probe-accounts.py	engine	executable	proves an undeclared role is caught — the silence that lets a retired repo receive work
+gate-accounts	hooks/gate-accounts.py	engine	executable	layer 1 · explains before a push leaves — ⚠️ reads the command, so it CAN be walked around
+pre-push	hooks/pre-push.sh	engine	executable	layer 2 · runs inside the push with the destination resolved — ⭐ cannot be walked around
+probe-gate-accounts	bin/probes/probe-gate-accounts.py	engine	executable	proves both layers, and proves WHY there are two: 5 evasions walk past layer 1
