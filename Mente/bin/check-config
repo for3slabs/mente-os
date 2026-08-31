@@ -238,6 +238,20 @@ def secrets_permissions():
     d = os.environ.get("MENTE_SECRETS_DIR") or os.path.join(ROOT, "secrets")
     if not os.path.isdir(d):
         return out          # ⬜ no folder, nothing to measure — said by the caller
+
+    # ⬜ AN UNINSTALLED CLONE IS NOT A MISCONFIGURED ONE. Git stores only the
+    # executable bit, so a cloned secrets/ arrives at whatever the umask gives —
+    # measured: 755 in every fresh clone. ⛔ Reporting that as a violation makes
+    # the validator red on arrival, and a check that is red before anyone has
+    # done anything is one nobody reads afterwards.
+    # ⭐ Installation is marked the way the rest of the engine marks it: by a
+    # file only bin/init produces. Until then the mode is NOT MEASURED, said out
+    # loud — never counted as a pass. E-39 has bin/init set it.
+    if not os.path.exists(os.path.join(ROOT, "mente.config.yml")):
+        return [("⬜", os.path.relpath(d, ROOT),
+                 "NOT MEASURED · nothing is installed here yet (no "
+                 "mente.config.yml) · git cannot carry a 700, so bin/init sets "
+                 "it — the mode of a clone says nothing about the install")]
     rel = os.path.relpath(d, ROOT)
     try:
         mode = stat.S_IMODE(os.stat(d).st_mode)
@@ -336,6 +350,13 @@ def main():
               "discovered · secrets folder %s"
               % (len(configs), len(targets),
                  "measured" if os.path.isdir(secrets_dir) else "⬜ absent"))
+    # ⬜ A gap is REPORTED and does not fail. ⛔ Mixing the two would either hide
+    # a gap inside a green or turn "not yet installed" into a violation.
+    gaps = [f for f in findings if f[0] == "⬜"]
+    findings = [f for f in findings if f[0] != "⬜"]
+    for _, rel, msg in gaps:
+        if not quiet:
+            print("⬜ %s · %s" % (rel, msg))
     if findings:
         for cid, rel, msg in findings:
             print("🔴 %s · %s · %s" % (rel, cid, msg))
