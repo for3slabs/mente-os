@@ -687,49 +687,89 @@ loosens.
 
 ---
 
-## E-40 · ⬜ What the accounts system still owes — and what depends on it
+## E-40 · ⬜ What the accounts system still owes — and which gap is urgent
 
 **Found:** while building the two layers, 2026-08-30.
 
-The registry, its validator and both gates exist. ⭐ Three things do not, and
-each one is a place where something else will attach.
+The registry, its validator and both gates exist. ⭐ Three things do not — and
+they are NOT equally urgent, which is the point of this entry. ⛔ A backlog that
+lists three gaps without ranking them turns into three things nobody starts.
 
-### ⬜ 1 · Nothing WIRES layer 2 · the one that matters today
+### ⭐ THE RANKING, AND WHAT DECIDES IT
 
-`hooks/pre-push.sh` cannot be walked around — but only once it is linked into
-the tool's hook directory. ⛔ Until then the file exists, the code is correct,
-its probe passes, and it never runs. `ACC-LYR-004` now REPORTS that, which is
-the honest half; the missing half is the piece that DOES it.
+⚠️ **The test is not "how much work is left". It is: while this gap is open,
+what does the system CLAIM that is not true?**
 
-⚠️ It belongs with whatever performs installation, alongside the secrets-folder
-hardening that `bin/secrets-lease` already does for itself. ⭐ The pattern that
-worked there is the one to repeat: the piece that owns the thing installs it,
-rather than an installer that runs once and knows about everything.
+| # | Gap | What is claimed while it is open | Urgency |
+|---|---|---|---|
+| **1** | nothing WIRES layer 2 | 🔴 **"two layers protect this"** — one of them never runs | 🔴 **now** |
+| **2** | `bin/conectar-cuenta` absent | ⚠️ a template names a piece that does not exist | 🟡 next |
+| **3** | remotes never compared | ⬜ nothing — the rule already says it is unmeasured | 🟢 needs a decision first |
 
-### ⬜ 2 · `bin/conectar-cuenta` · promised by name, does not exist
+> ## 🔴 GAP 1 IS URGENT BECAUSE IT IS THE ONLY ONE THAT MAKES THE SYSTEM LIE.
+> ⭐ Gaps 2 and 3 are **absences, and they are visible**: a missing piece cannot
+> be mistaken for a working one. ⛔ Gap 1 is a **false presence** — the file is
+> there, the code is correct, its probe passes, and the protection is off.
+
+---
+
+### 🔴 1 · Nothing WIRES layer 2 · urgent
+
+`hooks/pre-push.sh` cannot be walked around — ⛔ **but only once something links
+it into the tool's hook directory.** Until then it never runs, and layer 1 is
+the only defence left: the one measured to be walked past by five ways of
+writing the same command out of seven tried.
+
+⚠️ **The exposure is not theoretical and it is not future.** It is the state of
+every clone the moment it is made. `ACC-LYR-004` REPORTS it, which is the honest
+half — ⛔ **a report is not a repair**, and the folder stays open until somebody
+reads the finding and acts.
+
+⭐ **Where it belongs, and the pattern is already proven here.** `bin/secrets-lease`
+hardens the folder it owns, on every grant, without waiting for an installer.
+That fix is idempotent and independent of how the tree arrived. ⛔ The opposite
+shape — an installer that runs once and knows about everything — fails the same
+way twice: it does not run again when somebody recreates the thing, and it puts
+the knowledge somewhere other than the piece that owns it.
+
+### 🟡 2 · `bin/conectar-cuenta` · promised by name, does not exist
 
 The registry's own header names it as the piece that RESOLVES which account
 governs a repository. ⛔ A template that ships a name for something absent is a
-promise the reader cannot tell from a fact. Either build it or stop naming it —
-⚠️ and the second option loses the reason it was named.
+promise the reader cannot tell from a fact.
 
-### ⬜ 3 · Nothing measures the registry against the remotes that exist
+⚠️ Either build it or stop naming it — ⭐ and the second option is not free: the
+name is there because resolving the governing account is a real question, and
+deleting the name deletes the question with it.
+
+### 🟢 3 · Nothing measures the registry against the remotes that exist
 
 `ACC-VRF-001` checks a declared local path. ⛔ Nothing compares the registry with
-what the machine's remotes actually say, which is where the drift the rule
-describes actually happens: the remote, the documentation and someone's memory
-disagree, and none of them knows.
+what the machine's remotes actually say — ⚠️ **which is exactly where the drift
+this rule describes happens**: the remote, the documentation and someone's
+memory disagree, and none of them knows.
 
-⚠️ This one needs a decision first, not code: reading real remotes means running
-the host's tool, and that is the frontier this engine does not cross without
-declaring it.
+⭐ **This one needs a DECISION before code, which is why it ranks last and not
+because it matters least.** Reading real remotes means running the host's tool,
+and that is the frontier this engine does not cross without declaring it —
+⚠️ the same frontier that kept a specific forge out of both gates.
+
+---
 
 ### ⭐ WHY THIS ENTRY MATTERS MORE THAN ITS SIZE
 
-The accounts registry is where the piece table, the shipping rule and the secrets
-guides all meet: `piezas.tsv` says what a piece IS, `cuentas.tsv` says where its
-work GOES, and the `guia` column says where the access to it LIVES. ⛔ A gap here
-is not local to this file.
+The accounts registry is where three separate systems meet:
+
+| File | The question it answers |
+|---|---|
+| `piezas.tsv` | ⭐ what a piece **IS** |
+| `cuentas.tsv` | ⭐ where its work **GOES** |
+| the `guia` column | ⭐ where the access to it **LIVES** |
+
+⛔ **A gap here is not local to this file.** Whatever attaches to the piece table
+or to shipping arrives through this registry, and it inherits whatever is still
+open in it.
+
 
 Related: `README.md` (folder) · `../memory/principles/README.md` (where the owners live) ·
 `../rules/README.md` (where a closed entry usually lands) · `../CAPABILITIES.md`.
