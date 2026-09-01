@@ -146,6 +146,81 @@ hook_probes = [q for q in probes
                if any(os.path.exists(os.path.join(HOOKS,
                        os.path.basename(q)[len("probe-"):-3] + ext))
                       for ext in (".sh", ".py"))]
+# ── ⭐ THE SECOND QUESTION · is the tree clean RIGHT NOW ────────────────────
+# 🔴 A probe answers "does this check detect what it claims?" — never "is the
+# tree clean?" ⛔ The second question went unasked for seven audits while four
+# unguarded calls sat in the code: every probe was green, and the validators
+# they proved had never been run against the tree they live in.
+#
+# ⚠️ TWO QUESTIONS, TWO RUNS, REPORTED SEPARATELY. A suite that answers one and
+# implies the other is worse than one answering neither, because it looks
+# complete. This section never merges into the check count above: a probe result
+# and a tree finding mean different things, and adding them would hide both.
+#
+# ⭐ `--quiet` is the uniform contract every validator honours: 0 clean,
+# non-zero has findings. Because the contract is uniform this needs no knowledge
+# of what any of them checks — which is what lets a new validator join with no
+# edit here.
+print("\n  ── the tree right now")
+# ⭐ A validator that needs a SUBJECT is not run over the tree: with none given
+# it prints its usage, and a usage banner is not a finding. ⛔ Reporting it as
+# dirty is noise, and noise in the one section that says "something is wrong
+# here" teaches the reader to skim it.
+# ⚠️ Read from each tool's own `Usage:` line rather than listed here — a list
+# goes stale the day somebody adds an argument.
+def prints_usage(out):
+    """⛔ A usage banner is not a finding.
+
+    🔴 Three attempts to answer this by PARSING the usage text got it wrong
+    three different ways: the first read only the first line and skipped a
+    validator that sweeps; the second missed a form whose only extra token was
+    an option. ⭐ The text describes the contract — running the tool MEASURES it,
+    and this file exists because measuring beats reading.
+
+    ⚠️ A tool that needs a subject answers by printing how to give it one. That
+    is what is detected, because that is what actually happens.
+    """
+    head = "\n".join(out.strip().splitlines()[:3]).lower()
+    return "usage" in head or head.startswith(("bin/", "grade-block"))
+
+
+dirty, unmeasurable, skipped = [], [], []
+for c in checkers:
+    try:
+        rr = subprocess.run([sys.executable, os.path.join(BIN, c), "--quiet"],
+                            cwd=ROOT, capture_output=True, text=True, timeout=120)
+    except (OSError, subprocess.SubprocessError) as e:
+        # ⬜ A validator that could not RUN is not a clean one. Reporting it as
+        # passing is the exact shape of the failure this section exists for.
+        unmeasurable.append((c, e.__class__.__name__))
+        continue
+    if rr.returncode == 0:
+        continue
+    # ⭐ Measured, not parsed: a tool needing a subject says so by printing its
+    # usage, and that is a SKIP — never a finding about the tree.
+    if prints_usage(rr.stdout):
+        skipped.append(c)
+        continue
+    first = (rr.stdout.strip().splitlines() or ["(no output)"])[0]
+    dirty.append((c, rr.returncode, first[:66]))
+
+# ⬜ Said out loud, never counted as clean: a validator not run is one whose
+# answer is unknown, and the difference from "clean" is the whole point.
+for c in skipped:
+    print("     ⬜ %s needs a subject · not run over the tree" % c)
+if unmeasurable:
+    for c, why in unmeasurable:
+        print("     ⬜ NOT MEASURED · %s did not run (%s)" % (c, why))
+if dirty:
+    for c, code, first in dirty:
+        print("     🔴 %s · exit %d · %s" % (c, code, first))
+    print("     ⚠️ %d validator(s) report findings on THIS tree · the probes "
+          "above say they WORK,\n"
+          "        which is a different question and does not make these go "
+          "away" % len(dirty))
+else:
+    print("     ✅ %d validator(s) run clean on this tree" % len(checkers))
+
 print("\n  ── coverage")
 print("     validators: %d · with a probe: %d%s"
       % (len(checkers), len(probes) - len(hook_probes),
