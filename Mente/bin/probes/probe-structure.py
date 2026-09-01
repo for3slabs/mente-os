@@ -22,7 +22,7 @@ TREE = os.path.join(WORK, "Mente")
 shutil.copytree(ROOT, TREE, ignore=shutil.ignore_patterns(
     "__pycache__", ".beats", ".test-lock", ".git"))
 CHECK = os.path.join(TREE, "bin", "check-structure")
-TABLE = os.path.join(TREE, "piezas.tsv")
+TABLE = os.path.join(TREE, "pieces.tsv")
 BASE = open(TABLE, encoding="utf-8").read()
 
 

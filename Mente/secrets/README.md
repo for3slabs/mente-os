@@ -2,7 +2,7 @@
 
 **Status:** current · **Type:** folder-readme · **Updated:** {{date}} · **Owner:** {{owner}}
 **Scope:** ⚠️ **INSTANCE** — the folder ships empty. Everything you put here stays on your machine.
-**Governance:** `owner` in `piezas.tsv` · **Permissions:** the folder `700`, every file `600`
+**Governance:** `owner` in `pieces.tsv` · **Permissions:** the folder `700`, every file `600`
 
 ---
 

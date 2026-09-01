@@ -236,7 +236,7 @@ Read that one before adding a file — it is the shortest path to getting the pl
 
 ## 9 · Resuming after a context reset
 
-Read **⬜ `memory/RETOMAR.md`**. It is the only file guaranteed to be read, and its ceiling is
+Read **⬜ `memory/RESUME.md`**. It is the only file guaranteed to be read, and its ceiling is
 declared on purpose — ⭐ **it should be enough to start working without asking anything.**
 
 Closing a session is the other half: run the `session-wrap` skill, or follow
@@ -247,4 +247,4 @@ lost with no warning. ⬜ `bin/check-clear-ready` refuses while something would 
 
 Related: `CAPABILITIES.md` (what may run and what must not be touched) · `QUICKSTART.md`
 (from clone to working) · `rules/README.md` (the contracts) · `memory/principles/README.md`
-(the criterion) · `piezas.tsv` (where every piece is declared).
+(the criterion) · `pieces.tsv` (where every piece is declared).

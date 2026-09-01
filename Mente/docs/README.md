@@ -3,7 +3,7 @@
 **Status:** current · **Type:** folder-readme · **Updated:** {{date}} · **Owner:** {{owner}}
 **Scope:** ⚠️ **MIXED** — the only folder in the engine that holds both engine documents and
 instance content. Read §"What travels" before adding anything.
-**Governance:** `shared` in `piezas.tsv`
+**Governance:** `shared` in `pieces.tsv`
 
 ---
 
@@ -141,5 +141,5 @@ and it is the most convincing kind of wrong document — it was accurate when wr
 ---
 
 Related: `../rules/README.md` (the law this folder explains) · `bin/README.md` (the generators) ·
-`../piezas.tsv` (where each generated file is declared) · `../.gitignore` (which of these travel) ·
+`../pieces.tsv` (where each generated file is declared) · `../.gitignore` (which of these travel) ·
 `../CAPABILITIES.md` (which commands rebuild what).

@@ -1,8 +1,8 @@
-<!-- ⚠️ TEMPLATE — `bin/init` copies this to `memory/RETOMAR.md`. It ships EMPTY on purpose:
+<!-- ⚠️ TEMPLATE — `bin/init` copies this to `memory/RESUME.md`. It ships EMPTY on purpose:
      nothing has been closed yet on a fresh install, and inventing a state would be worse than
      having none. ⭐ You never write this file by hand — the session-closing routine writes it.
      What follows is the shape it takes, plus the explanation a first-time reader needs. -->
-# RETOMAR — where we left off
+# RESUME — where we left off
 
 **Status:** current · **Type:** entry-point · **Updated:** {{date}} · **Owner:** {{owner}}
 **Scope:** ⚠️ INSTANCE document — it describes THIS installation's work. It never travels.

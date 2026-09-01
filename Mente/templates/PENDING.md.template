@@ -1,4 +1,4 @@
-<!-- ⚠️ TEMPLATE — `bin/init` copies this to `memory/PENDIENTES.md`. It ships EMPTY: a fresh
+<!-- ⚠️ TEMPLATE — `bin/init` copies this to `memory/PENDING.md`. It ships EMPTY: a fresh
      install owes nothing yet. ⭐ What follows is the shape an entry takes and the rules that
      keep this file from becoming a graveyard nobody reads. -->
 # PENDING — what is not urgent, and must not be lost
@@ -79,6 +79,6 @@ Empty on purpose — a fresh install owes nothing yet.
 
 ---
 
-Related: `../README.md` (what memory holds) · `RETOMAR.md` (the state, as opposed to the debt) ·
+Related: `../README.md` (what memory holds) · `RESUME.md` (the state, as opposed to the debt) ·
 `../../work/blocks/README.md` (what a pending item becomes when someone starts it) ·
 the rotation rule in `rules/`.

@@ -152,7 +152,7 @@ like separate repos, so a stale table can cite a dead address and still appear t
 
 | | |
 |---|---|
-| **First, always** | `Mente/memory/RETOMAR.md` (~5 KB) — the cold-start brief. **~90% of the time it is enough** |
+| **First, always** | `Mente/memory/RESUME.md` (~5 KB) — the cold-start brief. **~90% of the time it is enough** |
 | ⛔ **Do NOT read** | any large historical file, unless a pointer in the cold-start brief sends you there explicitly 
 | **Why** | reading it "just in case" burns tokens for nothing — measured |
 | **Open block** | load Tier 1 (§A-E) of `Mente/work/blocks/active/*/BLOCK.md`. If §A-E do not suffice → **say so, do not infer** |

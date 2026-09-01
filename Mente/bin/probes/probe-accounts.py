@@ -22,7 +22,7 @@ TREE = os.path.join(WORK, "Mente")
 shutil.copytree(ROOT, TREE, ignore=shutil.ignore_patterns(
     "__pycache__", ".beats", ".test-lock", ".git"))
 CHECK = os.path.join(TREE, "bin", "check-accounts")
-REG = os.path.join(TREE, "cuentas.tsv")
+REG = os.path.join(TREE, "accounts.tsv")
 HEADER = "repo\tcuenta\trol\tremoto\truta_local\tpor_que_existe\tguia\n"
 # A row that is correct in every respect — every case below breaks exactly one
 # thing in it, so a finding can only come from the thing that was broken.
@@ -79,7 +79,7 @@ case("⑥ ⭐ y explica que un rol invisible deja pasar un archivado",
 
 # ⭐ the roles come from the TEMPLATE, not from a list inside the validator:
 # every role the registry declares must be accepted without editing anything
-tpl = open(os.path.join(TREE, "templates", "cuentas.tsv.template"),
+tpl = open(os.path.join(TREE, "templates", "accounts.tsv.template"),
            encoding="utf-8").read()
 declared = [w for w in ("taller", "backup", "motor", "control", "sitio",
                         "publicado", "plantilla", "archivado") if w in tpl]
@@ -89,7 +89,7 @@ case("⑦ ⭐ los %d roles de la PLANTILLA se aceptan solos" % len(declared),
      not rejected, str(rejected))
 
 # ⛔ and if the template disappears, the role check is NOT silently skipped
-tpl_path = os.path.join(TREE, "templates", "cuentas.tsv.template")
+tpl_path = os.path.join(TREE, "templates", "accounts.tsv.template")
 shutil.move(tpl_path, tpl_path + ".hidden")
 r = run(GOOD.replace("\ttaller\t", "\tinventado\t"))
 case("⑧ ⬜ sin plantilla dice que NO midió los roles",

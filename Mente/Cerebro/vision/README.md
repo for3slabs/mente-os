@@ -2,7 +2,7 @@
 
 **Status:** current · **Type:** folder-readme · **Updated:** {{date}} · **Owner:** {{owner}}
 **Scope:** ⚠️ **INSTANCE** — the folder and this README travel; ⛔ the content never does.
-**Governance:** `owner` in `piezas.tsv`
+**Governance:** `owner` in `pieces.tsv`
 
 ---
 
@@ -11,7 +11,7 @@
 ```
 Mente/
 └── Cerebro/         ← ⭐ your project's own thinking — what it IS
-    ├── ARQUITECTURA.md   the pillar · the ground · must be true NOW
+    ├── ARCHITECTURE.md   the pillar · the ground · must be true NOW
     └── vision/      ← ⭐ YOU ARE HERE — where it is GOING · a dated hypothesis
 ```
 
@@ -109,6 +109,6 @@ and plans are validated against execution, while visions are not validated at al
 
 ---
 
-Related: `../README.md` (⭐ **the parent — read it for context**) · `../ARQUITECTURA.md` (what IS,
+Related: `../README.md` (⭐ **the parent — read it for context**) · `../ARCHITECTURE.md` (what IS,
 where a validated vision graduates to) · `../../docs/README.md` (plans and dated analysis) ·
 `../../rules/README.md` (decision records) · `../../.gitignore` (why this stays).

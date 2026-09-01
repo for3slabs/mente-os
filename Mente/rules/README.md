@@ -238,4 +238,4 @@ whoever installed the system.
 
 Related: `bin/README.md` (what enforces these) · `hooks/README.md` (what blocks in real time) ·
 `../memory/principles/README.md` (criterion, not law) · `../docs/README.md` (the analysis behind a
-rule) · `../base-rules.md` (the universal level) · `../piezas.tsv` (where each contract is declared).
+rule) · `../base-rules.md` (the universal level) · `../pieces.tsv` (where each contract is declared).

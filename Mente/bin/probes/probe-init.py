@@ -42,9 +42,9 @@ def fresh(git=True):
     # hand-written list, so a stale copy from an earlier run survived and the
     # probe measured a tree that was already installed — reporting a
     # substitution as broken when it had simply never run.
-    for f in ("mente.config.yml", "PROJECT-RULES.md", "cuentas.tsv",
-              "docs/WORKSPACE.md", "memory/RETOMAR.md", "memory/PENDIENTES.md",
-              "Cerebro/ARQUITECTURA.md", "connection/bridges/BRIDGES.md"):
+    for f in ("mente.config.yml", "PROJECT-RULES.md", "accounts.tsv",
+              "docs/WORKSPACE.md", "memory/RESUME.md", "memory/PENDING.md",
+              "Cerebro/ARCHITECTURE.md", "connection/bridges/BRIDGES.md"):
         p = os.path.join(tree, f)
         if os.path.exists(p):
             os.remove(p)
@@ -71,8 +71,8 @@ r = run(tree, "--owner", OWNER)
 case("① ⭐ instala y termina bien", r.returncode == 0, "exit=%d" % r.returncode)
 
 expected = ["mente.config.yml", "PROJECT-RULES.md", "docs/WORKSPACE.md",
-            "memory/RETOMAR.md", "memory/PENDIENTES.md", "cuentas.tsv",
-            "Cerebro/ARQUITECTURA.md", "connection/bridges/BRIDGES.md"]
+            "memory/RESUME.md", "memory/PENDING.md", "accounts.tsv",
+            "Cerebro/ARCHITECTURE.md", "connection/bridges/BRIDGES.md"]
 missing = [f for f in expected if not has(tree, f)]
 case("② ⭐ los 8 archivos de instancia existen", not missing, str(missing))
 
@@ -81,7 +81,7 @@ case("② ⭐ los 8 archivos de instancia existen", not missing, str(missing))
 # stale the first time somebody adds a template and forgets.
 open(os.path.join(tree, "templates", "ZZNEW.md.template"), "w").write(
     "# new\n\n**Owner:** {{owner}}\n")
-with open(os.path.join(tree, "piezas.tsv"), "a") as fh:
+with open(os.path.join(tree, "pieces.tsv"), "a") as fh:
     fh.write("zznew\tdocs/ZZNEW.md\tengine\tcanonical\ta fixture\n")
 r = run(tree, "--owner", OWNER)
 case("③ ⭐ una plantilla NUEVA se coloca sin tocar el instalador",

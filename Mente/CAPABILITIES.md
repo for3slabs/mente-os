@@ -47,7 +47,7 @@ locally. A local patch is lost on the next update and takes its reason with it.
 ⛔ **The instance never travels when the engine is published.** `.gitignore` enforces this half.
 
 > **The authority for this split is `mente.config.yml`** (`frontier_engine`, `frontier_instance`,
-> `frontier_mixed`), and `piezas.tsv` must agree with it, one row per piece, in its `governance`
+> `frontier_mixed`), and `pieces.tsv` must agree with it, one row per piece, in its `governance`
 > column. When the two disagree, the config wins and the table is the bug.
 
 ---
@@ -62,8 +62,8 @@ answers exactly one question. None of them decides anything: they check what is 
 | Command | The question it answers |
 |---|---|
 | `bin/check-health` | ⭐ **the two things no other validator watches** — are the hooks WIRED, and is this session still safe to continue |
-| `bin/check-structure` | ⭐ does every row in `piezas.tsv` still have its file — the table-side check |
-| `bin/check-declared` | ⭐ does every engine file have its row in `piezas.tsv` — the disk-side check |
+| `bin/check-structure` | ⭐ does every row in `pieces.tsv` still have its file — the table-side check |
+| `bin/check-declared` | ⭐ does every engine file have its row in `pieces.tsv` — the disk-side check |
 | `bin/check-document` | does every document carry its header, its ceiling and pointers that resolve |
 | `bin/check-block` | ⭐ does **every** block meet its contract — sections, states, closing · it walks them all |
 | `bin/check-campaign` | does a campaign name real blocks, and does it close only when they do |
@@ -189,5 +189,5 @@ just as confident while doing it.
 ---
 
 Related: `base-rules.md` (🌐 the universal level) · `PROJECT-RULES.md` (🏢 this project) ·
-`mente.config.yml` (the engine/instance frontier, and your gates) · `piezas.tsv` (where each
+`mente.config.yml` (the engine/instance frontier, and your gates) · `pieces.tsv` (where each
 piece lives) · ⬜ `docs/WORKSPACE.md` (created at install) (⭐ where **your** machine is described) · `QUICKSTART.md`.

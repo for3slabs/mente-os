@@ -18,7 +18,7 @@ Code, this file plus the pointers below is enough to work correctly.
 ```
 1 · BASE RULES               ← this file
 2 · CONTEXT                  ← what was being worked on
-3 · LAST STATE               ← memory/RETOMAR.md
+3 · LAST STATE               ← memory/RESUME.md
 4 · WHICH ARCHITECT?         ← what profile does this task need
 5 · TOOLS
 6 · OPEN or LOAD the BLOCK
@@ -72,7 +72,7 @@ Code, this file plus the pointers below is enough to work correctly.
 
 | Need | Path |
 |---|---|
-| Where we left off | ⬜ `memory/RETOMAR.md` |
+| Where we left off | ⬜ `memory/RESUME.md` |
 | The voice | `memory/principles/owner-0-voice.md` |
 | The three owners | ⬜ `principles/owner-1-docs.md` · `principles/owner-2-dev.md` · `principles/owner-3-validation.md` |
 | Expert criterion | `principles/expertise/{database,backend,frontend}.md` |
@@ -130,5 +130,5 @@ What you lose and what you keep:
 
 ---
 
-Related: ⬜ `memory/RETOMAR.md` · `memory/principles/owner-0-voice.md` · `rules/contract-block.md` ·
+Related: ⬜ `memory/RESUME.md` · `memory/principles/owner-0-voice.md` · `rules/contract-block.md` ·
 ⬜ `docs/DECISIONS.md` · `mente.config.yml` (identity: owner + pillars) · `CLAUDE.md` (Claude Code entry point).

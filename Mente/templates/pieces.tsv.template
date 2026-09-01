@@ -1,6 +1,6 @@
 # ══════════════════════════════════════════════════════════════════════════
-# ⚠️ THIS IS THE TEMPLATE. `bin/init` copies it to `piezas.tsv` on install.
-#    It ships WITH the engine's rows already filled in — unlike cuentas.tsv,
+# ⚠️ THIS IS THE TEMPLATE. `bin/init` copies it to `pieces.tsv` on install.
+#    It ships WITH the engine's rows already filled in — unlike accounts.tsv,
 #    this file cannot be born empty: without the engine rows, check-structure
 #    has nothing to verify and goes silent about every piece that disappears.
 #
@@ -9,7 +9,7 @@
 #    what it actually received — and the gap is silent, which is the worst kind.
 # ══════════════════════════════════════════════════════════════════════════
 #
-# piezas.tsv — the single source of truth for WHERE each key piece lives.
+# pieces.tsv — the single source of truth for WHERE each key piece lives.
 # Read by bin/check-structure and bin/check-declared.
 #
 # ⭐ Moving a piece costs ONE line here. Do not hardcode a location in prose —
@@ -51,11 +51,11 @@
 # ══════════════════════════════════════════════════════════════════════════
 pieza	ruta	governance	clase	que_es
 # ── engine · the validators — the motor, nobody edits per instance ──
-val-salud	bin/check-health	engine	canonical	is the system healthy
+check-health-piece	bin/check-health	engine	canonical	is the system healthy
 val-estructura	bin/check-structure	engine	canonical	the tree is the one this table declares
 val-suficiencia	bin/check-sufficiency	engine	canonical	a block can be resumed from disk alone
 val-clear	bin/check-clear-ready	engine	canonical	refuses a reset if anything would be lost
-instalador	bin/init	engine	canonical	generates the instance files from templates/
+installer	bin/init	engine	canonical	generates the instance files from templates/
 # ── engine · the gates + hooks ──
 puerta-critica	hooks/gate-critical.py	engine	canonical	blocks a destructive change with no rollback, and an insufficient close
 pre-edit	hooks/pre-edit-standards.py	engine	canonical	injects the block's standards before an edit
@@ -82,12 +82,12 @@ changelog	CHANGELOG.md	engine	canonical	the engine's change history
 version	VERSION	engine	generated	the engine's version number
 gitignore	.gitignore	engine	canonical	what does NOT travel — secrets, live config, per-machine state
 # ── engine · the rule levels + the four architects ──
-reglas-universal	base-rules.md	engine	canonical	level 1 — conduct in any project
-reglas-proyecto	PROJECT-RULES.md	owner	canonical	level 2 — this project's own rules
-enrutador	CLAUDE-MENTE-OS.md	engine	canonical	the router — imported with @Mente/CLAUDE-MENTE-OS.md from the user's own CLAUDE.md
+base-rules	base-rules.md	engine	canonical	level 1 — conduct in any project
+project-rules	PROJECT-RULES.md	owner	canonical	level 2 — this project's own rules
+router	CLAUDE-MENTE-OS.md	engine	canonical	the router — imported with @Mente/CLAUDE-MENTE-OS.md from the user's own CLAUDE.md
 voz	memory/principles/owner-0-voice.md	engine	canonical	how the system communicates
 patrones-importados	memory/principles/imported-patterns.md	engine	canonical	absorbed failure patterns — knowledge, ⛔ never the owner's criterion
-contrato-entrega	memory/principles/contract-delivery.md	engine	canonical	what a response must contain, and what shape it takes
+contract-delivery	memory/principles/contract-delivery.md	engine	canonical	what a response must contain, and what shape it takes
 arquitecto-docs	memory/principles/owner-1-docs.md	engine	canonical	the criterion for documentation
 arquitecto-dev	memory/principles/owner-2-dev.md	engine	canonical	the criterion for development
 exp-val-integration	memory/principles/expertise/val-integration.md	engine	canonical	the base criterion for the seams between pieces — extensible per instance
@@ -103,29 +103,29 @@ arquitecto-val	memory/principles/owner-3-validation.md	engine	canonical	the crit
 # ── owner · whoever installs governs these · ⚠️ they do NOT exist on a fresh
 #    clone — check-structure reports them red until the owner writes each one.
 #    That red is the install checklist, not a fault (see QUICKSTART §3).
-cold-start	memory/RETOMAR.md	owner	canonical	where we left off — read first when resuming
-pendientes	memory/PENDIENTES.md	owner	canonical	non-urgent findings that must not be lost
+cold-start	memory/RESUME.md	owner	canonical	where we left off — read first when resuming
+pending-list	memory/PENDING.md	owner	canonical	non-urgent findings that must not be lost
 gate	connection/bridges/BRIDGES.md	owner	canonical	which other installations may be reached, and under what permission
 config-instancia	mente.config.yml	owner	canonical	the instance declaration — gitignored, never travels
-pilar-arquitectura	Cerebro/ARQUITECTURA.md	owner	canonical	the architectural source of truth — the owner fills it
+pilar-arquitectura	Cerebro/ARCHITECTURE.md	owner	canonical	the architectural source of truth — the owner fills it
 # ── engine · the blueprints bin/init stamps ──
 val-declarados	bin/check-declared	engine	canonical	every engine file has a row in this table — the disk-side check
-tpl-enrutador	templates/CLAUDE.md.template	engine	canonical	the blueprint bin/init stamps into the project's CLAUDE.md
-tpl-reglas	templates/PROJECT-RULES.md.template	engine	canonical	the blueprint for the project-level rules
+tpl-router	templates/CLAUDE.md.template	engine	canonical	the blueprint bin/init stamps into the project's CLAUDE.md
+tpl-rules	templates/PROJECT-RULES.md.template	engine	canonical	the blueprint for the project-level rules
 tpl-config	templates/mente.config.yml.template	engine	canonical	the blueprint for the instance declaration
 tpl-workspace	templates/WORKSPACE.md.template	engine	canonical	the blueprint for the machine map — says WHERE, never WHAT
-tpl-arquitectura	templates/ARQUITECTURA.md.template	engine	canonical	the blueprint for the architecture pillar — born empty
-tpl-cold-start	templates/RETOMAR.md.template	engine	canonical	the blueprint for the cold-start brief
-tpl-pendientes	templates/PENDIENTES.md.template	engine	canonical	the blueprint for the pending-items list
+tpl-arquitectura	templates/ARCHITECTURE.md.template	engine	canonical	the blueprint for the architecture pillar — born empty
+tpl-cold-start	templates/RESUME.md.template	engine	canonical	the blueprint for the cold-start brief
+tpl-pending	templates/PENDING.md.template	engine	canonical	the blueprint for the pending-items list
 tpl-puentes	templates/bridges.md.template	engine	canonical	the blueprint for the registry of other installations
-tpl-piezas	templates/piezas.tsv.template	engine	canonical	the blueprint for this table — the only one shipping with content
+tpl-pieces	templates/pieces.tsv.template	engine	canonical	the blueprint for this table — the only one shipping with content
 # ── shared · engine gives the form, owner writes the content ──
-piezas	piezas.tsv	shared	canonical	this table — where each key piece lives
-registro-cuentas	cuentas.tsv	shared	canonical	which account governs each repo — ⛔ never a token
-tpl-cuentas	templates/cuentas.tsv.template	engine	canonical	the blueprint for the account register — ⛔ ships with no rows
-indice	docs/INDEX.md	shared	generated	every document — bin/generate-index
-estados	docs/STATES.md	shared	generated	blocks + health — bin/generate-index
-metricas	docs/METRICS.md	shared	generated	every live number — bin/generate-metrics
+piezas	pieces.tsv	shared	canonical	this table — where each key piece lives
+accounts-register	accounts.tsv	shared	canonical	which account governs each repo — ⛔ never a token
+tpl-accounts	templates/accounts.tsv.template	engine	canonical	the blueprint for the account register — ⛔ ships with no rows
+doc-index	docs/INDEX.md	shared	generated	every document — bin/generate-index
+states-index	docs/STATES.md	shared	generated	blocks + health — bin/generate-index
+metrics	docs/METRICS.md	shared	generated	every live number — bin/generate-metrics
 decisiones	docs/DECISIONS.md	shared	generated	every ADR — bin/generate-index
 workspace	docs/WORKSPACE.md	owner	canonical	which repo is which on THIS machine — gitignored, never travels
 check-document	bin/check-document	engine	executable	enforces the lock rules of the document contract
@@ -219,14 +219,14 @@ probe-gate-accounts	bin/probes/probe-gate-accounts.py	engine	executable	proves b
 probe-structure	bin/probes/probe-structure.py	engine	executable	proves a stale row is told from a legitimate absence — most absences are correct
 probe-health	bin/probes/probe-health.py	engine	executable	proves a green is never printed over a check that could not run
 probe-clear-ready	bin/probes/probe-clear-ready.py	engine	executable	proves the cut is refused while something would be lost — and never called safe unmeasured
-gen-indice	bin/generate-index	engine	executable	🤖 rebuilds the index, the states and the decisions — ⛔ a hand-kept index goes stale silently and keeps being believed
-gen-metricas	bin/generate-metrics	engine	executable	🤖 the only place a live number belongs — ⛔ it reads the battery's last result, never runs it
+generate-index	bin/generate-index	engine	executable	🤖 rebuilds the index, the states and the decisions — ⛔ a hand-kept index goes stale silently and keeps being believed
+generate-metrics	bin/generate-metrics	engine	executable	🤖 the only place a live number belongs — ⛔ it reads the battery's last result, never runs it
 probe-generators	bin/probes/probe-generators.py	engine	executable	proves a generated file is measured, obeys the contract, and can say NOTHING
 probe-init	bin/probes/probe-init.py	engine	executable	proves the installer places, asks, and REFUSES to destroy a configured instance
-nuevo-bloque	bin/new-block	engine	executable	opens a unit of work with §A-D and lists it — ⛔ opening must stay cheap or the work happens without a block
-tpl-bloque	templates/BLOCK.md.template	engine	canonical	the shape a block has — ⭐ mirrors contract-block §5, never a copy inside the scaffolder
+new-block	bin/new-block	engine	executable	opens a unit of work with §A-D and lists it — ⛔ opening must stay cheap or the work happens without a block
+tpl-block	templates/BLOCK.md.template	engine	canonical	the shape a block has — ⭐ mirrors contract-block §5, never a copy inside the scaffolder
 probe-new-block	bin/probes/probe-new-block.py	engine	executable	proves the scaffolded block passes its own contract UNEDITED
-nueva-campana	bin/new-campaign	engine	executable	opens a campaign with its 3 opening sections — ⛔ refuses one with no blocks: that is a title, not a campaign
+new-campaign	bin/new-campaign	engine	executable	opens a campaign with its 3 opening sections — ⛔ refuses one with no blocks: that is a title, not a campaign
 scaffold	bin/scaffold.py	engine	executable	what opening ANY unit of work requires — ⭐ one reader, so two tools cannot disagree about a refusal
-tpl-campana	templates/CAMPAIGN.md.template	engine	canonical	the shape a campaign has — ⭐ mirrors contract-campaign, never a copy inside the scaffolder
+tpl-campaign	templates/CAMPAIGN.md.template	engine	canonical	the shape a campaign has — ⭐ mirrors contract-campaign, never a copy inside the scaffolder
 probe-new-campaign	bin/probes/probe-new-campaign.py	engine	executable	proves the scaffolded campaign passes its contract UNEDITED

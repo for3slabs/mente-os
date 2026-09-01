@@ -51,9 +51,9 @@ owner:
 
 # ── PILLARS · your project's architectural sources of truth ──────────────────
 # ⬜ The file(s) the AI treats as the ground it builds on. CLAUDE.md and PROJECT-RULES point
-#    here instead of hardcoding a filename. Start from templates/ARQUITECTURA.md.template,
+#    here instead of hardcoding a filename. Start from templates/ARCHITECTURE.md.template,
 #    fill it in, then point at it. Leave null until the file exists.
-#    Example:  architecture: "Cerebro/ARQUITECTURA.md"
+#    Example:  architecture: "Cerebro/ARCHITECTURE.md"
 pillars:
   architecture: null
 

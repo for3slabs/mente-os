@@ -90,7 +90,7 @@ connection/bridges/*
 !connection/bridges/README.md
 
 # which account governs which repo — real org and repo names live here
-cuentas.tsv
+accounts.tsv
 
 
 # ── 4 · docs/ IS MIXED — engine contracts ship, measured numbers do not ─────

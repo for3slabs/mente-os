@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""check-declared — every engine file must be declared in piezas.tsv.
+"""check-declared — every engine file must be declared in pieces.tsv.
 
 check-structure walks the TABLE and verifies each row has its file. This walks
 the DISK and verifies each file has its row. Without it, a piece that is built
@@ -9,7 +9,7 @@ Usage:
   bin/check-declared            report undeclared files
   bin/check-declared --quiet    exit code only
 
-Exit codes: 0 clean · 1 undeclared files found · 2 piezas.tsv missing
+Exit codes: 0 clean · 1 undeclared files found · 2 pieces.tsv missing
 """
 import os
 import sys
@@ -17,11 +17,11 @@ import sys
 MENTE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 os.chdir(MENTE)
 
-TABLE = "piezas.tsv"
+TABLE = "pieces.tsv"
 # ⭐ The table an installation RECEIVES. bin/init copies it, so a row that lives
 # in one and not the other means a fresh install starts with a different map
 # than the one verified here — and nothing downstream would ever say so.
-TEMPLATE = os.path.join("templates", "piezas.tsv.template")
+TEMPLATE = os.path.join("templates", "pieces.tsv.template")
 
 # Folders walked, and which file extensions count as a declarable piece there.
 # An empty tuple means every file counts.
@@ -39,7 +39,7 @@ SCAN = {
     "rules/decisions": (".md",),
 }
 # ⛔ `docs/architecture` was listed here and exists nowhere — not in the tree,
-# not in piezas.tsv, not created by anything. Every clean clone printed
+# not in pieces.tsv, not created by anything. Every clean clone printed
 # "⬜ NOT MEASURED · docs/architecture does not exist" on its first run, which
 # is a validator complaining about its own configuration. ⭐ A scan target that
 # nothing produces is not a gap in the tree; it is a gap in the scan.

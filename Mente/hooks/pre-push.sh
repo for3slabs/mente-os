@@ -47,8 +47,8 @@ fi
 if [ -n "${MENTE_ACCOUNTS:-}" ]; then
   REG="$MENTE_ACCOUNTS"
 else
-  REG="$ROOT/Mente/cuentas.tsv"
-  [ -f "$REG" ] || REG="$ROOT/cuentas.tsv"
+  REG="$ROOT/Mente/accounts.tsv"
+  [ -f "$REG" ] || REG="$ROOT/accounts.tsv"
 fi
 
 # ⬜ No registry means nothing to verify against. A fresh clone has none on

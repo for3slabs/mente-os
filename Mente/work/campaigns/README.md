@@ -2,7 +2,7 @@
 
 **Status:** current · **Type:** folder-readme · **Updated:** {{date}} · **Owner:** {{owner}}
 **Scope:** ⚠️ **INSTANCE** — the folder and this README travel; ⛔ the campaigns inside never do.
-**Governance:** `owner` in `piezas.tsv` · **Contract:** the campaign contract in `rules/`
+**Governance:** `owner` in `pieces.tsv` · **Contract:** the campaign contract in `rules/`
 
 ---
 

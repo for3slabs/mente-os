@@ -345,15 +345,43 @@ time. ⭐ **A ceiling nobody can measure is indistinguishable from no ceiling at
 
 ---
 
-## E-24 · Three template filenames are not in English
+## E-24 · ✅ CLOSED — five filenames and twenty-two piece ids are in English now
 
 - **Surfaced by:** the leak scan of the rules step
-- **Affects:** `templates/RETOMAR.md.template` · `templates/PENDIENTES.md.template` ·
-  `templates/ARQUITECTURA.md.template` · and `piezas.tsv` itself
+- **Affects:** `templates/RESUME.md.template` · `templates/PENDING.md.template` ·
+  `templates/ARCHITECTURE.md.template` · and `pieces.tsv` itself
 - **Closes when:** the owner decides — rename, or declare the names deliberate
 - ⭐ **The criterion this was missing:** `../rules/decisions/ADR-023-instructions-are-in-one-language.md`
   — ⚠️ **a filename is an instruction**: it is resolved and cited, so it follows the instruction
   language even when the content it names is a translated thought.
+
+- **Closed:** 2026-09-01 — the owner decided: rename, not declare deliberate.
+
+⭐ **What moved, and it was more than the three this entry named:**
+
+| Was | Is | Cited by |
+|---|---|---|
+| RETOMAR.md | `RESUME.md` | 14 files |
+| PENDIENTES.md | `PENDING.md` | 9 |
+| ARQUITECTURA.md | `ARCHITECTURE.md` | 8 |
+| piezas.tsv | `pieces.tsv` | 30 |
+| cuentas.tsv | `accounts.tsv` | 15 |
+
+⭐ **And 22 PIECE IDS, which this entry never counted.** A piece id is an ADDRESS
+— it is cited from other files exactly as a filename is — so ADR-023 governs it
+the same way. tpl-piezas became `tpl-pieces`, registro-cuentas became `accounts-register`,
+and so on.
+
+⚠️ **The hazard measured before touching anything:** `pieces` appears 27 times as
+an ordinary word and `accounts` 11 times. ⛔ A blind replace would have rewritten
+prose. Only the full filename was substituted, and the bare word `RETOMAR` was
+replaced separately, as a whole word, in the three files that used it that way.
+
+⭐ Moved with `git mv`, so history follows the file: a plain move records a
+delete and an unrelated add, and then the log on the new name starts today.
+
+133 citations rewritten across 46 files — the battery stayed green throughout
+(the count is in `docs/METRICS.md`).
 
 **Why it matters.** ⭐ Every rule in this engine is written in one language, and every filename
 follows it — except four. ⚠️ **A clone in another country receives file names it cannot read**,
@@ -774,8 +802,8 @@ The accounts registry is where three separate systems meet:
 
 | File | The question it answers |
 |---|---|
-| `piezas.tsv` | ⭐ what a piece **IS** |
-| `cuentas.tsv` | ⭐ where its work **GOES** |
+| `pieces.tsv` | ⭐ what a piece **IS** |
+| `accounts.tsv` | ⭐ where its work **GOES** |
 | the `guia` column | ⭐ where the access to it **LIVES** |
 
 ⛔ **A gap here is not local to this file.** Whatever attaches to the piece table

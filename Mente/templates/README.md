@@ -36,7 +36,7 @@ right shape below.
 | **Identity** — a single value `bin/init` substitutes. | A `{{placeholder}}` in lowercase. | `{{owner}}` · `{{project}}` · `{{date}}` |
 | **A declaration only the user can make** — repos, gates, project state, pillars. May be zero, one, or many. | A `⬜` marker: an EMPTY default plus a comment saying what to put and a commented example to copy. **Never a pre-filled example that reads as done.** | `gates: []` with a commented shape above it |
 
-⭐ **One template breaks the "born empty" rule on purpose: `piezas.tsv.template`.** It ships with
+⭐ **One template breaks the "born empty" rule on purpose: `pieces.tsv.template`.** It ships with
 the engine's rows because a structure check with an empty table verifies nothing and stays silent
 about every piece that disappears. ⚠️ It is therefore the one template that must be updated
 whenever a piece is added to the engine — and the only one where "empty" would be the bug.
@@ -72,10 +72,10 @@ literal text behind.
 | `PROJECT-RULES.md.template` | `PROJECT-RULES.md` | project rules. Doctrine + a ⬜ scope zone and a ⬜ repos zone. §5 carries no security values — WHERE, never WHAT |
 | `mente.config.yml.template` | `mente.config.yml` | the instance declaration. Mostly ⬜: `owner`, `pillars`, `gates`, `siblings`. `gates`/`siblings` default to `[]` and take zero, one, or many entries |
 | `WORKSPACE.md.template` | ⬜ `docs/WORKSPACE.md` (created at install) | ⭐ the model — almost all ⬜. Carries no values: says WHERE a secret lives, never WHAT |
-| `ARQUITECTURA.md.template` | the architecture pillar (path declared in `mente.config.yml` → `pillars.architecture`) | born empty; the user fills it as the project takes shape. Form-agnostic — declares components, invariants, limits and load-bearing decisions without imposing a shape |
-| `piezas.tsv.template` | `piezas.tsv` | ⚠️ **the one template that ships with content**: the engine's own rows. It cannot be born empty — without them `check-structure` has nothing to verify |
-| `RETOMAR.md.template` | ⬜ `memory/RETOMAR.md` (created at install) | the cold-start brief. Born empty, but carries the explanation of the cycle: you never write it by hand, the closing routine does |
-| `PENDIENTES.md.template` | ⬜ `memory/PENDIENTES.md` | the debt list. Born empty; carries the entry shape and the rotation rule |
+| `ARCHITECTURE.md.template` | the architecture pillar (path declared in `mente.config.yml` → `pillars.architecture`) | born empty; the user fills it as the project takes shape. Form-agnostic — declares components, invariants, limits and load-bearing decisions without imposing a shape |
+| `pieces.tsv.template` | `pieces.tsv` | ⚠️ **the one template that ships with content**: the engine's own rows. It cannot be born empty — without them `check-structure` has nothing to verify |
+| `RESUME.md.template` | ⬜ `memory/RESUME.md` (created at install) | the cold-start brief. Born empty, but carries the explanation of the cycle: you never write it by hand, the closing routine does |
+| `PENDING.md.template` | ⬜ `memory/PENDING.md` | the debt list. Born empty; carries the entry shape and the rotation rule |
 | `bridges.md.template` | `connection/bridges/` | the registry of other installations. Born with **no entries** — nobody inherits somebody else's neighbours |
 
 ## The pillar circuit — how the architecture source of truth is wired
@@ -87,10 +87,10 @@ mente.config.yml  →  pillars.architecture: <path>   (the user points here once
         ▲                        │
         │ generated from         │ read by
         │                        ▼
-ARQUITECTURA.md.template   CLAUDE.md + PROJECT-RULES.md   ("the architecture pillar declared in config")
+ARCHITECTURE.md.template   CLAUDE.md + PROJECT-RULES.md   ("the architecture pillar declared in config")
 ```
 
-Start from `ARQUITECTURA.md.template`, fill it in, then point `pillars.architecture` at it. Until
+Start from `ARCHITECTURE.md.template`, fill it in, then point `pillars.architecture` at it. Until
 it exists, `pillars.architecture` stays `null`.
 
 ## ⚠️ Keep templates in sync with the live files

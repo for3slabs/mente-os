@@ -24,7 +24,7 @@ shutil.copytree(ROOT, TREE, ignore=shutil.ignore_patterns(
     "__pycache__", ".beats", ".test-lock", ".git"))
 L1 = os.path.join(TREE, "hooks", "gate-accounts.py")
 L2 = os.path.join(TREE, "hooks", "pre-push.sh")
-REG = os.path.join(WORK, "cuentas.tsv")
+REG = os.path.join(WORK, "accounts.tsv")
 
 HEADER = "repo\tcuenta\trol\tremoto\truta_local\tpor_que_existe\tguia\n"
 ROWS = (HEADER
