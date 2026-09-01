@@ -50,11 +50,50 @@ script read this file** — an irregular catalogue can only ever be read by a pe
 | **Detection** | ⭐ **how it is found** — static, runtime, or both |
 | **Evidence** | what a finding must show |
 | **Severity** | how bad it is when present |
-| **Policy** | ⬜ what it does to shipping |
+| **Policy** | ⬜ what it does to shipping — ⛔ **the OWNER writes this, never the engine** |
 | **Remediation** | the steps that resolve it |
+| ⭐ **Fails** | a minimal example that HAS the defect |
+| ⭐ **Passes** | the same shape WITHOUT it |
 
 ⛔ **The ID is an address, not a position.** Numbering by order means inserting one renumbers the
 rest, and every reference to them breaks silently.
+
+### ⭐ THE RULES THAT GOVERN THIS CATALOGUE
+
+| ID | Rule | Enf | Verify |
+|---|---|---|---|
+| `PAT-FLD-001` | ⭐ **Every pattern carries every declared field** | 🔒 | ⛔ an irregular catalogue can only be read by a person |
+| `PAT-EXA-001` | ⭐ **Every pattern ships a failing AND a passing example** | 🔒 | ⚠️ without the second, a detector that flags everything scores perfectly |
+| `PAT-IDS-001` | ⭐ **An id is an address — never renumbered, never reused** | 🔒 | ⛔ inserting by position breaks every reference silently |
+
+⚠️ **`Policy` is exempt from `PAT-FLD-001` on purpose** — see below: the engine cannot write it,
+and demanding it would force a default that is one installation's answer.
+
+### ⭐ WHY EVERY PATTERN CARRIES BOTH EXAMPLES
+
+⛔ **A pattern nobody can detect is a sentence, not a rule.** The pair is what turns this
+catalogue from prose into something executable.
+
+| | What it proves |
+|---|---|
+| ⭐ **Fails** | the detection actually FIRES — without it, "detectable" is a claim |
+| ⭐ **Passes** | it does NOT fire on correct code |
+
+> ## ⚠️ THE SECOND ONE IS THE ONE PEOPLE SKIP, AND IT IS THE ONE THAT MATTERS.
+> ⛔ **Without it, a detector that flags everything scores perfectly** — and a rule that always
+> triggers is a rule that gets disabled, taking the real findings with it.
+
+⭐ **They are minimal on purpose:** an example carrying a second defect proves which one fired
+only by accident, and the reader cannot tell them apart.
+
+> ## ⬜ WHY NO PATTERN BELOW CARRIES A `Policy` LINE
+> ⭐ **Because the engine cannot write it.** Policy is what THIS installation does when the
+> pattern is found — block the release, warn, or record it — and that is the owner's call, made
+> once and applied to all of them. ⛔ A default shipped here would be one installation's answer
+> wearing the engine's authority.
+>
+> ⚠️ **An absent `Policy` means NOT DECLARED, not "no policy".** Until it is written, finding one
+> of these changes nothing automatically.
 
 ### Severity is not shipping policy
 
@@ -120,6 +159,8 @@ missing from a discipline, or the pattern was never criterion at all.
 - **Severity:** 🔴 critical — ⭐ **a security finding, never a performance one**
 - **Remediation:** resolve identity from the verified session · perform the ownership check ·
   add a regression test that passes a foreign identifier and expects a refusal
+- ⭐ **Fails:** `user = request.body.user_id` → `db.orders(user)`
+- ⭐ **Passes:** `user = session.verified_user` → `db.orders(user)`
 
 ⚠️ **A schema constraint cannot catch this** — it cannot tell a legitimate identifier from a
 spoofed one. That is why it lives in criterion and not in a validator.
@@ -133,6 +174,8 @@ spoofed one. That is why it lives in criterion and not in a validator.
 - **Severity:** 🔴 critical
 - **Remediation:** every hidden action gets its check on the server. The interface may still hide
   it — ⭐ **hiding is courtesy, refusing is security**
+- ⭐ **Fails:** the delete button is hidden for non-owners, and the endpoint checks nothing
+- ⭐ **Passes:** the endpoint checks ownership; hiding the button is a courtesy on top
 
 ### FP-PERF-001 · Filtering on a column with no index
 
@@ -143,6 +186,8 @@ spoofed one. That is why it lives in criterion and not in a validator.
 - **Evidence:** the query · the column · the indexes present · ⭐ **the row count, measured**
 - **Severity:** 🟠 high on a table expected to grow · 🟡 medium on a bounded one
 - **Remediation:** add the index, or declare the table bounded as an exception (§4)
+- ⭐ **Fails:** `where status = ?` on a column no index covers
+- ⭐ **Passes:** the same query, with an index on `status`
 
 ⭐ **The severity depends on a measurement, so the finding states the count.** ⛔ Never assumed —
 "it is a small table" is the sentence that precedes the timeout.
@@ -155,6 +200,8 @@ spoofed one. That is why it lives in criterion and not in a validator.
 - **Evidence:** the call · whether a bound exists · the measured size
 - **Severity:** 🟠 high on unbounded data · 🟡 medium on bounded
 - **Remediation:** paginate, or bound explicitly and say why the bound is safe
+- ⭐ **Fails:** `select * from events` handed straight to a loop
+- ⭐ **Passes:** the same read with a bound and a cursor
 
 ### FP-SILENT-001 · Not awaiting an asynchronous write
 
@@ -165,6 +212,8 @@ spoofed one. That is why it lives in criterion and not in a validator.
 - **Severity:** 🔴 critical — silent data loss
 - **Remediation:** await it and handle its failure. ⛔ Discarding the result is a decision that
   must be written down, not implied
+- ⭐ **Fails:** `save(record)` with no await and no handler
+- ⭐ **Passes:** `await save(record)`, and a failure that propagates
 
 ### FP-SILENT-002 · Sequential writes where one transaction belongs
 
@@ -175,6 +224,8 @@ spoofed one. That is why it lives in criterion and not in a validator.
 - **Severity:** 🔴 critical
 - **Remediation:** one transaction. ⚠️ If the store has no transactions, the intermediate state is
   a declared and documented risk, not an oversight
+- ⭐ **Fails:** `debit(a)` then `credit(b)`, each committing on its own
+- ⭐ **Passes:** both inside one transaction that commits or rolls back together
 
 ### FP-SILENT-003 · Reading the clock inside a cached read
 
@@ -185,6 +236,8 @@ spoofed one. That is why it lives in criterion and not in a validator.
 - **Severity:** 🔴 critical — the failure is invisible: the data looks valid, only old
 - **Remediation:** ⭐ a time-based transition belongs to a scheduled job that **writes** state, so
   the read filters by that state instead of computing it
+- ⭐ **Fails:** `if now() > expiry` inside a function whose result is cached
+- ⭐ **Passes:** the expiry compared by the caller, outside the cached read
 
 ### FP-STATE-001 · Deriving state the server already owns
 
@@ -194,6 +247,8 @@ spoofed one. That is why it lives in criterion and not in a validator.
 - **Evidence:** both values · ⭐ **the divergence, measured**
 - **Severity:** 🟡 medium — 🔴 critical once a divergence is observed
 - **Remediation:** the server owns the truth, the client renders it
+- ⭐ **Fails:** the client recomputes `total` from the lines it happens to hold
+- ⭐ **Passes:** the client renders the `total` the server sent
 
 ### FP-STATE-002 · Refetching by hand after a write
 
@@ -204,6 +259,8 @@ spoofed one. That is why it lives in criterion and not in a validator.
 - **Severity:** 🟡 medium
 - **Remediation:** trust the propagation. ⭐ **If there is none, say so explicitly** — an
   undocumented manual refetch looks identical to a bug
+- ⭐ **Fails:** `await save(x)` then `await load()` to see the new value
+- ⭐ **Passes:** the write returns the new state, and the caller uses it
 
 ### FP-STRUCT-001 · Circular imports through a shared module
 
@@ -213,6 +270,8 @@ spoofed one. That is why it lives in criterion and not in a validator.
 - **Evidence:** the cycle, named in order
 - **Severity:** 🟠 high
 - **Remediation:** extract the shared part, or invert one dependency
+- ⭐ **Fails:** `a` imports `shared`, `shared` imports `a`
+- ⭐ **Passes:** `shared` imports neither; both import it
 
 ---
 

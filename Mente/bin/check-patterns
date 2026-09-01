@@ -1,0 +1,127 @@
+#!/usr/bin/env python3
+"""check-patterns — enforces the 🔒 rows of the failure-pattern catalogue.
+
+⭐ A PATTERN NOBODY CAN DETECT IS A SENTENCE, NOT A RULE. The catalogue describes
+defects an installation should look for; this measures that each entry is
+described well enough to BE looked for.
+
+⛔ It does not detect the patterns themselves — that is a different piece and a
+different question, and saying so is the point: a check that implied it did
+would let the catalogue look enforced while nothing scanned any code.
+
+⚠️ THE PAIR OF EXAMPLES IS WHAT IT GUARDS MOST. A failing example proves a
+detection can fire; a passing one proves it does not fire on correct code.
+⛔ Without the second, a detector that flags everything scores perfectly — and a
+rule that always triggers is a rule that gets disabled, taking the real findings
+with it.
+
+Usage: check-patterns [--quiet]
+Exit: 0 clean or nothing to measure · 1 violations · 2 the catalogue is missing
+"""
+import os
+import re
+import sys
+
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from findings import report                                    # noqa: E402
+
+CATALOGUE = os.path.join(ROOT, "memory", "principles",
+                         "imported-patterns.md")
+REL = os.path.relpath(CATALOGUE, ROOT)
+ENTRY = re.compile(r"^### (FP-[A-Z]+-\d+)[^\n]*\n(.*?)(?=^### |\Z)", re.M | re.S)
+# ⭐ The fields are read FROM the contract table, never listed here: a copy in
+# the code and a table in the document are two declarations that drift, and the
+# document is the one people edit.
+FIELD_ROW = re.compile(r"^\|\s*(?:⭐\s*)?\*\*(\w+)\*\*\s*\|", re.M)
+# ⬜ `Policy` is the owner's, and the catalogue says so — the engine cannot write
+# it, and demanding it would force a default that is one installation's answer.
+OWNER_FIELDS = {"Policy", "ID"}
+
+
+def declared_fields(text):
+    """The field names the contract table declares, in order."""
+    m = re.search(r"^## 2 · THE PATTERN CONTRACT(.*?)^###", text, re.M | re.S)
+    return [f for f in FIELD_ROW.findall(m.group(1))] if m else []
+
+
+def already_seen(pattern_id, seen):
+    """⭐ Set membership, written so it reads as exact.
+
+    ⛔ `x in text` over the catalogue would be a SUBSTRING match, and
+    `FP-SEC-001` occurs inside `FP-SEC-0012` — an id could count as repeated
+    because a different one contains it. ⚠️ In a check whose subject is whether
+    an id is unique, a loose comparison is self-defeating.
+    """
+    return pattern_id in seen
+
+
+def main():
+    quiet = "--quiet" in sys.argv
+    try:
+        text = open(CATALOGUE, encoding="utf-8", errors="replace").read()
+    except OSError:
+        # ⬜ No catalogue is not a violation: an installation may import no
+        # patterns at all. ⛔ But it is said out loud, never counted as clean.
+        if not quiet:
+            print("⬜ NOT MEASURED · no %s · this installation imports no "
+                  "failure patterns" % REL)
+        return 0
+
+    fields = declared_fields(text)
+    if not fields:
+        if not quiet:
+            print("🔴 the contract table is unreadable · nothing declares which "
+                  "fields a pattern carries, so none can be checked")
+        return 2
+
+    required = [f for f in fields if f not in OWNER_FIELDS]
+    entries = ENTRY.findall(text)
+    if not entries:
+        if not quiet:
+            print("⬜ NOT MEASURED · %s declares %d field(s) and holds no "
+                  "pattern · nothing to check" % (REL, len(fields)))
+        return 0
+
+    findings, seen = [], set()
+    for pid, body in entries:
+        # PAT-IDS-001 · an id is an address
+        if already_seen(pid, seen):
+            findings.append(("PAT-IDS-001", REL,
+                             "%s is used twice · an id is an ADDRESS, and two "
+                             "entries sharing one make every citation "
+                             "ambiguous" % pid))
+        seen.add(pid)
+
+        # PAT-FLD-001 · every declared field is present
+        for f in required:
+            if "**%s:**" % f not in body:
+                findings.append(("PAT-FLD-001", REL,
+                                 "%s has no `%s` · the contract declares it, "
+                                 "and an irregular catalogue can only be read "
+                                 "by a person" % (pid, f)))
+
+        # PAT-EXA-001 · the pair, and the second half is the one that matters
+        for half, why in (("Fails", "nothing proves the detection can FIRE"),
+                          ("Passes", "nothing proves it does NOT fire on "
+                                     "correct code — and a detector that flags "
+                                     "everything scores perfectly")):
+            if "**%s:**" % half not in body:
+                findings.append(("PAT-EXA-001", REL,
+                                 "%s has no `%s` example · %s"
+                                 % (pid, half, why)))
+
+    if not quiet:
+        print("check-patterns · %d pattern(s) · %d declared field(s)"
+              % (len(entries), len(fields)))
+    return report(findings, REL, quiet)
+
+
+if __name__ == "__main__":
+    try:
+        sys.exit(main())
+    except Exception as e:                                     # noqa: BLE001
+        # CHK-CAU-002 · a crash reports nothing, and nothing reads as fine.
+        print("🔴 %s crashed · %s: %s"
+              % (os.path.basename(__file__), type(e).__name__, e))
+        sys.exit(1)

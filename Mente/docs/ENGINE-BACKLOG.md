@@ -258,11 +258,26 @@ the installer of an engine reads exactly once, with less attention than a review
 
 ---
 
-## E-19 · Failure patterns have no regression fixtures
+## E-19 · ✅ CLOSED — every pattern ships both examples, and a check runs the catalogue
 
 - **Surfaced by:** external review of the absorbed-patterns catalogue
 - **Affects:** the pattern catalogue · the quality verdict
-- **Closes when:** each pattern ships a failing example and a passing one, and a check runs both
+- **Closed:** 2026-09-01 — the contract gained `Fails` and `Passes`, all ten
+  patterns carry both, and `bin/check-patterns` enforces it with
+  `PAT-FLD-001`, `PAT-EXA-001` and `PAT-IDS-001`.
+- ⭐ **The examples are minimal and stack-agnostic on purpose:** one carrying a
+  second defect proves which one fired only by accident, and the reader cannot
+  tell them apart.
+- ⛔ **AND THE CHECK STATES ITS OWN LIMIT.** It measures that a pattern is
+  described well enough to BE detected — ⚠️ it does not detect the patterns
+  themselves. A check implying otherwise would let the catalogue look enforced
+  while nothing scanned a line of code. That remains E-20.
+- 🔴 **Found on the way in: the contract declared eight fields and every pattern
+  carried seven.** `Policy` was missing from all ten — ⭐ because the ENGINE
+  CANNOT WRITE IT: policy is what this installation does when the pattern is
+  found, and a default shipped here would be one installation's answer wearing
+  the engine's authority. ⚠️ It is now marked as the owner's and exempt, so an
+  absent `Policy` reads as NOT DECLARED rather than as an oversight.
 
 **Why it matters.** ⭐ A pattern nobody can detect is a sentence, not a rule. Fixtures turn the
 catalogue into something executable: the failing example proves the detection actually fires, and
