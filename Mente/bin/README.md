@@ -33,7 +33,7 @@ and each announces every file it touches. A read-only command that silently modi
 would make the whole set untrustworthy.
 
 **3 · Never hardcode a path from one machine.**
-Read it from `mente_config`. Measured: four validators once carried an absolute path from a single
+⬜ Read it from a shared config reader (`bin/mente_config.py`, not yet written). Measured: four validators once carried an absolute path from a single
 computer, and every one of them **failed silently** elsewhere (`if not found: return`). The guard
 that existed because of a past incident simply went quiet on any other machine.
 ⭐ **A guard aimed at a path that does not exist is not a guard; it is a green light.**
@@ -77,7 +77,7 @@ import sys
 
 MENTE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.join(MENTE, "bin"))
-import mente_config as cfg          # noqa: E402
+⬜ import mente_config as cfg       # planned · no validator imports it yet
 ```
 
 | Element | Rule | Why |

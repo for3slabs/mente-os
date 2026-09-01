@@ -416,7 +416,7 @@ unguarded `open()` calls sat in the code.
 | Found only on the clone | Why it was invisible |
 |---|---|
 | 7 documents cited an instance file the clone legitimately lacks | ⛔ the files were present where the checker was written |
-| a scan target (`docs/architecture`) that exists nowhere and nothing creates | ⚠️ every clone printed NOT MEASURED on its first run |
+| a scan target (⬜ `docs/architecture`) that exists nowhere and nothing creates | ⚠️ every clone printed NOT MEASURED on its first run |
 | `probe-archive` crashed and left its fixture behind | ⭐ it scored 14/14 in the working tree |
 | a declared piece with no template — a clone could not create it | ⛔ nothing said so; the file was simply there |
 
@@ -591,7 +591,7 @@ how the second one gets tested.
 ## E-36 · Nothing completes what is derivable — the generators do not exist
 
 - **Surfaced by:** ADR-019 — the second record to ship `implementation: not-started`
-- **Affects:** `bin/` — the `generate-*` family that `bin/README` and `CAPABILITIES.md` both name
+- **Affects:** `bin/` — the `generate-*` family that `bin/README.md` and `CAPABILITIES.md` both name
 - **Closes when:** at least one generator exists, announces every file it touches, and derives
   nothing that requires judgment
 
@@ -703,7 +703,7 @@ what does the system CLAIM that is not true?**
 | # | Gap | What is claimed while it is open | Urgency |
 |---|---|---|---|
 | **1** | nothing WIRES layer 2 | 🔴 **"two layers protect this"** — one of them never runs | 🔴 **now** |
-| **2** | `bin/conectar-cuenta` absent | ⚠️ a template names a piece that does not exist | 🟡 next |
+| **2** | ⬜ `bin/conectar-cuenta` absent | ⚠️ a template names a piece that does not exist | 🟡 next |
 | **3** | remotes never compared | ⬜ nothing — the rule already says it is unmeasured | 🟢 needs a decision first |
 
 > ## 🔴 GAP 1 IS URGENT BECAUSE IT IS THE ONLY ONE THAT MAKES THE SYSTEM LIE.
@@ -732,7 +732,7 @@ shape — an installer that runs once and knows about everything — fails the s
 way twice: it does not run again when somebody recreates the thing, and it puts
 the knowledge somewhere other than the piece that owns it.
 
-### 🟡 2 · `bin/conectar-cuenta` · promised by name, does not exist
+### 🟡 2 · ⬜ `bin/conectar-cuenta` · promised by name, does not exist
 
 The registry's own header names it as the piece that RESOLVES which account
 governs a repository. ⛔ A template that ships a name for something absent is a
