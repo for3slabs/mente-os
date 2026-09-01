@@ -64,6 +64,7 @@ answers exactly one question. None of them decides anything: they check what is 
 | `bin/check-health` | ⭐ **the two things no other validator watches** — are the hooks WIRED, and is this session still safe to continue |
 | `bin/check-structure` | ⭐ does every row in `pieces.tsv` still have its file — the table-side check |
 | `bin/check-declared` | ⭐ does every engine file have its row in `pieces.tsv` — the disk-side check |
+| `bin/check-declarations` | ⭐ which ⬜ this installation has not filled — ⛔ an unfilled one switches its rule off, silently |
 | `bin/check-document` | does every document carry its header, its ceiling and pointers that resolve |
 | `bin/check-block` | ⭐ does **every** block meet its contract — sections, states, closing · it walks them all |
 | `bin/check-campaign` | does a campaign name real blocks, and does it close only when they do |
