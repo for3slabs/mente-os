@@ -85,13 +85,37 @@ _SHAPES = {"BLOCK.md", "README.md", "SUMMARY.md", "connections.md",
 
 
 def _instance_files():
-    """Every file a template produces — declared by templates/, not by a list."""
+    """Every file an INSTALLATION produces rather than receives.
+
+    ⭐ TWO SOURCES, both already declarative, and the second was missing:
+      · templates/ — if a template produces it, an install produces it
+      · .gitignore — ⛔ if it must not travel, a clone legitimately lacks it
+
+    🔴 Found on a clean clone: the generated index, states, decisions and
+    metrics files have no template — a generator writes them — so citing them
+    was reported as a broken pointer in every clone, and only in a clone. ⚠️ The
+    working tree had them, so the defect was invisible exactly where the work
+    happens.
+    ⭐ check-structure already derived its exemption from both; this one knew
+    only half, and two pieces answering the same question differently is how one
+    of them ends up wrong.
+    """
     out = set()
     tdir = os.path.join(ROOT, "templates")
     if os.path.isdir(tdir):
         for n in os.listdir(tdir):
             if n.endswith(".template"):
                 out.add(n[:-len(".template")])
+    try:
+        for line in open(os.path.join(ROOT, ".gitignore"),
+                         encoding="utf-8", errors="replace"):
+            line = line.split("#")[0].strip()
+            if not line or line.startswith("!"):
+                continue
+            out.add(line.lstrip("/").rstrip("/*").split("/")[-1])
+    except OSError:
+        pass
+    out.discard("")
     return out
 
 

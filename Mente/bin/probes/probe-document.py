@@ -180,6 +180,16 @@ print("  %-46s %s %d de 3 punteros rotos vistos"
 p.results.append(("㉕ tres punteros rotos", "FAIL" if _n == 3 else "NOT_DETECTED"))
 p.clean()
 
+# 🔴 THE DEFECT A CLEAN CLONE FOUND, INVISIBLE IN THE WORKING TREE ──────────
+# A GENERATED file has no template — a generator writes it — and it is
+# gitignored, so every clone lacks it. The instance-file exemption was derived
+# from templates/ alone, so citing `docs/METRICS.md` read as a broken pointer in
+# every clone and in no working tree. ⛔ check-structure already derived the same
+# exemption from BOTH sources; two pieces answering one question differently is
+# how one of them ends up wrong.
+p.inverse("㉖ 🔴 citar un archivo GENERADO (gitignored) no es puntero roto",
+          lambda: put(GOOD + "\nNumbers live in `docs/METRICS.md`.\n"))
+
 # ── DOC-CAP-001/002 · the map and the tree must agree, BOTH ways ────────────
 # ⭐ Run against an ISOLATED COPY: the subject is a fixed file at the root, and
 # editing the real one would leave the working tree carrying a fixture.
