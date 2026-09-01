@@ -146,6 +146,16 @@ print("  ⑳ %d documentos reales · %d hallazgos" % (len(real), len(mine)))
 for k in sorted(by):
     print("       %-14s %d" % (k, by[k]))
 
+# 🔴 A ROW MAY NAME SEVERAL TYPES, and both must get the ceiling. The contract
+# writes `analysis` · `case` on one row; the reader required exactly one name
+# per cell, so BOTH ended up with no ceiling — a type declared in the contract
+# that no document could legally carry, reported as "Type not in the table"
+# while sitting right there in it.
+p.case("㉗ 🔴 a type sharing its row still has a ceiling",
+       lambda: put(GOOD.replace("**Type:** rule", "**Type:** analysis")
+                       + "\n" + "filler line\n" * 320),
+       "DOC-SIZ-001")
+
 # ── DOC-CNT-004 · ⭐ check-links MERGED HERE, not built beside it ───────────
 # ⛔ A second validator reading the same documents for the same kind of defect
 # would be a copy that drifts. What was missing was not a piece — it was REACH:

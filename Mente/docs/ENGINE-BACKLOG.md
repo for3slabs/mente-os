@@ -329,11 +329,21 @@ this contract does not yet have.
 
 ---
 
-## E-23 · No document declares which ceiling applies to it
+## E-23 · ✅ CLOSED — every type names its ceiling AND its unit, and a check measures it
 
 - **Surfaced by:** `../memory/principles/expertise/doc-structure.md` — the file that makes splitting mandatory
 - **Affects:** the document contract's type table · the health check · every engine document
-- **Closes when:** each `Type` names its ceiling and its unit, and a check measures it
+- **Closed:** 2026-09-01 — 12 types, each with its ceiling and its unit, measured
+  by `DOC-SIZ-001` in `bin/check-document`.
+- 🔴 **And closing it found a type nothing could use.** The contract writes two
+  kinds sharing one row — `analysis` · `case` — and the ceiling reader required
+  exactly one name per cell, so BOTH ended up with no ceiling. ⛔ A type declared
+  in the contract that no document could legally carry: check-document reported
+  *"Type not in the contract's table"* for a type sitting right there in it.
+- ⚠️ **Only the first row stated its unit**; the rest inherited it implicitly.
+  ⛔ A reader who lands on row six is guessing, and a limit whose unit must be
+  guessed is one nobody applies confidently. All seven numeric rows say `lines`
+  now.
 
 **Why it matters.** ⭐ The rule *"over its ceiling, it splits"* has no ceiling to measure against.
 Every engine document declares a `Type` and no type declares a limit, so the strongest structural

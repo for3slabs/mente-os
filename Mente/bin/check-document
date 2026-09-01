@@ -139,9 +139,22 @@ def read_ceilings(text):
     """DOC-SIZ-001 · the ceilings live in the contract, and are read from it."""
     out = {}
     for line in text.splitlines():
-        m = re.match(r"^\|\s*`([a-z-]+)`\s*\|\s*\*{0,2}(?:⭐\s*)?\*{0,2}(\d+|none)", line)
-        if m:
-            out[m.group(1)] = None if m.group(2) == "none" else int(m.group(2))
+        # 🔴 ONE ROW MAY NAME SEVERAL TYPES. The contract writes two kinds that
+        # share a ceiling on one row — `analysis` · `case` — and the first
+        # version required the cell to hold exactly one, so BOTH ended up with
+        # no ceiling at all. ⛔ A type declared in the contract that no document
+        # can legally carry: check-document reported `Type not in the
+        # contract's table` for a type that is right there.
+        m = re.match(r"^\|([^|]+)\|\s*\*{0,2}(?:⭐\s*)?\*{0,2}(\d+|none|frozen)",
+                     line)
+        if not m:
+            continue
+        names = re.findall(r"`([a-z-]+)`", m.group(1))
+        if not names:
+            continue          # ⬜ a header or separator row, not a declaration
+        value = None if m.group(2) in ("none", "frozen") else int(m.group(2))
+        for n in names:
+            out[n] = value
     return out
 
 
