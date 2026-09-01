@@ -34,9 +34,7 @@
 pieza	ruta	governance	clase	que_es
 # ── engine · the validators — the motor, nobody edits per instance ──
 val-salud	bin/check-health	engine	canonical	is the system healthy
-val-citas	bin/check-links	engine	canonical	every internal pointer resolves to something that exists
 val-estructura	bin/check-structure	engine	canonical	the tree is the one this table declares
-val-bloques	bin/check-blocks	engine	canonical	the blocks meet their contract
 val-suficiencia	bin/check-sufficiency	engine	canonical	a block can be resumed from disk alone
 val-clear	bin/check-clear-ready	engine	canonical	refuses a reset if anything would be lost
 gen-indice	bin/generate-index	engine	canonical	produces INDEX.md and STATES.md from the tree
@@ -196,3 +194,4 @@ pre-push	hooks/pre-push.sh	engine	executable	layer 2 · runs inside the push wit
 probe-gate-accounts	bin/probes/probe-gate-accounts.py	engine	executable	proves both layers, and proves WHY there are two: 5 evasions walk past layer 1
 probe-structure	bin/probes/probe-structure.py	engine	executable	proves a stale row is told from a legitimate absence — most absences are correct
 probe-health	bin/probes/probe-health.py	engine	executable	proves a green is never printed over a check that could not run
+probe-clear-ready	bin/probes/probe-clear-ready.py	engine	executable	proves the cut is refused while something would be lost — and never called safe unmeasured

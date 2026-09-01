@@ -1,0 +1,192 @@
+#!/usr/bin/env python3
+"""check-clear-ready — would resetting the context lose anything?
+
+⭐ THE ONE THING TO UNDERSTAND: a context reset is a CUT, not a save. Whatever
+is not on disk goes with it, and it goes silently — there is no error, no
+prompt, and nothing afterwards that can tell you what used to be there.
+
+⛔ AND THE LOSS IS NOT THE FILES. Edited files survive a reset perfectly well.
+What dies is everything that was only ever in the conversation: WHY the change
+was made, what was tried and rejected, which finding is still unresolved, what
+the next step was going to be. ⚠️ The next session reads the same tree and
+rebuilds the reasoning by inference — and sounds exactly as confident.
+
+So this refuses while something would be lost, and names WHAT, never a bare no.
+
+⬜ What counts as "somewhere else worth checking" is the installation's:
+mente.config.yml → siblings. Unset means only this tree is measured, said out
+loud rather than assumed to be everything.
+
+Usage: check-clear-ready [--quiet]
+Exit: 0 safe to cut · 1 something would be lost
+"""
+import os
+import re
+import subprocess
+import sys
+
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+REPO = os.path.dirname(ROOT)
+CONFIG = os.path.join(ROOT, "mente.config.yml")
+
+risks, gaps = [], []
+
+
+def git(*args, cwd=None):
+    """⭐ Three states, never two: output, empty, or COULD NOT RUN. ⛔ Conflating
+    the last two makes "git is missing" read as "nothing is uncommitted", which
+    is the answer that lets work be cut away."""
+    try:
+        r = subprocess.run(("git",) + args, cwd=cwd or REPO,
+                           capture_output=True, text=True, timeout=20)
+        return r.stdout.strip() if r.returncode == 0 else None
+    except (OSError, subprocess.SubprocessError):
+        return None
+
+
+def siblings():
+    """⬜ Declared, never discovered. Guessing which neighbouring directories
+    matter would either miss the one that does or nag about every folder."""
+    out = []
+    try:
+        inside = False
+        for line in open(CONFIG, encoding="utf-8", errors="replace"):
+            if re.match(r"^siblings:", line):
+                inside = "[]" not in line
+                continue
+            if inside:
+                m = re.match(r"\s*-\s*['\"]?([^'\"#]+?)['\"]?\s*$", line)
+                if m:
+                    out.append(m.group(1).strip())
+                elif line.strip() and not line.startswith((" ", "\t", "#")):
+                    break
+    except OSError:
+        return None
+    return out
+
+
+def uncommitted(where, label):
+    """Work that exists only as an edit. ⭐ The files survive the cut; the reason
+    they were edited does not."""
+    st = git("status", "--porcelain", cwd=where)
+    if st is None:
+        gaps.append("%s · not a repository, or git could not run · uncommitted "
+                    "work there was NOT measured" % label)
+        return
+    lines = [l for l in st.splitlines() if l.strip()]
+    if lines:
+        risks.append("%d uncommitted change(s) in %s\n"
+                     "   ⚠️ The files survive the cut. ⛔ WHY they changed does "
+                     "not — and that is what the next session needs.\n"
+                     "   %s%s"
+                     % (len(lines), label, "\n   ".join(lines[:5]),
+                        "\n   …" if len(lines) > 5 else ""))
+
+
+def unpushed(where, label):
+    """⭐ A commit that never left is one machine away from being the only copy."""
+    br = git("rev-parse", "--abbrev-ref", "HEAD", cwd=where)
+    if not br or br == "HEAD":
+        return
+    ahead = git("rev-list", "--count", "@{upstream}..HEAD", cwd=where)
+    if ahead is None:
+        gaps.append("%s · branch `%s` tracks no remote · whether its commits "
+                    "left was NOT measured" % (label, br))
+        return
+    if ahead.isdigit() and int(ahead) > 0:
+        risks.append("%s commit(s) on `%s` in %s have not been pushed\n"
+                     "   ⚠️ A commit that never left is one machine away from "
+                     "being the only copy." % (ahead, br, label))
+
+
+def open_work():
+    """⭐ A block left `active` is a promise to somebody who will not remember
+    making it. ⛔ Not a refusal on its own — work legitimately spans sessions —
+    but it must be SEEN before the cut, because after it the only record is the
+    file, and the file does not say what was about to happen."""
+    blocks = os.path.join(ROOT, "work", "blocks")
+    if not os.path.isdir(blocks):
+        gaps.append("no work/blocks · whether a block was left open was NOT "
+                    "measured")
+        return
+    live = []
+    for name in sorted(os.listdir(blocks)):
+        f = os.path.join(blocks, name, "BLOCK.md")
+        if not os.path.isfile(f):
+            continue
+        try:
+            text = open(f, encoding="utf-8", errors="replace").read()
+        except OSError as e:
+            # ⬜ CHK-CAU-003 · an unreadable block might be the OPEN one, and
+            # dropping it in silence is how the cut happens anyway.
+            gaps.append("block `%s` is unreadable (%s) · whether it is still "
+                        "open was NOT measured" % (name, e.__class__.__name__))
+            continue
+        if re.search(r"^status:\s*(active|open)\b", text, re.M | re.I):
+            live.append(name)
+    if live:
+        risks.append("%d block(s) still open: %s\n"
+                     "   ⚠️ Its §E must say where the work stands, or the next "
+                     "session infers it — and sounds just as certain."
+                     % (len(live), ", ".join(live)))
+
+
+def main():
+    quiet = "--quiet" in sys.argv
+
+    uncommitted(REPO, "this tree")
+    unpushed(REPO, "this tree")
+    open_work()
+
+    sibs = siblings()
+    if sibs is None:
+        gaps.append("no mente.config.yml · only this tree was measured")
+    elif not sibs:
+        gaps.append("no siblings declared · only this tree was measured")
+    else:
+        for s in sibs:
+            p = os.path.expanduser(s)
+            if not os.path.isabs(p):
+                p = os.path.join(os.path.dirname(REPO), p)
+            if not os.path.isdir(p):
+                gaps.append("declared sibling does not exist: %s" % s)
+                continue
+            uncommitted(p, s)
+            unpushed(p, s)
+
+    if not quiet:
+        for g in gaps:
+            print("⬜ NOT MEASURED · %s" % g)
+    if risks:
+        print()
+        for r in risks:
+            print("🔴 %s" % r)
+        print("⛔ A context reset is a CUT, not a save. Record what matters "
+              "first — the files\n"
+              "   survive it, the reasoning does not.\n\n"
+              "%d thing(s) would be lost or left behind" % len(risks))
+        return 1
+    if not quiet:
+        # ⛔ Never a bare green: a clean answer over checks that could not run
+        # is the same output a completely blind check would print.
+        # ⛔ THE GREEN MUST NOT CLAIM WHAT THE GAPS SAY WAS NOT MEASURED. The
+        # first version printed "nothing unpushed" above a line saying pushing
+        # was NOT measured — ⚠️ two contradictory statements in one output, and
+        # a reader who stops at the ✅ acts on the wrong one.
+        # ⭐ So the claim shrinks to what was actually checked.
+        if gaps:
+            print("· nothing found in what was measured · ⬜ %d thing(s) above "
+                  "were NOT · ⛔ this is not a clean bill" % len(gaps))
+        else:
+            print("✅ nothing uncommitted, nothing unpushed, no block left open")
+    return 0
+
+
+if __name__ == "__main__":
+    try:
+        sys.exit(main())
+    except Exception as e:                                     # noqa: BLE001
+        # CHK-CAU-002 · a crash reports nothing, and nothing reads as fine.
+        print("🔴 %s crashed · %s: %s"
+              % (os.path.basename(__file__), type(e).__name__, e))
+        sys.exit(1)

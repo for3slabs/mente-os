@@ -146,6 +146,40 @@ print("  ⑳ %d documentos reales · %d hallazgos" % (len(real), len(mine)))
 for k in sorted(by):
     print("       %-14s %d" % (k, by[k]))
 
+# ── DOC-CNT-004 · ⭐ check-links MERGED HERE, not built beside it ───────────
+# ⛔ A second validator reading the same documents for the same kind of defect
+# would be a copy that drifts. What was missing was not a piece — it was REACH:
+# the matcher only saw paths with a known extension, so every `bin/check-x`
+# reference went unchecked. Measured: 170 of those in this tree, 24 resolving to
+# nothing, including QUICKSTART.md — the first file a newcomer reads — naming
+# six commands of which one existed.
+p.case("㉒ un puntero SIN extensión que no resuelve",
+       lambda: put(GOOD + "\nRun `bin/check-zznothing` to verify.\n"),
+       "DOC-CNT-004")
+
+# ⭐ and the same pointer marked ⬜ is correct — planned, not broken
+p.inverse("㉓ el mismo puntero marcado ⬜ NO se reporta",
+          lambda: put(GOOD + "\nRun \u2b1c `bin/check-zznothing` later.\n"))
+
+# ⭐ A CONTRAST REFERENCE names where something ELSE belongs — "that is
+# `docs/plans/`". ⛔ It is a destination an installation may create, not a claim
+# that a file is there, and reporting it would push writers to stop drawing the
+# line at all.
+p.inverse("㉔ ⭐ «that is `docs/zzelsewhere/`» es contraste, no puntero roto",
+          lambda: put(GOOD + "\nA plan does not go here — that is "
+                             "`docs/zzelsewhere/`.\n"))
+
+# ⛔ THE `break` THAT HID THE REST · one broken pointer per file was reported and
+# the others stayed invisible until the first was fixed — a fix that reveals
+# more work instead of finishing it.
+put(GOOD + "\n`bin/check-zzone` and `bin/check-zztwo` and `bin/check-zzthree`.\n")
+_c, _o, _e = p.run()
+_n = len([l for l in _o.splitlines() if "DOC-CNT-004" in l and MARK in l])
+print("  %-46s %s %d de 3 punteros rotos vistos"
+      % ("㉕ ⛔ TRES punteros rotos → se ven los TRES", "✅" if _n == 3 else "🔴", _n))
+p.results.append(("㉕ tres punteros rotos", "FAIL" if _n == 3 else "NOT_DETECTED"))
+p.clean()
+
 # ── DOC-CAP-001/002 · the map and the tree must agree, BOTH ways ────────────
 # ⭐ Run against an ISOLATED COPY: the subject is a fixed file at the root, and
 # editing the real one would leave the working tree carrying a fixture.

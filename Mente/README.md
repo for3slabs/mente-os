@@ -42,10 +42,10 @@ bin/init                    # 2 · ⭐ FIRST. Generates CLAUDE.md + PROJECT-RULE
 bin/check-health            # 3 · tells you what is missing, in plain language
 ```
 
-> ## ⭐ `bin/init` IS STEP ONE, not an optional extra
+> ## ⭐ ⬜ `bin/init` IS STEP ONE, not an optional extra
 >
 > **A fresh clone has no `CLAUDE.md` and no `PROJECT-RULES.md`** — those describe *an instance*,
-> so they are **generated**, never inherited. Until you run `bin/init`, the AI starts with no
+> so they are **generated**, never inherited. Until you run ⬜ `bin/init`, the AI starts with no
 > instructions at all.
 >
 > 🔴 **Why they are not shipped — measured, not assumed:** when they travelled inside the repo, a
@@ -59,7 +59,7 @@ wrong.
 
 > ⚠️ **A consequence you will hit:** because these files are not tracked, **checking out a branch
 > created before they became generated deletes them from disk**, and the battery turns red — every
-> failure pointing at the missing project rules. **The cure is `bin/init`**, and it takes a second.
+> failure pointing at the missing project rules. **The cure is ⬜ `bin/init`**, and it takes a second.
 > It is not a defect: it is what "generated, not inherited" costs, and knowing it beats
 > rediscovering it as an incident.
 
@@ -167,20 +167,23 @@ every tool call, and a narrow gate becomes a system-wide stop.
 ## 6 · The commands you will actually use
 
 ```bash
-bin/check-health             # is anything wrong                    ← start here
-bin/new-block <name> --type <code|docs|data>
-bin/check-sufficiency <b>    # can it restart from disk alone
-bin/check-blocks             # do the open blocks meet their contract
-bin/check-campaigns          # do the campaigns, and do their blocks declare them back
-⬜ a block grader           # product or MVP — measured, not opinion
-bin/check-clear-ready        # safe to reset context?
-bin/check-all               # the whole system, end to end
-bin/generate-index           # 🤖 rebuild the indexes
-bin/generate-metrics         # 🤖 republish the live numbers
+bin/check-health             # are the hooks wired · is this session still safe  ← start here
+bin/probes/run-all.py        # ⭐ the whole system · the only thing that matters is failed: 0
+bin/check-block              # do the blocks meet their contract — it walks them all
+bin/check-campaign           # do the campaigns, and do their blocks declare them back
+bin/grade-block <block>      # product or MVP — measured, never opinion
+bin/check-structure          # does every declared piece still have its file
+bin/check-declared           # does every engine file have its row
+bin/secrets-lease status     # is the secrets permission open, and what did it record
 ```
 
-`bin/check-all` is the truth. It takes a lock, so **one run at a time** — a second is refused
-on purpose, because both would corrupt each other's probe blocks.
+⬜ **Planned, not built:** `bin/init` · `bin/new-block` · `bin/check-clear-ready` ·
+`bin/generate-index` · ⬜ `bin/generate-metrics`. ⛔ They are named in `CAPABILITIES.md` with the
+same marker — ⚠️ **a command list that mixes what runs with what is planned sends the reader to
+a shell prompt to find out which is which.**
+
+`bin/probes/run-all.py` is the truth. It takes a lock, so **one run at a time** — a second is
+refused on purpose, because both would corrupt each other's probe fixtures.
 
 > ⚠️ **Never write a count into a document.** Live numbers live in ⬜ `docs/METRICS.md`, regenerated.
 > A number copied into prose is correct exactly once — this project froze the same one twice in
@@ -238,7 +241,7 @@ declared on purpose — ⭐ **it should be enough to start working without askin
 
 Closing a session is the other half: run the `session-wrap` skill, or follow
 ⬜ `rules/rule-session-close.md`. **`/clear` is a cut, not a save** — whatever is not on disk is
-lost with no warning. `bin/check-clear-ready` refuses while something would be lost.
+lost with no warning. ⬜ `bin/check-clear-ready` refuses while something would be lost.
 
 ---
 

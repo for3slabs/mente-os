@@ -62,11 +62,10 @@ answers exactly one question. None of them decides anything: they check what is 
 | Command | The question it answers |
 |---|---|
 | `bin/check-health` | ⭐ **the two things no other validator watches** — are the hooks WIRED, and is this session still safe to continue |
-⬜ | `bin/check-links` | does every internal pointer resolve to something that exists |
 | `bin/check-structure` | ⭐ does every row in `piezas.tsv` still have its file — the table-side check |
 | `bin/check-declared` | ⭐ does every engine file have its row in `piezas.tsv` — the disk-side check |
 | `bin/check-document` | does every document carry its header, its ceiling and pointers that resolve |
-| `bin/check-block` | does every block meet its contract — sections, states, closing |
+| `bin/check-block` | ⭐ does **every** block meet its contract — sections, states, closing · it walks them all |
 | `bin/check-campaign` | does a campaign name real blocks, and does it close only when they do |
 | `bin/check-work` | is the work inside a block staying inside it |
 | `bin/check-inheritance` | do the three rule levels add up without a lower one loosening a higher |
@@ -81,9 +80,8 @@ answers exactly one question. None of them decides anything: they check what is 
 | `bin/check-adr-wiring` | does every consequence a decision claims resolve to a rule or an artefact |
 | `bin/check-gates` | ⭐ **has a gate gone quiet** — a dead gate looks exactly like one with nothing to block |
 | `bin/grade-block <block>` | ⭐ **product or MVP — measured**, never opinion (layer 1) |
-⬜ | `bin/check-blocks` | do the open blocks meet their contract |
 ⬜ | `bin/check-sufficiency <block>` | can this block be resumed from disk alone (§A-E) |
-⬜ | `bin/check-clear-ready` | would a `/clear` lose anything |
+| `bin/check-clear-ready` | ⭐ would resetting the context lose anything — ⛔ the files survive, the reasoning does not |
 ⬜ | `bin/check-all` | ⭐ the whole system · *the only thing that matters is `failed: 0`* |
 | `bin/probes/run-all.py` | ⭐ **the battery** — runs every validator against planted defects · *the only thing that matters is `failed: 0`* |
 

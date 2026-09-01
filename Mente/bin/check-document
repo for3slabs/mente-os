@@ -206,8 +206,23 @@ def check(path, rel, ceilings, quiet):
     # DOC-CNT-004 · a path must not merely carry a directory — it must RESOLVE.
     # A well-formed pointer to nothing reads as a promise.
     here = os.path.dirname(path)
-    for m in re.finditer(r"`([A-Za-z0-9_][A-Za-z0-9_./-]*\.(?:md|template|tsv|yml|py|sh))`", text):
-        ref = m.group(1)
+    seen_refs = set()
+    # ⭐ TWO SHAPES, because an extension is not what makes a pointer.
+    #   · a filename with a known extension, anywhere
+    #   · ⛔ a path INTO an engine folder with no extension at all — every
+    #     `bin/check-x` reference. Measured: 170 of those in this tree, none of
+    #     them checked, and 24 resolved to nothing. Among them QUICKSTART.md —
+    #     the first file a newcomer reads — naming six commands of which one
+    #     existed, and a validator's own README documenting a module import
+    #     that was never written.
+    # ⚠️ Restricted to the engine's own folder names on purpose: a bare `a/b`
+    # could be anything, and a checker that guesses reports prose as a defect.
+    POINTER = re.compile(
+        r"`([A-Za-z0-9_][A-Za-z0-9_./-]*\.(?:md|template|tsv|yml|py|sh))`"
+        r"|`((?:bin|hooks|rules|templates|docs|work|memory|Cerebro|connection"
+        r"|secrets|cache)/[A-Za-z0-9_./-]+)`")
+    for m in POINTER.finditer(text):
+        ref = (m.group(1) or m.group(2)).rstrip("/")
         if os.path.basename(ref) == ref and ref in _SHAPES:
             continue          # a kind of file, not a pointer to one
         # ⭐ An INSTANCE file stays an instance file when cited with its path.
@@ -223,12 +238,30 @@ def check(path, rel, ceilings, quiet):
             continue
         if PLANNED.search(text[max(0, m.start() - 90):m.start()]):
             continue          # ⬜ marks a piece the engine has not written yet
+        # ⭐ A CONTRAST REFERENCE names where something ELSE belongs — "that is
+        # `docs/plans/`", "not here, that is X". ⛔ It is a destination an
+        # installation may create, not a claim that a file is there, and
+        # reporting it would push writers to stop drawing the line at all.
+        # ⚠️ Recognised by the FOLDER form (a trailing slash) plus the phrasing
+        # that precedes it, never by the path alone.
+        if ref.endswith("/") or m.group(0).endswith("/`"):
+            lead = text[max(0, m.start() - 60):m.start()].lower()
+            if re.search(r"that is|belongs in|goes in|not here|instead|against",
+                         lead):
+                continue
         ln = text[:m.start()].count("\n") + 1
+        # ⚠️ Deduplicated rather than stopped. The first version broke after
+        # one finding per file, so a document with six broken pointers reported
+        # one and looked almost right — ⛔ and the five behind it were invisible
+        # until the first was fixed, which is how a fix reveals more work
+        # instead of finishing it.
+        if ref in seen_refs:
+            continue
+        seen_refs.add(ref)
         bad.append(("DOC-CNT-004", rel, ln,
                     "pointer does not resolve: %r · expected a path readable from "
                     "here or from the root · a pointer to nothing reads as a promise"
                     % ref))
-        break
 
     # DOC-IDS-001 · an id is an ADDRESS. ⛔ Two rows sharing one id means a
     # citation resolves to whichever the reader finds first, and both rules

@@ -1,17 +1,17 @@
-# templates/ — the blueprints `bin/init` stamps into a new instance
+# templates/ — the blueprints ⬜ `bin/init` stamps into a new instance
 
 **Status:** current · **Type:** folder-readme · **Updated:** {{date}} · **Owner:** {{owner}} · **Scope:** ⚠️ ENGINE — travels with the repo.
 
 ## What this folder is
 
-Every file here ends in `.template`. It is a **blueprint**, not a live file. `bin/init` copies
+Every file here ends in `.template`. It is a **blueprint**, not a live file. ⬜ `bin/init` copies
 each one into its real location, fills the placeholders, and asks the user for whatever is
 missing. The generated copies (`CLAUDE.md`, `PROJECT-RULES.md`, `mente.config.yml`,
 ⬜ `docs/WORKSPACE.md` (created at install), and the architecture pillar) are **instance files** — they are gitignored
 and never travel between clones.
 
 > ⭐ **The whole point:** a fresh clone owns nothing personal. Identity, repos, and project state
-> enter **once**, through `bin/init`, from the user in front of it — never baked into a file that
+> enter **once**, through ⬜ `bin/init`, from the user in front of it — never baked into a file that
 > shipped from someone else's machine.
 
 ## ⛔ The one rule that must never break
@@ -19,7 +19,7 @@ and never travel between clones.
 **A template must not contain instance data.** No real name, no email, no real repo or org name,
 no machine path, no product state, no dated incident, no secret of any kind.
 
-> 🔴 **Why, measured:** when `mente.config.yml` travelled with a real owner name inside, `bin/init`
+> 🔴 **Why, measured:** when `mente.config.yml` travelled with a real owner name inside, ⬜ `bin/init`
 > on someone else's clone **never asked** for the owner — it found the name already written and
 > took it as truth. A personal value disguised as an engine default. The same failure hit
 > `PROJECT-RULES.md` (it shipped with 11 mentions of the previous owner and zero of the real one).
@@ -33,7 +33,7 @@ right shape below.
 | The content is… | How it must appear in the template | Example |
 |---|---|---|
 | **Engine doctrine** — a rule, the philosophy, the structure. Same for everyone. | Written out in full. Never a placeholder, never a blank. | the rule-inheritance diagram, the code-vs-document law |
-| **Identity** — a single value `bin/init` substitutes. | A `{{placeholder}}` in lowercase. | `{{owner}}` · `{{project}}` · `{{date}}` |
+| **Identity** — a single value ⬜ `bin/init` substitutes. | A `{{placeholder}}` in lowercase. | `{{owner}}` · `{{project}}` · `{{date}}` |
 | **A declaration only the user can make** — repos, gates, project state, pillars. May be zero, one, or many. | A `⬜` marker: an EMPTY default plus a comment saying what to put and a commented example to copy. **Never a pre-filled example that reads as done.** | `gates: []` with a commented shape above it |
 
 ⭐ **One template breaks the "born empty" rule on purpose: `piezas.tsv.template`.** It ships with
@@ -52,15 +52,15 @@ configured" and leaves it. `my-app` does not exist on their machine, so the guar
 cannot be mistaken for done: it announces what is missing. The example still lives right there,
 **in a comment**, so the user sees the shape without inheriting a fake value.
 
-## The placeholders `bin/init` fills
+## The placeholders ⬜ `bin/init` fills
 
 | Placeholder | Becomes | Source |
 |---|---|---|
 | `{{owner}}` | the owner's name | `owner.name` in `mente.config.yml`, asked on init |
 | `{{project}}` | the project name | derived on init |
-| `{{date}}` | the generation date | the day `bin/init` runs |
+| `{{date}}` | the generation date | the day ⬜ `bin/init` runs |
 
-⚠️ Placeholders are **case-sensitive** and must match exactly what `bin/init` looks for. Use the
+⚠️ Placeholders are **case-sensitive** and must match exactly what ⬜ `bin/init` looks for. Use the
 same form (lowercase `{{owner}}`) across every template, or the substitution silently leaves the
 literal text behind.
 
@@ -101,5 +101,5 @@ change a rule in the engine, update its template in the same commit.
 
 ---
 
-Related: `bin/init` (what stamps these) · `mente.config.yml.template` (the declaration) ·
+Related: ⬜ `bin/init` (what stamps these) · `mente.config.yml.template` (the declaration) ·
 `../.gitignore` (why the generated copies never travel) · `../rules/rule-config-hygiene.md`.

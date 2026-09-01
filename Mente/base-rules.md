@@ -63,7 +63,7 @@ Code, this file plus the pointers below is enough to work correctly.
 
 > 🔴 **Why this is a rule and not a convenience:** when identity travelled hardcoded inside shipped
 > files, a clone owned by someone else inherited the previous owner and the previous project's
-> architecture — and `bin/init` never asked, because it found the values already written. Identity
+> architecture — and ⬜ `bin/init` never asked, because it found the values already written. Identity
 > hardcoded is identity leaked.
 
 ---

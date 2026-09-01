@@ -117,10 +117,10 @@ engine, and each names what verifies it.
 
 | 🔴 Rejected | Why | Verified by |
 |---|---|---|
-| a document with no header (`Status` · `Type` · `Updated` · `Owner`) | nothing can audit what does not identify itself | `bin/check-blocks` |
-| a `Type` that is not in the table | nobody knows which limit applies | `bin/check-blocks` |
+| a document with no header (`Status` · `Type` · `Updated` · `Owner`) | nothing can audit what does not identify itself | `bin/check-block` |
+| a `Type` that is not in the table | nobody knows which limit applies | `bin/check-block` |
 | a file over the limit for its type | ⭐ see §6 — the limit must be measurable | `bin/check-health` |
-| a pointer that resolves to nothing | ⚠️ the cost of replacing duplication with references | `bin/check-links` |
+| a pointer that resolves to nothing | ⚠️ the cost of replacing duplication with references | ⬜ `bin/check-links` |
 | a duplicated table instead of a pointer | ⭐ two copies of one truth diverge, and neither is marked wrong | ⛔ **nothing yet** |
 | section numbering with `-bis` / `-ter` | the smell that says *split me* | ⛔ **nothing yet** |
 | a claim with no evidence | `owner-0-voice.md` | ⛔ **nothing yet** |
