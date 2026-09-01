@@ -55,8 +55,6 @@ val-salud	bin/check-health	engine	canonical	is the system healthy
 val-estructura	bin/check-structure	engine	canonical	the tree is the one this table declares
 val-suficiencia	bin/check-sufficiency	engine	canonical	a block can be resumed from disk alone
 val-clear	bin/check-clear-ready	engine	canonical	refuses a reset if anything would be lost
-gen-indice	bin/generate-index	engine	canonical	produces INDEX.md and STATES.md from the tree
-gen-metricas	bin/generate-metrics	engine	canonical	re-measures and republishes METRICS.md
 instalador	bin/init	engine	canonical	generates the instance files from templates/
 # ── engine · the gates + hooks ──
 puerta-critica	hooks/gate-critical.py	engine	canonical	blocks a destructive change with no rollback, and an insufficient close
@@ -221,3 +219,6 @@ probe-gate-accounts	bin/probes/probe-gate-accounts.py	engine	executable	proves b
 probe-structure	bin/probes/probe-structure.py	engine	executable	proves a stale row is told from a legitimate absence — most absences are correct
 probe-health	bin/probes/probe-health.py	engine	executable	proves a green is never printed over a check that could not run
 probe-clear-ready	bin/probes/probe-clear-ready.py	engine	executable	proves the cut is refused while something would be lost — and never called safe unmeasured
+gen-indice	bin/generate-index	engine	executable	🤖 rebuilds the index, the states and the decisions — ⛔ a hand-kept index goes stale silently and keeps being believed
+gen-metricas	bin/generate-metrics	engine	executable	🤖 the only place a live number belongs — ⛔ it reads the battery's last result, never runs it
+probe-generators	bin/probes/probe-generators.py	engine	executable	proves a generated file is measured, obeys the contract, and can say NOTHING

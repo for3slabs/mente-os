@@ -91,8 +91,8 @@ answers exactly one question. None of them decides anything: they check what is 
 |---|---|---|
 ⬜ | `bin/init` | the instance files, from `templates/` | ⭐ **refuses to overwrite** what already exists |
 ⬜ | `bin/new-block <name>` | a new block with its §A-K contract | — |
-⬜ | `bin/generate-index` | 🤖 `docs/INDEX.md` · `docs/STATES.md` | regenerated, never hand-edited |
-⬜ | `bin/generate-metrics` | 🤖 ⬜ `docs/METRICS.md` | ⭐ **the only place a live number belongs** |
+| `bin/generate-index` | 🤖 `docs/INDEX.md` · `docs/STATES.md` · `docs/DECISIONS.md` | regenerated, never hand-edited · `--check` reports staleness without writing |
+| `bin/generate-metrics` | 🤖 `docs/METRICS.md` | ⭐ **the only place a live number belongs** · ⛔ it READS the battery's last result, never runs it |
 | `bin/secrets-lease` | the read permission for `secrets/`, and its access log | ⭐ tied to the context load, never to a clock · it hardens the folder before granting |
 
 > ⚠️ ⬜ **`bin/check-all` is planned as the single entry point; today the battery is

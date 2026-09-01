@@ -19,7 +19,17 @@ MENTE="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 read -ra CHECKS <<< "${MENTE_STARTUP_CHECKS:-}"
 if [ "${#CHECKS[@]}" -eq 0 ]; then
   for c in "$MENTE"/bin/check-*; do
-    [ -x "$c" ] && CHECKS+=("$(basename "$c")")
+    [ -x "$c" ] || continue
+    n="$(basename "$c")"
+    # ⛔ NOT EVERY VALIDATOR BELONGS AT STARTUP. `check-clear-ready` answers
+    # "would a cut lose anything" — and mid-session the honest answer is YES,
+    # because work in progress is uncommitted BY DEFINITION. ⚠️ Running it here
+    # reports normal working state as a fault every single launch, and a hook
+    # that cries wolf at startup is the first one anybody disables.
+    # ⭐ It is asked BEFORE a cut, which is the only moment its answer changes
+    # anything.
+    [ "$n" = "check-clear-ready" ] && continue
+    CHECKS+=("$n")
   done
 fi
 
