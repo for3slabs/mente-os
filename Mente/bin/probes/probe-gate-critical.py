@@ -92,52 +92,52 @@ path = os.path.join("work", "blocks", "active", bid, "BLOCK.md")
 body_open = CLOSING % {"id": bid, "state": "active"}
 open(os.path.join(d, "BLOCK.md"), "w", encoding="utf-8").write(body_open)
 r = run(path, body_open)
-case("① 🔴 cierra con un sub-bloque ABIERTO", r.returncode == 2,
+case("① 🔴 closing with an OPEN sub-block", r.returncode == 2,
      "exit=%d" % r.returncode)
 
 # ⭐ a status word nobody anticipated must count as OPEN
 body_new = CLOSING % {"id": bid, "state": "pendiente"}
 r = run(path, body_new)
-case("② 🔴 ⭐ una palabra de estado NUEVA cuenta como abierta",
+case("② 🔴 ⭐ a NEW state word counts as open",
      r.returncode == 2, "lista blanca invertida")
 
 # ⛔ capitals must not evade the gate
 body_caps = body_open.replace("status: closed", "status: CLOSED")
 r = run(path, body_caps)
-case("③ 🔴 ⛔ status en MAYÚSCULAS no evade", r.returncode == 2,
+case("③ 🔴 ⛔ status in UPPERCASE does not evade", r.returncode == 2,
      "exit=%d" % r.returncode)
 
 # ⬜ the declared irreversible pattern
 r = run("work/x.sql", "DROP TABLE users;", env={"MENTE_IRREVERSIBLE_PATTERN": r"DROP\s+TABLE"})
-case("④ 🔴 ⬜ el patrón irreversible DECLARADO", r.returncode == 2, "bloquea")
+case("④ 🔴 ⬜ the DECLARED irreversible pattern", r.returncode == 2, "bloquea")
 
 # ── what must NOT block · the dangerous side
 body_closed = CLOSING % {"id": bid, "state": "closed"}
 open(os.path.join(d, "BLOCK.md"), "w", encoding="utf-8").write(body_closed)
 r = run(path, body_closed)
-case("⑤ ⭐ un cierre CORRECTO pasa", r.returncode == 0, "exit=0")
+case("⑤ ⭐ a CORRECT close passes", r.returncode == 0, "exit=0")
 
 r = run("work/x.sql", "DROP TABLE users;")
-case("⑥ ⭐ sin patrón declarado · NO adivina", r.returncode == 0,
+case("⑥ ⭐ with no declared pattern · it does NOT guess", r.returncode == 0,
      "⬜ nada declarado, nada bloqueado")
 
 r = run("work/x.sql", "DROP TABLE users;",
         env={"MENTE_IRREVERSIBLE_PATTERN": "[unclosed"})
-case("⑦ ⛔ un patrón MALFORMADO no bloquea todo", r.returncode == 0,
+case("⑦ ⛔ a MALFORMED pattern does not block everything", r.returncode == 0,
      "exit=0")
 
 r = run("docs/anything.md", "just text")
-case("⑧ una edición cualquiera pasa", r.returncode == 0, "exit=0")
+case("⑧ an ordinary edit passes", r.returncode == 0, "exit=0")
 
 for label, raw in (("payload roto", "{not json"), ("array", "[]"),
                    ("null", "null"), ("sin file_path", '{"tool_input":{}}')):
     r = run("", raw=raw)
     if r.returncode != 0:
-        case("⑨ 🔴 nunca bloquea con payload inválido · %s" % label, False,
+        case("⑨ 🔴 never blocks on an invalid payload · %s" % label, False,
              "exit=%d" % r.returncode)
         break
 else:
-    case("⑨ 🔴 nunca bloquea con 4 payloads inválidos", True, "exit=0 en los cuatro")
+    case("⑨ 🔴 never blocks on 4 invalid payloads", True, "exit=0 en los cuatro")
 
 clean()
 good = sum(1 for _, ok in results if ok)

@@ -62,14 +62,14 @@ def layer2(url, env=None):
 print("═══ SONDA · gate-accounts (capa 1) + pre-push (capa 2) ═══\n")
 
 # ── LAYER 1 · the four answers ──────────────────────────────────────────────
-case("① ⭐ push a un repo REGISTRADO → pasa",
+case("① ⭐ a push to a REGISTERED repo → passes",
      layer1("git push origin main") in (None, "allow"),
      str(layer1("git push origin main")))
-case("② 🔴 push a un repo NO registrado → deny",
+case("② 🔴 a push to an UNREGISTERED repo → deny",
      layer1("git push other https://host/someone/unknown.git") == "deny")
-case("③ 🔴 push a un repo ARCHIVADO → deny",
+case("③ 🔴 a push to a RETIRED repo → deny",
      layer1("git push old an-org/dead") == "deny")
-case("④ ⚠️ crear/borrar/exponer un repo → ask",
+case("④ ⚠️ creating/deleting/exposing a repo → ask",
      layer1("gh repo delete an-org/live") == "ask")
 
 # ⭐ THE ORDER IS THE RULE · a retired repo IS registered, so a gate asking
@@ -78,24 +78,24 @@ r = subprocess.run([sys.executable, L1], cwd=TREE,
                    input=json.dumps({"tool_input":
                                      {"command": "git push old an-org/dead"}}),
                    capture_output=True, text=True, env=dict(os.environ, **ENV))
-case("⑤ ⭐ el archivado se comprueba ANTES que «está registrado»",
+case("⑤ ⭐ retired is checked BEFORE «is it registered»",
      "RETIRED" in r.stdout)
 
 # ── ⛔ READING IS NEVER BLOCKED · a gate in the daily way gets switched off ──
 quiet = [c for c in ("git fetch origin", "git pull", "git status",
                      "git clone https://host/an-org/live.git", "git log")
          if layer1(c) is not None]
-case("⑥ ⛔ leer (fetch/pull/status/clone/log) no le concierne", not quiet,
+case("⑥ ⛔ reading (fetch/pull/status/clone/log) is not its business", not quiet,
      str(quiet))
 
 # ⚠️ AND A MENTION IS NOT A COMMAND · measured: an unanchored pattern fired on a
 # push written inside an echo, and a warning about a command nobody runs is noise
-case("⑦ ⚠️ un push MENCIONADO en un echo no dispara",
+case("⑦ ⚠️ a push MENTIONED inside an echo does not fire",
      layer1('echo "remember: git push origin main"') is None)
 
 # ── ⚠️ ACC-MUL-001 · the silent divergence, warned about and never blocked ───
 d = layer1("git push origin main")
-case("⑧ ⚠️ con varios remotos avisa · pero DEJA pasar", d == "allow", str(d))
+case("⑧ ⚠️ with several remotes it warns · but LETS it through", d == "allow", str(d))
 
 # ── ⬜ an empty registry is reported, never silent ───────────────────────────
 empty = os.path.join(WORK, "empty.tsv")
@@ -105,17 +105,17 @@ r = subprocess.run([sys.executable, L1], cwd=TREE,
                                      {"command": "git push origin main"}}),
                    capture_output=True, text=True,
                    env=dict(os.environ, MENTE_ACCOUNTS=empty))
-case("⑨ ⬜ registro vacío → pasa PERO dice que no verificó",
+case("⑨ ⬜ an empty registry → passes BUT says it did not verify",
      "NOT MEASURED" in r.stdout)
 
 # ── LAYER 2 · the same verdicts, reached without reading any text ───────────
-case("⑩ ⭐ capa 2 · destino registrado → pasa",
+case("⑩ ⭐ layer 2 · a registered destination → passes",
      layer2("https://host/an-org/live.git").returncode == 0)
 r = layer2("https://host/someone/unknown.git")
-case("⑪ 🔴 capa 2 · destino NO registrado → ABORTA", r.returncode == 1,
+case("⑪ 🔴 layer 2 · an UNREGISTERED destination → ABORTS", r.returncode == 1,
      "exit=%d" % r.returncode)
 r = layer2("git@host:an-org/dead.git")
-case("⑫ 🔴 capa 2 · destino ARCHIVADO → ABORTA", r.returncode == 1,
+case("⑫ 🔴 layer 2 · a RETIRED destination → ABORTS", r.returncode == 1,
      "exit=%d" % r.returncode)
 
 # ── ⭐ THE REASON THERE ARE TWO LAYERS ───────────────────────────────────────
@@ -130,7 +130,7 @@ EVASIONS = [
     ("un constructor de argumentos", "echo origin main | xargs git push"),
 ]
 seen = [n for n, c in EVASIONS if layer1(c) is not None]
-case("⑬ ⭐ 5 formas de evadir la capa 1 · %d la esquivan"
+case("⑬ ⭐ 5 ways to evade layer 1 · %d walk past it"
      % (len(EVASIONS) - len(seen)), len(seen) <= 1,
      "vistas por capa 1: %s" % (seen or "ninguna"))
 
@@ -138,7 +138,7 @@ case("⑬ ⭐ 5 formas de evadir la capa 1 · %d la esquivan"
 # it the resolved destination whichever way the push was written.
 blocked = all(layer2("https://host/someone/unknown.git").returncode == 1
               for _ in EVASIONS)
-case("⑭ ⭐ la capa 2 las ABORTA todas · no lee el comando", blocked)
+case("⑭ ⭐ layer 2 ABORTS them all · it never reads the command", blocked)
 
 # ── 🔴 THE FAIL-OPEN THAT LOOKED LIKE PROTECTION ────────────────────────────
 # Measured elsewhere: invoked through a symlink, the hook resolved its own path
@@ -150,7 +150,7 @@ os.symlink(L2, link)
 r = subprocess.run(["bash", link, "origin", "https://host/someone/unknown.git"],
                    cwd=TREE, capture_output=True, text=True,
                    env=dict(os.environ, **ENV))
-case("⑮ 🔴 invocada por SYMLINK sigue abortando (no falla abierta)",
+case("⑮ 🔴 invoked through a SYMLINK it still aborts (does not fail open)",
      r.returncode == 1, "exit=%d" % r.returncode)
 
 # ── ⬜ no registry · reported, never silent ──────────────────────────────────
@@ -159,7 +159,7 @@ case("⑮ 🔴 invocada por SYMLINK sigue abortando (no falla abierta)",
 # nothing would say so — the probe runs inside a git tree, which is exactly the
 # situation where a silent fallback finds something and looks like it worked.
 r = layer2("https://host/an-org/live.git", {"MENTE_ACCOUNTS": "/nowhere/none.tsv"})
-case("⑯ ⬜ un registro declarado que falta → lo DICE, no lo sustituye",
+case("⑯ ⬜ a declared registry that is absent → it SAYS so, it does not substitute",
      r.returncode == 0 and "NOT verified" in r.stderr, "exit=%d" % r.returncode)
 
 # ── ⛔ robustness ───────────────────────────────────────────────────────────
@@ -167,9 +167,9 @@ bad = [p for p in ("not json", "[]", "null", '{"tool_input": "x"}', '{}')
        if "Traceback" in subprocess.run(
            [sys.executable, L1], cwd=TREE, input=p, capture_output=True,
            text=True, env=dict(os.environ, **ENV)).stderr]
-case("⑰ ⛔ 5 payloads inválidos → sin traza", not bad, str(bad))
+case("⑰ ⛔ 5 invalid payloads → no traceback", not bad, str(bad))
 
-case("⑱ ⭐ la capa 1 deja su latido para check-gates",
+case("⑱ ⭐ layer 1 leaves its beat for check-gates",
      os.path.exists(os.path.join(TREE, ".beats", "gate-accounts")))
 
 shutil.rmtree(WORK, ignore_errors=True)

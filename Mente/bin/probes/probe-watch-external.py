@@ -43,35 +43,35 @@ print("═══ SONDA · watch-external ═══\n")
 # ① ⬜ nothing declared → nothing watched, and no noise
 drop_stamp()
 r = run("git push", watch="")
-case("① ⬜ sin comando declarado · silencio", not r.stdout.strip(),
+case("① ⬜ no command declared · silence", not r.stdout.strip(),
      "no adivina qué vigilar")
 
 # ② urgent action → it looks, and reports what changed
 drop_stamp()
 r = run("git push origin main", watch=CHANGED)
-case("② ⭐ acción URGENTE · mira y dice QUÉ cambió",
+case("② ⭐ an URGENT action · it looks and says WHAT changed",
      "External state changed" in r.stdout and "merged" in r.stdout,
      "el aviso nombra el cambio")
 
 # ③ ⛔ the truce: right after looking, a non-urgent action must NOT look again
 r = run("ls -la", watch=CHANGED)
-case("③ ⛔ tregua · una acción cualquiera no vuelve a mirar",
+case("③ ⛔ the truce · an ordinary action does not look again",
      not r.stdout.strip(), "sin ruido")
 
 # ④ ⭐ but an URGENT action ignores the truce
 r = run("git commit -m x", watch=CHANGED)
-case("④ ⭐ lo URGENTE ignora la tregua", "External state changed" in r.stdout,
+case("④ ⭐ what is URGENT ignores the truce", "External state changed" in r.stdout,
      "el instante en que el aviso sirve")
 
 # ⑤ nothing new → silence even when it looked
 drop_stamp()
 r = run("git push", watch=QUIET)
-case("⑤ nada cambió · silencio", not r.stdout.strip(), "exit 0 sin salida")
+case("⑤ nothing changed · silence", not r.stdout.strip(), "exit 0 sin salida")
 
 # ⑥ ⛔ a broken command is not a reason for noise
 drop_stamp()
 r = run("git push", watch="no-such-command-anywhere")
-case("⑥ ⛔ comando roto · silencio, no ruido", not r.stdout.strip(),
+case("⑥ ⛔ a broken command · silence, not noise", not r.stdout.strip(),
      "sin red o sin la herramienta, calla")
 
 # ⑦ ⛔ a malformed urgency pattern must not make everything urgent
@@ -79,7 +79,7 @@ drop_stamp()
 r = run("ls", watch=CHANGED, env={"MENTE_WATCH_URGENT": "[unclosed"})
 open(STAMP, "w").close()
 r2 = run("ls", watch=CHANGED, env={"MENTE_WATCH_URGENT": "[unclosed"})
-case("⑦ ⛔ patrón de urgencia MALFORMADO · respeta la tregua",
+case("⑦ ⛔ a MALFORMED urgency pattern · it respects the truce",
      not r2.stdout.strip(), "no todo se vuelve urgente")
 
 # ⑧ 🔴 never blocks, whatever arrives
@@ -88,10 +88,10 @@ for label, raw in (("payload roto", "{not json"), ("array", "[]"), ("null", "nul
                        capture_output=True, text=True,
                        env=dict(os.environ, MENTE_WATCH_COMMAND=CHANGED))
     if p.returncode != 0:
-        case("⑧ 🔴 nunca bloquea · %s" % label, False, "exit=%d" % p.returncode)
+        case("⑧ 🔴 never blocks · %s" % label, False, "exit=%d" % p.returncode)
         break
 else:
-    case("⑧ 🔴 nunca bloquea con 3 payloads inválidos", True, "exit=0 en los tres")
+    case("⑧ 🔴 never blocks on 3 invalid payloads", True, "exit=0 en los tres")
 
 # ⑨ ⭐ it informs, never denies — the decision field must say allow
 drop_stamp()
@@ -100,7 +100,7 @@ try:
     decision = json.loads(r.stdout)["hookSpecificOutput"]["permissionDecision"]
 except Exception:
     decision = "?"
-case("⑨ ⭐ informa · permissionDecision = allow", decision == "allow", decision)
+case("⑨ ⭐ it informs · permissionDecision = allow", decision == "allow", decision)
 
 drop_stamp()
 good = sum(1 for _, ok in results if ok)
