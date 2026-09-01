@@ -32,6 +32,12 @@ def case(label, ok, detail=""):
 
 
 def run(extra=""):
+    # ⭐ The instance-file classification is DERIVED from templates/, so the
+    # fixture declares its own template rather than borrowing a real file whose
+    # presence depends on whether this tree was installed.
+    tpl = os.path.join(TREE, "templates", "zzprobe-instance.md.template")
+    if not os.path.exists(tpl):
+        open(tpl, "w", encoding="utf-8").write("# fixture\n")
     open(TABLE, "w", encoding="utf-8").write(BASE + extra)
     return subprocess.run([sys.executable, CHECK], cwd=TREE,
                           capture_output=True, text=True)
@@ -108,7 +114,14 @@ os.remove(os.path.join(tdir, "ZZNEW.md.template"))
 # tree's current shape measures the tree, not the checker.
 # ⭐ `check-sufficiency` is the one piece the contract decided NOT to build, so
 # it stays ⬜ in the map — the only stable example of a planned absence.
-r = run(row("zzprobe-inst2", "docs/WORKSPACE.md")
+# 🔴 PLANTED, AND THE PLANT MUST NOT EXIST EITHER. The first version named
+# docs/WORKSPACE.md — an instance file that is absent in a template and PRESENT
+# in an installation, so the case passed in one and failed in the other.
+# ⛔ A probe whose fixture depends on whether the tree is installed measures the
+# tree, not the checker — twice now, in this same case.
+# ⭐ A template exists for it, so it is classified as an instance file whether or
+# not anybody ever creates it.
+r = run(row("zzprobe-inst2", "zzprobe-instance.md")
         + row("zzprobe-plan2", "bin/check-sufficiency"))
 case("⑩ ⬜ the report NAMES each absence and why it is one",
      "⬜" in r.stdout and "instance file" in r.stdout and "planned" in r.stdout)
