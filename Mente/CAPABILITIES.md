@@ -1,6 +1,6 @@
 # CAPABILITIES — what the agent may run, and where the line is
 
-**Status:** current · **Type:** entry-point · **Updated:** {{date}} · **Owner:** {{owner}}
+**Status:** current · **Type:** entry-point · **Updated:** 2026-09-01 · **Owner:** Ada Lovelace
 **Level:** 📖 reference — it grants nothing and forbids nothing on its own; it states what the
 gates already enforce, so nobody has to discover a limit by hitting it.
 **Scope:** ⚠️ ENGINE document — it ships identical to every clone and names no machine.
@@ -91,6 +91,7 @@ answers exactly one question. None of them decides anything: they check what is 
 |---|---|---|
 | `bin/init` | the instance files, from `templates/` · the router import · the layer-2 hook link · `secrets/` at 700 | ⭐ **refuses to overwrite** what already exists · `--force` replaces and says what it replaced |
 | `bin/new-block <id> --type <t>` | a new block with its §A-D opening contract, and its row in the index | ⭐ refuses a used id, an undeclared type or lane · ⛔ opening costs four sections on purpose |
+| `bin/new-campaign <id> --blocks <ids>` | a campaign with its 3 opening sections, holding blocks that EXIST | ⛔ refuses one with no blocks — that is a title, not a campaign |
 | `bin/generate-index` | 🤖 `docs/INDEX.md` · `docs/STATES.md` · `docs/DECISIONS.md` | regenerated, never hand-edited · `--check` reports staleness without writing |
 | `bin/generate-metrics` | 🤖 `docs/METRICS.md` | ⭐ **the only place a live number belongs** · ⛔ it READS the battery's last result, never runs it |
 | `bin/secrets-lease` | the read permission for `secrets/`, and its access log | ⭐ tied to the context load, never to a clock · it hardens the folder before granting |

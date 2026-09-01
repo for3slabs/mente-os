@@ -1,0 +1,38 @@
+<!-- ⚠️ TEMPLATE — `bin/new-campaign` copies this to
+     work/campaigns/<id>/CAMPAIGN.md and fills {{id}} {{owner}} {{date}}.
+     ⭐ KEEP IT IN SYNC WITH rules/contract-campaign.md: this file IS the shape
+     that contract describes, and a template that drifts from it scaffolds
+     campaigns the checker rejects. -->
+# CAMPAIGN · {{id}}
+
+id: {{id}}
+status: active
+owner: {{owner}}
+created: {{date}} · updated: {{date}}
+
+## Mission
+<!-- ⬜ What this campaign pursues, in the terms of the result — not the work.
+     ⛔ "Improve the docs" is an activity; "a newcomer can install unaided" is a
+     mission, because you can tell whether it happened. -->
+⬜ one sentence: what is true when this campaign is done
+
+## Authority
+<!-- ⬜ The yardstick this campaign is judged by, and WHO decides.
+     ⛔ An empty authority means nobody would know which yardstick was used —
+     and then closing becomes a matter of opinion, which is how a campaign ends
+     without ending. -->
+⬜ declare the measure that decides whether this succeeded, and who applies it
+
+## Blocks
+<!-- ⭐ A campaign with no blocks orders nothing: it is a title.
+     ⛔ Every id here must be a block that EXISTS — a row pointing at nothing is
+     a plan pretending to be work. Open each with `bin/new-block <id>`. -->
+
+| Block | What it contributes |
+|---|---|
+| ⬜ `block-id` | ⬜ why this campaign needs it |
+
+<!-- ⭐ SECTIONS BELOW ARE ADDED AS THE CAMPAIGN RUNS — required standards,
+     shared context, channel, closing. ⛔ Opening deliberately costs three:
+     mission, authority, blocks. A campaign that cost ten sections to open would
+     be replaced by an informal list, and then nothing measures it at all. -->

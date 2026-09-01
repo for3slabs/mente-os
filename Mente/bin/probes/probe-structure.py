@@ -102,7 +102,14 @@ case("⑨ ⭐ añadir una PLANTILLA basta para que su archivo sea legítimo",
 os.remove(os.path.join(tdir, "ZZNEW.md.template"))
 
 # ── ⬜ what was NOT measured is said out loud ────────────────────────────────
-r = run()
+# ⚠️ PLANTED, not assumed. The first version asserted the real tree happened to
+# contain both kinds of legitimate absence — and it did, until the planned
+# pieces were built and only one kind was left. ⛔ A probe that depends on the
+# tree's current shape measures the tree, not the checker.
+# ⭐ `check-sufficiency` is the one piece the contract decided NOT to build, so
+# it stays ⬜ in the map — the only stable example of a planned absence.
+r = run(row("zzprobe-inst2", "docs/WORKSPACE.md")
+        + row("zzprobe-plan2", "bin/check-sufficiency"))
 case("⑩ ⬜ el informe NOMBRA cada ausencia y por qué lo es",
      "⬜" in r.stdout and "instance file" in r.stdout and "planned" in r.stdout)
 case("⑪ ⭐ y dice cuántas filas resolvieron", "resolve" in r.stdout)

@@ -34,6 +34,10 @@ sys.path.insert(0, os.path.join(MENTE, "bin"))
 # parser here would answer "which sections exist" differently from the checker,
 # and the disagreement would surface as a block that passes one and fails the other.
 from blockread import sections                                 # noqa: E402
+# ⭐ What opening ANY unit of work requires — shared with new-campaign. ⛔ Two
+# copies of "is this id usable, is it taken, who owns this" is two places to fix
+# a refusal, and the day they disagree one tool accepts what the other rejects.
+from scaffold import owner, stamp, used_ids, valid_id          # noqa: E402
 
 TEMPLATE = os.path.join(MENTE, "templates", "BLOCK.md.template")
 BLOCKS = os.path.join(MENTE, "work", "blocks")
@@ -71,35 +75,6 @@ def vocabulary():
     return declared("type"), declared("lane")
 
 
-def owner():
-    """⬜ Read from the installation. ⛔ Never defaulted: an owner nobody chose,
-    written into a block, is the same leak bin/init exists to prevent."""
-    try:
-        for line in open(CONFIG, encoding="utf-8", errors="replace"):
-            m = re.match(r"\s+name:\s*['\"]?([^'\"#\n]+?)['\"]?\s*$", line)
-            if m:
-                return m.group(1).strip()
-    except OSError:
-        pass
-    return None
-
-
-def existing_ids():
-    """Every id already in use → where. ⭐ BLK-IDN-001: resolution is exact, so a
-    repeat is refused rather than disambiguated later."""
-    out = {}
-    for dp, dn, fn in os.walk(BLOCKS):
-        if "BLOCK.md" not in fn:
-            continue          # ⬜ skipped, not a gap: no contract, no block
-        p = os.path.join(dp, "BLOCK.md")
-        try:
-            m = re.search(r"^id:\s*(\S+)", open(p, encoding="utf-8",
-                                                errors="replace").read(), re.M)
-        except OSError:
-            continue
-        if m:
-            out[m.group(1).strip("`* ")] = os.path.relpath(dp, MENTE)
-    return out
 
 
 def index_paths():
@@ -148,7 +123,7 @@ def main():
 
     # ⛔ An id that is not a safe folder name is refused HERE, not discovered
     # later as a path that cannot be created or cited.
-    if not re.fullmatch(r"[a-z0-9][a-z0-9-]{1,48}", bid):
+    if not valid_id(bid):
         die("invalid id %r · expected lowercase letters, digits and hyphens · "
             "it becomes a folder name and is cited from other files" % bid)
 
@@ -175,7 +150,7 @@ def main():
         die("lane %r is not declared · expected one of %s"
             % (lane, " ".join(sorted(lanes))))
 
-    used = existing_ids()
+    used = used_ids(BLOCKS, "BLOCK.md")
     # ⭐ An exact key lookup on the id→location map, written so it reads as one:
     # `in` over a dict is exact, but a reader (and CHK-CMP-001) cannot see the
     # type from here, and a comparison whose exactness depends on knowing the
@@ -184,7 +159,7 @@ def main():
         die("id %r is already used by %s · ⛔ resolution is exact: two blocks "
             "sharing an id make every citation ambiguous" % (bid, used[bid]))
 
-    who = owner()
+    who = owner(MENTE)
     if not who:
         die("no owner declared · run bin/init first\n"
             "   ⛔ A block with no owner is work nobody answered for.", 2)
@@ -195,20 +170,16 @@ def main():
         die("%s already exists · refusing to overwrite an open block"
             % os.path.relpath(dest, MENTE))
 
-    try:
-        body = open(TEMPLATE, encoding="utf-8").read()
-    except OSError:
-        die("no templates/BLOCK.md.template · the shape a block must have is "
-            "not available to copy", 2)
-
     today = date.today().isoformat()
     # ⭐ The intent is one sentence by contract (BLK-IDN-003), and unstated it
     # becomes a ⬜ the owner must replace — never invented prose that reads as a
     # decision somebody made.
     intent = opt("--intent") or "⬜ one sentence: what this block is for"
-    for k, v in {"id": bid, "type": btype, "lane": lane, "owner": who,
-                 "date": today, "intent": intent}.items():
-        body = body.replace("{{%s}}" % k, v)
+    body = stamp(TEMPLATE, {"id": bid, "type": btype, "lane": lane,
+                            "owner": who, "date": today, "intent": intent})
+    if body is None:
+        die("no templates/BLOCK.md.template · the shape a block must have is "
+            "not available to copy", 2)
 
     # ⛔ Verified against the SHARED reader before anything is written: a
     # scaffold that emits a block failing BLK-OPN-001 has produced work that the
