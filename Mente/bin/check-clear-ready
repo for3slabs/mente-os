@@ -161,6 +161,8 @@ def main():
         for g in gaps:
             print("⬜ NOT MEASURED · %s" % g)
     if risks:
+        if quiet:
+            return 1          # ⭐ CHK-QUI-001 · exit code only
         print()
         for r in risks:
             print("🔴 %s" % r)

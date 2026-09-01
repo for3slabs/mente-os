@@ -198,11 +198,25 @@ for c in checkers:
         continue
     # ⭐ Measured, not parsed: a tool needing a subject says so by printing its
     # usage, and that is a SKIP — never a finding about the tree.
-    if prints_usage(rr.stdout):
+    # ⭐ CHK-QUI-001 · TWO CALLS, and that is the contract. `--quiet` answered
+    # "is anything wrong"; only what said yes is asked again for the reason.
+    # ⛔ Reading a reason out of a `--quiet` run is the third misreading of that
+    # flag this engine has had, and each one looked correct until the contract
+    # was honoured somewhere else.
+    detail = subprocess.run([sys.executable, os.path.join(BIN, c)],
+                            cwd=ROOT, capture_output=True, text=True,
+                            timeout=120)
+    if prints_usage(detail.stdout):
         skipped.append(c)
         continue
-    first = (rr.stdout.strip().splitlines() or ["(no output)"])[0]
-    dirty.append((c, rr.returncode, first[:66]))
+    # ⚠️ A FINDING OUTRANKS A GAP. Taking the first marked line printed a ⬜
+    # "not measured" note above the 🔴 that made the validator exit non-zero —
+    # the reader then sees a gap where there is a fault.
+    lines = ([l for l in detail.stdout.splitlines() if "🔴" in l]
+             or [l for l in detail.stdout.splitlines() if "🟡" in l]
+             or [l for l in detail.stdout.splitlines() if "⬜" in l])
+    first = (lines or detail.stdout.strip().splitlines() or ["(no output)"])[0]
+    dirty.append((c, rr.returncode, first.strip()[:66]))
 
 # ⬜ Said out loud, never counted as clean: a validator not run is one whose
 # answer is unknown, and the difference from "clean" is the whole point.

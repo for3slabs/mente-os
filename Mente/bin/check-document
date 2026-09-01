@@ -516,6 +516,11 @@ def main():
     if not quiet:
         print("check-document · %d documents · %d ceilings declared" % (checked, len(ceilings)))
     if findings:
+        if quiet:
+            # ⭐ CHK-QUI-001 · `--quiet` is the exit code ONLY — a hook asked for a number,
+            # not a report. ⛔ Printing anyway makes the caller's own output
+            # unreadable, which is how a hook gets narrowed or removed.
+            return 1
         for cid, rel, ln, msg in findings:
             print("🔴 %s:%d · %s · %s" % (rel, ln, cid, msg))
         print("\n%d violations · rule: rules/contract-document.md" % len(findings))

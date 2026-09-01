@@ -227,6 +227,8 @@ def main():
               % (len(named), ceiling, origin,
                  " · gate: %s" % gate if gate else " · ⬜ no gate yet"))
     if findings:
+        if quiet:
+            return 1          # ⭐ CHK-QUI-001 · exit code only
         for cid, rel, msg in findings:
             print("🔴 %s · %s · %s" % (rel, cid, msg))
         print("\n%d violations · rule: rules/rule-shipping.md" % len(findings))
