@@ -27,7 +27,7 @@ def case(label, ok, detail=""):
     results.append((label, ok))
 
 
-print("═══ SONDA · session-start ═══\n")
+print("═══ PROBE · session-start ═══\n")
 
 # ① healthy tree → silence.
 # ⚠️ An isolated copy has no `.git`, and SHP-BAS-001 then reports ⬜ NOT MEASURED
@@ -48,21 +48,21 @@ for l in r.stdout.strip().split("\n"):
         continue
     if not skip:
         noise.append(l)
-case("① árbol sano · silencio salvo lo NO MEDIBLE", not noise,
-     "sin salida" if not noise else noise[0][:44])
+case("① a healthy tree · silence except what is NOT MEASURABLE", not noise,
+     "no output" if not noise else noise[0][:44])
 
 # ② a real defect → it speaks, naming the validator
 broken = os.path.join(ROOT, "docs", MARK + "-broken.md")
 try:
     open(broken, "w", encoding="utf-8").write("# broken\n\nnothing here\n")
     r = run()
-    case("② un defecto real · habla y nombra el validador",
+    case("② a real defect · it speaks and names the validator",
          "check-document" in r.stdout, r.stdout.strip().split("\n")[0][:44])
 finally:
     os.remove(broken)
 
 # ③ ⛔ it must NEVER block — not even with a broken tree
-case("③ nunca bloquea · exit 0 con el árbol roto", r.returncode == 0,
+case("③ never blocks · exit 0 with the tree broken", r.returncode == 0,
      "exit=%d" % r.returncode)
 
 # ④ the heartbeat lands even if a validator crashes
@@ -70,29 +70,29 @@ beat = os.path.join(ROOT, ".heartbeat")
 if os.path.exists(beat):
     os.remove(beat)
 run()
-case("④ el latido se escribe", os.path.exists(beat),
+case("④ the heartbeat is written", os.path.exists(beat),
      open(beat, encoding="utf-8").read().strip() if os.path.exists(beat) else "ausente")
 
 # ⑤ ⬜ the declared set overrides discovery
 r = run(env={"MENTE_STARTUP_CHECKS": "check-nonexistent"})
-case("⑤ ⬜ el conjunto declarado sustituye al descubrimiento",
-     not r.stdout.strip() and r.returncode == 0, "un validador ausente se salta")
+case("⑤ ⬜ a declared set replaces discovery",
+     not r.stdout.strip() and r.returncode == 0, "an absent validator is skipped")
 
 # ⑥ ⭐ discovery is real: it must NOT name validators in its own source
 src = open(HOOK, encoding="utf-8").read()
 named = [n for n in ("check-document", "check-block", "check-config")
          if n in src]
-case("⑥ ⭐ descubre, no enumera", not named,
-     "0 validadores nombrados" if not named else "nombra: " + " ".join(named))
+case("⑥ ⭐ it discovers, it does not enumerate", not named,
+     "0 validators named" if not named else "names: " + " ".join(named))
 
 # ⑦ no payload → still works
 r = run("")
-case("⑦ sin payload · sigue y no rompe", r.returncode == 0, "exit=0")
+case("⑦ no payload · it continues and does not break", r.returncode == 0, "exit=0")
 
 good = sum(1 for _, ok in results if ok)
-print("\n  ➜ %d de %d correctos" % (good, len(results)))
+print("\n  ➜ %d of %d correct" % (good, len(results)))
 for l, ok in results:
     if not ok:
         print("     🔴 %s" % l)
-print("\n  restos: %s" % ("ninguno" if not os.path.exists(broken) else broken))
+print("\n  leftovers: %s" % ("none" if not os.path.exists(broken) else broken))
 sys.exit(0 if good == len(results) else 1)

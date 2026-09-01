@@ -68,13 +68,13 @@ print("═══ SONDA · init ═══\n")
 # ── ① IT PLACES WHAT THE PIECE TABLE DECLARES ───────────────────────────────
 repo, tree = fresh()
 r = run(tree, "--owner", OWNER)
-case("① ⭐ instala y termina bien", r.returncode == 0, "exit=%d" % r.returncode)
+case("① ⭐ installs and exits clean", r.returncode == 0, "exit=%d" % r.returncode)
 
 expected = ["mente.config.yml", "PROJECT-RULES.md", "docs/WORKSPACE.md",
             "memory/RESUME.md", "memory/PENDING.md", "accounts.tsv",
             "Cerebro/ARCHITECTURE.md", "connection/bridges/BRIDGES.md"]
 missing = [f for f in expected if not has(tree, f)]
-case("② ⭐ los 8 archivos de instancia existen", not missing, str(missing))
+case("② ⭐ the 8 instance files exist", not missing, str(missing))
 
 # ⭐ THE DESTINATIONS ARE DERIVED FROM THE PIECE TABLE, so a template declared
 # there is placed without editing the installer. ⛔ A list inside it would go
@@ -84,7 +84,7 @@ open(os.path.join(tree, "templates", "ZZNEW.md.template"), "w").write(
 with open(os.path.join(tree, "pieces.tsv"), "a") as fh:
     fh.write("zznew\tdocs/ZZNEW.md\tengine\tcanonical\ta fixture\n")
 r = run(tree, "--owner", OWNER)
-case("③ ⭐ una plantilla NUEVA se coloca sin tocar el instalador",
+case("③ ⭐ a NEW template is placed without touching the installer",
      has(tree, "docs/ZZNEW.md"), "exit=%d" % r.returncode)
 
 # ⛔ AND A TEMPLATE WITH NO DECLARED DESTINATION IS A FAILURE, never a silent

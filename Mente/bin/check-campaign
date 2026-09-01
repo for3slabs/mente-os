@@ -56,6 +56,11 @@ def blocks_of(text):
     out = []
     for row in re.findall(r"^\|\s*([^|\s][^|]*?)\s*\|", body, re.M):
         r = row.strip().strip("`*")
+        # ⚠️ `bloque` is not engine language — it is a HEADER an owner may have
+        # typed in their own, and reading it as a block id would report a
+        # campaign's table header as a block that does not exist. ⭐ Input
+        # tolerance: what this engine WRITES is English, what it READS may not
+        # be. The same tolerance lives in hooks/gate-critical.py for §F.
         if r and not re.match(r"^-+$", r) and r.lower() not in ("block", "bloque"):
             out.append(r)
     return out
