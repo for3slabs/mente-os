@@ -126,58 +126,58 @@ def _blank_authority():
 print("═══ A · SABOTAJE · check-campaign · con verificación de CAUSA ═══\n")
 p.baseline()
 
-p.case("① FRM · sin sección Mission",
+p.case("① FRM · no Mission section",
        lambda: (child(), put(), drop_section("Mission")), "CMP-FRM-001")
 
-p.case("② FRM · sin campo de identidad",
+p.case("② FRM · a missing identity field",
        lambda: (child(), put(), drop("created")), "CMP-FRM-002")
 
-p.case("③ FRM · techo superado SIN exención declarada",
+p.case("③ FRM · over the ceiling WITH no declared exemption",
        lambda: (child(), put(context="\n".join("line %d" % i for i in range(200)))),
        "CMP-FRM-003")
 
-p.case("④ FRM · el §contexto pasa su propio techo",
+p.case("④ FRM · the §context runs over its own ceiling",
        lambda: (child(), put(context="\n".join("line %d" % i for i in range(60)))),
        "CMP-FRM-003")
 
-p.case("⑤ BLK · no declara ningún bloque",
+p.case("⑤ BLK · it declares no block at all",
        lambda: (child(), put(), drop_section("Blocks")), "CMP-FRM-001")
 
-p.case("⑥ BLK · nombra un bloque que no existe",
+p.case("⑥ BLK · it names a block that does not exist",
        lambda: put(bid=MARK + "-ghost"), "CMP-BLK-002")
 
-p.case("⑦ BLK · dos campañas reclaman el mismo bloque",
+p.case("⑦ BLK · two campaigns claim the same block",
        lambda: (child(), put(), put(name=MARK + "-camp2", m=MARK + "-2")),
        "CMP-BLK-003")
 
-p.case("⑧ CLS · autoridad vacía",
+p.case("⑧ CLS · an empty authority",
        lambda: (child(), put(), _blank_authority()), "CMP-CLS-002")
 
-p.case("⑨ CHN · un hecho sin quien lo aporta",
+p.case("⑨ CHN · a fact with nobody supplying it",
        lambda: (child(), put(**{"from": "—"})), "CMP-CHN-001")
 
-p.case("⑩ CHN · un hecho que nadie necesita",
+p.case("⑩ CHN · a fact nobody needs",
        lambda: (child(), put(to="—")), "CMP-CHN-002")
 
-p.case("⑪ CLS · cerrada con un hijo abierto",
+p.case("⑪ CLS · closed with a child still open",
        lambda: (child(), put(status="closed")), "CMP-CLS-001")
 
-p.case("⑫ IMP · un hijo cerrado sin declarar impacto",
+p.case("⑫ IMP · a closed child declaring no impact",
        lambda: (child(state="archive"), put(bstate="closed")), "CMP-IMP-001")
 
-p.case("⑬ IMP · un impacto declarado VACÍO",
+p.case("⑬ IMP · an impact declared EMPTY",
        lambda: (child(state="archive", impact="### Impact on the campaign\n"),
                 put(bstate="closed")), "CMP-IMP-002")
 
-p.case("⑬b STD · el hijo COPIA literal un estándar de la campaña",
+p.case("⑬b STD · the child COPIES a campaign standard verbatim",
        lambda: (child(std="- `rules/contract-block.md`"), put()),
        "CMP-STD-002")
 
-p.case("⑬c STD · el hijo declara que se exime de uno",
+p.case("⑬c STD · the child declares itself exempt from one",
        lambda: (child(std="- does not apply here: `rules/contract-block.md`"),
                 put()), "CMP-STD-001")
 
-p.inverse("⑭ una campaña CORRECTA", lambda: (child(), put()))
+p.inverse("⑭ a CORRECT campaign", lambda: (child(), put()))
 p.crash_guard()
 
 
