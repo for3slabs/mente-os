@@ -225,3 +225,5 @@ probe-new-campaign	bin/probes/probe-new-campaign.py	engine	executable	proves the
 connect-account	bin/connect-account	engine	executable	answers which account governs a repo and where its guide lives — ⛔ it answers, it never acts
 probe-connect-account	bin/probes/probe-connect-account.py	engine	executable	proves the registry can be consulted and never guessed at
 adr-031	rules/decisions/ADR-031-the-engine-reads-the-tool-never-the-network.md	engine	canonical	the engine READS the host's tool and never reaches the network — ⛔ read only, local only, absence is a gap
+check-locks	bin/check-locks	engine	executable	compares every declared 🔒 against the code that must enforce it — ⛔ and sees delegation, or it cries wolf
+probe-locks	bin/probes/probe-locks.py	engine	executable	proves an unimplemented 🔒 is caught and a delegated one is not

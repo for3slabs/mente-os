@@ -33,7 +33,7 @@ condition is a complaint; one with a closing condition is work that can be finis
 
 ---
 
-## E-01 · A criterion with no validator is invisible as such
+## E-01 · ✅ CLOSED — with E-25, which reports exactly this per rule
 
 - **Surfaced by:** writing `../memory/principles/owner-1-docs.md`
 - **Affects:** every `contract-*` and every owner file
@@ -402,15 +402,30 @@ installer — ⭐ **and the names may be deliberate.** The finding is that nothi
 
 ---
 
-## E-25 · ⭐ Nothing compares a declared 🔒 against the code
+## E-25 · ✅ CLOSED — every declared 🔒 is compared against the code, on every run
 
 ⚠️ **This is `E-01` with a measurement behind it.** E-01 asked for visibility; this names the exact
 comparison, what it found by hand, and the one trap that makes a naive version useless.
 
 - **Surfaced by:** the rule-by-rule audit — the same comparison run by hand thirteen times
 - **Affects:** every `rules/*.md` and its validator
-- **Closes when:** a check reports, per rule, how many rows declare 🔒 and how many ids the
-  validator actually cites — ⭐ **closing E-01 with it**
+- **Closed:** 2026-09-01 — `bin/check-locks`, with `bin/probes/probe-locks.py`.
+  ⭐ **E-01 closes with it**, as this entry said it would.
+- ⭐ **Measured on closing: 199 declared, 195 cited, 4 delegated, 0 gaps.** The
+  count started at 59 gaps when somebody first ran it by hand; the work of these
+  sessions had closed most of them without anything counting.
+- 🔴 **And it found 7 that were REAL, three of them mine.** Every one had the
+  behaviour and none had the id: `ACC-LYR-001` is enforced by the wiring check,
+  `ACC-LYR-003` by the push hook failing closed, `ACC-VRF-002` by the row report.
+  ⛔ A rule traceable only by reading prose is one nothing can audit — which is
+  the whole point of this check.
+- ⚠️ **The check sees DELEGATION in both wordings the rules already use**
+  (`performed by`, `enforced by`), because counting a correctly delegated lock
+  as a gap is the false alarm that gets a check switched off.
+- ⭐ **And it says what it CANNOT know, every run:** a citation proves the id is
+  NAMED in code — whether that code enforces it is what the rule's own probe
+  measures. ⛔ A reader who takes one for the other has been told something this
+  check does not know.
 
 **Why it matters.** ⛔ **Measured across the thirteen rules: 177 rows declared a lock and roughly
 118 were implemented.** A rule that says 🔒 and has no lock is the one lie this system cannot

@@ -221,6 +221,10 @@ def check(path, rel, ids):
                     "block: a reader who must open three to know where the work "
                     "stands opens none" % (len(sibs), ", ".join(sorted(sibs)[:3]))))
 
+    # BLK-SUB-003 · the parent does not close over an open sub-block — the
+    # check for that lives in the closing branch above and in
+    # hooks/gate-critical.py, which refuses the write itself.
+
     # BLK-OPN-002 · the block is declared where blocks are LISTED.
     # ⛔ A block on disk that no index names is a block nothing knows exists:
     # it is never picked up, never closed, and never missed.

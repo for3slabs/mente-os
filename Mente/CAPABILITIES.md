@@ -70,6 +70,7 @@ answers exactly one question. None of them decides anything: they check what is 
 | `bin/check-work` | is the work inside a block staying inside it |
 | `bin/check-inheritance` | do the three rule levels add up without a lower one loosening a higher |
 | `bin/check-checks` | ⭐ **the validators themselves** — can each one actually fail |
+| `bin/check-locks` | ⭐ **does a rule that declares 🔒 have code** — ⛔ a rule claiming a lock it does not have reads exactly like an enforced one |
 | `bin/check-decisions` | is every decision recorded once, and never rewritten |
 | `bin/check-handoff` | is a delegation granted, bounded and accounted for |
 | `bin/check-shipping` | does a change leave the way the rule says it must |
