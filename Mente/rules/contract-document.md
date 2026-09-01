@@ -131,13 +131,13 @@ fine and the wrong ceiling is applied to it.
 | Type | Ceiling | On overflow |
 |---|---|---|
 | `entry-point` | **250 lines** | ⭐ move content out, keep pointers |
-| `contract` | **700** | ⭐ split by topic — ⚠️ see the base-file note below |
-| `rule` | **700** | ⭐ split by topic — ⚠️ a base rule ships whole, like a contract |
-| `architecture` | **800** | ⛔ split per area |
-| `plan` | **400** | move closed phases to the logbook |
-| `block` | **200** | see the block contract |
-| `folder-readme` | **250** | ⭐ the detail belongs in what it describes |
-| `analysis` · `case` | **300** | split or summarise |
+| `contract` | **700 lines** | ⭐ split by topic — ⚠️ see the base-file note below |
+| `rule` | **700 lines** | ⭐ split by topic — ⚠️ a base rule ships whole, like a contract |
+| `architecture` | **800 lines** | ⛔ split per area |
+| `plan` | **400 lines** | move closed phases to the logbook |
+| `block` | **200 lines** | see the block contract |
+| `folder-readme` | **250 lines** | ⭐ the detail belongs in what it describes |
+| `analysis` · `case` | **300 lines** | split or summarise |
 | `append-only` | ⭐ **none** | rotate on a fixed period |
 | `generated` | none | ⛔ it is generated, never written |
 | `fossil` | frozen | ⚠️ does not grow |
