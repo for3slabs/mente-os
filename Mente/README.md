@@ -42,10 +42,10 @@ bin/init                    # 2 · ⭐ FIRST. Generates CLAUDE.md + PROJECT-RULE
 bin/check-health            # 3 · tells you what is missing, in plain language
 ```
 
-> ## ⭐ ⬜ `bin/init` IS STEP ONE, not an optional extra
+> ## ⭐ `bin/init` IS STEP ONE, not an optional extra
 >
 > **A fresh clone has no `CLAUDE.md` and no `PROJECT-RULES.md`** — those describe *an instance*,
-> so they are **generated**, never inherited. Until you run ⬜ `bin/init`, the AI starts with no
+> so they are **generated**, never inherited. Until you run `bin/init`, the AI starts with no
 > instructions at all.
 >
 > 🔴 **Why they are not shipped — measured, not assumed:** when they travelled inside the repo, a
@@ -59,7 +59,7 @@ wrong.
 
 > ⚠️ **A consequence you will hit:** because these files are not tracked, **checking out a branch
 > created before they became generated deletes them from disk**, and the battery turns red — every
-> failure pointing at the missing project rules. **The cure is ⬜ `bin/init`**, and it takes a second.
+> failure pointing at the missing project rules. **The cure is `bin/init`**, and it takes a second.
 > It is not a defect: it is what "generated, not inherited" costs, and knowing it beats
 > rediscovering it as an incident.
 
@@ -177,7 +177,7 @@ bin/check-declared           # does every engine file have its row
 bin/secrets-lease status     # is the secrets permission open, and what did it record
 ```
 
-⬜ **Planned, not built:** `bin/init` · `bin/new-block` · `bin/check-clear-ready` ·
+⬜ **Planned, not built:** `bin/new-block` · `bin/check-clear-ready` ·
 `bin/generate-index` · ⬜ `bin/generate-metrics`. ⛔ They are named in `CAPABILITIES.md` with the
 same marker — ⚠️ **a command list that mixes what runs with what is planned sends the reader to
 a shell prompt to find out which is which.**

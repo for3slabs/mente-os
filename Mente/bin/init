@@ -1,0 +1,342 @@
+#!/usr/bin/env python3
+"""init — turns a clone into an installation.
+
+⭐ WHAT AN INSTALLATION IS, in one line: a clone owns nothing personal, and this
+is the single moment identity enters — from the person in front of it, never
+from a file that shipped from somebody else's machine.
+
+🔴 THE FAILURE THAT SHAPES THIS FILE. When a config once travelled with a real
+owner name inside, this step ran on someone else's clone and NEVER ASKED for the
+owner: it found a name already written and took it as truth. ⛔ A personal value
+disguised as an engine default. So what is asked is asked because it CANNOT be
+derived, and what is derived is never asked.
+
+── THE FOUR THINGS IT DOES ─────────────────────────────────────────────────────
+  ① stamp each template into the place the piece table says it lives
+  ② fill {{owner}} {{project}} {{date}} across the engine — ⛔ not only in the
+     templates: 75 shipped documents carry them, and a header reading
+     `Owner: {{owner}}` passes every check while identifying nobody
+  ③ append the router import to the user's own CLAUDE.md — ⭐ APPEND, never
+     overwrite: that one line is the only thing this system writes outside its
+     own folder
+  ④ wire what git cannot carry — the pre-push hook, and the secrets folder's
+     mode
+
+⛔ IT REFUSES TO OVERWRITE. Every generated file is skipped if it already exists;
+`--force` overwrites, and says what it replaced. ⚠️ Without that rule a second
+run silently destroys a configured instance, and the destruction looks like a
+successful install.
+
+Usage:
+  bin/init [--force] [--owner NAME] [--dry-run]
+Exit: 0 installed · 1 nothing to do or refused · 2 could not complete
+"""
+import os
+import re
+import shutil
+import stat
+import subprocess
+import sys
+from datetime import date
+
+MENTE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+REPO = os.path.dirname(MENTE)
+TEMPLATES = os.path.join(MENTE, "templates")
+TABLE = os.path.join(MENTE, "piezas.tsv")
+SUFFIX = ".template"
+IMPORT_LINE = "@%s/CLAUDE-MENTE-OS.md" % os.path.basename(MENTE)
+
+# ⭐ Two templates the piece table cannot place, each for a real reason, and
+# declared HERE with that reason rather than left to be guessed.
+#   · the router's content already ships as CLAUDE-MENTE-OS.md — what the
+#     template describes is loaded through an import, not copied into place
+#   · the bridges registry names its file, and the table declares the folder
+SPECIAL = {"CLAUDE.md": None,                       # ⛔ never stamped: see ③
+           "bridges.md": "connection/bridges/BRIDGES.md"}
+# ⚠️ Copied by the user per delegation, not at install: a manifest belongs to
+# one handoff, and stamping a blank one would put an unfilled scope on disk
+# where check-handoff would read it as a real one.
+NOT_INSTALLED = {"handoff.yml"}
+
+
+def die(msg, code=2):
+    print("🔴 %s" % msg, file=sys.stderr)
+    sys.exit(code)
+
+
+def declared_paths():
+    """Every path the piece table declares, by basename.
+
+    ⭐ DERIVED, NOT LISTED. A list of destinations inside this file is a list
+    that goes stale: add a template, forget the list, and the file is never
+    installed while nothing says so. The piece table already exists to answer
+    "where does this live" — asking it means a new template is placed the moment
+    it is declared.
+    """
+    out = {}
+    for line in open(TABLE, encoding="utf-8", errors="replace"):
+        if line.startswith("#") or not line.strip():
+            continue
+        f = [c.strip() for c in line.rstrip("\n").split("\t")]
+        if len(f) < 2 or f[0] == "pieza":
+            continue
+        p = f[1]
+        if p.startswith("templates/"):
+            continue          # the blueprint itself, not a destination
+        out.setdefault(os.path.basename(p), p)
+    return out
+
+
+def plan():
+    """(template path, destination) for everything this installs.
+
+    ⛔ A template whose destination cannot be resolved is a FAILURE, never a
+    silent skip: it means the engine ships a blueprint nothing will ever stamp,
+    and the install would look complete while a file was missing.
+    """
+    known = declared_paths()
+    out, unresolved = [], []
+    for name in sorted(os.listdir(TEMPLATES)):
+        if not name.endswith(SUFFIX):
+            continue
+        produced = name[:-len(SUFFIX)]
+        if produced in NOT_INSTALLED:
+            continue
+        if produced in SPECIAL:
+            dest = SPECIAL[produced]
+            if dest is None:
+                continue
+        elif produced in known:
+            dest = known[produced]
+        else:
+            unresolved.append(produced)
+            continue
+        out.append((os.path.join(TEMPLATES, name), os.path.join(MENTE, dest)))
+    return out, unresolved
+
+
+def ask(prompt):
+    """Ask the person in front of the terminal.
+
+    🔴 REFUSES WHEN THERE IS NO TERMINAL rather than choosing a default. ⛔ A
+    default owner is exactly the leak this whole step exists to prevent: it
+    would write a name nobody chose into every generated document, and every
+    check downstream would confirm it as correct.
+    """
+    if not sys.stdin.isatty():
+        die("no terminal — cannot ask for the owner's name.\n"
+            "   Run bin/init directly, or pass --owner NAME.\n"
+            "   ⛔ Guessing an owner is how a personal value becomes an engine "
+            "default.", 2)
+    try:
+        answer = input(prompt).strip()
+    except (EOFError, KeyboardInterrupt):
+        die("cancelled — nothing was written", 1)
+    return answer or die("an owner name is required", 1)
+
+
+def substitute(text, values):
+    for k, v in values.items():
+        text = text.replace("{{%s}}" % k, v)
+    return text
+
+
+def fill_engine(values, dry):
+    """② Fill the placeholders across the SHIPPED files.
+
+    🔴 THE HALF THAT IS EASY TO MISS. Stamping the templates leaves 75 engine
+    documents still reading `Owner: {{owner}}` — and that passes every check,
+    because a placeholder is syntactically a valid value. ⚠️ The installation
+    then looks complete and identifies nobody.
+    """
+    touched = 0
+    for dp, dn, fn in os.walk(MENTE):
+        # ⚠️ `cache/` is excluded from most walks because it holds runtime
+        # state — ⛔ but its README ships as engine doctrine and carries the
+        # same placeholders. Excluding the folder left exactly one document in
+        # the tree still reading `Owner: {{owner}}` after a complete install.
+        # ⭐ Only the blueprints are skipped: a filled template would stop being
+        # a blueprint, and the next --force would stamp somebody's name.
+        dn[:] = [d for d in dn if d not in {".git", "__pycache__", "templates"}]
+        for n in fn:
+            if not n.endswith((".md", ".tsv", ".yml")):
+                continue
+            p = os.path.join(dp, n)
+            try:
+                text = open(p, encoding="utf-8", errors="replace").read()
+            except OSError:
+                continue          # ⬜ counted below as untouched, never as done
+            new = substitute(text, values)
+            if new == text:
+                continue
+            touched += 1
+            if not dry:
+                try:
+                    open(p, "w", encoding="utf-8").write(new)
+                except OSError:
+                    touched -= 1
+    return touched
+
+
+def wire_import(dry):
+    """③ Append the router import to the user's own CLAUDE.md.
+
+    ⭐ APPEND, NEVER OVERWRITE. That single line is the only thing this system
+    writes outside its own folder, and the file it writes into is the user's.
+    ⛔ Overwriting it would destroy rules they already had, and the loss would
+    be invisible — the file would still be there, still be read, and be wrong.
+    """
+    target = os.path.join(REPO, "CLAUDE.md")
+    try:
+        current = open(target, encoding="utf-8", errors="replace").read()
+    except OSError:
+        current = None
+    if current is not None and IMPORT_LINE in current:
+        return "already imported"
+    if dry:
+        return "would append the import"
+    try:
+        with open(target, "a", encoding="utf-8") as fh:
+            if current:
+                fh.write("\n")
+            fh.write("%s\n" % IMPORT_LINE)
+    except OSError as e:
+        return "⚠️ could not write CLAUDE.md (%s)" % e.__class__.__name__
+    return "created" if current is None else "appended"
+
+
+def wire_hook(dry):
+    """④ Link the layer that cannot be walked around.
+
+    🔴 A HOOK FILE THAT IS NOT LINKED NEVER RUNS, and looks installed. Git
+    cannot carry the link, so nothing but this step can create it — and until
+    it exists the only defence left is the layer a pattern over command text
+    can be walked past.
+    """
+    src = os.path.join(MENTE, "hooks", "pre-push.sh")
+    hooks = os.path.join(REPO, ".git", "hooks")
+    if not os.path.exists(src):
+        return "⬜ no pre-push.sh to link"
+    if not os.path.isdir(hooks):
+        return "⬜ not a git repository — layer 2 not wired"
+    link = os.path.join(hooks, "pre-push")
+    if os.path.exists(link):
+        return ("already wired"
+                if os.path.realpath(link) == os.path.realpath(src)
+                else "⚠️ .git/hooks/pre-push points elsewhere — left untouched")
+    if dry:
+        return "would link layer 2"
+    try:
+        os.symlink(os.path.relpath(src, hooks), link)
+    except OSError as e:
+        return "⚠️ could not link (%s)" % e.__class__.__name__
+    return "wired"
+
+
+def harden(dry):
+    """④ Make the credential folder private.
+
+    ⚠️ Git stores only the executable bit, so a cloned secrets/ arrives at
+    whatever the umask gives. ⭐ Only TIGHTENS: an owner who hardened it further
+    made a decision this step knows nothing about.
+    """
+    d = os.path.join(MENTE, "secrets")
+    if not os.path.isdir(d):
+        return None
+    mode = stat.S_IMODE(os.stat(d).st_mode)
+    if not mode & 0o077:
+        return None
+    if dry:
+        return "would tighten secrets/ from %o to 700" % mode
+    try:
+        os.chmod(d, mode & 0o700)
+    except OSError as e:
+        return "⚠️ could not tighten secrets/ (%s)" % e.__class__.__name__
+    return "secrets/ %o → 700" % mode
+
+
+def main():
+    force = "--force" in sys.argv
+    dry = "--dry-run" in sys.argv
+    owner = None
+    if "--owner" in sys.argv:
+        i = sys.argv.index("--owner")
+        owner = sys.argv[i + 1] if i + 1 < len(sys.argv) else None
+
+    if not os.path.isdir(TEMPLATES):
+        die("no templates/ — this clone has nothing to install from")
+    if not os.path.exists(TABLE):
+        die("no piezas.tsv — nothing declares where the pieces live")
+
+    items, unresolved = plan()
+    if unresolved:
+        die("%d template(s) declare no destination: %s\n"
+            "   ⛔ A blueprint nothing stamps is a file the install silently "
+            "leaves out.\n"
+            "   Declare its destination in piezas.tsv."
+            % (len(unresolved), ", ".join(unresolved)))
+
+    # ⭐ Asked ONLY when it cannot be found, and after the plan is known: no
+    # question is worth asking if the install would fail anyway.
+    if owner is None:
+        owner = ask("Owner name (how you are referred to in the docs): ")
+    values = {"owner": owner,
+              # ⭐ Derived, never asked: the directory already answers it, and a
+              # question whose answer is on screen trains people to hit enter.
+              "project": os.path.basename(REPO) or "project",
+              "date": date.today().isoformat()}
+
+    wrote, kept = [], []
+    for src, dest in items:
+        rel = os.path.relpath(dest, MENTE)
+        if os.path.exists(dest) and not force:
+            kept.append(rel)
+            continue
+        if dry:
+            wrote.append(rel)
+            continue
+        try:
+            os.makedirs(os.path.dirname(dest), exist_ok=True)
+            body = substitute(open(src, encoding="utf-8").read(), values)
+            open(dest, "w", encoding="utf-8").write(body)
+            shutil.copymode(src, dest)
+            wrote.append(rel)
+        except OSError as e:
+            die("could not write %s · %s" % (rel, e.__class__.__name__))
+
+    filled = fill_engine(values, dry)
+    imported = wire_import(dry)
+    hooked = wire_hook(dry)
+    tightened = harden(dry)
+
+    head = "🔎 dry run — nothing was written\n" if dry else ""
+    print("%s%s %d file(s) %s · %d kept · %d document(s) filled in"
+          % (head, "🤖", len(wrote), "would be written" if dry else "written",
+             len(kept), filled))
+    for r in wrote:
+        print("   + %s" % r)
+    if kept:
+        # ⛔ Named, never counted in silence: a file that was NOT written is the
+        # one thing a second run must be explicit about, or the person believes
+        # they just reinstalled and they did not.
+        print("   ⬜ kept (already there — use --force to replace): %s"
+              % ", ".join(kept))
+    print("   · router import: %s" % imported)
+    print("   · layer 2 hook: %s" % hooked)
+    if tightened:
+        print("   · %s" % tightened)
+    if not dry:
+        print("\n👉 next: bin/check-health · bin/probes/run-all.py")
+    return 0
+
+
+if __name__ == "__main__":
+    try:
+        sys.exit(main())
+    except SystemExit:
+        raise
+    except Exception as e:                                     # noqa: BLE001
+        print("🔴 %s crashed · %s: %s"
+              % (os.path.basename(__file__), type(e).__name__, e),
+              file=sys.stderr)
+        sys.exit(2)
