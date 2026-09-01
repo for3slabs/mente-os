@@ -204,3 +204,6 @@ new-campaign	bin/new-campaign	engine	executable	opens a campaign with its 3 open
 scaffold	bin/scaffold.py	engine	executable	what opening ANY unit of work requires — ⭐ one reader, so two tools cannot disagree about a refusal
 tpl-campaign	templates/CAMPAIGN.md.template	engine	canonical	the shape a campaign has — ⭐ mirrors contract-campaign, never a copy inside the scaffolder
 probe-new-campaign	bin/probes/probe-new-campaign.py	engine	executable	proves the scaffolded campaign passes its contract UNEDITED
+connect-account	bin/connect-account	engine	executable	answers which account governs a repo and where its guide lives — ⛔ it answers, it never acts
+probe-connect-account	bin/probes/probe-connect-account.py	engine	executable	proves the registry can be consulted and never guessed at
+adr-031	rules/decisions/ADR-031-the-engine-reads-the-tool-never-the-network.md	engine	canonical	the engine READS the host's tool and never reaches the network — ⛔ read only, local only, absence is a gap
