@@ -70,49 +70,49 @@ def put(text=GOOD, name=MARK + "-pending.md"):
 print("═══ SABOTAJE · check-pending ═══\n")
 p.baseline()
 
-p.case("① un item sin bloque",
+p.case("① an item with no block",
        lambda: put(GOOD.replace("## BLOCK · a theme\n\nPlan: the whole block "
                                 "goes through one pass, smallest first.\n\n", "")),
        "PND-BLK-001")
-p.case("② un bloque sin plan",
+p.case("② a block with no plan",
        lambda: put(GOOD.replace("Plan: the whole block goes through one pass, "
                                 "smallest first.\n", "")
                        .replace("- Plan: — (small enough)\n", "")
                        .replace("- Plan: —\n", "")), "PND-BLK-002")
-p.case("③ falta un campo",
+p.case("③ a field is missing",
        lambda: put(GOOD.replace("- Carried from: — (born here)\n", "", 1)),
        "PND-FLD-001")
-p.case("④ estado desconocido",
+p.case("④ an unknown state",
        lambda: put(GOOD.replace("- State: open", "- State: ongoing")),
        "PND-VRB-003")
-p.case("⑤ cerrado sin fecha de cierre",
+p.case("⑤ closed with no closing date",
        lambda: put(GOOD.replace("- Created: 2026-01-10 · Updated: 2026-01-15 · Closed: 2026-01-15",
                                 "- Created: 2026-01-10 · Updated: 2026-01-15 · Closed: —")),
        "PND-VRB-001")
-p.case("⑥ descartado sin razón escrita",
+p.case("⑥ dropped with no written reason",
        lambda: put(GOOD.replace("- State: closed", "- State: dropped")
                        .replace("Description. It was resolved, and the evidence "
                                 "is the check that now passes.", "Description.")),
        "PND-VRB-002")
-p.case("⑦ sin fecha de creación real",
+p.case("⑦ no real creation date",
        lambda: put(GOOD.replace("- Created: 2026-01-10 · Updated: 2026-01-15 · Closed: —",
                                 "- Created: recently · Updated: 2026-01-15 · Closed: —")),
        "PND-FLD-002")
-p.case("⑧ carried-from que no nombra un archivo",
+p.case("⑧ a carried-from that names no file",
        lambda: put(GOOD.replace("- Carried from: — (born here)",
                                 "- Carried from: the last one", 1)),
        "PND-FLD-003")
-p.case("⑨ un abierto que apunta al periodo anterior",
+p.case("⑨ an open item pointing at the previous period",
        lambda: put(GOOD.replace("Description. Everything needed to resume this "
                                 "without asking anybody.",
                                 "Description. See the previous period for detail.")),
        "PND-ROT-001")
 LIVE = GOOD.replace("**Status:** superseded", "**Status:** current")
-p.case("⑩ dos listas vivas",
+p.case("⑩ two live lists",
        lambda: (put(LIVE), put(LIVE, name=MARK + "-pending-two.md")),
        "PND-CNV-002")
 
-p.case("⑪b ROT · un item CERRADO que viaja de periodo",
+p.case("⑪b ROT · a CLOSED item carried across periods",
        lambda: put(GOOD.replace("- State: open", "- State: closed")
                        .replace("- Carried from: — (born here)",
                                 "- Carried from: the previous period")),
@@ -121,11 +121,11 @@ p.case("⑪b ROT · un item CERRADO que viaja de periodo",
 # ⭐ the inverse: a closed item that stayed where it died must not fire.
 # ⛔ A closed item also needs its closing date — leaving it out planted a
 # DIFFERENT defect and the inverse failed for a reason it was not testing.
-p.inverse("⑪c ROT · un item cerrado que NO viajó",
+p.inverse("⑪c ROT · a closed item that did NOT carry",
           lambda: put(GOOD.replace("- State: open", "- State: closed")
                           .replace("Closed: —", "Closed: 2026-01-16")))
 
-p.inverse("⑪ una lista CORRECTA", lambda: put())
+p.inverse("⑪ a CORRECT list", lambda: put())
 p.crash_guard()
 
 print("\n═══ B · CORRIDA CRUZADA · una lista real de otra instancia ═══\n")

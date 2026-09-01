@@ -63,7 +63,7 @@ beat(TREE, "probe-x")
 first = last(TREE, "probe-x")
 beat(TREE, "probe-x")                      # second call must be a no-op read
 n = len(os.listdir(os.path.join(TREE, ".beats")))
-case("① ⭐ beat() sella hoy · y no duplica en la 2ª llamada",
+case("① ⭐ beat() stamps today · and does not duplicate on the 2nd call",
      first == date.today() and n == 1, "%s · %d archivo" % (first, n))
 
 # ② ⛔ telemetry NEVER raises — a gate must fail for its own reasons, never for this
@@ -74,7 +74,7 @@ try:
     ok = True
 except Exception as e:                     # noqa: BLE001
     ok = False
-case("② ⛔ nunca lanza con una ruta imposible", ok)
+case("② ⛔ never raises on an impossible path", ok)
 
 # ③ ⭐ a real gate fires and leaves its proof — the loop end to end, not a stub
 wipe()
@@ -82,7 +82,7 @@ subprocess.run([sys.executable, os.path.join(TREE, "hooks", "gate-critical.py")]
                cwd=TREE, input='{"tool_input":{"file_path":"a.md","content":"x"}}',
                capture_output=True, text=True)
 real = os.path.exists(os.path.join(TREE, ".beats", "gate-critical"))
-case("③ ⭐ disparar gate-critical DE VERDAD deja su sello", real)
+case("③ ⭐ firing gate-critical FOR REAL leaves its stamp", real)
 
 # ④ ⚠️ THE CASE THAT KEEPS IT USABLE · a quiet gate over a quiet week is NOT a fault.
 # Gates only fire while somebody works, so silence must be judged against the last
@@ -92,7 +92,7 @@ stamp("gate-critical", 40)
 stamp("pre-edit-standards", 40)
 session(40)
 r = check()
-case("④ ⚠️ 40 días muda PERO la sesión también → no es fallo",
+case("④ ⚠️ 40 days quiet BUT the session too → not a fault",
      r.returncode == 0 and "SILENT" not in r.stdout, "exit=%d" % r.returncode)
 
 # ⑤ 🔴 THE DEFECT IT EXISTS FOR · quiet while the session was alive
@@ -101,15 +101,15 @@ stamp("gate-critical", 30)
 stamp("pre-edit-standards", 0)
 session(0)
 r = check()
-case("⑤ 🔴 muda 30 días con sesiones vivas → detectado",
+case("⑤ 🔴 quiet 30 days across live sessions → detected",
      r.returncode == 1 and "gate-critical" in r.stdout, "exit=%d" % r.returncode)
 
 # ⑥ ⭐ and it names the CAUSE, not just a red — a red without a cause is not a finding
-case("⑥ ⭐ el mensaje nombra la puerta Y su archivo",
+case("⑥ ⭐ the message names the gate AND its file",
      "hooks/gate-critical.py" in r.stdout and "last fired" in r.stdout)
 
 # ⑦ ⚠️ it must not blame the innocent one
-case("⑦ ⚠️ no acusa a la puerta que SÍ disparó",
+case("⑦ ⚠️ it does not accuse the gate that DID fire",
      "pre-edit-standards" not in r.stdout.replace("2 gate", ""))
 
 # ⑧ ⬜ no session date → NOT MEASURED, never a green. A pass with nothing to
@@ -118,14 +118,14 @@ wipe()
 stamp("gate-critical", 0)
 os.remove(os.path.join(TREE, ".heartbeat"))
 r = check()
-case("⑧ ⬜ sin .heartbeat → NOT MEASURED, no ✅",
+case("⑧ ⬜ no .heartbeat → NOT MEASURED, not a ✅",
      r.returncode == 0 and "NOT MEASURED" in r.stdout and "✅" not in r.stdout)
 
 # ⑨ ⬜ a gate that never fired is a GAP, not a failure — a fresh install is not broken
 wipe()
 session(0)
 r = check()
-case("⑨ ⬜ puerta que nunca disparó → hueco (exit 0), no fallo",
+case("⑨ ⬜ a gate that never fired → a gap (exit 0), not a fault",
      r.returncode == 0 and "never fired" in r.stdout, "exit=%d" % r.returncode)
 
 # ⑩ ⭐ the roster is DISCOVERED · a gate added to hooks/ is watched with no edit here
@@ -139,7 +139,7 @@ open(extra, "w").write(
     'from _beat import beat\n'
     'beat(MENTE,"gate-zzprobe")\n')
 r = check()
-case("⑩ ⭐ una puerta NUEVA se vigila sin tocar el lector",
+case("⑩ ⭐ a NEW gate is watched without touching the reader",
      "gate-zzprobe" in r.stdout, "descubierta leyendo hooks/")
 os.remove(extra)
 
@@ -150,7 +150,7 @@ stamp("pre-edit-standards", 0)
 session(0)
 strict = check({"MENTE_GATE_SILENT_DAYS": "5"}).returncode
 loose = check({"MENTE_GATE_SILENT_DAYS": "90"}).returncode
-case("⑪ ⬜ el umbral declarado cambia el veredicto (5→🔴 · 90→✅)",
+case("⑪ ⬜ the declared threshold changes the verdict (5→🔴 · 90→✅)",
      strict == 1 and loose == 0, "5:%d · 90:%d" % (strict, loose))
 
 # ⑫ ⚠️ a malformed threshold must not disable the check — a typo is not a licence
@@ -159,7 +159,7 @@ stamp("gate-critical", 30)
 stamp("pre-edit-standards", 0)
 session(0)
 r = check({"MENTE_GATE_SILENT_DAYS": "not-a-number"})
-case("⑫ ⚠️ umbral malformado cae al defecto, no apaga la medición",
+case("⑫ ⚠️ a malformed threshold falls back, it does not disable the measurement",
      r.returncode == 1, "exit=%d" % r.returncode)
 
 # ⑬ 🔴 an unreadable stamp is NOT proof of life — it must read as never-fired
@@ -168,7 +168,7 @@ session(0)
 os.makedirs(os.path.join(TREE, ".beats"), exist_ok=True)
 open(os.path.join(TREE, ".beats", "gate-critical"), "w").write("garbage")
 r = check()
-case("⑬ 🔴 sello ilegible = nunca disparó, no un ✅",
+case("⑬ 🔴 an unreadable stamp = never fired, not a ✅",
      "never fired" in r.stdout and "✅" not in r.stdout)
 
 shutil.rmtree(WORK, ignore_errors=True)

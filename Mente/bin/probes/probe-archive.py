@@ -98,46 +98,46 @@ def plant(summary=SUMMARY, conns=CONNECTIONS, block=BLOCK, files=3):
 print("═══ A · SABOTAJE · check-archive ═══\n")
 p.baseline()
 
-p.case("① falta uno de los tres archivos",
+p.case("① one of the three files is missing",
        lambda: plant(files=2), "ARC-SHP-001")
-p.case("② el resumen no lleva cabecera de documento",
+p.case("② the summary carries no document header",
        lambda: plant(summary=SUMMARY.replace(HEADER, "")), "ARC-SHP-002")
-p.case("③ falta un campo del resumen",
+p.case("③ a summary field is missing",
        lambda: plant(summary=re.sub(r"## The quality verdict\n\n.*?\n\n", "",
                                     SUMMARY, flags=re.S)), "ARC-SUM-001")
-p.case("④ 'lo aprendido' vacío",
+p.case("④ 'what was learned' is empty",
        lambda: plant(summary=re.sub(r"(## What was learned\n\n).*?\n\n",
                                     r"\1x\n\n", SUMMARY, flags=re.S)),
        "ARC-LRN-001")
-p.case("⑤ 'lo que quedó fuera' vacío",
+p.case("⑤ 'what was left out' is empty",
        lambda: plant(summary=re.sub(r"(## What was left out\n\n).*?\n\n",
                                     r"\1-\n\n", SUMMARY, flags=re.S)),
        "ARC-SUM-002")
-p.case("⑥ falta un campo de conexiones",
+p.case("⑥ a connections field is missing",
        lambda: plant(conns=re.sub(r"## What is still open\n\n.*?\n\n", "",
                                   CONNECTIONS, flags=re.S)), "ARC-CON-001")
-p.case("⑦ una credencial en el archivo",
+p.case("⑦ a credential in the archive",
        lambda: plant(block=BLOCK + "\napi_key: sk-abcdefghijklmnop\n"),
        "ARC-NEV-001")
 
-p.case("⑦b DEL · la carpeta no coincide con el id del bloque",
+p.case("⑦b DEL · the folder does not match the block id",
        lambda: plant(block=BLOCK.replace("id: " + MARK + "-block",
                                          "id: something-else")),
        "ARC-DEL-002")
-p.case("⑦c SHP · el periodo de la carpeta no es el del cierre",
+p.case("⑦c SHP · the folder period is not the closing one",
        lambda: plant(block=BLOCK.replace("closed: 2026-01-20",
                                          "closed: 2026-07-20")),
        "ARC-SHP-003")
 # ⛔ Replace the line, never add to it: the fixture already says "moved to",
 # so appending a second line left the answer in place and the case planted
 # nothing. A probe that adds where it should replace tests the clean state.
-p.case("⑦d CON · algo sigue abierto y no dice a dónde se movió",
+p.case("⑦d CON · something is still open and does not say where it went",
        lambda: plant(conns=CONNECTIONS.replace(
            "- nothing; the remainder moved to another block",
            "- the second half of the migration")),
        "ARC-CON-003")
 
-p.inverse("⑧ un archivo COMPLETO", lambda: plant())
+p.inverse("⑧ a COMPLETE archive", lambda: plant())
 
 # ── ⬜ the alias mechanism · it existed, was documented, and never matched:
 # the key pattern stopped at the first space and every field name is several
@@ -155,12 +155,12 @@ except OSError:
     _orig_pr, _had_pr = "", False
 _renamed = SUMMARY.replace("## What was built", "## Qué se hizo")
 try:
-    p.case("⑧b ALIAS · una sección renombrada, sin alias declarado",
+    p.case("⑧b ALIAS · a renamed section, with no alias declared",
            lambda: plant(summary=_renamed), "ARC-SUM-001")
 
     open(_pr, "w", encoding="utf-8").write(
         _orig_pr + "\narchive_field what was built = (qué se hizo|what was built)\n")
-    p.inverse("⑧c ALIAS · la misma sección, CON su alias declarado",
+    p.inverse("⑧c ALIAS · the same section, WITH its alias declared",
               lambda: plant(summary=_renamed))
 finally:
     if _had_pr:
