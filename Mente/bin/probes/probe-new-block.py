@@ -137,7 +137,9 @@ case("⑮ ⛔ no --type → refused, it does not pick one", r.returncode == 1)
 # ── ⭐ THE VOCABULARY IS READ FROM THE CONTRACT ─────────────────────────────
 # ⛔ A copy inside this script would refuse a type the contract added, and the
 # refusal would look like the type being wrong rather than the tool being stale.
-contract = os.path.join(TREE, "rules", "contract-block.md")
+# ⚠️ The type and lane vocabularies live in the SECTIONS half — one contract,
+# two files. ⛔ Editing the wrong one plants the change where nothing reads it.
+contract = os.path.join(TREE, "rules", "contract-block-sections.md")
 keep = open(contract, encoding="utf-8").read()
 open(contract, "w", encoding="utf-8").write(
     keep.replace("type: code | docs | infra | data",
@@ -150,7 +152,7 @@ drop("zzprobe-new-type")
 # ⛔ AND AN UNREADABLE CONTRACT MUST NOT BECOME A PERMISSIVE ONE
 open(contract, "w", encoding="utf-8").write("# emptied\n")
 r = run("zzprobe-nocontract", "--type", "docs")
-case("⑰ ⛔ contrato ilegible → falla, NO acepta cualquier cosa",
+case("⑰ ⛔ an unreadable contract fails, it does NOT accept anything",
      r.returncode == 2, "exit=%d" % r.returncode)
 open(contract, "w", encoding="utf-8").write(keep)
 

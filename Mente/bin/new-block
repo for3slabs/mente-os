@@ -41,7 +41,29 @@ from scaffold import owner, stamp, used_ids, valid_id          # noqa: E402
 
 TEMPLATE = os.path.join(MENTE, "templates", "BLOCK.md.template")
 BLOCKS = os.path.join(MENTE, "work", "blocks")
-CONTRACT = os.path.join(MENTE, "rules", "contract-block.md")
+# ⭐ ONE CONTRACT, TWO FILES. The lifecycle half and the sections half were
+# split when together they passed the ceiling for their type. ⛔ A reader that
+# opens only one of them sees half the rules and reports the other half as
+# missing — measured the moment the split happened: the type and lane
+# vocabularies live in the SECTIONS half, and this stopped finding them.
+CONTRACT_PARTS = (os.path.join(MENTE, "rules", "contract-block.md"),
+                   os.path.join(MENTE, "rules",
+                                "contract-block-sections.md"))
+CONTRACT = CONTRACT_PARTS[0]      # the half that names the rule set
+
+
+def contract_text():
+    """Both halves as one body of text — ⭐ the contract as it reads."""
+    out = []
+    for q in CONTRACT_PARTS:
+        try:
+            out.append(open(q, encoding="utf-8", errors="replace").read())
+        except OSError:
+            # ⬜ A half that cannot be read is half a contract, and the
+            # caller reports that rather than measuring against it.
+            continue
+    return "\\n".join(out)
+
 CONFIG = os.path.join(MENTE, "mente.config.yml")
 OPEN_SECTIONS = ("A", "B", "C", "D")
 
@@ -60,7 +82,7 @@ def vocabulary():
     rather than the tool being stale.
     """
     try:
-        text = open(CONTRACT, encoding="utf-8", errors="replace").read()
+        text = contract_text()
     except OSError:
         return None, None
     def declared(field):

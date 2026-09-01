@@ -638,11 +638,23 @@ the dependency now, in both places that needed it.
 
 ---
 
-## E-34 · `contract-block` is at its ceiling and owes a split
+## E-34 · ✅ CLOSED — split by topic, and the split exposed a hidden dependency
 
 - **Surfaced by:** wiring ADR-011 — the file crossed its declared ceiling by one line
 - **Affects:** `rules/contract-block.md`
-- **Closes when:** the contract is split by topic and each part is under its own ceiling
+- **Closed:** 2026-09-01 — 702 lines became 362 (`rules/contract-block.md`, the
+  LIFECYCLE) and 387 (`rules/contract-block-sections.md`, the SHAPE of §A-K). ⭐ Split
+  by TOPIC, not by size: §6 was half the file and described the eleven sections,
+  which is a subject of its own.
+- ⭐ **Every id kept its number**, so no citation moved. The letters are
+  addresses; the split moved text and changed no pointer.
+- 🔴 **AND THE SPLIT EXPOSED A DEPENDENCY NOTHING DECLARED.** `bin/new-block`
+  reads the type and lane vocabularies out of the contract — and they left with
+  §A. ⛔ It stopped creating blocks entirely, and `probe-block` planted a ceiling
+  edit in the half nothing reads, reporting a working check as undetected.
+- ⭐ **The lesson is the one this whole backlog keeps repeating:** two things in
+  one file can depend on being together, and nothing says so until they are
+  apart. Both consumers now read the contract as the two halves it is.
 
 **Why it matters.** ⭐ **`DOC-SIZ-001` does not say "raise the ceiling" — it says a file over its
 ceiling owes a SPLIT, and that the split is named work rather than a warning.**

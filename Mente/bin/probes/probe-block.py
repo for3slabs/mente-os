@@ -104,7 +104,10 @@ p.case("⑱ closed with neither acceptance NOR sufficiency",
 
 # ⬜ CEILINGS · declared as 0 (not measured) by default, so the probe must
 # prove BOTH: silent with none declared, firing when one is.
-_c = os.path.join(ROOT, "rules", "contract-block.md")
+# ⚠️ The ceilings table lives in the SECTIONS half. ⛔ The contract is one thing
+# in two files, and a probe that edits the wrong half plants its defect where
+# nothing reads it — then reports a working check as undetected.
+_c = os.path.join(ROOT, "rules", "contract-block-sections.md")
 _o = open(_c, encoding="utf-8").read()
 try:
     p.inverse("⑲ with no declared ceiling, NOTHING is measured", lambda: block(p, "a"))
