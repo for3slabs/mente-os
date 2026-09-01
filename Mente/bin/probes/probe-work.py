@@ -21,15 +21,15 @@ def edit(bid, a, b):
 print("═══ A · SABOTAJE · check-work ═══\n")
 p.baseline()
 
-p.case("① sin lane", lambda: edit(block(p, "a"), "lane: task\n", ""), "WRK-LAN-003")
-p.case("② lane inválido", lambda: edit(block(p, "a"), "lane: task", "lane: quick"),
+p.case("① no lane", lambda: edit(block(p, "a"), "lane: task\n", ""), "WRK-LAN-003")
+p.case("② an invalid lane", lambda: edit(block(p, "a"), "lane: task", "lane: quick"),
        "WRK-LAN-003")
-p.case("③ dependiente declarado y lane=task",
+p.case("③ a declared dependent and lane=task",
        lambda: block(p, "a", conn="- DEPENDS ON: %s-b" % MARK), "WRK-LAN-002")
-p.case("④ conexión a un bloque inexistente",
+p.case("④ a connection to a block that does not exist",
        lambda: block(p, "a", lane="full-block", conn="- DEPENDS ON: ghost-block"),
        "WRK-ISO-002")
-p.case("⑤ fricción sin el campo reason",
+p.case("⑤ friction with no reason field",
        lambda: block(p, "a", fric="- %s · rule: something" % TODAY), "WRK-FRI-002")
 
 
@@ -39,8 +39,8 @@ def three_blocks():
                          "reason: it blocked an urgent fix" % (TODAY, MARK, n))
 
 
-p.case("⑥ misma regla en 3 bloques DISTINTOS", three_blocks, "WRK-FRI-003")
-p.case("⑦ full-block sin declarar su propagación",
+p.case("⑥ the same rule in 3 DIFFERENT blocks", three_blocks, "WRK-FRI-003")
+p.case("⑦ full-block without declaring its propagation",
        lambda: block(p, "a", lane="full-block"), "WRK-FIX-003")
 
 
@@ -71,7 +71,7 @@ def clean_with_restore():
 
 p.clean = clean_with_restore
 p.also = p.also + ("rule-working-in-a-block.md",)
-p.case("⑧ umbral no declarado · usa el default del motor",
+p.case("⑧ an undeclared threshold · uses the engine default",
        hide_threshold, "WRK-FRI-005")
 
 # ⭐ the inverse that separates a useful alarm from one that gets switched off
@@ -88,7 +88,7 @@ print("  %-46s %s %s" % ("⑨ 3 fricciones en el MISMO bloque",
 p.results.append(("⑨ mismo bloque", "PASS" if not fired else "FALSE_POSITIVE"))
 p.clean()
 
-p.inverse("⑩ un bloque CORRECTO", lambda: block(p, "a"))
+p.inverse("⑩ a CORRECT block", lambda: block(p, "a"))
 p.crash_guard()
 
 print("\n═══ B · CORRIDA CRUZADA · bloques reales de otra instancia ═══\n")

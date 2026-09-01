@@ -22,25 +22,25 @@ def plant(body, shebang="#!/usr/bin/env python3"):
 print("═══ SABOTAJE · check-checks ═══\n")
 p.baseline()
 
-p.case("① A · comparación suelta de un id",
+p.case("① A · a loose comparison of an id",
        lambda: plant('text = "abc"\nsid = "dc733bc1"\nif sid in text:\n    pass\n'),
        "CHK-CMP-001")
-p.case("② A · comparación suelta de un hash",
+p.case("② A · a loose comparison of a hash",
        lambda: plant('text = ""\ncommit_hash = "016"\nif commit_hash not in text:\n'
                      '    pass\n'), "CHK-CMP-001")
-p.case("③ C · exit status pisado por una sustitución",
+p.case("③ C · an exit status clobbered by a substitution",
        lambda: plant('echo "$(build_label)" "$?"\n', "#!/bin/bash"), "CHK-CLB-001")
-p.case("④ D · exige una ruta que se excluye del repo",
+p.case("④ D · requires a path the repo excludes",
        lambda: plant('import os\nos.path.exists("secrets")\n'), "CHK-TRV-001")
-p.case("⑤ D-bis · open() sin guardia de una ruta declarada",
+p.case("⑤ D-bis · an unguarded open() of a declared path",
        lambda: plant('CFG = "some/config.json"\n'
                      'text = open(CFG, encoding="utf-8").read()\n'), "CHK-TRV-002")
-p.case("⑥ CAU · entrada sin guardia de excepción",
+p.case("⑥ CAU · an entry point with no exception guard",
        lambda: plant('import sys\n\n\ndef main():\n    return 0\n\n\n'
                      'if __name__ == "__main__":\n    sys.exit(main())\n'),
        "CHK-CAU-002")
 
-p.case("⑥b IND · un ✅ pelado, sin decir qué midió",
+p.case("⑥b IND · a bare ✅ that never says what it measured",
        lambda: plant('import sys\n\n\ndef main():\n'
                      '    print("✅ everything is fine")\n    return 0\n\n\n'
                      'if __name__ == "__main__":\n'
@@ -49,7 +49,7 @@ p.case("⑥b IND · un ✅ pelado, sin decir qué midió",
                      '        sys.exit(1)\n'),
        "CHK-IND-002")
 
-p.case("⑥c CAU · un guardia que se traga el objeto en silencio",
+p.case("⑥c CAU · a guard that swallows the object in silence",
        lambda: plant('import os, sys\n\n\ndef main():\n'
                      '    for f in os.listdir("."):\n'
                      '        try:\n'
@@ -64,7 +64,7 @@ p.case("⑥c CAU · un guardia que se traga el objeto en silencio",
        "CHK-CAU-003")
 
 # ⭐ the inverse of ⑥c: the SAME guard, with its skip declared, must not fire.
-p.inverse("⑥d CAU · el mismo guardia, con su salto declarado",
+p.inverse("⑥d CAU · the same guard, with its skip declared",
           lambda: plant('import os, sys\n\n\ndef main():\n'
                         '    for f in os.listdir("."):\n'
                         '        try:\n'
@@ -77,7 +77,7 @@ p.inverse("⑥d CAU · el mismo guardia, con su salto declarado",
                         '    except Exception as e:\n        print(e)\n'
                         '        sys.exit(1)\n'))
 
-p.inverse("⑦ un validador CORRECTO",
+p.inverse("⑦ a CORRECT validator",
           lambda: plant('import os, sys\n\n\ndef main():\n'
                         '    P = "some/config.json"\n'
                         '    if os.path.exists(P):\n'

@@ -100,22 +100,22 @@ CLEAN = {
 
 print("═══ A · SABOTAJE · grade-block · veredicto Y causa ═══\n")
 
-case("⓪ un bloque LIMPIO", CLEAN, "PRODUCT")
+case("⓪ a CLEAN block", CLEAN, "PRODUCT")
 
-case("① un archivo que nadie importa",
+case("① a file nobody imports",
      dict(CLEAN, orphan_thing="", **{"orphan.py": "def x():\n    return 1\n"}),
      "MVP", "files nobody imports")
 
-case("② sin ningún archivo de prueba",
+case("② with no test file at all",
      {k: v for k, v in CLEAN.items() if not k.startswith("test_")},
      "MVP", "test files")
 
-case("③ un secreto escrito en el código",
+case("③ a secret written into the code",
      dict(CLEAN, **{"cfg.py": 'from .used import helper\n'
                               'password = "hunter2supersecret"\n'}),
      "MVP", "secret values written down")
 
-case("④ un ciclo de importación",
+case("④ an import cycle",
      {"a.py": "from .b import gb\n\n\ndef ga():\n    return gb()\n",
       "b.py": "from .a import ga\n\n\ndef gb():\n    return 1\n",
       "main.py": "from .a import ga\nfrom .b import gb\n",
@@ -123,7 +123,7 @@ case("④ un ciclo de importación",
      "MVP", "import cycles")
 
 _dup = "\n".join("    step_%d = %d" % (i, i) for i in range(10))
-case("⑤ un bloque duplicado",
+case("⑤ a duplicated block",
      dict(CLEAN,
           **{"one.py": "from .used import helper\n\n\ndef f():\n%s\n" % _dup,
              "two.py": "from .used import helper\n\n\ndef g():\n%s\n" % _dup,
@@ -137,32 +137,32 @@ try:
     os.makedirs(OUTSIDE, exist_ok=True)
     open(os.path.join(OUTSIDE, "test_other.py"), "w", encoding="utf-8").write(
         "def test_other():\n    assert True\n")
-    case("⑤b SCOPE · un test de OTRO bloque no cuenta",
+    case("⑤b SCOPE · a test from ANOTHER block does not count",
          {k: v for k, v in CLEAN.items() if not k.startswith("test_")},
          "MVP", "test files")
 finally:
     shutil.rmtree(OUTSIDE, ignore_errors=True)
 
 print()
-case("⑥ docs · un enlace roto",
+case("⑥ docs · a broken link",
      {"a.md": "See [the other](./ghost.md).\n", "b.md": "[a](./a.md)\n"},
      "MVP", "broken links", btype="docs")
 
-case("⑦ infra · sin rollback documentado",
+case("⑦ infra · no documented rollback",
      {"runbook.md": "## How to run\n\nStart the thing.\n"},
      "MVP", "rollback documented", btype="infra")
 
-case("⑧ data · una migración sin vuelta atrás",
+case("⑧ data · a migration with no way back",
      {"migrations/001_add.sql": "CREATE TABLE t (id INT);\n"},
      "MVP", "migrations WITHOUT a rollback", btype="data")
 
 # ── B · the two failures the contract records
 print()
-case("⑧b EVD · un scope que resuelve A MEDIAS",
+case("⑧b EVD · a scope that only HALF resolves",
      CLEAN, "MVP", "scope paths that do not resolve",
      scope="%s\n- `work/%s-nowhere`" % (REL, MARK))
 
-case("⑨ ⛔ scope VACÍO no es un aprobado", {}, "NOTHING MEASURED",
+case("⑨ ⛔ an EMPTY scope is not a pass", {}, "NOTHING MEASURED",
      btype="docs", scope="work/%s-nowhere" % MARK)
 
 plant(CLEAN, "docs")
