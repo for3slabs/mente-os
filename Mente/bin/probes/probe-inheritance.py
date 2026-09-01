@@ -37,27 +37,27 @@ def add_universal(row):
 print("═══ A · SABOTAJE · check-inheritance ═══\n")
 p.baseline()
 
-p.case("① regla universal que nombra una ruta",
+p.case("① a universal rule naming a path",
        lambda: add_universal("| 9 | **Never read ~/other-project/Mente** | x |"),
        "INH-LVL-002")
-p.case("② regla universal que nombra un host",
+p.case("② a universal rule naming a host",
        lambda: add_universal("| 9 | **Always deploy through deploy.example.com** | x |"),
        "INH-LVL-002")
-p.case("③ regla marcada 🏢 en el universal",
+p.case("③ a rule marked 🏢 in the universal file",
        lambda: add_universal("| 9 | 🏢 **Never push without an order** | project-level |"),
        "INH-LVL-003")
-p.case("④ regla escrita en el enrutador",
+p.case("④ a rule written in the router",
        lambda: open(ROUTER, "a", encoding="utf-8").write(
            "\nNEVER build a milestone without approval from the owner\n"),
        "INH-RTR-001")
-p.case("⑤ bloque que se exime de una regla",
+p.case("⑤ a block exempting itself from a rule",
        lambda: block(p, "a", scope="- This block is exempt from the approval rule"),
        "INH-DIR-001")
-p.case("⑥ bloque que repite una regla universal",
+p.case("⑥ a block repeating a universal rule",
        lambda: block(p, "a",
                      scope="- **The AI does not invent criterion.** Criterion is the owner's"),
        "INH-DIR-003")
-p.case("⑦ ESCALAMIENTO · el universal deniega, el bloque permite",
+p.case("⑦ ESCALATION · the universal denies, the block allows",
        lambda: (add_universal(
            "| 9 | **Never build a milestone without explicit approval** | x |"),
            block(p, "a",
@@ -92,19 +92,19 @@ def clean_with_rule():
 
 p.clean = clean_with_rule
 
-p.case("⑪ LVL · una regla sin nivel declarado",
+p.case("⑪ LVL · a rule with no declared level",
        lambda: open(_victim, "w", encoding="utf-8").write(
            _orig_rule.replace("**Level:** 🌐 universal", "**Scope:** the engine", 1)
                      .replace("🌐", "·").replace("🏢", "·").replace("📦", "·")
                      .replace("universal", "wide").replace("project-level", "narrow")),
        "INH-LVL-001")
 
-p.case("⑫ PRC · una fila de regla que promedia",
+p.case("⑫ PRC · a rule row that averages",
        lambda: open(_victim, "w", encoding="utf-8").write(
            _orig_rule + "\n| `INH-ZZZ-999` | a middle ground between both | 🔒 | x |\n"),
        "INH-PRC-002")
 
-p.case("⑬ RTR · el enrutador no nombra los tres niveles",
+p.case("⑬ RTR · the router does not name the three levels",
        lambda: open(ROUTER, "w", encoding="utf-8").write(
            re.sub(r"(?i)block|📦", "thing", ORIG_ROUTER)), "INH-RTR-002")
 
@@ -121,11 +121,11 @@ def cite_in_d(conn="- none"):
     return bid
 
 
-p.case("⑭ SUM · §D cita otro bloque sin declararlo en §C",
+p.case("⑭ SUM · §D cites another block without declaring it in §C",
        lambda: cite_in_d(), "INH-SUM-001")
 
 # ⭐ the inverse: the same citation WITH the dependency declared must not fire.
-p.inverse("⑮ SUM · la misma cita, con la conexión declarada",
+p.inverse("⑮ SUM · the same citation, with the connection declared",
           lambda: cite_in_d(conn="- DEPENDS ON: other-block"))
 
 p.crash_guard()

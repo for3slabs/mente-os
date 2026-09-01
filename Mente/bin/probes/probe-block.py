@@ -46,56 +46,56 @@ open(_idx, "w", encoding="utf-8").write(
 print("═══ A · SABOTAJE · check-block ═══\n")
 p.baseline()
 
-p.case("① falta la sección D",
+p.case("① section D is missing",
        lambda: _strip(block(p, "a"), "## D"), "BLK-OPN-001")
-p.case("② type inválido",
+p.case("② an invalid type",
        lambda: _sub(block(p, "a"), "type: docs", "type: invented"), "BLK-IDN-002")
-p.case("③ status inválido",
+p.case("③ an invalid status",
        lambda: _sub(block(p, "a"), "status: active", "status: alive"), "BLK-IDN-004")
-p.case("④ lane inválido",
+p.case("④ an invalid lane",
        lambda: _sub(block(p, "a"), "lane: task", "lane: quick"), "BLK-IDN-004")
-p.case("⑤ scope sin OUT",
+p.case("⑤ a scope with no OUT",
        lambda: _re(block(p, "a"), r"### ⛔ OUT\n.*?\n", ""), "BLK-SCP-001")
-p.case("⑥ OUT sin fuente declarada",
+p.case("⑥ an OUT with no declared source",
        lambda: _sub(block(p, "a"),
                     "- DO NOT touch anything else · DERIVED: another block owns it",
                     "- DO NOT touch anything else"), "BLK-SCP-002")
-p.case("⑦ estándar inexistente",
+p.case("⑦ a standard that does not exist",
        lambda: _sub(block(p, "a"), "contract-block.md", "does-not-exist.md"),
        "BLK-STD-002")
 p.case("⑧ stale", lambda: _re(block(p, "a"), r"updated: \d{4}-\d\d-\d\d",
                               "updated: 2026-01-01"), "BLK-IDN-005")
-p.case("⑨ blocked sin desbloqueador",
+p.case("⑨ blocked with no unblocker",
        lambda: block(p, "a", status="blocked"), "BLK-BLK-001")
-p.case("⑩ closed sin §K", lambda: block(p, "a", status="closed"), "BLK-CLS-001")
-p.case("⑪ closed con sub-bloque abierto",
+p.case("⑩ closed with no §K", lambda: block(p, "a", status="closed"), "BLK-CLS-001")
+p.case("⑪ closed with an open sub-block",
        lambda: block(p, "a", status="closed",
                      extra="\n## F · Sub-blocks\n\n| # | task | state |\n"
                            "|---|---|---|\n| 1 | x | open |\n\n"
                            "## K · Closing\n\nnot completed: none\n"),
        "BLK-CLS-002")
-p.case("⑫ closed sin 'not completed'",
+p.case("⑫ closed with no 'not completed'",
        lambda: block(p, "a", status="closed",
                      extra="\n## K · Closing\n\ncompleted: everything\n"),
        "BLK-CLS-003")
-p.case("⑬ intent no es una frase",
+p.case("⑬ an intent that is not one sentence",
        lambda: _sub(block(p, "a"),
                     "intent: a fixture used to prove a check detects what it claims",
                     "intent: one. two. three. and a fourth clause making this far "
                     "too long to be a single statement of purpose."), "BLK-IDN-003")
-p.case("⑭ id ausente", lambda: _re(block(p, "a"), r"^id: .*\n", "", flags=re.M),
+p.case("⑭ a missing id", lambda: _re(block(p, "a"), r"^id: .*\n", "", flags=re.M),
        "BLK-IDN-001")
 
-p.case("⑮ §C vacía — nadie contestó la pregunta",
+p.case("⑮ an empty §C — nobody answered the question",
        lambda: _re(block(p, "a"), r"(## C · Connections\n).*?(?=\n## D)",
                    r"\1\n"), "BLK-CON-001")
-p.case("⑯ §C nombra un bloque que no existe",
+p.case("⑯ §C names a block that does not exist",
        lambda: _re(block(p, "a"), r"(## C · Connections\n\n).*?(?=\n## D)",
                    r"\1- DEPENDS ON: %s-ghost\n" % MARK), "BLK-CON-002")
-p.case("⑰ §D sin ningún estándar",
+p.case("⑰ a §D with no standard at all",
        lambda: _sub(block(p, "a"), "- `rules/contract-block.md`", "—"),
        "BLK-STD-001")
-p.case("⑱ closed sin aceptación NI suficiencia",
+p.case("⑱ closed with neither acceptance NOR sufficiency",
        lambda: _sub(block(p, "a", status="closed"),
                     "## H · Friction log",
                     "## K · Closing\n\ncompleted: the thing\n"
@@ -107,24 +107,24 @@ p.case("⑱ closed sin aceptación NI suficiencia",
 _c = os.path.join(ROOT, "rules", "contract-block.md")
 _o = open(_c, encoding="utf-8").read()
 try:
-    p.inverse("⑲ sin techo declarado, NADA se mide", lambda: block(p, "a"))
+    p.inverse("⑲ with no declared ceiling, NOTHING is measured", lambda: block(p, "a"))
     open(_c, "w", encoding="utf-8").write(
         _o.replace("| ⬜ E `State` | 0 |", "| ⬜ E `State` | 2 |"))
-    p.case("⑳ §E pasa su techo, con techo declarado",
+    p.case("⑳ §E over its ceiling, with the ceiling declared",
            lambda: block(p, "a"), "BLK-STA-001")
 finally:
     open(_c, "w", encoding="utf-8").write(_o)
     p.clean()
 
-p.case("㉒ SHP · un documento hermano junto al BLOCK.md",
+p.case("㉒ SHP · a sibling document beside BLOCK.md",
        lambda: (block(p, "a"),
                 open(os.path.join(BLOCKS, MARK + "-a", "notes.md"), "w",
                      encoding="utf-8").write("# notes\n")), "BLK-SHP-001")
 
-p.case("㉓ OPN · un bloque que ningún índice nombra",
+p.case("㉓ OPN · a block no index names",
        lambda: block(p, "z"), "BLK-OPN-002")
 
-p.case("㉔ BLK · bloqueado más allá del periodo declarado",
+p.case("㉔ BLK · blocked past the declared period",
        lambda: _re(block(p, "a", status="blocked",
                          fric="- blocked by: the other team"),
                    r"updated: \d{4}-\d\d-\d\d", "updated: 2026-01-01"),
@@ -132,12 +132,12 @@ p.case("㉔ BLK · bloqueado más allá del periodo declarado",
 
 # ⛔ A field after a `·` on one line was invisible to the reader: real blocks
 # write `created: X · updated: Y`, and it reported "no updated date".
-p.inverse("㉕ un campo tras un `·` en la misma línea se LEE",
+p.inverse("㉕ a field after a `·` on the same line IS read",
           lambda: _re(block(p, "a"), r"updated: \d{4}-\d\d-\d\d",
                       "created: 2026-01-10 · updated: " +
                       __import__("datetime").date.today().isoformat()))
 
-p.inverse("㉑ un bloque CORRECTO", lambda: block(p, "a"))
+p.inverse("㉑ a CORRECT block", lambda: block(p, "a"))
 p.crash_guard()
 
 
