@@ -502,12 +502,21 @@ outsider installs it.
 
 ---
 
-## E-28 · 106 rules are 📖 and nothing distinguishes "cannot be checked" from "not built yet"
+## E-28 · ✅ CLOSED — a 📖 row says which of the two it is, and the second kind is counted
 
 - **Surfaced by:** the audit tally — 106 of 315 rules carry 📖
 - **Affects:** every rule file
-- **Closes when:** a 📖 row declares which of the two it is, and the count of the second kind is
-  reported
+- **Closed:** 2026-09-01 — `CHK-DIS-001` in `rules/rule-checks-must-measure.md`,
+  counted by `bin/check-locks` on every run.
+- ⭐ **The marker is the word `yet`, because the rules already used it** — the
+  convention was there, read by nothing, which is how a distinction stops being
+  one.
+- ⚠️ **And the measurement corrected this entry's own numbers.** Two rows say
+  `yet` — that part held. ⛔ But **27 more claim nothing checks them and never
+  say WHICH KIND**, and those are the real ambiguity: from the row, a genuine
+  limit and an unwritten check read identically. They are reported as ambiguous
+  rather than as findings — ⭐ a 📖 row breaks nothing, and treating it as a
+  violation would make the honest majority look like debt.
 
 **Why it matters.** ⭐ **Most of those 106 are honest:** a script can check that a friction was
 logged, never that the work stopped to think. ⛔ **But two say "nothing verifies this YET"**, and

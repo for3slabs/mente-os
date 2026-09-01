@@ -37,6 +37,15 @@ CODE_DIRS = ("bin", "hooks")
 CITED = re.compile(r"[A-Z]{3}-[A-Z]+-\d+")
 # A row that declares a lock: the id, then a 🔒 in a later cell of the same row.
 LOCK_ROW = re.compile(r"^\|\s*`([A-Z]{3}-[A-Z]+-\d+)`\s*\|[^|]*\|\s*🔒", re.M)
+# CHK-DIS-001 · a 📖 row says which of two things it is. ⛔ "Nothing verifies
+# this" hides two opposite facts — a script CANNOT check it, or one has not been
+# WRITTEN yet — and mixed into one symbol the buildable ones are invisible.
+DISCIPLINE = re.compile(
+    r"^\|\s*`([A-Z]{3}-[A-Z]+-\d+)`\s*\|[^|]*\|\s*📖[^|]*\|([^|]*)\|", re.M)
+# ⭐ The marker the rules already used, before anything read it.
+NOT_YET = re.compile(r"\byet\b", re.I)
+# A row claiming nothing checks it, without saying which kind it is.
+UNVERIFIED = re.compile(r"nothing (?:verifies|checks)|not built", re.I)
 # ⭐ The delegation convention the rules already use, read rather than invented.
 # ⚠️ BOTH WORDINGS, because the rules already use both. `performed by` and
 # `enforced by` say the same thing, and accepting only one turns a correctly
@@ -104,6 +113,7 @@ def main():
 
     declared = cited = delegated = 0
     gaps = []
+    buildable, ambiguous = [], []
     for name in sorted(os.listdir(RULES)):
         if not name.endswith(".md") or name == "README.md":
             continue
@@ -114,6 +124,17 @@ def main():
         except OSError:
             gaps.append((rel, "?", "unreadable · its locks were NOT measured"))
             continue
+
+        # CHK-DIS-001 · counted per rule, in the same pass that reads the locks
+        for m in DISCIPLINE.finditer(text):
+            verify = m.group(2).strip()
+            if NOT_YET.search(verify):
+                buildable.append((rel, m.group(1)))
+            elif UNVERIFIED.search(verify):
+                # ⚠️ It claims nothing checks it and does not say WHY. That is
+                # not a finding — ⛔ it is a row a reader cannot act on, because
+                # a limit and a task look identical from here.
+                ambiguous.append((rel, m.group(1)))
 
         for m in LOCK_ROW.finditer(text):
             rid = m.group(1)
@@ -142,6 +163,17 @@ def main():
         # enforcement has been told something this check cannot know.
         print("   ⚠️ a citation proves the id is NAMED in code · whether that "
               "code enforces it is what the rule's own probe measures")
+
+    if not quiet and (buildable or ambiguous):
+        print("   ⬜ CHK-DIS-001 · %d 📖 row(s) say `yet` — those are WORK, not "
+              "a limit" % len(buildable))
+        for rel, rid in buildable:
+            print("      · %s · %s" % (rel, rid))
+        if ambiguous:
+            print("   ⬜ %d 📖 row(s) claim nothing checks them and do not say "
+                  "WHICH KIND\n"
+                  "      ⛔ a limit and an unwritten check read identically from "
+                  "there" % len(ambiguous))
 
     if gaps:
         print()

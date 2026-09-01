@@ -37,7 +37,28 @@ every contract depends on the validator behind it actually measuring something.
 |---|---|
 | 🔒 **lock** | ⭐ a script refuses — ⚠️ and it has been seen to fail |
 | 🟡 **prompt** | the agent asks before proceeding |
-| 📖 **discipline** | ⛔ **nothing verifies this** |
+| 📖 **discipline** | ⛔ **nothing verifies this** — ⚠️ and the row must say WHICH KIND |
+
+### ⭐ A 📖 ROW SAYS WHICH OF TWO THINGS IT IS
+
+⛔ **"Nothing verifies this" hides two opposite facts**, and one of them is work:
+
+| The row means | How it says so | ⭐ |
+|---|---|---|
+| ⭐ **a script CANNOT check this** | it says why — what a script would have to know | ⛔ a real limit, and honest |
+| ⚠️ **a script has not been WRITTEN yet** | the word **`yet`** | ⭐ that is a task, not a limit |
+
+> ## ⛔ MIXED INTO ONE SYMBOL, THE BUILDABLE ONES ARE INVISIBLE.
+> ⚠️ **And a backlog nobody can see is a backlog nobody works.** Measured: of the
+> 📖 rows in this engine, most are honest limits — a script can check that a friction was logged,
+> never that the work stopped to think — ⛔ **but the ones that are simply unbuilt read identically.**
+
+| ID | Rule | Enf | Verify |
+|---|---|---|---|
+| `CHK-DIS-001` | ⭐ **A 📖 row states whether it CANNOT be checked or is NOT YET checked** | 🔒 | ⛔ `bin/check-locks` counts the second kind |
+
+⚠️ **`yet` is the marker because the rules already used it** — ⭐ the convention was
+there, unread by anything, which is how a distinction stops being one.
 
 **IDs are permanent.** `CHK-<area>-<nnn>` — ⛔ never renumbered, never reused.
 
