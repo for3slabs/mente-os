@@ -440,12 +440,25 @@ alarms, and a false alarm on a real tree is how a check gets switched off.**
 
 ---
 
-## E-26 · ⭐ A probe filters to its own fixtures, so a validator can be green there and dirty on the tree
+## E-26 · ✅ CLOSED — the suite asks both questions, and reports them apart
 
 - **Surfaced by:** audit 8 — `check-checks` had reported four real violations for seven audits
 - **Affects:** `bin/probes/run-all.py` and every probe
-- **Closes when:** the suite runs each validator against the real tree as well as its fixtures,
-  and reports both
+- **Closed:** 2026-09-01 — `bin/probes/run-all.py` gained a "the tree right now"
+  section that runs every validator bare, ⭐ **reported separately and never
+  merged into the check count**: a probe result and a tree finding mean
+  different things, and adding them would hide both.
+- ⭐ **It uses the uniform `--quiet` contract**, so it needs no knowledge of what
+  any validator checks — which is what lets a new one join with no edit here.
+- 🔴 **And getting the SKIP right took three wrong attempts.** A tool needing a
+  subject prints its usage, and a usage banner is not a finding. Parsing the
+  usage TEXT called `check-handoff` subject-only when it sweeps every manifest,
+  then missed a form whose only extra token was an option. ⭐ The text describes
+  the contract; RUNNING the tool measures it — which is the principle this whole
+  suite exists to apply, applied to itself.
+- ⚠️ **Verified by planting a defect the probes cannot see** — a broken pointer
+  in a document — and watching the new section report it while all 556 checks
+  stayed green.
 
 **Why it matters.** ⛔ **A probe answers "does this check detect what it claims?", never "is the
 tree clean right now?"** — and the second question went unasked for seven audits while four
