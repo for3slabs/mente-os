@@ -6,7 +6,7 @@
      doing it. Fill it before that happens. -->
 # {{project}} — Architecture · source of truth
 
-**Status:** draft · **Type:** pillar · **Updated:** {{date}} · **Owner:** {{owner}}
+**Status:** draft · **Type:** architecture · **Updated:** {{date}} · **Owner:** {{owner}}
 **Scope:** ⚠️ INSTANCE document — it describes THIS project's architecture, not the engine's.
 
 > ## ⛔ THIS IS THE GROUND EVERYTHING IS BUILT ON
