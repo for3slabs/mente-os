@@ -466,11 +466,17 @@ invisible unless something counts them.**
 
 ---
 
-## E-30 · A shared reader exists for blocks and for nothing else
+## E-30 · ✅ CLOSED — the rule states when a reader is shared, and the readers cite it
 
 - **Surfaced by:** audit 4 — four copies of the same section reader, already diverged
 - **Affects:** `bin/blockread.py`, and every future validator over a shared shape
-- **Closes when:** a rule states when a parser is shared and when a shape earns its own
+- **Closed:** 2026-09-01 — `CHK-SHR-001`, `CHK-SHR-002` and `CHK-SHR-003` in `rules/rule-checks-must-measure.md`.
+- 🔴 **And closing it caught the thing itself happening.** The criterion lived in two
+  docstrings and in no rule, so when a THIRD shared reader was written
+  (`bin/scaffold.py`, for what both scaffolders ask before opening a unit of work)
+  it **restated the criterion a third time** instead of pointing at it. ⚠️ A
+  criterion repeated is a criterion that diverges — the same failure the rule
+  describes, one level up. Hence `CHK-SHR-003`, and both readers now cite.
 
 **Why it matters.** ⛔ **Two readers over one shape diverge; one cannot.** ⚠️ But the opposite
 error is just as real: forcing two SHAPES into one reader made a decision record return nothing,
@@ -588,12 +594,18 @@ how the second one gets tested.
 
 ---
 
-## E-36 · Nothing completes what is derivable — the generators do not exist
+## E-36 · ✅ CLOSED — two generators exist, and they derive nothing that needs judgment
 
 - **Surfaced by:** ADR-019 — the second record to ship `implementation: not-started`
 - **Affects:** `bin/` — the `generate-*` family that `bin/README.md` and `CAPABILITIES.md` both name
-- **Closes when:** at least one generator exists, announces every file it touches, and derives
-  nothing that requires judgment
+- **Closed:** 2026-09-01 — `bin/generate-index` (INDEX · STATES · DECISIONS) and
+  `bin/generate-metrics` (METRICS). Both announce every file they touch, and both
+  hold the line: they derive an index and a count, ⛔ never a criterion or a verdict.
+- ⭐ **And the generator taught the engine something it did not know:** reading the
+  battery's result by RUNNING it recursed, because the battery runs the probe that
+  exercises the generator. ⚠️ It presented as slowness, not as a loop. The battery
+  now refuses to run inside itself, and the metric READS the last recorded result —
+  a number that costs a full verification run to read is one nobody regenerates.
 
 **Why it matters.** ⭐ **Measured: not one of the 14 validators writes anything.** ⛔ Every check
 reports and stops, so a gap it finds stays a gap until somebody acts — and the acting is the part

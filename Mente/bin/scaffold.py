@@ -6,9 +6,10 @@ already taken, who owns this installation, and does the template exist. ⛔ Two
 copies of those answers is two places to fix a refusal — and the day they
 disagree, one tool accepts what the other rejects and the tree holds both.
 
-⚠️ Shared because it is ONE shape read in two places, never to force two shapes
-into one reader: what differs between a block and a campaign — their sections,
-their vocabulary, their index — stays in each scaffolder.
+⚠️ Shared under `CHK-SHR-001` (rules/rule-checks-must-measure.md): ONE shape read
+in several places. ⛔ What differs between a block and a campaign — their
+sections, their vocabulary, their index — stays in each scaffolder, because that
+is a different shape and `CHK-SHR-002` gives it its own reader.
 
 Not a command. The `.py` suffix says so (bin/README).
 """

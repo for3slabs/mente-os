@@ -287,6 +287,34 @@ checks get fifteen probes and others get six, ⭐ **and nothing says which cover
 |---|---|---|---|
 | `CHK-ATK-001` | ⭐ **Each attack that applies is run, or its absence is stated** | 📖 | ⛔ silence and *"not applicable"* look identical |
 
+---
+
+## ⭐ WHEN A READER IS SHARED, AND WHEN A SHAPE EARNS ITS OWN
+
+⛔ **Two readers over one shape diverge; one cannot.** ⚠️ **But the opposite error is just as
+real**, and it was measured: forcing two SHAPES into one reader made a decision record return
+nothing — ⛔ **and "nothing" reads exactly like "the section is empty".**
+
+| ID | Rule | Enf | Verify |
+|---|---|---|---|
+| `CHK-SHR-001` | ⭐ **ONE shape read in several places gets ONE reader** | 📖 | ⛔ four copies of a block reader had already diverged when this was found |
+| `CHK-SHR-002` | ⭐ **TWO shapes never share a reader — the second gets its own** | 📖 | ⚠️ a reader pointed at a shape it does not know returns empty, not an error |
+| `CHK-SHR-003` | ⭐ **The criterion lives in the RULE, and the reader cites it** | 📖 | ⛔ a criterion written only in a docstring is copied, not cited |
+
+> ## ⭐ THE TEST, and it is one question
+> **Do these callers read the SAME shape, or the same KIND of thing?**
+> The same shape → one reader. ⛔ The same kind → two, and they will look almost identical, which
+> is exactly why the mistake is easy.
+
+⚠️ **`CHK-SHR-003` exists because of this file's own history.** The criterion above lived in two
+docstrings and in no rule, so the third shared reader **restated it a third time** instead of
+pointing at it. ⛔ **A criterion repeated is a criterion that will diverge** — the same failure the
+rule itself describes, one level up.
+
+⭐ **What travels with a shared reader:** the shapes it accepts, said out loud, and what it returns
+when handed something else. ⛔ A reader that silently returns empty for an unknown shape turns
+every caller's gap into a green.
+
 ### ⭐ THE PROBE HAS ITS OWN FAILURE MODES — measured, three in a row
 
 ⚠️ **The file already says to suspect the probe. ⭐ What it did not say is HOW a probe fails**, and

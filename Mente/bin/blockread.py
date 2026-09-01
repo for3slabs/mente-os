@@ -18,9 +18,9 @@ WHAT must be answered — so all three real shapes are accepted:
 ⛔ NOT for every markdown document. This reader knows the vocabulary of a
 BLOCK. A decision record is headed `Context` / `Decision` / `Rationale` and has
 no letters at all — pointing this reader at one returns nothing, and "nothing"
-reads exactly like "the section is empty". A different shape gets its own
-reader; sharing is for one shape read in several places, never for two shapes
-forced into one reader.
+reads exactly like "the section is empty". ⭐ The criterion is
+`CHK-SHR-001/002` in rules/rule-checks-must-measure.md — ⛔ stated there rather
+than restated here, because a criterion repeated is a criterion that diverges.
 """
 import re
 
