@@ -9,6 +9,13 @@ Exit: 0 clean · 1 violations · 2 the contract itself is missing
 """
 import os, re, sys, datetime
 
+# ⭐ ONE way to report many findings, shared by every validator —
+# CHK-SHR-001. ⛔ Thirteen validators each inventing a grouping is
+# thirteen report formats, and a reader who must learn one per
+# validator learns none.
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from findings import report                                    # noqa: E402
+
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 CONTRACT = os.path.join(ROOT, "rules", "contract-adr.md")
 DECISIONS = os.path.join(ROOT, "rules", "decisions")
@@ -332,10 +339,7 @@ def main():
         print("check-decisions · %d record(s)%s"
               % (len(files), " · the folder ships empty" if not files else ""))
     if findings:
-        for cid, rel, msg in findings:
-            print("🔴 %s · %s · %s" % (rel, cid, msg))
-        print("\n%d violations · rule: rules/contract-adr.md" % len(findings))
-        return 1
+        return report(findings, "rules/contract-adr.md", quiet)
     if not quiet and files:
         print("✅ 0 violations")
     return 0

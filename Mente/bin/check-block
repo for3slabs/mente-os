@@ -43,6 +43,13 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from blockread import (sections, order, body_of, SEC, NAMES,   # noqa: E402,F401
                        DEPENDS, dependencies)
 
+# ⭐ ONE way to report many findings, shared by every validator —
+# CHK-SHR-001. ⛔ Thirteen validators each inventing a grouping is
+# thirteen report formats, and a reader who must learn one per
+# validator learns none.
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from findings import report                                    # noqa: E402
+
 
 STATUSES = {"active", "blocked", "closed"}
 TYPES = {"code", "docs", "infra", "data"}
@@ -409,10 +416,7 @@ def main():
     if not quiet:
         print("check-block · %d block(s) found" % len(found))
     if findings:
-        for cid, rel, msg in findings:
-            print("🔴 %s · %s · %s" % (rel, cid, msg))
-        print("\n%d violations · rule: rules/contract-block.md" % len(findings))
-        return 1
+        return report(findings, "rules/contract-block.md", quiet)
     if not quiet:
         print("✅ 0 violations")
     return 0

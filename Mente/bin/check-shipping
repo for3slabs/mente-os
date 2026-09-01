@@ -9,6 +9,13 @@ Exit: 0 clean · 1 violations · 2 the rule itself is missing
 """
 import os, re, sys, subprocess
 
+# ⭐ ONE way to report many findings, shared by every validator —
+# CHK-SHR-001. ⛔ Thirteen validators each inventing a grouping is
+# thirteen report formats, and a reader who must learn one per
+# validator learns none.
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from findings import report                                    # noqa: E402
+
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 RULE = os.path.join(ROOT, "rules", "rule-shipping.md")
 HOOKS = os.path.join(ROOT, "hooks")
@@ -229,10 +236,7 @@ def main():
     if findings:
         if quiet:
             return 1          # ⭐ CHK-QUI-001 · exit code only
-        for cid, rel, msg in findings:
-            print("🔴 %s · %s · %s" % (rel, cid, msg))
-        print("\n%d violations · rule: rules/rule-shipping.md" % len(findings))
-        return 1
+        return report(findings, "rules/rule-shipping.md", quiet)
     if not quiet:
         print("✅ 0 violations")
     return 0

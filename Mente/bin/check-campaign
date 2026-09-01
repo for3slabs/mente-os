@@ -9,6 +9,13 @@ Exit: 0 clean · 1 violations · 2 the contract is missing
 """
 import os, re, sys
 
+# ⭐ ONE way to report many findings, shared by every validator —
+# CHK-SHR-001. ⛔ Thirteen validators each inventing a grouping is
+# thirteen report formats, and a reader who must learn one per
+# validator learns none.
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from findings import report                                    # noqa: E402
+
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 CONTRACT = os.path.join(ROOT, "rules", "contract-campaign.md")
 CAMPAIGNS = os.path.join(ROOT, "work", "campaigns")
@@ -286,10 +293,7 @@ def main():
               % (len(files), cap["file"], cap["context"],
                  " · nothing measured" if not files else ""))
     if findings:
-        for cid, rel, msg in findings:
-            print("🔴 %s · %s · %s" % (rel, cid, msg))
-        print("\n%d violations · rule: rules/contract-campaign.md" % len(findings))
-        return 1
+        return report(findings, "rules/contract-campaign.md", quiet)
     if not quiet and files:
         print("✅ 0 violations")
     return 0

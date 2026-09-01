@@ -230,3 +230,4 @@ probe-locks	bin/probes/probe-locks.py	engine	executable	proves an unimplemented 
 check-declarations	bin/check-declarations	engine	executable	lists the ⬜ an installation has not filled — ⛔ each one switches its rule off, and that is the owner's call
 probe-declarations	bin/probes/probe-declarations.py	engine	executable	proves the unfilled ⬜ are counted and never treated as faults
 contract-block-sections	rules/contract-block-sections.md	engine	canonical	what each of §A-K carries — ⭐ the SHAPE half of the block contract, split when the two passed their ceiling
+findings	bin/findings.py	engine	executable	one way to report many findings — ⛔ a report nobody finishes is a report nobody applies
