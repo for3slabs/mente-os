@@ -35,7 +35,10 @@ risks, gaps = [], []
 def git(*args, cwd=None):
     """⭐ Three states, never two: output, empty, or COULD NOT RUN. ⛔ Conflating
     the last two makes "git is missing" read as "nothing is uncommitted", which
-    is the answer that lets work be cut away."""
+    is the answer that lets work be cut away.
+
+    ⚠️ Bounded by ADR-031: the host's tool is READ, never written and never
+    reached over the network, and its absence is a gap rather than a failure."""
     try:
         r = subprocess.run(("git",) + args, cwd=cwd or REPO,
                            capture_output=True, text=True, timeout=20)

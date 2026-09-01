@@ -35,6 +35,8 @@ REMOTE_URL="${2:-}"
 # 🔴 A guard that fails OPEN is worse than no guard: it gives confidence without
 # giving protection. The root is asked of git, which always knows it, with the
 # resolved symlink as the fallback.
+# ⚠️ Reading the host's tool is bounded by ADR-031: read only, never over the
+# network, and its absence is a gap rather than a failure.
 ROOT="$(git rev-parse --show-toplevel 2>/dev/null)"
 if [ -z "$ROOT" ]; then
   SELF="$(readlink -f "${BASH_SOURCE[0]}" 2>/dev/null || echo "${BASH_SOURCE[0]}")"

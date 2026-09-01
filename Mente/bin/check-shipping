@@ -31,7 +31,8 @@ def grouping_ceiling(text):
 
 
 def sh(*cmd):
-    """git, read-only. ⛔ Never fails the check because git is absent: a
+    """git, read-only — bounded by ADR-031, which is where the criterion lives.
+    ⛔ Never fails the check because git is absent: a
     validator that requires a tool to exist measures the toolchain, not the
     work — and reports a clean tree as broken on a machine without it."""
     try:
