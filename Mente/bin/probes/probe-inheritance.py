@@ -34,7 +34,7 @@ def add_universal(row):
     open(BASE, "a", encoding="utf-8").write("\n%s\n" % row)
 
 
-print("═══ A · SABOTAJE · check-inheritance ═══\n")
+print("═══ A · SABOTAGE · check-inheritance ═══\n")
 p.baseline()
 
 p.case("① a universal rule naming a path",
@@ -71,7 +71,7 @@ p.case("⑨ CICLO largo · A → B → C → A",
                 block(p, "b", conn="- DEPENDS ON: %s-c" % MARK),
                 block(p, "c", conn="- DEPENDS ON: %s-a" % MARK)), "INH-SUM-003")
 
-p.inverse("⑩ cadena SIN ciclo · A → B → C",
+p.inverse("⑩ a chain with NO cycle · A → B → C",
           lambda: (block(p, "a", conn="- DEPENDS ON: %s-b" % MARK),
                    block(p, "b", conn="- DEPENDS ON: %s-c" % MARK),
                    block(p, "c")))
@@ -130,7 +130,7 @@ p.inverse("⑮ SUM · the same citation, with the connection declared",
 
 p.crash_guard()
 
-print("\n═══ B · CORRIDA CRUZADA · el base-rules REAL de otra instancia ═══\n")
+print("\n═══ B · CROSS-RUN · el base-rules REAL de otra instancia ═══\n")
 p.clean()
 if REF and os.path.exists(REF):
     # ⛔ A directory here crashed the probe with a bare traceback. A crash
@@ -155,6 +155,6 @@ else:
     print("  ⑪ ⬜ NOT_MEASURED · set MENTE_CROSSRUN_RULES to a real base-rules file")
 p.clean()
 
-print("\n  base-rules idéntico:", open(BASE, encoding="utf-8").read() == ORIG_BASE)
-print("  router idéntico    :", open(ROUTER, encoding="utf-8").read() == ORIG_ROUTER)
+print("\n  base-rules identical:", open(BASE, encoding="utf-8").read() == ORIG_BASE)
+print("  router identical    :", open(ROUTER, encoding="utf-8").read() == ORIG_ROUTER)
 sys.exit(0 if p.report() else 1)

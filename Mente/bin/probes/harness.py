@@ -112,7 +112,7 @@ class Probe:
         self.clean()
         code, out, err = self.run()
         noise = [l for l in out.splitlines() if "🔴" in l]
-        print("  %-46s %s\n" % ("⓪ el árbol real, sin tocar",
+        print("  %-46s %s\n" % ("⓪ the real tree, untouched",
                                 "✅ 0 hallazgos" if not noise
                                 else "🔴 %d preexistentes:\n     %s"
                                 % (len(noise), "\n     ".join(noise[:3]))))

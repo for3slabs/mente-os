@@ -67,7 +67,7 @@ def put(text=GOOD, name=MARK + "-pending.md"):
     return q
 
 
-print("═══ SABOTAJE · check-pending ═══\n")
+print("═══ SABOTAGE · check-pending ═══\n")
 p.baseline()
 
 p.case("① an item with no block",
@@ -128,7 +128,7 @@ p.inverse("⑪c ROT · a closed item that did NOT carry",
 p.inverse("⑪ a CORRECT list", lambda: put())
 p.crash_guard()
 
-print("\n═══ B · CORRIDA CRUZADA · una lista real de otra instancia ═══\n")
+print("\n═══ B · CROSS-RUN · una lista real de otra instancia ═══\n")
 p.clean()
 # ⭐ Only files that actually hold items: copying every .md in a folder plants
 # documents that are not lists, and the run then measures nothing while

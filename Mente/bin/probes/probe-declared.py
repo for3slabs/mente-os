@@ -47,7 +47,7 @@ def verdict(label, setup, expect_in_output=True):
     return ok
 
 
-print("═══ SABOTAJE · check-declared ═══\n")
+print("═══ SABOTAGE · check-declared ═══\n")
 p.baseline()
 
 verdict("① un ejecutable sin declarar en bin/",

@@ -149,7 +149,7 @@ case("· a file elsewhere is not its business", r.returncode == 0 and not r.stdo
 # ── THE LOG ─────────────────────────────────────────────────────────────────
 recorded = os.path.exists(LOG) and open(LOG, encoding="utf-8").read()
 case("📓 the log recorded the accesses",
-     bool(recorded) and "READ" in recorded, "%d línea(s)" % (
+     bool(recorded) and "READ" in recorded, "%d line(s)" % (
          recorded.count("\n| 2") + recorded.count("\n| 20") if recorded else 0))
 case("⛔ the log contains NO value",
      bool(recorded) and "Tr0ub4dor" not in recorded and "ghp_" not in recorded)

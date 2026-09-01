@@ -92,7 +92,7 @@ case("③ ⭐ a NEW template is placed without touching the installer",
 # would look complete with a file missing.
 open(os.path.join(tree, "templates", "ZZORPHAN.md.template"), "w").write("# x\n")
 r = run(tree, "--owner", OWNER)
-case("④ ⛔ una plantilla SIN destino declarado → falla, no la salta",
+case("④ ⛔ a template with NO declared destination → it fails, it does not skip it",
      r.returncode == 2 and "ZZORPHAN.md" in r.stderr, "exit=%d" % r.returncode)
 os.remove(os.path.join(tree, "templates", "ZZORPHAN.md.template"))
 
@@ -113,16 +113,16 @@ for dp, dn, fn in os.walk(tree):
             continue
         if "{{owner}}" in t or "{{project}}" in t or "{{date}}" in t:
             left.append(os.path.relpath(os.path.join(dp, n), tree))
-case("⑤ 🔴 NINGÚN documento del motor queda con placeholder", not left,
+case("⑤ 🔴 NO engine document is left with a placeholder", not left,
      str(left[:3]))
 
-case("⑥ ⭐ y el nombre entró de verdad",
+case("⑥ ⭐ and the name really landed",
      OWNER in open(os.path.join(tree, "mente.config.yml"),
                    encoding="utf-8").read())
 
 # ⛔ THE BLUEPRINTS STAY BLUEPRINTS. A filled template would stamp somebody's
 # name on the next --force.
-case("⑦ ⛔ las plantillas NO se rellenan — siguen siendo plantillas",
+case("⑦ ⛔ the templates are NOT filled — they stay templates",
      "{{owner}}" in open(os.path.join(tree, "templates",
                                       "WORKSPACE.md.template"),
                          encoding="utf-8").read())
@@ -133,28 +133,28 @@ case("⑦ ⛔ las plantillas NO se rellenan — siguen siendo plantillas",
 mark = os.path.join(tree, "mente.config.yml")
 open(mark, "a").write("\n# a change the owner made\n")
 r = run(tree, "--owner", "Someone Else")
-case("⑧ 🔴 una segunda pasada NO pisa lo ya configurado",
+case("⑧ 🔴 a second run does NOT overwrite what is configured",
      "a change the owner made" in open(mark, encoding="utf-8").read())
-case("⑨ ⭐ y NOMBRA lo que conservó, no lo cuenta en silencio",
+case("⑨ ⭐ and it NAMES what it kept, it does not count it in silence",
      "kept" in r.stdout and "mente.config.yml" in r.stdout)
 
 # ⭐ --force overwrites, and only then
 r = run(tree, "--force", "--owner", OWNER)
-case("⑩ ⭐ --force sí reemplaza",
+case("⑩ ⭐ --force does replace",
      "a change the owner made" not in open(mark, encoding="utf-8").read())
 
 # ── ④ IT ASKS WHAT IT CANNOT DERIVE, AND REFUSES TO GUESS ───────────────────
 repo2, tree2 = fresh()
 r = run(tree2, stdin="")          # no terminal, no --owner
-case("⑪ 🔴 sin terminal y sin --owner → ABORTA, no inventa un dueño",
+case("⑪ 🔴 no terminal and no --owner → it ABORTS, it does not invent an owner",
      r.returncode == 2 and "Guessing an owner" in r.stderr,
      "exit=%d" % r.returncode)
-case("⑫ ⛔ y no escribió nada al abortar", not has(tree2, "mente.config.yml"))
+case("⑫ ⛔ and it wrote nothing when aborting", not has(tree2, "mente.config.yml"))
 
 # ⭐ the project name is DERIVED — a question whose answer is on screen trains
 # people to hit enter
 r = run(tree2, "--owner", OWNER)
-case("⑬ ⭐ el proyecto se deriva del directorio, no se pregunta",
+case("⑬ ⭐ the project is derived from the directory, never asked",
      os.path.basename(repo2) in open(os.path.join(tree2, "PROJECT-RULES.md"),
                                      encoding="utf-8").read())
 
@@ -166,19 +166,19 @@ user = os.path.join(repo3, "CLAUDE.md")
 open(user, "w").write("# My own rules\n\nNever delete these.\n")
 run(tree3, "--owner", OWNER)
 body = open(user, encoding="utf-8").read()
-case("⑭ ⛔ el CLAUDE.md del usuario CONSERVA lo suyo",
+case("⑭ ⛔ the user's CLAUDE.md KEEPS what was theirs",
      "Never delete these." in body)
-case("⑮ ⭐ y gana la línea del import", "@Mente/CLAUDE-MENTE-OS.md" in body)
+case("⑮ ⭐ and it gains the import line", "@Mente/CLAUDE-MENTE-OS.md" in body)
 
 run(tree3, "--force", "--owner", OWNER)
-case("⑯ ⚠️ una segunda pasada no duplica el import",
+case("⑯ ⚠️ a second run does not duplicate the import",
      open(user, encoding="utf-8").read().count("@Mente/CLAUDE-MENTE-OS.md") == 1)
 
 # ── ⑥ IT WIRES WHAT GIT CANNOT CARRY ────────────────────────────────────────
 # 🔴 A hook file that is not linked NEVER RUNS and looks installed.
-case("⑰ 🔴 la capa 2 queda ENLAZADA (git no puede llevarla)",
+case("⑰ 🔴 layer 2 is LINKED (git cannot carry it)",
      os.path.islink(os.path.join(repo, ".git", "hooks", "pre-push")))
-case("⑱ ⭐ y `secrets/` queda en 700",
+case("⑱ ⭐ and `secrets/` ends at 700",
      not (os.stat(os.path.join(tree, "secrets")).st_mode & 0o077))
 
 # ⚠️ an existing hook pointing elsewhere is LEFT ALONE — it is not ours to
@@ -188,14 +188,14 @@ os.makedirs(os.path.join(repo4, ".git", "hooks"), exist_ok=True)
 theirs = os.path.join(repo4, ".git", "hooks", "pre-push")
 open(theirs, "w").write("#!/bin/sh\nexit 0\n")
 r = run(tree4, "--owner", OWNER)
-case("⑲ ⚠️ un hook ajeno NO se reemplaza, y lo dice",
+case("⑲ ⚠️ a foreign hook is NOT replaced, and it says so",
      "points elsewhere" in r.stdout and
      open(theirs).read().startswith("#!/bin/sh"))
 
 # ── ⑦ --dry-run WRITES NOTHING ──────────────────────────────────────────────
 repo5, tree5 = fresh()
 r = run(tree5, "--dry-run", "--owner", OWNER)
-case("⑳ ⭐ --dry-run informa y NO escribe",
+case("⑳ ⭐ --dry-run reports and writes NOTHING",
      r.returncode == 0 and not has(tree5, "mente.config.yml")
      and "dry run" in r.stdout)
 
@@ -203,7 +203,7 @@ case("⑳ ⭐ --dry-run informa y NO escribe",
 repo6, tree6 = fresh()
 shutil.rmtree(os.path.join(tree6, "templates"))
 r = run(tree6, "--owner", OWNER)
-case("㉑ ⛔ sin templates/ → lo dice, no revienta",
+case("㉑ ⛔ no templates/ → it says so, it does not crash",
      r.returncode == 2 and "Traceback" not in r.stderr, "exit=%d" % r.returncode)
 
 shutil.rmtree(WORK, ignore_errors=True)

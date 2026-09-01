@@ -95,7 +95,7 @@ def plant(summary=SUMMARY, conns=CONNECTIONS, block=BLOCK, files=3):
     return d
 
 
-print("═══ A · SABOTAJE · check-archive ═══\n")
+print("═══ A · SABOTAGE · check-archive ═══\n")
 p.baseline()
 
 p.case("① one of the three files is missing",
@@ -171,7 +171,7 @@ finally:
 
 p.crash_guard()
 
-print("\n═══ B · CORRIDA CRUZADA · archivos reales de otra instancia ═══\n")
+print("\n═══ B · CROSS-RUN · archivos reales de otra instancia ═══\n")
 p.clean()
 real = sorted(glob.glob(os.path.join(REF, "*"))) if REF else []
 real = [d for d in real if os.path.isdir(d)]

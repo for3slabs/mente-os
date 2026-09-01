@@ -19,7 +19,7 @@ def plant(body, shebang="#!/usr/bin/env python3"):
     return q
 
 
-print("═══ SABOTAJE · check-checks ═══\n")
+print("═══ SABOTAGE · check-checks ═══\n")
 p.baseline()
 
 p.case("① A · a loose comparison of an id",

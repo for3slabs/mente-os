@@ -45,25 +45,25 @@ print("═══ SONDA · check-structure ═══\n")
 
 # ① the baseline · the real table must be silent, or nothing below means anything
 r = run()
-case("① ⭐ la tabla real no tiene filas obsoletas", r.returncode == 0,
+case("① ⭐ the real table has no stale rows", r.returncode == 0,
      "exit=%d" % r.returncode)
 
 # ② 🔴 THE DEFECT IT EXISTS FOR · a row whose file was replaced and never removed
 r = run(row("zzprobe-stale", "rules/a-file-that-was-merged-away.md"))
-case("② 🔴 una fila cuyo archivo ya no existe → detectada",
+case("② 🔴 a row whose file no longer exists → detected",
      r.returncode == 1 and "STR-ROW-001" in r.stdout, "exit=%d" % r.returncode)
-case("③ ⭐ y explica que sobrevivió a lo que describía",
+case("③ ⭐ and it explains the row outlived what it described",
      "the row stayed" in r.stdout)
 
 # ── THE THREE LEGITIMATE ABSENCES · none may be reported ────────────────────
 # ⬜ an instance file · a clone lacks it BY DESIGN
 r = run(row("zzprobe-inst", "docs/WORKSPACE.md"))
-case("④ ⬜ un archivo de INSTANCIA no es un hallazgo", r.returncode == 0,
+case("④ ⬜ an INSTANCE file is not a finding", r.returncode == 0,
      "exit=%d" % r.returncode)
 
 # ⬜ a planned piece · declared before it is built, on purpose
 r = run(row("zzprobe-plan", "bin/check-health"))
-case("⑤ ⬜ una pieza PLANIFICADA no es un hallazgo", r.returncode == 0,
+case("⑤ ⬜ a PLANNED piece is not a finding", r.returncode == 0,
      "exit=%d" % r.returncode)
 
 # ⭐ and `planned` is read from the capability map, so declaring it once is enough
@@ -72,7 +72,7 @@ keep = open(cap, encoding="utf-8").read()
 open(cap, "w", encoding="utf-8").write(
     keep + "\n⬜ | `bin/check-zznew` | planned here and nowhere else |\n")
 r = run(row("zzprobe-newplan", "bin/check-zznew"))
-case("⑥ ⭐ basta declararla ⬜ en el mapa para que cuente como planificada",
+case("⑥ ⭐ declaring it ⬜ in the map is enough to count as planned",
      r.returncode == 0, "exit=%d" % r.returncode)
 open(cap, "w", encoding="utf-8").write(keep)
 
@@ -82,13 +82,13 @@ open(cap, "w", encoding="utf-8").write(keep)
 # as a stale row. ⚠️ A mistake that only appears on a name starting with one of
 # those characters, which is why it survived until a dotfile was declared.
 r = run()
-case("⑦ 🔴 un DOTFILE declarado no se reporta (bug de lstrip)",
+case("⑦ 🔴 a declared DOTFILE is not reported (the lstrip bug)",
      "gitignore" not in r.stdout.replace(".gitignore", ""))
 
 # ⛔ A gitignore pattern with a directory part was reduced to its basename, so a
 # declared file INSIDE an ignored folder read as stale.
 r = run(row("zzprobe-under", "connection/bridges/SOMETHING.md"))
-case("⑧ ⛔ un archivo dentro de una carpeta ignorada no es obsoleto",
+case("⑧ ⛔ a file inside an ignored folder is not stale",
      r.returncode == 0, "exit=%d" % r.returncode)
 
 # ── ⭐ the exceptions are DERIVED, never listed ──────────────────────────────
@@ -97,7 +97,7 @@ case("⑧ ⛔ un archivo dentro de una carpeta ignorada no es obsoleto",
 tdir = os.path.join(TREE, "templates")
 open(os.path.join(tdir, "ZZNEW.md.template"), "w").write("x\n")
 r = run(row("zzprobe-derived", "ZZNEW.md"))
-case("⑨ ⭐ añadir una PLANTILLA basta para que su archivo sea legítimo",
+case("⑨ ⭐ adding a TEMPLATE is enough to make its file legitimate",
      r.returncode == 0, "exit=%d" % r.returncode)
 os.remove(os.path.join(tdir, "ZZNEW.md.template"))
 
@@ -110,21 +110,21 @@ os.remove(os.path.join(tdir, "ZZNEW.md.template"))
 # it stays ⬜ in the map — the only stable example of a planned absence.
 r = run(row("zzprobe-inst2", "docs/WORKSPACE.md")
         + row("zzprobe-plan2", "bin/check-sufficiency"))
-case("⑩ ⬜ el informe NOMBRA cada ausencia y por qué lo es",
+case("⑩ ⬜ the report NAMES each absence and why it is one",
      "⬜" in r.stdout and "instance file" in r.stdout and "planned" in r.stdout)
-case("⑪ ⭐ y dice cuántas filas resolvieron", "resolve" in r.stdout)
+case("⑪ ⭐ and it says how many rows resolved", "resolve" in r.stdout)
 
 # ── ⛔ robustness ───────────────────────────────────────────────────────────
 os.remove(TABLE)
 r = subprocess.run([sys.executable, CHECK], cwd=TREE, capture_output=True,
                    text=True)
-case("⑫ ⬜ sin tabla → exit 2, no un ✅ vacío", r.returncode == 2,
+case("⑫ ⬜ no table → exit 2, not an empty ✅", r.returncode == 2,
      "exit=%d" % r.returncode)
 
 open(TABLE, "wb").write(b"\xff\xfe not text\n")
 r = subprocess.run([sys.executable, CHECK], cwd=TREE, capture_output=True,
                    text=True)
-case("⑬ ⛔ una tabla ilegible no revienta la comprobación",
+case("⑬ ⛔ an unreadable table does not crash the check",
      "Traceback" not in r.stderr)
 
 shutil.rmtree(WORK, ignore_errors=True)

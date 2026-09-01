@@ -58,7 +58,7 @@ def put(text, name="901-" + MARK + ".md"):
     return q
 
 
-print("═══ SABOTAJE · check-decisions ═══\n")
+print("═══ SABOTAGE · check-decisions ═══\n")
 p.baseline()
 
 p.case("① a header field is missing",
@@ -159,7 +159,7 @@ p.crash_guard()
 # are theirs". That was an excuse, not a reason: what is theirs is the CONTENT;
 # the SHAPE is exactly what this contract fixes, and 30 real records carry it.
 # A cross-run declined on a made-up reason is the emptiest NOT_MEASURED there is.
-print("\n═══ B · CORRIDA CRUZADA · registros reales de otra instancia ═══\n")
+print("\n═══ B · CROSS-RUN · registros reales de otra instancia ═══\n")
 p.clean()
 REF = os.environ.get("MENTE_CROSSRUN_DECISIONS", "")
 real = sorted(glob.glob(os.path.join(REF, "*.md"))) if REF else []
