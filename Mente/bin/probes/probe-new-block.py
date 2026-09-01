@@ -59,20 +59,20 @@ print("═══ SONDA · new-block ═══\n")
 
 # ── ⭐ THE ONE THAT DECIDES WHETHER THIS TOOL IS REAL ───────────────────────
 r = run("zzprobe-one", "--type", "docs", "--intent", "A one-sentence intent.")
-case("① ⭐ abre un bloque", r.returncode == 0, "exit=%d" % r.returncode)
+case("① ⭐ it opens a block", r.returncode == 0, "exit=%d" % r.returncode)
 
 path = os.path.join(BLOCKS, "active", "zzprobe-one", "BLOCK.md")
-case("② ⭐ el archivo existe donde el contrato dice", os.path.exists(path))
+case("② ⭐ the file exists where the contract says", os.path.exists(path))
 
 c = checker()
 mine = [l for l in c.stdout.splitlines() if "zzprobe-one" in l and "🔴" in l]
-case("③ ⭐⭐ el bloque PASA su propio contrato SIN editarlo", not mine,
+case("③ ⭐⭐ the block PASSES its own contract UNEDITED", not mine,
      mine[0][:60] if mine else "")
 
 # ── 🔴 BLK-OPN-002 · THE HALF A SCAFFOLD USUALLY SKIPS ──────────────────────
 # A block on disk that no index names is one nothing knows exists: never picked
 # up, never closed, never missed.
-case("④ 🔴 queda LISTADO en el índice, no solo en disco",
+case("④ 🔴 it ends up LISTED in the index, not only on disk",
      "zzprobe-one" in open(INDEX, encoding="utf-8").read())
 
 # ── ⭐ THE FOUR OPENING SECTIONS, AND ONLY THOSE ────────────────────────────
@@ -86,53 +86,53 @@ case("⑤ ⭐ escribe exactamente §A-D, en orden", have == ["A", "B", "C", "D"]
 # ⚠️ Measured on the HEADINGS, not on the text: the template names E-K in a
 # closing comment so the writer knows what comes next, and a substring search
 # read that explanation as sections being present.
-case("⑥ ⚠️ NO exige E-K al abrir · abrir tiene que salir barato",
+case("⑥ ⚠️ it does NOT demand E-K at open · opening must stay cheap",
      not [h for h in have if h > "D"], " ".join(have))
 
 # ⭐ §B ships with both halves, and the OUT line carries a source: an unsourced
 # limit is an opinion, and the checker rejects it.
-case("⑦ ⭐ §B trae IN y OUT, y el OUT trae su fuente",
+case("⑦ ⭐ §B carries IN and OUT, and the OUT carries its source",
      "✅ IN" in body and "⛔ OUT" in body and "DERIVED:" in body)
 
 # ── ⭐ THE SHAPE COMES FROM A TEMPLATE, NOT FROM THIS SCRIPT ────────────────
 # ⛔ A shape hardcoded in the scaffolder is a second definition of the contract,
 # and two definitions drift without anything noticing.
 tpl = os.path.join(TREE, "templates", "BLOCK.md.template")
-case("⑧ ⭐ la forma vive en templates/, no dentro del script",
+case("⑧ ⭐ the shape lives in templates/, not inside the script",
      os.path.exists(tpl))
 os.rename(tpl, tpl + ".hidden")
 r = run("zzprobe-notpl", "--type", "docs")
-case("⑨ ⛔ sin plantilla → falla y lo dice, no improvisa una forma",
+case("⑨ ⛔ no template → it fails and says so, it does not improvise a shape",
      r.returncode == 2 and "BLOCK.md.template" in r.stderr,
      "exit=%d" % r.returncode)
 os.rename(tpl + ".hidden", tpl)
 
 # ── ⛔ WHAT IT MUST REFUSE · each one produces a block that LOOKS valid ─────
 r = run("zzprobe-one", "--type", "docs")
-case("⑩ 🔴 un id ya usado → rechaza (la resolución es exacta)",
+case("⑩ 🔴 an id already used → refused (resolution is exact)",
      r.returncode == 1 and "already used" in r.stderr, "exit=%d" % r.returncode)
 
 r = run("Zzprobe-Caps", "--type", "docs")
-case("⑪ ⛔ un id que no sirve de carpeta → rechaza", r.returncode == 1)
+case("⑪ ⛔ an id that cannot be a folder → refused", r.returncode == 1)
 
 r = run("zzprobe-two", "--type", "inventado")
-case("⑫ 🔴 un tipo NO declarado → rechaza",
+case("⑫ 🔴 an UNDECLARED type → refused",
      r.returncode == 1 and "not declared" in r.stderr)
 
 r = run("zzprobe-two", "--type", "docs", "--lane", "veloz")
-case("⑬ 🔴 un carril NO declarado → rechaza", r.returncode == 1,
+case("⑬ 🔴 an UNDECLARED lane → refused", r.returncode == 1,
      "exit=%d" % r.returncode)
 
 # ⭐ AND A HYPHENATED LANE IS VALID — the regex that reads the vocabulary once
 # dropped `full-block`, leaving the lane list EMPTY, and an empty vocabulary
 # accepted anything. ⛔ A silent skip wearing the shape of a pass.
 r = run("zzprobe-lane", "--type", "code", "--lane", "full-block")
-case("⑭ ⭐ un carril CON GUION es válido (el bug del vocabulario vacío)",
+case("⑭ ⭐ a HYPHENATED lane is valid (the empty-vocabulary bug)",
      r.returncode == 0, "exit=%d" % r.returncode)
 drop("zzprobe-lane")
 
 r = run("zzprobe-two")
-case("⑮ ⛔ sin --type → rechaza, no elige uno", r.returncode == 1)
+case("⑮ ⛔ no --type → refused, it does not pick one", r.returncode == 1)
 
 # ── ⭐ THE VOCABULARY IS READ FROM THE CONTRACT ─────────────────────────────
 # ⛔ A copy inside this script would refuse a type the contract added, and the
@@ -143,7 +143,7 @@ open(contract, "w", encoding="utf-8").write(
     keep.replace("type: code | docs | infra | data",
                  "type: code | docs | infra | data | research"))
 r = run("zzprobe-new-type", "--type", "research")
-case("⑯ ⭐ un tipo AÑADIDO al contrato se acepta sin tocar el script",
+case("⑯ ⭐ a type ADDED to the contract is accepted without touching the script",
      r.returncode == 0, "exit=%d" % r.returncode)
 drop("zzprobe-new-type")
 
@@ -161,7 +161,7 @@ open(contract, "w", encoding="utf-8").write(keep)
 # end, on creation, with nothing actually wrong with it.
 _doc = subprocess.run([sys.executable, os.path.join(TREE, "bin", "check-document")],
                       cwd=TREE, capture_output=True, text=True, timeout=90)
-case("⑱ 🔴 el bloque recién creado NO lo rechaza check-document",
+case("⑱ 🔴 the freshly created block is NOT rejected by check-document",
      "zzprobe-one" not in _doc.stdout, "")
 
 # ── 🔴 BLK-OPN-003 · the other direction, found while building this ────────
@@ -169,17 +169,17 @@ case("⑱ 🔴 el bloque recién creado NO lo rechaza check-document",
 # clean: the index then sends every reader to work that is not there.
 shutil.rmtree(os.path.join(BLOCKS, "active", "zzprobe-one"))
 c = checker()
-case("⑲ 🔴 una entrada de índice SIN bloque → detectada",
+case("⑲ 🔴 an index entry with NO block → detected",
      "BLK-OPN-003" in c.stdout and "zzprobe-one" in c.stdout)
 
 drop("zzprobe-one")
 c = checker()
-case("⑳ ⭐ y al quitar la entrada, calla", "BLK-OPN-003" not in c.stdout)
+case("⑳ ⭐ and once the entry is removed, it goes quiet", "BLK-OPN-003" not in c.stdout)
 
 # ── ⛔ no owner, no block ───────────────────────────────────────────────────
 os.remove(os.path.join(TREE, "mente.config.yml"))
 r = run("zzprobe-noowner", "--type", "docs")
-case("㉑ ⛔ sin dueño declarado → rechaza · un bloque sin dueño no responde nadie",
+case("㉑ ⛔ no declared owner → refused · a block with no owner is work nobody answers for",
      r.returncode == 2 and "bin/init" in r.stderr, "exit=%d" % r.returncode)
 
 shutil.rmtree(WORK, ignore_errors=True)

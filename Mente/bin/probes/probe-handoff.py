@@ -104,7 +104,7 @@ def case(label, text, want_id, want_code):
     return ok
 
 
-print("═══ SABOTAJE · check-handoff · con código de salida ═══\n")
+print("═══ SABOTAGE · check-handoff · with its exit code ═══\n")
 p.baseline()
 
 case("① a required field is missing",
@@ -186,7 +186,7 @@ post("⑯ secciones fuera de orden",
      RETURN.replace("## work", "## zz").replace("## findings", "## work")
            .replace("## zz", "## findings"), "HND-PST-001", 3)
 
-post("⑯b STP · un stop de frontera sin decir qué le faltó",
+post("⑯b STP · a boundary stop that never says what was missing",
      RETURN.replace("## status\n\ndone\n",
                     "## status\n\nblocked\n\nI could not continue.\n"),
      "HND-STP-003", 3)
@@ -203,7 +203,7 @@ open(os.path.join(BLOCKS, BID, "handoffs", "return.md"), "w",
 _r = subprocess.run([sys.executable, "bin/check-handoff", "--postflight", "--quiet"],
                     cwd=ROOT, capture_output=True, text=True)
 _ok = "HND-STP-003" not in _r.stdout
-print("  %-44s %s %s" % ("⑯c STP · un stop que SÍ nombra lo que faltó",
+print("  %-44s %s %s" % ("⑯c STP · a stop that DOES name what was missing",
                          "✅" if _ok else "🔴",
                          "NO dispara (correcto)" if _ok else _r.stdout.strip()[:70]))
 p.results.append(("boundary stop names it", "PASS" if _ok else "FALSE_POSITIVE"))

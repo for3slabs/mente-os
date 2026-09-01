@@ -43,7 +43,7 @@ _orig_idx = open(_idx, encoding="utf-8").read() if _had_idx else None
 open(_idx, "w", encoding="utf-8").write(
     (_orig_idx or "# Blocks\n") + "\n- %s-a\n- %s-b\n- %s-c\n" % (MARK, MARK, MARK))
 
-print("═══ A · SABOTAJE · check-block ═══\n")
+print("═══ A · SABOTAGE · check-block ═══\n")
 p.baseline()
 
 p.case("① section D is missing",
@@ -144,7 +144,7 @@ p.crash_guard()
 
 
 # ── B · the cross-run
-print("\n═══ B · CORRIDA CRUZADA · bloques reales de otra instancia ═══\n")
+print("\n═══ B · CROSS-RUN · bloques reales de otra instancia ═══\n")
 p.clean()
 real = sorted(glob.glob(os.path.join(REF, "*", "*", "BLOCK.md"))) if REF else []
 if real:

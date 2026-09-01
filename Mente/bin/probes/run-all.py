@@ -96,16 +96,12 @@ else:
         results = list(_ex.map(run_probe, probes))
 
 for name, r in results:
-    # ⭐ BOTH SPELLINGS, and only while the translation is in flight. The
-    # harness parses the probe's own tally line, so changing that line in one
-    # probe before the parser accepts the new wording would make it report NO
-    # tally — and a probe with no tally counts as CRASHED. ⛔ Translating 30
-    # probes and the parser in one step is the change that cannot be verified
-    # in batches, which is exactly what was asked for.
-    # ⚠️ The Spanish alternative is removed once the last probe is translated.
-    m = re.search(r"➜ (\d+) (?:de|of) (\d+) (?:correctos|correct)", r.stdout)
-    leftovers = ("restos: ninguno" not in r.stdout
-                 and "leftovers: none" not in r.stdout)
+    # ⭐ The probe's own tally line. ⚠️ While the output was being translated
+    # this accepted both spellings — ⛔ and the tolerance was REMOVED once the
+    # last probe was done, because a parser that accepts a wording nothing
+    # produces is a parser nobody can reason about.
+    m = re.search(r"➜ (\d+) of (\d+) correct", r.stdout)
+    leftovers = "leftovers: none" not in r.stdout
     if not m:
         # 🔴 A PROBE THAT NEVER REPORTED ITS TALLY DID NOT RUN — it crashed, or
         # it died before its last line. ⛔ Scored as (0, 0) this passed the
@@ -126,7 +122,7 @@ for name, r in results:
     failed += all_ - good
     rows.append((name, good, all_, ok, leftovers))
     print("  %-24s %s %s/%s%s" % (name, "✅" if ok else "🔴", good, all_,
-                                  "  ⚠️ deja restos" if leftovers else ""))
+                                  "  ⚠️ leaves residue" if leftovers else ""))
 
 covered = {os.path.basename(q)[len("probe-"):-3] for q in probes}
 
@@ -150,12 +146,12 @@ hook_probes = [q for q in probes
                if any(os.path.exists(os.path.join(HOOKS,
                        os.path.basename(q)[len("probe-"):-3] + ext))
                       for ext in (".sh", ".py"))]
-print("\n  ── cobertura")
-print("     validadores: %d · con sonda: %d%s"
+print("\n  ── coverage")
+print("     validators: %d · with a probe: %d%s"
       % (len(checkers), len(probes) - len(hook_probes),
-         " · + %d sonda(s) de hook" % len(hook_probes) if hook_probes else ""))
+         " · + %d hook probe(s)" % len(hook_probes) if hook_probes else ""))
 for c in missing:
-    print("     ⬜ %s · NO PROBADO — un validador sin sonda no esta demostrado" % c)
+    print("     ⬜ %s · NOT PROVEN — a validator with no probe is not demonstrated" % c)
 
 _line = ("  ➜ checks: %d · failed: %d%s"
          % (total, failed, "" if not failed else "  🔴"))

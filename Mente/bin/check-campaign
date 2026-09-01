@@ -16,6 +16,11 @@ BLOCKS = os.path.join(ROOT, "work", "blocks")
 
 # ⬜ What the sections are CALLED is the installation's. The engine fixes WHAT
 # must be answered, never the label the installation gives it.
+# ⚠️ THE NON-ENGLISH SPELLINGS ARE INPUT TOLERANCE, NOT ENGINE LANGUAGE. An
+# owner heads their sections in the language they think in, and refusing
+# `Misión` would reject a correct campaign for a reason nobody could act on.
+# ⭐ What this engine WRITES is English; what it READS may not be. ⛔ Deleting a
+# spelling here does not tidy anything — it breaks somebody's tree.
 ALIAS = {
     "mission":   ("mission", "misión", "mision"),
     "authority": ("authority", "autoridad"),

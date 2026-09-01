@@ -30,7 +30,7 @@ def put(text, name=MARK + "-fixture.md"):
     return q
 
 
-print("═══ A · SABOTAJE · check-document ═══\n")
+print("═══ A · SABOTAGE · check-document ═══\n")
 p.baseline()
 
 p.case("① an incomplete header",
@@ -129,7 +129,7 @@ finally:
 p.inverse("⑲ a CORRECT document", lambda: put(GOOD))
 p.crash_guard()
 
-print("\n═══ B · CORRIDA CRUZADA · documentos reales de otra instancia ═══\n")
+print("\n═══ B · CROSS-RUN · documentos reales de otra instancia ═══\n")
 p.clean()
 real = sorted(glob.glob(os.path.join(REF, "*.md")))[:10] if REF else []
 for i, q in enumerate(real):
@@ -216,7 +216,7 @@ def _cap(label, ok, detail=""):
 
 
 _base = open(_CAP, encoding="utf-8").read()
-_cap("㉑ el mapa real coincide con el árbol", "DOC-CAP" not in _run_cap())
+_cap("㉑ the real map agrees with the tree", "DOC-CAP" not in _run_cap())
 
 # 🔴 a row naming a piece that does not exist, and NOT marked as planned
 open(_CAP, "w", encoding="utf-8").write(

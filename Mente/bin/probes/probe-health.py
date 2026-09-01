@@ -53,71 +53,71 @@ print("═══ SONDA · check-health ═══\n")
 
 # ── ⛔ THE HARDEST REQUIREMENT · never a green over what could not run ──────
 r = run()
-case("① ⬜ sin nada declarado → dice qué NO midió",
+case("① ⬜ with nothing declared → it says what it did NOT measure",
      "NOT MEASURED" in r.stdout and "✅" not in r.stdout, "exit=%d" % r.returncode)
-case("② ⛔ y NO imprime un ✅ sobre lo no medido",
+case("② ⛔ and it does NOT print a ✅ over what was not measured",
      "0 of 2 concern(s) measured" in r.stdout)
 
 # ── ① HOOK WIRING · the failure that reads as success ──────────────────────
 hooks = sorted(n for n in os.listdir(os.path.join(TREE, "hooks"))
                if not n.startswith(("_", ".")) and n != "README.md")
 r = run(MENTE_HOOK_REGISTRY=registry(hooks))
-case("③ ⭐ todos los hooks registrados → sin hallazgo",
+case("③ ⭐ every hook registered → no finding",
      "🔴" not in r.stdout, "exit=%d" % r.returncode)
 
 r = run(MENTE_HOOK_REGISTRY=registry(hooks[:-2]))
-case("④ 🔴 dos hooks que el registro no nombra → detectado",
+case("④ 🔴 two hooks the registry never names → detected",
      r.returncode == 1 and "NEVER RUNS" in r.stdout, "exit=%d" % r.returncode)
-case("⑤ ⭐ y los NOMBRA, no solo cuenta", hooks[-1] in r.stdout)
+case("⑤ ⭐ and it NAMES them, it does not just count", hooks[-1] in r.stdout)
 
 # ⬜ a registry that was declared and is not there is a GAP, not a pass
 r = run(MENTE_HOOK_REGISTRY="/nowhere/registry.json")
-case("⑥ ⬜ registro declarado y ausente → hueco, no ✅",
+case("⑥ ⬜ a declared registry that is absent → a gap, not a ✅",
      r.returncode == 0 and "does not exist" in r.stdout)
 
 # ── ② SESSION WEIGHT · the guard a past incident paid for ──────────────────
 transcript("small.jsonl", 1)
 r = run(MENTE_SESSION_DIR=SESS, MENTE_SESSION_ID="small")
-case("⑦ ⭐ una sesión pequeña no molesta", "🔴" not in r.stdout)
+case("⑦ ⭐ a small session does not nag", "🔴" not in r.stdout)
 
 transcript("heavy.jsonl", 20)
 r = run(MENTE_SESSION_DIR=SESS, MENTE_SESSION_ID="heavy")
-case("⑧ ⚠️ pasado el aviso → lo dice", r.returncode == 1 and "watch it" in r.stdout,
+case("⑧ ⚠️ past the warning → it says so", r.returncode == 1 and "watch it" in r.stdout,
      "exit=%d" % r.returncode)
 
 transcript("huge.jsonl", 55)
 r = run(MENTE_SESSION_DIR=SESS, MENTE_SESSION_ID="huge")
-case("⑨ 🔴 pasado el límite → hallazgo", r.returncode == 1 and "past the" in r.stdout,
+case("⑨ 🔴 past the limit → a finding", r.returncode == 1 and "past the" in r.stdout,
      "exit=%d" % r.returncode)
-case("⑩ ⭐ y explica que el trabajo se degrada ANTES de que algo falle",
+case("⑩ ⭐ and it explains the work degrades BEFORE anything breaks",
      "no error to notice" in r.stdout)
 
 # ⭐ THE RESOLVER · without a named session the newest file is a GUESS, and the
 # guess is wrong exactly after a reset: the new transcript is small and loses to
 # the previous one. ⛔ So the guess is declared as one.
 r = run(MENTE_SESSION_DIR=SESS)
-case("⑪ ⭐ sin sesión nombrada, dice que ADIVINÓ", "guessed" in r.stdout)
+case("⑪ ⭐ with no session named, it says it GUESSED", "guessed" in r.stdout)
 
 r = run(MENTE_SESSION_DIR=SESS, MENTE_SESSION_ID="small")
-case("⑫ ⭐ con la sesión nombrada mide LA VIVA, no la más pesada",
+case("⑫ ⭐ with the session named it measures the LIVE one, not the heaviest",
      "🔴" not in r.stdout)
 
 # ⬜ declared and absent · a gap
 r = run(MENTE_SESSION_DIR="/nowhere/at/all")
-case("⑬ ⬜ directorio declarado y ausente → hueco, no ✅",
+case("⑬ ⬜ a declared directory that is absent → a gap, not a ✅",
      r.returncode == 0 and "does not exist" in r.stdout)
 
 # ⭐ an empty directory is not a healthy session — it is nothing to measure
 empty = os.path.join(WORK, "empty")
 os.makedirs(empty, exist_ok=True)
 r = run(MENTE_SESSION_DIR=empty)
-case("⑭ ⬜ directorio vacío → nada que medir, no un ✅",
+case("⑭ ⬜ an empty directory → nothing to measure, not a ✅",
      "no transcript" in r.stdout)
 
 # ── ⭐ both measured and healthy → the only case that earns a green ─────────
 r = run(MENTE_HOOK_REGISTRY=registry(hooks), MENTE_SESSION_DIR=SESS,
         MENTE_SESSION_ID="small")
-case("⑮ ⭐ TODO medido y sano → ahora sí un ✅ completo",
+case("⑮ ⭐ EVERYTHING measured and healthy → now a full ✅",
      "✅" in r.stdout and r.returncode == 0)
 
 # ── 🔴 THE DEFECT THE CLEAN CLONE FOUND, INVISIBLE IN THE WORKING TREE ─────
@@ -133,15 +133,15 @@ if os.path.exists(_cfg):
     os.remove(_cfg)
 r = run(MENTE_HOOK_REGISTRY=registry(hooks[:-1]), MENTE_SESSION_DIR=SESS,
         MENTE_SESSION_ID="huge")
-case("⑰ 🔴 SIN config, el entorno sigue mandando", r.returncode == 1,
+case("⑰ 🔴 with NO config, the environment still governs", r.returncode == 1,
      "exit=%d" % r.returncode)
-case("⑱ ⭐ y el resumen sabe contar (una NOTA no es un hueco)",
+case("⑱ ⭐ and the summary can count (a NOTE is not a gap)",
      "-1 of" not in r.stdout and "of 2 concern" not in r.stdout)
 
 # ── ⛔ robustness ───────────────────────────────────────────────────────────
 open(os.path.join(TREE, "mente.config.yml"), "wb").write(b"\xff\xfe\x00")
 r = run()
-case("⑯ ⛔ una configuración ilegible no revienta la comprobación",
+case("⑯ ⛔ an unreadable configuration does not crash the check",
      "Traceback" not in r.stderr)
 
 shutil.rmtree(WORK, ignore_errors=True)

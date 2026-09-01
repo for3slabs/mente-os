@@ -124,7 +124,7 @@ case("⑫ 🔴 layer 2 · a RETIRED destination → ABORTS", r.returncode == 1,
 # defect: it is why a defence over command text is never the only defence.
 EVASIONS = [
     ("un alias", "gp origin main"),
-    ("una función de shell", "deploy_now"),
+    ("a shell function", "deploy_now"),
     ("una variable con el verbo", "P=push; git $P origin main"),
     ("un eval", "eval \"$CMD\""),
     ("un constructor de argumentos", "echo origin main | xargs git push"),

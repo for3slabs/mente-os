@@ -44,7 +44,7 @@ print("═══ SONDA · watch-external ═══\n")
 drop_stamp()
 r = run("git push", watch="")
 case("① ⬜ no command declared · silence", not r.stdout.strip(),
-     "no adivina qué vigilar")
+     "it does not guess what to watch")
 
 # ② urgent action → it looks, and reports what changed
 drop_stamp()

@@ -54,18 +54,18 @@ print("═══ SONDA · new-campaign ═══\n")
 
 r = run("new-campaign", "zzprobe-camp", "--blocks", "zzprobe-ba,zzprobe-bb",
         "--mission", "A measurable outcome.")
-case("① ⭐ abre una campaña", r.returncode == 0, "exit=%d" % r.returncode)
+case("① ⭐ it opens a campaign", r.returncode == 0, "exit=%d" % r.returncode)
 
 path = os.path.join(CAMPAIGNS, "zzprobe-camp", "CAMPAIGN.md")
-case("② ⭐ el archivo existe donde el contrato dice", os.path.exists(path))
+case("② ⭐ the file exists where the contract says", os.path.exists(path))
 
 c = checker()
 mine = [l for l in c.stdout.splitlines() if "zzprobe-camp" in l and "🔴" in l]
-case("③ ⭐⭐ la campaña PASA su contrato SIN editarla", not mine,
+case("③ ⭐⭐ the campaign PASSES its contract UNEDITED", not mine,
      mine[0][:58] if mine else "")
 
 body = open(path, encoding="utf-8").read() if os.path.exists(path) else ""
-case("④ ⭐ trae las 3 secciones de apertura",
+case("④ ⭐ it carries the 3 opening sections",
      all("\n## %s" % s in body for s in ("Mission", "Authority", "Blocks")))
 
 # ⚠️ Opening costs three on purpose: a campaign that cost ten would be replaced
@@ -74,39 +74,39 @@ case("⑤ ⚠️ NO exige contexto, canal ni cierre al abrir",
      "## Shared context" not in body and "## Closing" not in body)
 
 # ⭐ THE BLOCKS ARE REAL ROWS, not a placeholder somebody must remember to swap
-case("⑥ ⭐ los bloques nombrados están en la tabla",
+case("⑥ ⭐ the named blocks are in the table",
      "`zzprobe-ba`" in body and "`zzprobe-bb`" in body)
-case("⑦ ⛔ y la fila de ejemplo NO sobrevive (sería un bloque inexistente)",
+case("⑦ ⛔ and the example row does NOT survive (it would be a block that does not exist)",
      "`block-id`" not in body)
 
-case("⑧ ⭐ la misión dada entra de verdad", "A measurable outcome." in body)
+case("⑧ ⭐ the given mission really lands", "A measurable outcome." in body)
 
 # ── ⛔ WHAT IT MUST REFUSE ──────────────────────────────────────────────────
 r = run("new-campaign", "zzprobe-empty")
-case("⑨ 🔴 sin bloques → rechaza · una campaña sin bloques es un título",
+case("⑨ 🔴 no blocks → refused · a campaign with no blocks is a title",
      r.returncode == 1 and "orders nothing" in r.stderr,
      "exit=%d" % r.returncode)
-case("⑩ ⛔ y no escribió nada",
+case("⑩ ⛔ and it wrote nothing",
      not os.path.exists(os.path.join(CAMPAIGNS, "zzprobe-empty")))
 
 r = run("new-campaign", "zzprobe-ghost", "--blocks", "no-existe")
-case("⑪ 🔴 un bloque que NO existe → rechaza",
+case("⑪ 🔴 a block that does NOT exist → refused",
      r.returncode == 1 and "do not exist" in r.stderr, "exit=%d" % r.returncode)
 
 r = run("new-campaign", "zzprobe-camp", "--blocks", "zzprobe-ba")
-case("⑫ 🔴 un id ya usado → rechaza (la resolución es exacta)",
+case("⑫ 🔴 an id already used → refused (resolution is exact)",
      r.returncode == 1 and "already used" in r.stderr)
 
 r = run("new-campaign", "Zzprobe-Caps", "--blocks", "zzprobe-ba")
-case("⑬ ⛔ un id que no sirve de carpeta → rechaza", r.returncode == 1)
+case("⑬ ⛔ an id that cannot be a folder → refused", r.returncode == 1)
 
 # ── ⭐ THE SHAPE LIVES IN A TEMPLATE ────────────────────────────────────────
 tpl = os.path.join(TREE, "templates", "CAMPAIGN.md.template")
-case("⑭ ⭐ la forma vive en templates/, no dentro del script",
+case("⑭ ⭐ the shape lives in templates/, not inside the script",
      os.path.exists(tpl))
 os.rename(tpl, tpl + ".hidden")
 r = run("new-campaign", "zzprobe-notpl", "--blocks", "zzprobe-ba")
-case("⑮ ⛔ sin plantilla → falla y lo dice, no improvisa una forma",
+case("⑮ ⛔ no template → it fails and says so, it does not improvise a shape",
      r.returncode == 2 and "CAMPAIGN.md.template" in r.stderr,
      "exit=%d" % r.returncode)
 os.rename(tpl + ".hidden", tpl)
@@ -114,7 +114,7 @@ os.rename(tpl + ".hidden", tpl)
 # ── ⛔ no owner, no campaign ────────────────────────────────────────────────
 os.remove(os.path.join(TREE, "mente.config.yml"))
 r = run("new-campaign", "zzprobe-noowner", "--blocks", "zzprobe-ba")
-case("⑯ ⛔ sin dueño declarado → rechaza", r.returncode == 2
+case("⑯ ⛔ no declared owner → refused", r.returncode == 2
      and "bin/init" in r.stderr, "exit=%d" % r.returncode)
 
 # ── ⭐ THE SHARED SCAFFOLD ANSWERS BOTH TOOLS THE SAME WAY ──────────────────
@@ -124,7 +124,7 @@ open(os.path.join(TREE, "mente.config.yml"), "w").write(
     'schema: v1\nowner:\n  name: "Zzprobe Owner"\n')
 a = run("new-block", "Bad Name", "--type", "docs").returncode
 b = run("new-campaign", "Bad Name", "--blocks", "zzprobe-ba").returncode
-case("⑰ ⭐ ambos rechazan el MISMO id inválido, igual", a == b == 1,
+case("⑰ ⭐ both refuse the SAME invalid id, identically", a == b == 1,
      "block=%d campaign=%d" % (a, b))
 
 shutil.rmtree(WORK, ignore_errors=True)

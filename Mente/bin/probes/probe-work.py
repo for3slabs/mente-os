@@ -18,7 +18,7 @@ def edit(bid, a, b):
     open(q, "w", encoding="utf-8").write(s.replace(a, b))
 
 
-print("═══ A · SABOTAJE · check-work ═══\n")
+print("═══ A · SABOTAGE · check-work ═══\n")
 p.baseline()
 
 p.case("① no lane", lambda: edit(block(p, "a"), "lane: task\n", ""), "WRK-LAN-003")
@@ -91,7 +91,7 @@ p.clean()
 p.inverse("⑩ a CORRECT block", lambda: block(p, "a"))
 p.crash_guard()
 
-print("\n═══ B · CORRIDA CRUZADA · bloques reales de otra instancia ═══\n")
+print("\n═══ B · CROSS-RUN · bloques reales de otra instancia ═══\n")
 p.clean()
 real = sorted(glob.glob(os.path.join(REF, "*", "*", "BLOCK.md"))) if REF else []
 if real:

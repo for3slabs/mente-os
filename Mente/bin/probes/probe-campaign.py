@@ -123,7 +123,7 @@ def _blank_authority():
         re.sub(r"(^## Authority\n).*?(?=^## )", r"\1\n", t, flags=re.M | re.S))
 
 
-print("═══ A · SABOTAJE · check-campaign · con verificación de CAUSA ═══\n")
+print("═══ A · SABOTAGE · check-campaign · with CAUSE verification ═══\n")
 p.baseline()
 
 p.case("① FRM · no Mission section",
@@ -182,7 +182,7 @@ p.crash_guard()
 
 
 # ── B · cross-run
-print("\n═══ B · CORRIDA CRUZADA · una campaña real de otra instancia ═══\n")
+print("\n═══ B · CROSS-RUN · a real campaign from another installation ═══\n")
 p.clean()
 real = sorted(glob.glob(os.path.join(REF, "*", "CAMPAIGN.md"))) if REF else []
 if real:
@@ -212,7 +212,7 @@ if real:
     for l in mine:
         for m in re.findall(r"CMP-[A-Z]+-\d+", l):
             by[m] = by.get(m, 0) + 1
-    print("  ⑮ %d campaña(s) REAL(es) · %d hallazgos" % (min(len(real), 3), len(mine)))
+    print("  ⑮ %d REAL campaign(s) · %d finding(s)" % (min(len(real), 3), len(mine)))
     for k in sorted(by):
         print("       %-14s %d" % (k, by[k]))
     for l in mine[:5]:

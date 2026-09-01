@@ -58,7 +58,7 @@ def put(con):
     open(q, "w", encoding="utf-8").write(GOOD % {"con": con})
 
 
-print("═══ SABOTAJE · check-adr-wiring ═══\n")
+print("═══ SABOTAGE · check-adr-wiring ═══\n")
 p.baseline()
 
 p.case("① a consequence no rule declares",

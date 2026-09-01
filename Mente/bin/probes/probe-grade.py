@@ -98,7 +98,7 @@ CLEAN = {
     "test_main.py": "from .main import main\n\n\ndef test_main():\n    assert main() == 1\n",
 }
 
-print("═══ A · SABOTAJE · grade-block · veredicto Y causa ═══\n")
+print("═══ A · SABOTAGE · grade-block · veredicto Y causa ═══\n")
 
 case("⓪ a CLEAN block", CLEAN, "PRODUCT")
 
@@ -191,7 +191,7 @@ try:
     ok = "🔴" in out or "NOTHING" in out
     print("  %-46s %s %s" % ("⑪ el umbral se LEE del contrato",
                              "✅" if ok else "🔴",
-                             "editar la tabla cambió la medición" if ok
+                             "editing the table changed the measurement" if ok
                              else "la tabla no gobierna nada"))
     results.append(("threshold from contract", ok))
 finally:
@@ -245,7 +245,7 @@ results.append(("crash guard", ok))
 os.remove(cp)
 
 # ── D · cross-run
-print("\n═══ B · CORRIDA CRUZADA · un bloque real de otra instancia ═══\n")
+print("\n═══ B · CROSS-RUN · a real block from another installation ═══\n")
 real = sorted(glob.glob(os.path.join(REF, "*", "*", "BLOCK.md"))) if REF else []
 if real:
     shown = 0

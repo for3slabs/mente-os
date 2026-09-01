@@ -38,7 +38,7 @@ def put(mutate=None, local=None):
         open(LOCAL, "w", encoding="utf-8").write(json.dumps(local, indent=2))
 
 
-print("═══ A · SABOTAJE · check-config · con verificación de CAUSA ═══\n")
+print("═══ A · SABOTAGE · check-config · with CAUSE verification ═══\n")
 p.baseline()
 
 p.case("① SEC · a secret pasted into a permission",
@@ -110,7 +110,7 @@ p.inverse("⑩ a CORRECT configuration", lambda: put())
 p.crash_guard()
 
 # ── B · cross-run
-print("\n═══ B · CORRIDA CRUZADA · una configuración real de otra instancia ═══\n")
+print("\n═══ B · CROSS-RUN · a real configuration from another installation ═══\n")
 p.clean()
 if REF and os.path.exists(REF):
     os.makedirs(p.track(FIXDIR), exist_ok=True)
@@ -121,7 +121,7 @@ if REF and os.path.exists(REF):
     for l in mine:
         for m in re.findall(r"CFG-[A-Z]+-\d+", l):
             by[m] = by.get(m, 0) + 1
-    print("  ⑪ 1 configuración REAL · %d hallazgos" % len(mine))
+    print("  ⑪ 1 REAL configuration · %d finding(s)" % len(mine))
     for k in sorted(by):
         print("       %-14s %d" % (k, by[k]))
     for l in mine[:4]:

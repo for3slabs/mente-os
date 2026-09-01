@@ -170,6 +170,9 @@ def main():
     # is inconvenient" — is where an average hides. ⛔ Averaging two rules
     # produces a third that nobody wrote, and it is always the weaker one.
     HEDGE = re.compile(r"\b(in general|generally|a middle ground|somewhere "
+                       # ⚠️ input tolerance · a rule may be worded in the
+                       # owner's language, and a vague quantity is vague in
+                       # any of them
                        r"between|a balance between|más o menos|roughly "
                        r"equivalent)\b", re.I)
     for name in sorted(os.listdir(os.path.join(ROOT, "rules"))):

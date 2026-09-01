@@ -31,7 +31,7 @@ def edit(a, b):
     open(RULE, "w", encoding="utf-8").write(s.replace(a, b))
 
 
-print("═══ A · SABOTAJE · check-shipping ═══\n")
+print("═══ A · SABOTAGE · check-shipping ═══\n")
 # ⭐ SHP-BAS-001 reads the REPOSITORY, so the baseline needs one. When this
 # probe runs in an isolated copy (no .git), the rule correctly reports
 # ⬜ NOT MEASURED — ⛔ and counting that as a pre-existing defect blames the
@@ -39,7 +39,7 @@ print("═══ A · SABOTAJE · check-shipping ═══\n")
 # instead of pretending the repository is there.
 HAS_GIT = os.path.isdir(os.path.join(os.path.dirname(ROOT), ".git"))
 if not HAS_GIT:
-    print("  ⓪ el árbol real, sin tocar                     "
+    print("  ⓪ the real tree, untouched                     "
           "⬜ NOT_MEASURED · sin repositorio git, SHP-BAS-* no se mide\n")
 else:
     p.baseline()
@@ -130,11 +130,11 @@ try:
     run("git", "add", "-A")
     r = run("git", "commit", "-qm", "bypass", "--no-verify")
     bypassed = r.returncode == 0
-    print("  %-46s %s %s" % ("⑧ la vía de escape funciona",
+    print("  %-46s %s %s" % ("⑧ the escape hatch works",
                              "✅" if bypassed else "🔴",
                              "permitida y con rastro" if bypassed
                              else "un candado sin salida se borra"))
-    p.results.append(("⑧ vía de escape", "PASS" if bypassed else "FALSE_POSITIVE"))
+    p.results.append(("⑧ escape hatch", "PASS" if bypassed else "FALSE_POSITIVE"))
     # ── SHP-BAS-001 / 003 · they read the REPOSITORY, not the document, so the
     # checker is pointed at this temp repo instead of the engine tree.
     import importlib.machinery as _m, importlib.util as _u
@@ -149,7 +149,7 @@ try:
     print("  %-46s %s %s" % ("⑨ BAS · una rama cortada de la base equivocada",
                              "✅" if _ok else "🔴",
                              "detectada" if _ok
-                             else "no distingue 'no desciende' de 'git no corrió'"))
+                             else "cannot tell 'not a descendant' from 'git did not run'"))
     p.results.append(("⑨ base equivocada", "PASS" if _ok else "NOT_DETECTED"))
 
     # ⭐ the inverse: a branch cut from the base must NOT fire. Without it the
@@ -195,7 +195,7 @@ try:
     open(_rule, "w", encoding="utf-8").write(_orig)
     _c, _o, _e = p.run()
     _quiet = "SHP-CLS-001" not in _o
-    print("  %-46s %s %s" % ("⑬ CLS · la declaración real no dispara",
+    print("  %-46s %s %s" % ("⑬ CLS · the real declaration does not fire",
                              "✅" if _quiet else "🔴",
                              "does NOT fire (correct)" if _quiet else "false positive"))
     p.results.append(("⑬ cierre correcto", "PASS" if _quiet else "FALSE_POSITIVE"))

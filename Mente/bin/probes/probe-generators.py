@@ -59,9 +59,9 @@ r = subprocess.run([sys.executable, os.path.join(TREE, "bin", "probes",
                                                  "run-all.py")],
                    cwd=TREE, capture_output=True, text=True, timeout=60,
                    env=dict(os.environ, MENTE_BATTERY_RUNNING="1"))
-case("① 🔴 la batería se NIEGA a correr dentro de sí misma",
+case("① 🔴 the battery REFUSES to run inside itself",
      r.returncode == 2 and "REFUSED" in r.stderr, "exit=%d" % r.returncode)
-case("② ⭐ y explica que cada vuelta copia el árbol",
+case("② ⭐ and it explains each turn copies the tree",
      "copies the tree" in r.stderr)
 
 # ── ① THE NUMBERS COME FROM THE TREE ────────────────────────────────────────
@@ -69,14 +69,14 @@ run("generate-metrics")
 m = read("METRICS.md")
 real = len([n for n in os.listdir(os.path.join(TREE, "bin"))
             if n.startswith("check-")])
-case("③ ⭐ `validators` cuenta los check-* reales",
+case("③ ⭐ `validators` counts the real check-*",
      ("`validators` | %d " % real) in m, "esperado %d" % real)
 
 before = re.search(r"`rules` \| (\d+)", m).group(1)
 open(os.path.join(TREE, "rules", "zzprobe-extra.md"), "w").write("# x\n")
 run("generate-metrics")
 after = re.search(r"`rules` \| (\d+)", read("METRICS.md")).group(1)
-case("④ ⭐ el número CAMBIA cuando el árbol cambia",
+case("④ ⭐ the number CHANGES when the tree changes",
      int(after) == int(before) + 1, "%s → %s" % (before, after))
 os.remove(os.path.join(TREE, "rules", "zzprobe-extra.md"))
 
@@ -86,13 +86,13 @@ open(os.path.join(TREE, "cache", "last-battery.txt"), "w").write(
     "➜ checks: 123 · failed: 4\n")
 run("generate-metrics")
 m = read("METRICS.md")
-case("⑤ ⭐ lee el último resultado de la batería, no la ejecuta",
+case("⑤ ⭐ it reads the battery's last result, it does not run it",
      "`battery.checks` | 123 " in m and "`battery.failed` | 4 " in m)
 
 # ⬜ and with no recorded result it is a GAP, never a zero
 os.remove(os.path.join(TREE, "cache", "last-battery.txt"))
 run("generate-metrics")
-case("⑥ ⬜ sin resultado registrado → NOT MEASURED, no un 0",
+case("⑥ ⬜ with no recorded result → NOT MEASURED, not a 0",
      "`battery.checks` | ⬜ NOT MEASURED" in read("METRICS.md"))
 
 # ── ② THE OUTPUT OBEYS THE DOCUMENT CONTRACT ────────────────────────────────
@@ -100,10 +100,10 @@ run("generate-index")
 r = run("check-document")
 bad = [l for l in r.stdout.splitlines() if "🔴" in l
        and any(k in l for k in ("METRICS", "INDEX", "STATES", "DECISIONS"))]
-case("⑦ ⛔ los 4 archivos generados PASAN check-document", not bad,
+case("⑦ ⛔ the 4 generated files PASS check-document", not bad,
      bad[0][:55] if bad else "")
 
-case("⑧ ⭐ cada uno lleva la cabecera de NO EDITAR A MANO",
+case("⑧ ⭐ each carries the DO NOT EDIT BY HAND header",
      all("DO NOT EDIT BY HAND" in read(f)
          for f in ("METRICS.md", "INDEX.md", "STATES.md", "DECISIONS.md")))
 
@@ -113,27 +113,27 @@ case("⑧ ⭐ cada uno lleva la cabecera de NO EDITAR A MANO",
 # points at its sibling generated files, and treating that as self-indexing
 # would forbid a document from pointing anywhere.
 _rows = [l for l in read("INDEX.md").splitlines() if l.startswith("| `docs/")]
-case("⑨ ⭐ el índice NO se lista a sí mismo entre los documentos",
+case("⑨ ⭐ the index does NOT list itself among the documents",
      not any(g in l for l in _rows
              for g in ("INDEX.md", "METRICS.md", "STATES.md", "DECISIONS.md")),
      "%d fila(s) de docs/" % len(_rows))
 
 # ⛔ nor does it index runtime state: a fresh copy legitimately lacks cache/,
 # and an index insisting the file is there breaks its own pointers
-case("⑩ ⛔ no indexa `cache/` — estado de ejecución, no documentación",
+case("⑩ ⛔ it does not index `cache/` — runtime state, not documentation",
      "cache/" not in read("INDEX.md"))
 
 # ── ③ ⬜ A GAP IS A GAP, NEVER A ZERO ────────────────────────────────────────
 shutil.rmtree(os.path.join(TREE, "work", "blocks"), ignore_errors=True)
 run("generate-index")
-case("⑪ ⬜ sin bloques → lo DICE, no una tabla vacía",
+case("⑪ ⬜ no blocks → it SAYS so, not an empty table",
      "NOT MEASURED" in read("STATES.md"))
 
 keep = tempfile.mkdtemp()
 shutil.move(os.path.join(TREE, "rules", "decisions"),
             os.path.join(keep, "decisions"))
 run("generate-index")
-case("⑫ ⬜ sin decisiones → lo DICE, no un 0 silencioso",
+case("⑫ ⬜ no decisions → it SAYS so, not a silent 0",
      "NOT MEASURED" in read("DECISIONS.md"))
 shutil.move(os.path.join(keep, "decisions"),
             os.path.join(TREE, "rules", "decisions"))
@@ -143,17 +143,17 @@ shutil.rmtree(keep, ignore_errors=True)
 bad_f = os.path.join(TREE, "rules", "zzprobe-bad.md")
 open(bad_f, "wb").write(b"\xff\xfe\x00")
 run("generate-index")
-case("⑬ ⭐ un documento ilegible aparece igual (no encoge el índice)",
+case("⑬ ⭐ an unreadable document still appears (it does not shrink the index)",
      "zzprobe-bad.md" in read("INDEX.md"))
 os.remove(bad_f)
 
 # ── --check · is it current, without writing ────────────────────────────────
 run("generate-index")
-case("⑭ ⭐ --check dice «al día» sin escribir",
+case("⑭ ⭐ --check says «current» without writing",
      run("generate-index", "--check").returncode == 0)
 
 open(os.path.join(TREE, "rules", "zzprobe-new.md"), "w").write("# y\n")
-case("⑮ 🔴 --check detecta que quedó viejo",
+case("⑮ 🔴 --check detects it went stale",
      run("generate-index", "--check").returncode == 1)
 os.remove(os.path.join(TREE, "rules", "zzprobe-new.md"))
 
@@ -164,7 +164,7 @@ q = os.path.join(DOCS, "INDEX.md")
 t = open(q, encoding="utf-8").read()
 open(q, "w", encoding="utf-8").write(
     re.sub(r"\*\*Updated:\*\* \d{4}-\d{2}-\d{2}", "**Updated:** 2020-01-01", t))
-case("⑯ ⚠️ solo la FECHA distinta no cuenta como viejo",
+case("⑯ ⚠️ only a different DATE does not count as stale",
      run("generate-index", "--check").returncode == 0)
 
 # ── ⛔ a generator that cannot write says so ────────────────────────────────
@@ -174,7 +174,7 @@ case("⑯ ⚠️ solo la FECHA distinta no cuenta como viejo",
 os.remove(os.path.join(DOCS, "METRICS.md"))
 os.chmod(DOCS, 0o500)
 r = run("generate-metrics")
-case("⑰ ⛔ sin permiso de escritura → lo dice, no revienta",
+case("⑰ ⛔ with no write permission → it says so, it does not crash",
      r.returncode == 2 and "Traceback" not in r.stderr, "exit=%d" % r.returncode)
 os.chmod(DOCS, 0o755)
 
