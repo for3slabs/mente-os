@@ -56,6 +56,16 @@ every contract depends on the validator behind it actually measuring something.
 | ID | Rule | Enf | Verify |
 |---|---|---|---|
 | `CHK-DIS-001` | ⭐ **A 📖 row states whether it CANNOT be checked or is NOT YET checked** | 🔒 | ⛔ `bin/check-locks` counts the second kind |
+| `CHK-QUI-001` | ⭐ **`--quiet` is the EXIT CODE ONLY** | 🔒 | ⛔ a caller that needs the reason asks without it |
+
+> ## 🔴 `CHK-QUI-001` EXISTS BECAUSE THREE CONSUMERS READ ONE FLAG THREE WAYS.
+> A hook wanted silence, a probe wanted the CAUSE, and the startup audit wanted
+> both — each had quietly invented its own reading. ⛔ Measured: making the flag
+> mean what `bin/README.md` declares broke 28 probe cases at once, because they
+> were reading output the contract says is not there.
+>
+> ⭐ **Two calls is the contract, not waste:** `--quiet` answers *is anything
+> wrong*; only what says yes is asked again for the reason.
 
 ⚠️ **`yet` is the marker because the rules already used it** — ⭐ the convention was
 there, unread by anything, which is how a distinction stops being one.

@@ -56,14 +56,22 @@ export MENTE_SESSION_ID
 
 # ── THE AUDIT · one loop, no per-validator branches ──────────────────────────
 # ⭐ Every validator obeys the same contract: 0 clean · non-zero has findings ·
-# `--quiet` suppresses the healthy line. ⛔ Because the contract is uniform, this
-# needs no knowledge of what any of them checks — that is what makes it scale.
+# `--quiet` is the EXIT CODE ONLY — CHK-QUI-001. ⛔ Because the contract is
+# uniform, this needs no knowledge of what any of them checks — that is what
+# makes it scale.
+#
+# ⚠️ TWO CALLS, AND THAT IS THE CONTRACT, NOT WASTE. `--quiet` answers "is
+# anything wrong" for every validator; only the few that say yes are asked
+# again for the reason. 🔴 Reading output from a `--quiet` run was a third
+# reading of the same flag — a hook wanted silence, a probe wanted the cause,
+# and this wanted both — and each consumer had quietly invented its own.
 found=0
 for name in "${CHECKS[@]}"; do
   bin="$MENTE/bin/$name"
   [ -x "$bin" ] || continue          # ⬜ declared but absent · skipped, counted below
-  out="$("$bin" --quiet 2>/dev/null)" || {
-    [ -n "$out" ] && { printf '⚠️  %s\n' "$name"; printf '%s\n' "$out" | head -4; }
+  "$bin" --quiet >/dev/null 2>&1 || {
+    printf '⚠️  %s\n' "$name"
+    "$bin" 2>/dev/null | grep -E '🔴|🟡|⬜' | head -4
     found=$((found + 1))
   }
 done

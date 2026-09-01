@@ -57,7 +57,13 @@ class Probe:
         """Run the checker as a SCRIPT — the way it actually runs.
         ⛔ An exec() never sets __name__ == '__main__', so a crash guard would
         not execute and a protected validator would read as unprotected."""
-        r = subprocess.run([sys.executable, "bin/" + self.checker, "--quiet"],
+        # ⛔ NOT `--quiet`. That flag means EXIT CODE ONLY, for hooks — and a
+        # probe needs the CAUSE: its whole job is proving the check failed for
+        # the right reason, which `--quiet` deliberately withholds.
+        # 🔴 Measured: silencing the findings (correctly, per bin/README) broke
+        # 28 probe cases at once, because they were reading output the contract
+        # says is not there.
+        r = subprocess.run([sys.executable, "bin/" + self.checker],
                            cwd=ROOT, capture_output=True, text=True)
         return r.returncode, r.stdout, r.stderr
 
