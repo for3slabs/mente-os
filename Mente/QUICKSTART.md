@@ -53,7 +53,7 @@ guessed, and who decides in an instance is criteria.
 > *"`owner name` has no default and there is no terminal to ask on"*.
 > It is not a failure — it is the refusal to invent a piece of data only you have.
 
-⬜ `bin/init` does three things: it creates your `mente.config.yml`, generates `CLAUDE.md` and
+`bin/init` does three things: it creates your `mente.config.yml`, generates `CLAUDE.md` and
 `PROJECT-RULES.md` with your name, and wires the hooks with portable paths.
 
 ### ③ Check
@@ -71,9 +71,9 @@ Here is what **actually** happens on a clean clone:
 | Moment | Result |
 |---|---|
 | freshly cloned | most checks pass · **several fail** |
-| after ⬜ `bin/init` | all but one pass · **exactly 1 fails** |
+| after `bin/init` | all but one pass · **exactly 1 fails** |
 
-> ⭐ **⬜ `bin/init` is not optional.** Without it the system does not know who you are, and several
+> ⭐ **`bin/init` is not optional.** Without it the system does not know who you are, and several
 > checks fail closed rather than assume it.
 
 **And the one that remains does not get fixed — it is the correct answer:**
@@ -130,7 +130,7 @@ in full.
 
 | Symptom | What is happening |
 |---|---|
-| ⬜ `bin/init` refuses to ask | you launched it with no terminal. Run it directly, no pipes |
+| `bin/init` refuses to ask | you launched it with no terminal. Run it directly, no pipes |
 | more than 1 failure after init | something broke: `bin/check-health` names it with its reason |
 | a hook blocks everything | check `.claude/settings.json`: every `PreToolUse` group **must** carry a `matcher`. Without it, a hook runs on every tool |
 | `check-links` reports broken ones | they are real: on a clean clone it runs to zero. A broken pointer is a defect, not noise |

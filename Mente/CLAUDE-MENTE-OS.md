@@ -8,7 +8,7 @@
 > ## 🔌 HOW THIS FILE IS LOADED — one line in YOUR CLAUDE.md
 >
 > Claude Code does **not** read this file on its own: files in subfolders load only when it
-> touches something in them. It arrives through an import that ⬜ `bin/init` appends to your own
+> touches something in them. It arrives through an import that `bin/init` appends to your own
 > `CLAUDE.md`, at the root of your project:
 >
 > ```
@@ -17,7 +17,7 @@
 >
 > ⭐ **That single line is the only thing Mente OS ever writes outside `Mente/`** — and it is
 > APPENDED, never overwritten. Your `CLAUDE.md` keeps every rule you already had; Claude Code
-> concatenates both into context rather than picking one. If you have no `CLAUDE.md`, ⬜ `bin/init`
+> concatenates both into context rather than picking one. If you have no `CLAUDE.md`, `bin/init`
 > creates one containing just that line.
 
 ## Purpose

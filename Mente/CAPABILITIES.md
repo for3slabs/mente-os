@@ -20,7 +20,7 @@ gates already enforce, so nobody has to discover a limit by hitting it.
 Answer two questions before the agent acts, not after: **what can I run here**, and **what must
 I not touch**. Both answers are the same in every installation, which is why this file carries
 no path, no repo and no name — where *your* machine is described lives in ⬜ `docs/WORKSPACE.md`, generated at install by
-⬜ `bin/init`.
+`bin/init`.
 
 > ⭐ **Why a document and not a gate:** the actions that block are listed in §3, by name. Everything
 > else here is a limit that no script enforces. A limit you have to discover by tripping over it
@@ -89,7 +89,7 @@ answers exactly one question. None of them decides anything: they check what is 
 
 | Command | What it writes | Watch out for |
 |---|---|---|
-⬜ | `bin/init` | the instance files, from `templates/` | ⭐ **refuses to overwrite** what already exists |
+| `bin/init` | the instance files, from `templates/` · the router import · the layer-2 hook link · `secrets/` at 700 | ⭐ **refuses to overwrite** what already exists · `--force` replaces and says what it replaced |
 ⬜ | `bin/new-block <name>` | a new block with its §A-K contract | — |
 | `bin/generate-index` | 🤖 `docs/INDEX.md` · `docs/STATES.md` · `docs/DECISIONS.md` | regenerated, never hand-edited · `--check` reports staleness without writing |
 | `bin/generate-metrics` | 🤖 `docs/METRICS.md` | ⭐ **the only place a live number belongs** · ⛔ it READS the battery's last result, never runs it |
