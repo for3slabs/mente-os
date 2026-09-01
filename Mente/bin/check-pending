@@ -118,6 +118,29 @@ def files():
     return out
 
 
+def outside_fences(text):
+    """The document with fenced blocks blanked out, line count preserved.
+
+    🔴 A FENCED EXAMPLE IS NOT AN ENTRY. Measured on a fresh installation: the
+    debt list ships with the entry SHAPE inside a code fence — which is exactly
+    how a template teaches — and this validator read it as a real item, so every
+    new install started with two findings about a placeholder.
+    ⛔ A checker that fires on a correct fresh install is one nobody trusts
+    afterwards, because its first impression is a false alarm.
+
+    ⚠️ Blanked, not deleted: every offset and line number below is computed
+    against this text, and removing the lines would shift all of them.
+    """
+    out, fenced = [], False
+    for line in text.splitlines(True):
+        if line.lstrip().startswith("```"):
+            fenced = not fenced
+            out.append("\n")
+            continue
+        out.append("\n" if fenced else line)
+    return "".join(out)
+
+
 def section(text, start, nxt):
     end = nxt if nxt is not None else len(text)
     return text[start:end]
@@ -133,6 +156,8 @@ def check(path, rel):
         text = open(path, encoding="utf-8", errors="replace").read()
     except OSError as e:
         return [("PND-SHP-001", rel, "unreadable: %s" % e)]
+    # ⭐ Scanned OUTSIDE code fences: an example is documentation, not debt.
+    text = outside_fences(text)
     blocks = [(m.start(), m.group(1)) for m in block_re(alias).finditer(text)]
     items = [(m.start(), m.group(1), m.group(2)) for m in ITEM.finditer(text)]
 

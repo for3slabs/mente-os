@@ -11,7 +11,7 @@ Everything a sub-agent would otherwise waste minutes discovering on its own: whi
 what is a sibling and what is off-limits, where the credentials live (**never their values**), and
 which command answers which question.
 
-> **Why this file exists** (`rules/rule-shipping-flow.md` §7): scattered facts get re-derived every
+> **Why this file exists** (`rules/rule-shipping.md`): scattered facts get re-derived every
 > session, and re-derivation is where a wrong assumption enters.
 
 > ## ⛔ THIS FILE NEVER CARRIES A VALUE
@@ -45,8 +45,8 @@ which rule governs it. ⭐ A repo with no governing rule is a repo someone will 
 | You need… | Command |
 |---|---|
 | is the system healthy? | `bin/check-health` |
-| do the blocks meet their contract? | `bin/check-blocks` |
-| ⭐ the full verification | `bin/check-all` — *the only thing that matters is `failed: 0`* |
+| do the blocks meet their contract? | `bin/check-block` |
+| ⭐ the full verification | `bin/probes/run-all.py` — *the only thing that matters is `failed: 0`* |
 
 ---
 
