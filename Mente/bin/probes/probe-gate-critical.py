@@ -141,10 +141,10 @@ else:
 
 clean()
 good = sum(1 for _, ok in results if ok)
-print("\n  ➜ %d de %d correctos" % (good, len(results)))
+print("\n  ➜ %d of %d correct" % (good, len(results)))
 for l, ok in results:
     if not ok:
         print("     🔴 %s" % l)
-print("\n  restos: %s" % ("ninguno" if not [n for n in os.listdir(BLOCKS)
+print("\n  leftovers: %s" % ("none" if not [n for n in os.listdir(BLOCKS)
                                             if n.startswith(MARK)] else "🔴 quedan"))
 sys.exit(0 if good == len(results) else 1)

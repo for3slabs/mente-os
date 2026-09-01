@@ -61,19 +61,19 @@ def put(con):
 print("═══ SABOTAJE · check-adr-wiring ═══\n")
 p.baseline()
 
-p.case("① una consecuencia que ninguna regla declara",
+p.case("① a consequence no rule declares",
        lambda: put("- `ZZZ-XXX-999` — a rule nobody wrote"), "DEC-CON-001")
 
-p.case("② un artefacto citado que no existe",
+p.case("② a cited artefact that does not exist",
        lambda: put("- `bin/no-such-tool` — a validator nobody built"), "DEC-CON-001")
 
 # ⭐ Both inverses matter: the check must resolve REAL references silently, or
 # every record with consequences becomes a finding and the check gets ignored.
-p.inverse("③ un id de regla REAL no dispara",
+p.inverse("③ a REAL rule id does not fire",
           lambda: put("- `DOC-SIZ-001` — a rule that exists"))
-p.inverse("④ un artefacto REAL no dispara",
+p.inverse("④ a REAL artefact does not fire",
           lambda: put("- `bin/check-document` — a validator that exists"))
-p.inverse("⑤ sin sección de consecuencias, nada que resolver",
+p.inverse("⑤ no consequences section, nothing to resolve",
           lambda: put("—"))
 
 p.crash_guard()
