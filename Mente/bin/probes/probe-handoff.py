@@ -107,53 +107,53 @@ def case(label, text, want_id, want_code):
 print("═══ SABOTAJE · check-handoff · con código de salida ═══\n")
 p.baseline()
 
-case("① falta un campo requerido",
+case("① a required field is missing",
      GOOD.replace('handoff_id: "2026-01-15-0900-audit"\n', ""), "HND-MAN-001", 2)
-case("② versión de esquema desconocida",
+case("② an unknown schema version",
      GOOD.replace("schema_version: v1", "schema_version: v9"), "HND-MAN-002", 2)
-case("③ stop_condition vacío",
+case("③ an empty stop_condition",
      GOOD.replace('stop_condition: "after the listed files, or on any read error"',
                   'stop_condition: ""'), "HND-MAN-003", 2)
-case("④ stop_condition no observable",
+case("④ a stop_condition that is not observable",
      GOOD.replace('stop_condition: "after the listed files, or on any read error"',
                   'stop_condition: "when done"'), "HND-MAN-003", 2)
-case("⑤ write scope sin artefacto",
+case("⑤ a write scope with no artefact",
      GOOD.replace('    path: "handoffs/return.md"', '    path: ""'), "HND-WRT-001", 2)
-case("⑤b modo de escritura no declarado",
+case("⑤b an undeclared write mode",
      GOOD.replace("    mode: create-only\n", ""), "HND-WRT-004", 2)
-case("⑤c sin capacidades declaradas",
+case("⑤c no declared capabilities",
      GOOD.replace("agent:\n  capabilities:\n    read: true\n    write: false\n", ""),
      "HND-GAT-004", 2)
-case("⑤d conjunto de estados incompleto",
+case("⑤d an incomplete status set",
      GOOD.replace("      - failed\n", ""), "HND-RET-002", 2)
-case("⑥ append a una sección del coordinador",
+case("⑥ an append to a coordinator section",
      GOOD.replace("also_append: []",
                   'also_append:\n    - "{target: BLOCK.md, section: state, max_lines: 5}"'),
      "HND-WRT-002", 2)
-case("⑦ append sin max_lines",
+case("⑦ an append with no max_lines",
      GOOD.replace("also_append: []",
                   'also_append:\n    - "{target: BLOCK.md, section: context}"'),
      "HND-WRT-003", 2)
-case("⑧ esquema de retorno incompleto",
+case("⑧ an incomplete return schema",
      GOOD.replace("      - open-questions\n", ""), "HND-RET-001", 2)
-case("⑨ binding · el bloque no existe",
+case("⑨ binding · the block does not exist",
      GOOD.replace('block_path: "work/blocks/%s"' % BID,
                   'block_path: "work/blocks/ghost"'), "HND-BND-001", 3)
-case("⑩ binding · el id no coincide",
+case("⑩ binding · the id does not match",
      GOOD.replace('block: "%s"' % BID, 'block: "other"'), "HND-BND-001", 3)
-case("⑪ binding · una ruta de lectura no resuelve",
+case("⑪ binding · a read path does not resolve",
      GOOD.replace("    - BLOCK.md", "    - MISSING.md"), "HND-BND-001", 3)
 
-case("⑪b GATE · una capacidad NO declarada",
+case("⑪b GATE · an UNDECLARED capability",
      GOOD.replace("    read: true\n", ""), "HND-GAT-005", 2)
-case("⑪c GATE · un tipo de agente desconocido",
+case("⑪c GATE · an unknown agent type",
      GOOD.replace("agent:\n  capabilities:",
                   "agent:\n  type: auditor\n  capabilities:")
          .replace("    write: false", "    write: true"), "HND-GAT-001", 2)
-case("⑪d GATE · un campo con el marcador de la plantilla",
+case("⑪d GATE · a field still carrying the template placeholder",
      GOOD.replace('block: "%s"' % BID, "block: ⬜"), "HND-GAT-002", 2)
 
-p.inverse("⑫ un manifiesto CORRECTO", lambda: put(GOOD))
+p.inverse("⑫ a CORRECT manifest", lambda: put(GOOD))
 
 
 # ── POST-FLIGHT · lo que valida el RETORNO

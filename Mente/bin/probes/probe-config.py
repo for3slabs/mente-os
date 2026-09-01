@@ -41,51 +41,51 @@ def put(mutate=None, local=None):
 print("═══ A · SABOTAJE · check-config · con verificación de CAUSA ═══\n")
 p.baseline()
 
-p.case("① SEC · un secreto pegado en un permiso",
+p.case("① SEC · a secret pasted into a permission",
        lambda: put(lambda c: c["permissions"]["allow"].append(
            "Bash(psql --password=hunter2supersecret)")), "CFG-SEC-001")
 
-p.case("② SUR · permiso al intérprete de shell",
+p.case("② SUR · a grant to the shell interpreter",
        lambda: put(lambda c: c["permissions"]["allow"].append("Bash(bash:*)")),
        "CFG-SUR-003")
 
-p.case("③ SUR · borrado recursivo sin límite",
+p.case("③ SUR · an unbounded recursive delete",
        lambda: put(lambda c: c["permissions"]["allow"].append("Bash(rm -rf *)")),
        "CFG-SUR-003")
 
-p.case("④ WHY · una ruta concedida que no existe",
+p.case("④ WHY · a granted path that does not exist",
        lambda: put(lambda c: c["permissions"]["additionalDirectories"].append(
            "/nonexistent/" + MARK + "/path")), "CFG-WHY-003")
 
-p.case("⑤ ONE · muchas entradas para un mecanismo",
+p.case("⑤ ONE · many entries for one mechanism",
        lambda: put(lambda c: c["permissions"]["allow"].extend(
            ["Bash(git log)", "Bash(git show)", "Bash(git blame)",
             "Bash(git stash)", "Bash(git tag)"])), "CFG-ONE-002")
 
-p.case("⑥b ONE · el MISMO comando escrito de dos formas",
+p.case("⑥b ONE · the SAME command written two ways",
        lambda: put(lambda c: c["permissions"]["allow"].extend(
            ["Bash(bin/a:*)", "Bash(./bin/a:*)",
             "Bash(bin/b:*)", "Bash(./bin/b:*)",
             "Bash(bin/c:*)", "Bash(./bin/c:*)"])), "CFG-ONE-001")
 
-p.case("⑥ ONE · una ruta ya contenida por otra",
+p.case("⑥ ONE · a path already contained by another",
        lambda: put(lambda c: c["permissions"]["additionalDirectories"].extend(
            [ROOT, os.path.join(ROOT, "docs")])), "CFG-ONE-001")
 
-p.case("⑦ PRT · ruta absoluta al home de alguien",
+p.case("⑦ PRT · an absolute path into somebody's home",
        lambda: put(lambda c: c["permissions"]["additionalDirectories"].append(
            "/home/someone/projects/thing")), "CFG-PRT-001")
 
 # CFG-SUR-001 · claimed protected, but another channel still reaches it
-p.case("⑧ SUR · protegido POR HERRAMIENTA, con puerta trasera",
+p.case("⑧ SUR · protected BY TOOL, with a back door",
        lambda: put(lambda c: c["permissions"].__setitem__(
            "deny", ["Read(.env)"])), "CFG-SUR-001")
 
-p.case("⑨ SHR · una negación que vive solo en el archivo local",
+p.case("⑨ SHR · a denial living only in the local file",
        lambda: put(local={"permissions": {"deny": ["Read(private/**)"]}}),
        "CFG-SHR-001")
 
-p.case("⑨b LST · un permiso concedido solo por comodín",
+p.case("⑨b LST · a grant given only by wildcard",
        lambda: put(lambda c: c["permissions"]["allow"].append("Bash(*)")),
        "CFG-LST-002")
 
@@ -94,19 +94,19 @@ p.case("⑨b LST · un permiso concedido solo por comodín",
 # grants (`bash hooks/start.sh`) as open doors. `bash:*` authorizes anything;
 # `bash <one script>` authorizes one script, and conflating them is the
 # loose-comparison family this very rule names first.
-p.inverse("⑨c SUR · un shell ACOTADO a un script no dispara",
+p.inverse("⑨c SUR · a shell BOUND to one script does not fire",
           lambda: put(lambda c: c["permissions"]["allow"].extend(
               ["Bash(bash hooks/session-start.sh)", "Bash(bash -n bin/thing)",
                "Bash(sh -c 'python3 tools/x.py')"])))
 
 # ⭐ And the grouping must not name a mechanism that does not exist: an
 # environment prefix is not the command being run.
-p.inverse("⑨d ONE · un prefijo VAR= no es un mecanismo",
+p.inverse("⑨d ONE · a VAR= prefix is not a mechanism",
           lambda: put(lambda c: c["permissions"]["allow"].extend(
               ["Bash(V=a ./tool one)", "Bash(V=b ./tool two)",
                "Bash(V=c ./tool three)"])))
 
-p.inverse("⑩ una configuración CORRECTA", lambda: put())
+p.inverse("⑩ a CORRECT configuration", lambda: put())
 p.crash_guard()
 
 # ── B · cross-run
