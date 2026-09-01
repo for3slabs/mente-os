@@ -53,10 +53,13 @@ IMPORT_LINE = "@%s/CLAUDE-MENTE-OS.md" % os.path.basename(MENTE)
 #   · the bridges registry names its file, and the table declares the folder
 SPECIAL = {"CLAUDE.md": None,                       # ⛔ never stamped: see ③
            "bridges.md": "connection/bridges/BRIDGES.md"}
-# ⚠️ Copied by the user per delegation, not at install: a manifest belongs to
-# one handoff, and stamping a blank one would put an unfilled scope on disk
-# where check-handoff would read it as a real one.
-NOT_INSTALLED = {"handoff.yml"}
+# ⚠️ STAMPED PER USE, NOT AT INSTALL — and the reason is the same for both: an
+# installation has zero of these until somebody starts one, and writing a blank
+# copy would put an unfilled scope (or an empty block) on disk where a validator
+# reads it as a real one.
+#   · handoff.yml — one manifest belongs to one delegation
+#   · BLOCK.md    — bin/new-block stamps it, once per unit of work
+NOT_INSTALLED = {"handoff.yml", "BLOCK.md"}
 
 
 def die(msg, code=2):

@@ -177,7 +177,7 @@ bin/check-declared           # does every engine file have its row
 bin/secrets-lease status     # is the secrets permission open, and what did it record
 ```
 
-⬜ **Planned, not built:** `bin/new-block` · `bin/check-clear-ready` ·
+⬜ **Planned, not built:** `bin/check-clear-ready` ·
 `bin/generate-index` · ⬜ `bin/generate-metrics`. ⛔ They are named in `CAPABILITIES.md` with the
 same marker — ⚠️ **a command list that mixes what runs with what is planned sends the reader to
 a shell prompt to find out which is which.**

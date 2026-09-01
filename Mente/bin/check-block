@@ -72,6 +72,24 @@ NAMES = {"A": "identity", "B": "scope", "C": "connections",
          "G": "decisions", "H": "friction", "I": "checkpoints",
          "J": "context", "K": "closing"}
 
+def index_files():
+    """⬜ Where blocks are LISTED — the installation's: any campaign, or the
+    blocks README. ⭐ ONE definition, used by both directions of the rule: if
+    BLK-OPN-002 and BLK-OPN-003 disagreed about what an index is, one of them
+    would be checking a file the other ignores."""
+    out = glob.glob(os.path.join(ROOT, "work", "campaigns", "*", "CAMPAIGN.md"))
+    readme = os.path.join(BLOCKS, "README.md")
+    if os.path.exists(readme):
+        out.append(readme)
+    return out
+
+
+# ⚠️ Words a README legitimately shows in a list without naming a block: the
+# state folders, and the file every block folder holds. ⛔ Without this the rule
+# reports a folder-structure diagram as a dead entry.
+SKIP_INDEX_WORDS = {"active", "blocked", "archive", "none"}
+
+
 def check(path, rel, ids):
     bad = []
     text = open(path, encoding="utf-8").read()
@@ -209,11 +227,7 @@ def check(path, rel, ids):
     # ⬜ Where blocks are listed is the installation's: any campaign, or a
     # blocks README. ⛔ With no index at all this is NOT MEASURED, not a pass.
     if st != "closed" and bid:
-        indexes = glob.glob(os.path.join(ROOT, "work", "campaigns", "*",
-                                         "CAMPAIGN.md"))
-        readme = os.path.join(BLOCKS, "README.md")
-        if os.path.exists(readme):
-            indexes.append(readme)
+        indexes = index_files()
         if indexes and not any(
                 bid in open(q, encoding="utf-8", errors="replace").read()
                 for q in indexes):
@@ -342,6 +356,29 @@ def main():
     for path in found:
         rel = os.path.relpath(path, ROOT)
         findings += check(path, rel, ids)
+
+    # BLK-OPN-003 · THE OTHER DIRECTION of BLK-OPN-002.
+    # ⭐ That rule asks "does an index name this block". This asks "does this
+    # index entry still have a block" — and nothing asked it. ⛔ An entry
+    # outlives the folder it named the moment a block is deleted or renamed, and
+    # then the index sends every reader to work that is not there.
+    # ⚠️ Measured while building bin/new-block: removing a block folder left its
+    # row in the index, and the tree reported clean.
+    live = set(ids)
+    for q in index_files():
+        try:
+            text = open(q, encoding="utf-8", errors="replace").read()
+        except OSError:
+            continue          # ⬜ skipped, not a gap: reported by check-document
+        for m in re.finditer(r"^\s*[-*]\s*`([a-z0-9][a-z0-9-]{1,48})`", text,
+                             re.M):
+            named = m.group(1)
+            if named in live or named in SKIP_INDEX_WORDS:
+                continue
+            findings.append(("BLK-OPN-003", os.path.relpath(q, ROOT),
+                             "names %r and no block by that id exists · an "
+                             "entry that outlived its folder sends every reader "
+                             "to work that is not there" % named))
 
     if not quiet:
         print("check-block · %d block(s) found" % len(found))

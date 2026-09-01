@@ -223,3 +223,6 @@ gen-indice	bin/generate-index	engine	executable	🤖 rebuilds the index, the sta
 gen-metricas	bin/generate-metrics	engine	executable	🤖 the only place a live number belongs — ⛔ it reads the battery's last result, never runs it
 probe-generators	bin/probes/probe-generators.py	engine	executable	proves a generated file is measured, obeys the contract, and can say NOTHING
 probe-init	bin/probes/probe-init.py	engine	executable	proves the installer places, asks, and REFUSES to destroy a configured instance
+nuevo-bloque	bin/new-block	engine	executable	opens a unit of work with §A-D and lists it — ⛔ opening must stay cheap or the work happens without a block
+tpl-bloque	templates/BLOCK.md.template	engine	canonical	the shape a block has — ⭐ mirrors contract-block §5, never a copy inside the scaffolder
+probe-new-block	bin/probes/probe-new-block.py	engine	executable	proves the scaffolded block passes its own contract UNEDITED

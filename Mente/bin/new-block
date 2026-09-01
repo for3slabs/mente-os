@@ -1,0 +1,248 @@
+#!/usr/bin/env python3
+"""new-block — opens a unit of work with the four sections its contract requires.
+
+⭐ WHY A SCAFFOLD AT ALL, and the contract says it outright: **if opening costs
+ten fields, the work happens WITHOUT a block — and then nothing is recorded.**
+⛔ The cost of opening is not a detail; it decides whether the system is used.
+
+So this asks for the least that cannot be derived and writes the rest:
+
+  ① the file, from templates/BLOCK.md.template — ⛔ never from a shape hardcoded
+     here. The contract defines that shape, and a copy inside this script is a
+     second definition that drifts from the first without anything noticing
+  ② the block's row in the index — 🔴 BLK-OPN-002: a block on disk that no index
+     names is one nothing knows exists, so nobody picks it up and nobody misses
+     it. Writing the file alone produces a block that fails its own contract
+
+⛔ IT REFUSES rather than guesses: an id already in use, a type outside the
+declared four, a lane outside the declared three. ⚠️ Each of those, accepted,
+produces a block that looks valid and is not — and the checker would report it
+later, against work already under way.
+
+Usage:
+  bin/new-block <id> --type <code|docs|infra|data> [--lane <lane>] [--intent TEXT]
+Exit: 0 opened · 1 refused · 2 could not complete
+"""
+import os
+import re
+import sys
+from datetime import date
+
+MENTE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, os.path.join(MENTE, "bin"))
+# ⭐ ONE reader for a block's sections, shared with every validator. ⛔ A second
+# parser here would answer "which sections exist" differently from the checker,
+# and the disagreement would surface as a block that passes one and fails the other.
+from blockread import sections                                 # noqa: E402
+
+TEMPLATE = os.path.join(MENTE, "templates", "BLOCK.md.template")
+BLOCKS = os.path.join(MENTE, "work", "blocks")
+CONTRACT = os.path.join(MENTE, "rules", "contract-block.md")
+CONFIG = os.path.join(MENTE, "mente.config.yml")
+OPEN_SECTIONS = ("A", "B", "C", "D")
+
+
+def die(msg, code=1):
+    print("🔴 %s" % msg, file=sys.stderr)
+    sys.exit(code)
+
+
+def vocabulary():
+    """The types and lanes the CONTRACT declares.
+
+    ⭐ Read from the contract, never listed here. ⛔ A vocabulary in two places
+    diverges: the day somebody adds a type to the contract, a scaffolder holding
+    its own copy refuses it — and the refusal looks like the type being wrong
+    rather than the tool being stale.
+    """
+    try:
+        text = open(CONTRACT, encoding="utf-8", errors="replace").read()
+    except OSError:
+        return None, None
+    def declared(field):
+        # The contract states each vocabulary as `field: a | b | c`.
+        # 🔴 THE HYPHEN WAS MISSING from this class, so `full-block` did not
+        # match and the lane vocabulary came back EMPTY — and an empty
+        # vocabulary meant "nothing to check", so any lane was accepted.
+        # ⛔ A silent skip wearing the shape of a pass: the one failure this
+        # whole system names first.
+        m = re.search(r"^%s:\s*([a-z|\s-]+)$" % field, text, re.M)
+        return {v.strip() for v in m.group(1).split("|") if v.strip()} if m else set()
+    return declared("type"), declared("lane")
+
+
+def owner():
+    """⬜ Read from the installation. ⛔ Never defaulted: an owner nobody chose,
+    written into a block, is the same leak bin/init exists to prevent."""
+    try:
+        for line in open(CONFIG, encoding="utf-8", errors="replace"):
+            m = re.match(r"\s+name:\s*['\"]?([^'\"#\n]+?)['\"]?\s*$", line)
+            if m:
+                return m.group(1).strip()
+    except OSError:
+        pass
+    return None
+
+
+def existing_ids():
+    """Every id already in use → where. ⭐ BLK-IDN-001: resolution is exact, so a
+    repeat is refused rather than disambiguated later."""
+    out = {}
+    for dp, dn, fn in os.walk(BLOCKS):
+        if "BLOCK.md" not in fn:
+            continue          # ⬜ skipped, not a gap: no contract, no block
+        p = os.path.join(dp, "BLOCK.md")
+        try:
+            m = re.search(r"^id:\s*(\S+)", open(p, encoding="utf-8",
+                                                errors="replace").read(), re.M)
+        except OSError:
+            continue
+        if m:
+            out[m.group(1).strip("`* ")] = os.path.relpath(dp, MENTE)
+    return out
+
+
+def index_paths():
+    """Where blocks are LISTED. ⬜ The installation's: a campaign, or the blocks
+    README. ⛔ With no index at all, BLK-OPN-002 cannot be satisfied — and that
+    is reported, never silently skipped."""
+    import glob
+    out = glob.glob(os.path.join(MENTE, "work", "campaigns", "*", "CAMPAIGN.md"))
+    readme = os.path.join(BLOCKS, "README.md")
+    if os.path.exists(readme):
+        out.append(readme)
+    return out
+
+
+def register(bid, intent, indexes):
+    """② Name the block where blocks are listed.
+
+    🔴 THE HALF A SCAFFOLD USUALLY SKIPS. A block on disk that no index names is
+    a block nothing knows exists: never picked up, never closed, never missed.
+    ⚠️ Appended under a heading the reader already scans, not at the end of the
+    file, so the entry is where somebody looking for open work will see it.
+    """
+    if not indexes:
+        return "⬜ no index exists — BLK-OPN-002 cannot be satisfied"
+    target = indexes[0]
+    line = "- `%s` — %s\n" % (bid, intent)
+    try:
+        with open(target, "a", encoding="utf-8") as fh:
+            fh.write(line)
+    except OSError as e:
+        return "⚠️ could not write %s (%s)" % (os.path.relpath(target, MENTE),
+                                               e.__class__.__name__)
+    return "listed in %s" % os.path.relpath(target, MENTE)
+
+
+def main():
+    args = sys.argv[1:]
+    if not args or args[0].startswith("-"):
+        print(__doc__)
+        return 1
+    bid = args[0]
+
+    def opt(flag):
+        return args[args.index(flag) + 1] if flag in args and args.index(
+            flag) + 1 < len(args) else None
+
+    # ⛔ An id that is not a safe folder name is refused HERE, not discovered
+    # later as a path that cannot be created or cited.
+    if not re.fullmatch(r"[a-z0-9][a-z0-9-]{1,48}", bid):
+        die("invalid id %r · expected lowercase letters, digits and hyphens · "
+            "it becomes a folder name and is cited from other files" % bid)
+
+    types, lanes = vocabulary()
+    if not types:
+        die("cannot read the type vocabulary from rules/contract-block.md · "
+            "⛔ guessing it would let an unknown type through silently", 2)
+
+    btype = opt("--type")
+    if btype not in types:
+        die("type %r is not declared · expected one of %s\n"
+            "   ⛔ An undeclared type passes every later check silently, because "
+            "nothing knows to look for it." % (btype, " ".join(sorted(types))))
+
+    # ⛔ An EMPTY vocabulary is a failure to read the contract, never a licence
+    # to accept anything — the same rule already applied to types, and lanes
+    # were left with `if lanes and ...`, which turns an unreadable contract into
+    # a permissive one.
+    if not lanes:
+        die("cannot read the lane vocabulary from rules/contract-block.md · "
+            "⛔ an unreadable contract must not become a permissive one", 2)
+    lane = opt("--lane") or "task"
+    if lane not in lanes:
+        die("lane %r is not declared · expected one of %s"
+            % (lane, " ".join(sorted(lanes))))
+
+    used = existing_ids()
+    # ⭐ An exact key lookup on the id→location map, written so it reads as one:
+    # `in` over a dict is exact, but a reader (and CHK-CMP-001) cannot see the
+    # type from here, and a comparison whose exactness depends on knowing the
+    # variable's type is one somebody later loosens by accident.
+    if bid in used.keys():
+        die("id %r is already used by %s · ⛔ resolution is exact: two blocks "
+            "sharing an id make every citation ambiguous" % (bid, used[bid]))
+
+    who = owner()
+    if not who:
+        die("no owner declared · run bin/init first\n"
+            "   ⛔ A block with no owner is work nobody answered for.", 2)
+
+    dest_dir = os.path.join(BLOCKS, "active", bid)
+    dest = os.path.join(dest_dir, "BLOCK.md")
+    if os.path.exists(dest):
+        die("%s already exists · refusing to overwrite an open block"
+            % os.path.relpath(dest, MENTE))
+
+    try:
+        body = open(TEMPLATE, encoding="utf-8").read()
+    except OSError:
+        die("no templates/BLOCK.md.template · the shape a block must have is "
+            "not available to copy", 2)
+
+    today = date.today().isoformat()
+    # ⭐ The intent is one sentence by contract (BLK-IDN-003), and unstated it
+    # becomes a ⬜ the owner must replace — never invented prose that reads as a
+    # decision somebody made.
+    intent = opt("--intent") or "⬜ one sentence: what this block is for"
+    for k, v in {"id": bid, "type": btype, "lane": lane, "owner": who,
+                 "date": today, "intent": intent}.items():
+        body = body.replace("{{%s}}" % k, v)
+
+    # ⛔ Verified against the SHARED reader before anything is written: a
+    # scaffold that emits a block failing BLK-OPN-001 has produced work that the
+    # checker will reject, against a template nobody re-reads.
+    have = sections(body)
+    missing = [s for s in OPEN_SECTIONS if s not in have]
+    if missing:
+        die("the template is missing opening section(s) %s · fix "
+            "templates/BLOCK.md.template" % " ".join(missing), 2)
+
+    try:
+        os.makedirs(dest_dir, exist_ok=True)
+        open(dest, "w", encoding="utf-8").write(body)
+    except OSError as e:
+        die("could not write %s · %s" % (os.path.relpath(dest, MENTE),
+                                         e.__class__.__name__), 2)
+
+    listed = register(bid, intent, index_paths())
+
+    print("📦 %s\n   · %s\n   · %s"
+          % (os.path.relpath(dest, MENTE), listed,
+             "§A-D written · E-K are added while the work happens"))
+    print("\n👉 fill the ⬜ in §B before starting: an IN with no OUT is a wish, "
+          "not a boundary.\n   Then: bin/check-block")
+    return 0
+
+
+if __name__ == "__main__":
+    try:
+        sys.exit(main())
+    except SystemExit:
+        raise
+    except Exception as e:                                     # noqa: BLE001
+        print("🔴 %s crashed · %s: %s"
+              % (os.path.basename(__file__), type(e).__name__, e),
+              file=sys.stderr)
+        sys.exit(2)

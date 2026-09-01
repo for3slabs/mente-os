@@ -90,7 +90,7 @@ answers exactly one question. None of them decides anything: they check what is 
 | Command | What it writes | Watch out for |
 |---|---|---|
 | `bin/init` | the instance files, from `templates/` · the router import · the layer-2 hook link · `secrets/` at 700 | ⭐ **refuses to overwrite** what already exists · `--force` replaces and says what it replaced |
-⬜ | `bin/new-block <name>` | a new block with its §A-K contract | — |
+| `bin/new-block <id> --type <t>` | a new block with its §A-D opening contract, and its row in the index | ⭐ refuses a used id, an undeclared type or lane · ⛔ opening costs four sections on purpose |
 | `bin/generate-index` | 🤖 `docs/INDEX.md` · `docs/STATES.md` · `docs/DECISIONS.md` | regenerated, never hand-edited · `--check` reports staleness without writing |
 | `bin/generate-metrics` | 🤖 `docs/METRICS.md` | ⭐ **the only place a live number belongs** · ⛔ it READS the battery's last result, never runs it |
 | `bin/secrets-lease` | the read permission for `secrets/`, and its access log | ⭐ tied to the context load, never to a clock · it hardens the folder before granting |

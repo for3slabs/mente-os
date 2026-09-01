@@ -1,0 +1,55 @@
+<!-- ⚠️ TEMPLATE — `bin/new-block` copies this to work/blocks/active/<id>/BLOCK.md
+     and fills {{id}} {{type}} {{lane}} {{owner}} {{date}}. ⭐ KEEP IT IN SYNC WITH
+     rules/contract-block.md: this file IS the shape that contract describes, and a
+     template that drifts from it scaffolds blocks the checker rejects. -->
+# BLOCK · {{id}}
+
+## A · Identity
+
+id: {{id}}
+type: {{type}}
+intent: {{intent}}
+status: active
+lane: {{lane}}
+owner: {{owner}}
+created: {{date}} · updated: {{date}}
+
+## B · Scope
+
+### ✅ IN
+<!-- ⬜ What this block may touch. One path or area per line.
+     ⚠️ Everything not named here is outside, so a vague IN is a scope that grows. -->
+- ⬜ declare what this block may touch
+
+### ⛔ OUT
+<!-- ⬜ What is out of bounds — and every line states WHERE the limit comes from:
+     a file reference, a technical lock, or `DERIVED:` for your own reasoning.
+     ⛔ An unsourced limit is an opinion enforced as a rule.
+     ⭐ THE TEST: would this limit still hold if this block did not exist?
+        Yes → it is system-wide. ⛔ Do NOT repeat it here — inherit it.
+        No  → it is this block's, and it belongs here. -->
+- ⬜ declare a limit · DERIVED: replace this with a real one and its source
+
+### 🔒 INVARIANTS
+<!-- ⬜ What must remain TRUE after your changes — not what you will do. -->
+- ⬜ declare what must still hold when this block closes
+
+## C · Connections
+<!-- ⬜ Which other blocks this one depends on, or none.
+     ⛔ An empty section is not the same as "none": say `- none` explicitly, or a
+     reader cannot tell an answered question from a skipped one. -->
+- none
+
+## D · Required standards
+<!-- ⬜ The rules that apply while this block is open. Each must RESOLVE — a
+     standard pointing at nothing is not a standard.
+     ⭐ These are injected before every edit inside this block's scope. -->
+- `rules/rule-working-in-a-block.md`
+
+<!-- ⭐ SECTIONS E THROUGH K ARE ADDED WHILE THE WORK HAPPENS, in order and never
+     renumbered: the letters are ADDRESSES that other files cite.
+       E State · F Sub-blocks · G Decisions · H Friction · I Checkpoints
+       J Context · K Closing
+     ⛔ Opening deliberately costs four sections and about two minutes. If opening
+     cost ten fields, the work would happen WITHOUT a block — and then nothing is
+     recorded at all. -->
