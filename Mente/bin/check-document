@@ -28,6 +28,17 @@ SKIP_NAMES = {"CHANGELOG.md"}
 # keeps check-decisions on its own reader.
 SKIP_DIR_PATHS = {"rules/decisions"}
 
+# ⭐ SHAPES ANOTHER CONTRACT OWNS, with its own validator. A block declares its
+# identity in §A — id, type, intent, status, lane, owner, dates — and
+# contract-block measures every one of those fields. ⛔ Demanding the four-field
+# document header ON TOP is a second contract for one file: the two would
+# disagree, and the block would be simultaneously valid and invalid.
+# 🔴 Measured end to end: a freshly scaffolded block passed check-block and
+# failed check-document, on creation, with nothing wrong with it.
+# ⚠️ By FILENAME, not by folder: blocks live under active/, blocked/ and
+# archive/, and a folder list would miss whichever state was added later.
+OWNED_ELSEWHERE = {"BLOCK.md"}
+
 # DOC-CNT-005 · a credential shape. ⛔ `-p` is deliberately absent: a
 # one-letter flag matched a directory name in a real file (rule-config-hygiene §2).
 CREDENTIAL = re.compile(
@@ -480,7 +491,7 @@ def main():
         if _rel in SKIP_DIR_PATHS:
             continue          # ⬜ governed by contract-adr.md, not by this one
         for name in sorted(filenames):
-            if not name.endswith(".md"):
+            if not name.endswith(".md") or name in OWNED_ELSEWHERE:
                 continue
             path = os.path.join(dirpath, name)
             rel = os.path.relpath(path, ROOT)

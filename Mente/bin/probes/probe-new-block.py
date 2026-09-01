@@ -154,22 +154,32 @@ case("⑰ ⛔ contrato ilegible → falla, NO acepta cualquier cosa",
      r.returncode == 2, "exit=%d" % r.returncode)
 open(contract, "w", encoding="utf-8").write(keep)
 
+# ── 🔴 TWO VALIDATORS MUST NOT DISAGREE ABOUT ONE FILE ─────────────────────
+# A block declares its identity in §A, and contract-block measures every field
+# of it. ⛔ check-document demanded the four-field document header ON TOP, so a
+# freshly scaffolded block was simultaneously valid and invalid — found end to
+# end, on creation, with nothing actually wrong with it.
+_doc = subprocess.run([sys.executable, os.path.join(TREE, "bin", "check-document")],
+                      cwd=TREE, capture_output=True, text=True, timeout=90)
+case("⑱ 🔴 el bloque recién creado NO lo rechaza check-document",
+     "zzprobe-one" not in _doc.stdout, "")
+
 # ── 🔴 BLK-OPN-003 · the other direction, found while building this ────────
 # Removing a block folder left its row in the index, and the tree reported
 # clean: the index then sends every reader to work that is not there.
 shutil.rmtree(os.path.join(BLOCKS, "active", "zzprobe-one"))
 c = checker()
-case("⑱ 🔴 una entrada de índice SIN bloque → detectada",
+case("⑲ 🔴 una entrada de índice SIN bloque → detectada",
      "BLK-OPN-003" in c.stdout and "zzprobe-one" in c.stdout)
 
 drop("zzprobe-one")
 c = checker()
-case("⑲ ⭐ y al quitar la entrada, calla", "BLK-OPN-003" not in c.stdout)
+case("⑳ ⭐ y al quitar la entrada, calla", "BLK-OPN-003" not in c.stdout)
 
 # ── ⛔ no owner, no block ───────────────────────────────────────────────────
 os.remove(os.path.join(TREE, "mente.config.yml"))
 r = run("zzprobe-noowner", "--type", "docs")
-case("⑳ ⛔ sin dueño declarado → rechaza · un bloque sin dueño no responde nadie",
+case("㉑ ⛔ sin dueño declarado → rechaza · un bloque sin dueño no responde nadie",
      r.returncode == 2 and "bin/init" in r.stderr, "exit=%d" % r.returncode)
 
 shutil.rmtree(WORK, ignore_errors=True)
