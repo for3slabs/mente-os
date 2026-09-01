@@ -81,12 +81,16 @@ def index_paths():
     """Where blocks are LISTED. ⬜ The installation's: a campaign, or the blocks
     README. ⛔ With no index at all, BLK-OPN-002 cannot be satisfied — and that
     is reported, never silently skipped."""
-    import glob
-    out = glob.glob(os.path.join(MENTE, "work", "campaigns", "*", "CAMPAIGN.md"))
+    # 🔴 THE BLOCKS README FIRST, and the order is the whole point. A campaign
+    # is also an index — check-block accepts either — but a NEW block belongs to
+    # no campaign until somebody says so. ⛔ Writing its row into the first
+    # CAMPAIGN.md found declares a membership nobody decided, and that is worse
+    # than not listing it: the campaign now claims work it never asked for, and
+    # check-campaign will bind the two.
+    # ⚠️ Measured end to end: with one campaign present, every new block was
+    # being enrolled into it.
     readme = os.path.join(BLOCKS, "README.md")
-    if os.path.exists(readme):
-        out.append(readme)
-    return out
+    return [readme] if os.path.exists(readme) else []
 
 
 def register(bid, intent, indexes):
