@@ -13,9 +13,17 @@ MEMORY = os.path.join(ROOT, "memory")
 REF = os.environ.get("MENTE_CROSSRUN_PENDING", "")
 p = Probe("check-pending", "PND")
 
+# ⭐ THE FIXTURE DECLARES ITSELF SUPERSEDED, and that is not cosmetic.
+# PND-CNV-002 counts LIVE pending lists across the whole tree — so a fixture
+# claiming `current` is a genuine second live list the moment an installation
+# has its own. 🔴 Measured on a freshly installed clone: every case inherited a
+# CNV-002 finding that belonged to the fixture's own existence, and two correct
+# cases read as false positives.
+# ⛔ The rule is right; the fixture was lying about being live. Case ⑩, which
+# exists to prove CNV-002 fires, restores `current` on both of its lists.
 GOOD = """# Pending · a probe fixture
 
-**Status:** current · **Type:** append-only · **Updated:** 2026-01-15 · **Owner:** x
+**Status:** superseded · **Type:** append-only · **Updated:** 2026-01-15 · **Owner:** x
 
 ## Purpose
 
@@ -99,8 +107,10 @@ p.case("⑨ un abierto que apunta al periodo anterior",
                                 "without asking anybody.",
                                 "Description. See the previous period for detail.")),
        "PND-ROT-001")
+LIVE = GOOD.replace("**Status:** superseded", "**Status:** current")
 p.case("⑩ dos listas vivas",
-       lambda: (put(), put(name=MARK + "-pending-two.md")), "PND-CNV-002")
+       lambda: (put(LIVE), put(LIVE, name=MARK + "-pending-two.md")),
+       "PND-CNV-002")
 
 p.case("⑪b ROT · un item CERRADO que viaja de periodo",
        lambda: put(GOOD.replace("- State: open", "- State: closed")
