@@ -97,28 +97,28 @@ print("═══ SONDA · gate-handoff ═══\n")
 # ① 🔴 THE DEFECT IT EXISTS FOR · a writer with nothing declaring its bounds
 clear()
 r = run(subagent_type="writer", description="refactor the module")
-case("① 🔴 escritor sin ámbito → BLOQUEA", r.returncode == 2, "exit=%d" % r.returncode)
+case("① 🔴 a writer with no scope → BLOCKS", r.returncode == 2, "exit=%d" % r.returncode)
 
 # ② ⭐ and it says WHAT is missing and HOW to fix it. A block with no route out
 # is one the reader disables rather than satisfies.
-case("② ⭐ el bloqueo nombra la causa Y los 3 pasos del arreglo",
+case("② ⭐ the block names the cause AND the 3 steps to fix it",
      "no declared scope" in r.stderr and "check-handoff" in r.stderr
      and "templates/handoff.yml.template" in r.stderr)
 
 # ③ ⚠️ the two empty states are DIFFERENT · "none exists" sends you somewhere
 # else than "one exists and does not bind"
-case("③ ⚠️ distingue «no hay ninguno» de «hay y no ata»",
+case("③ ⚠️ it tells «none exists» from «one exists and does not bind»",
      "No handoff manifest exists" in r.stderr)
 
 # ④ ⭐ a VALID manifest opens the gate
 plant()
 r = run(subagent_type="writer", description="audit the fixture")
-case("④ ⭐ manifiesto válido y atado → pasa", r.returncode == 0,
+case("④ ⭐ a valid, bound manifest → passes", r.returncode == 0,
      "exit=%d" % r.returncode)
 
 # ⑤ ⚠️ and it warns the manifest may be for OTHER work — the gate cannot read
 # intent, and a stale scope is a scope for a different task
-case("⑤ ⚠️ avisa de que un manifiesto viejo es otro ámbito",
+case("⑤ ⚠️ it warns that a stale manifest is a different scope",
      "stale manifest" in r.stderr)
 
 # ⑥ 🔴 PRESENCE IS NOT COMPLIANCE (HND-GAT-002) · the case that decides whether
@@ -128,9 +128,9 @@ clear()
 plant(open(os.path.join(TREE, "templates", "handoff.yml.template"),
            encoding="utf-8").read())
 r = run(subagent_type="writer", description="anything")
-case("⑥ 🔴 plantilla SIN rellenar NO abre la puerta", r.returncode == 2,
+case("⑥ 🔴 an UNFILLED template does NOT open the gate", r.returncode == 2,
      "exit=%d" % r.returncode)
-case("⑦ ⭐ y lo dice: presencia no es cumplimiento",
+case("⑦ ⭐ and it says so: presence is not compliance",
      "presence is not compliance" in r.stderr)
 
 # ⑧ 🔴 a manifest bound to a block that does not exist must not open it either
@@ -138,7 +138,7 @@ clear()
 plant(MANIFEST.replace('block_path: "work/blocks/%s"' % BID,
                        'block_path: "work/blocks/does-not-exist"'))
 r = run(subagent_type="writer", description="anything")
-case("⑧ 🔴 manifiesto atado a un bloque inexistente → BLOQUEA",
+case("⑧ 🔴 a manifest bound to a block that does not exist → BLOCKS",
      r.returncode == 2, "exit=%d" % r.returncode)
 
 # ⑨ ⭐ ONE valid manifest is enough even beside a broken one — the gate looks for
@@ -147,21 +147,21 @@ clear()
 plant()
 plant(MANIFEST.replace("schema_version: v1", "schema_version: v9"), "broken.yml")
 r = run(subagent_type="writer", description="audit the fixture")
-case("⑨ ⭐ uno válido junto a uno roto → pasa", r.returncode == 0,
+case("⑨ ⭐ a valid one beside a broken one → passes", r.returncode == 0,
      "exit=%d" % r.returncode)
 
 # ⑩ ⬜ THE ESCAPE HATCH exists and ANNOUNCES itself (HND-GAT-003). ⛔ A gate with
 # no way out is deleted; a silent bypass is a gate already gone.
 clear()
 r = run(subagent_type="writer", description="x", env={"MENTE_HANDOFF_BYPASS": "1"})
-case("⑩ ⬜ la salida de emergencia deja pasar", r.returncode == 0,
+case("⑩ ⬜ the escape hatch lets it through", r.returncode == 0,
      "exit=%d" % r.returncode)
-case("⑪ ⛔ y GRITA lo que cuesta usarla",
+case("⑪ ⛔ and it SHOUTS what using it costs",
      "BYPASSED" in r.stderr and "no validator will catch it" in r.stderr)
 
 # ⑫ · a call that is not a delegation is none of this gate's business
 r = run(tool="Bash", command="ls")
-case("⑫ · una llamada que no es delegación no le concierne",
+case("⑫ · a call that is not a delegation is not its business",
      r.returncode == 0 and not r.stderr.strip())
 
 # ⑬ ⬜ which tool launches a specialist is the INSTALLATION's — a host that
@@ -169,7 +169,7 @@ case("⑫ · una llamada que no es delegación no le concierne",
 clear()
 r = run(tool="Delegate", subagent_type="writer", description="x",
         env={"MENTE_HANDOFF_TOOL": "Delegate"})
-case("⑬ ⬜ el nombre de la herramienta es declarable", r.returncode == 2,
+case("⑬ ⬜ the tool's name is declarable", r.returncode == 2,
      "exit=%d" % r.returncode)
 
 # ⑭ ⛔ ROBUSTNESS · a hook that crashes protects nothing
@@ -180,7 +180,7 @@ for p in ("not json", "[]", "null", '{"tool_input": "text"}', '{}',
                        capture_output=True, text=True)
     if "Traceback" in x.stderr:
         bad.append(p)
-case("⑭ ⛔ 6 payloads inválidos → sin traza", not bad, str(bad))
+case("⑭ ⛔ 6 invalid payloads → no traceback", not bad, str(bad))
 
 # ⑮ ⚠️ AND IT FAILS OPEN, unlike gate-secrets. The worst case here is an
 # unbounded specialist — visible in its own output and reversible. A broken gate
@@ -190,7 +190,7 @@ broken = os.path.join(TREE, "hooks", "_beat.py")
 keep = open(broken, encoding="utf-8").read()
 open(broken, "w").write("def beat(*a):\n    raise RuntimeError('boom')\n")
 r = run(subagent_type="writer", description="x")
-case("⑮ ⚠️ si la puerta revienta, falla ABIERTO y lo dice",
+case("⑮ ⚠️ if the gate crashes it fails OPEN and says so",
      r.returncode == 0 and "could not complete" in r.stderr,
      "exit=%d" % r.returncode)
 open(broken, "w").write(keep)
@@ -204,23 +204,23 @@ open(broken, "w").write(keep)
 clear()
 RO = {"MENTE_HANDOFF_READONLY": "reader,explore"}
 r = run(subagent_type="reader", description="just look", env=RO)
-case("⑰ ⭐ lector DECLARADO pasa sin manifiesto", r.returncode == 0,
+case("⑰ ⭐ a DECLARED reader passes with no manifest", r.returncode == 0,
      "exit=%d" % r.returncode)
 r = run(subagent_type="writer", description="x", env=RO)
-case("⑱ 🔴 y declarar lectores no ablanda al escritor", r.returncode == 2,
+case("⑱ 🔴 and declaring readers does not soften the writer", r.returncode == 2,
      "exit=%d" % r.returncode)
 # ⭐ HND-GAT-005 · the safe reading of silence is the PERMISSION being absent
 r = run(subagent_type="a-brand-new-type", description="x", env=RO)
-case("⑲ ⭐ un tipo NO declarado es un escritor (falla cerrado)",
+case("⑲ ⭐ an UNDECLARED type is a writer (fails closed)",
      r.returncode == 2, "exit=%d" % r.returncode)
 r = run(subagent_type="reader", description="x")
-case("⑳ ⛔ sin declaración, ni «reader» se libra", r.returncode == 2,
+case("⑳ ⛔ with no declaration, not even «reader» is exempt", r.returncode == 2,
      "exit=%d" % r.returncode)
 
 # ⑯ ⭐ it leaves its beat, so a dead gate becomes visible to check-gates
 clear()
 run(subagent_type="writer", description="x")
-case("⑯ ⭐ deja su latido para check-gates",
+case("⑯ ⭐ leaves its beat for check-gates",
      os.path.exists(os.path.join(TREE, ".beats", "gate-handoff")))
 
 shutil.rmtree(WORK, ignore_errors=True)
