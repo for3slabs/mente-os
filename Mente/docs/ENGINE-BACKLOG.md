@@ -457,8 +457,8 @@ alarms, and a false alarm on a real tree is how a check gets switched off.**
   the contract; RUNNING the tool measures it — which is the principle this whole
   suite exists to apply, applied to itself.
 - ⚠️ **Verified by planting a defect the probes cannot see** — a broken pointer
-  in a document — and watching the new section report it while all 556 checks
-  stayed green.
+  in a document — and watching the new section report it while the battery stayed
+  green (the count lives in `docs/METRICS.md`).
 
 **Why it matters.** ⛔ **A probe answers "does this check detect what it claims?", never "is the
 tree clean right now?"** — and the second question went unasked for seven audits while four
