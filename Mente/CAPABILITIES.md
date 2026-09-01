@@ -77,6 +77,7 @@ answers exactly one question. None of them decides anything: they check what is 
 | `bin/check-shipping` | does a change leave the way the rule says it must |
 | `bin/check-archive` | does a closed block leave behind what the next reader needs |
 | `bin/check-pending` | is a debt written in the shape somebody else can pick up |
+| `bin/check-patterns` | ⭐ is each imported failure pattern described well enough to BE detected — ⛔ it does not detect them, and says so |
 | `bin/check-config` | is the permission surface complete, portable and free of pasted secrets |
 | `bin/check-accounts` | ⭐ does every push target declare who governs it — and does the unavoidable layer RUN |
 | `bin/connect-account [repo]` | ⭐ which account governs a repository, and where its access guide lives — ⛔ the pointer, never the credential |

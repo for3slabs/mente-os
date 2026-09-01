@@ -213,3 +213,5 @@ check-declarations	bin/check-declarations	engine	executable	lists the ⬜ an ins
 probe-declarations	bin/probes/probe-declarations.py	engine	executable	proves the unfilled ⬜ are counted and never treated as faults
 contract-block-sections	rules/contract-block-sections.md	engine	canonical	what each of §A-K carries — ⭐ the SHAPE half of the block contract, split when the two passed their ceiling
 findings	bin/findings.py	engine	executable	one way to report many findings — ⛔ a report nobody finishes is a report nobody applies
+check-patterns	bin/check-patterns	engine	executable	enforces the failure-pattern catalogue — ⛔ a pattern nobody can detect is a sentence, not a rule
+probe-patterns	bin/probes/probe-patterns.py	engine	executable	proves the example PAIR is required — without the passing half, a detector that flags everything scores perfectly
