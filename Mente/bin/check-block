@@ -10,7 +10,29 @@ import os, re, sys, glob, datetime
 from datetime import date
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-CONTRACT = os.path.join(ROOT, "rules", "contract-block.md")
+# ⭐ ONE CONTRACT, TWO FILES. The lifecycle half and the sections half were
+# split when together they passed the ceiling for their type. ⛔ A reader that
+# opens only one of them sees half the rules and reports the other half as
+# missing — measured the moment the split happened: the type and lane
+# vocabularies live in the SECTIONS half, and this stopped finding them.
+CONTRACT_PARTS = (os.path.join(ROOT, "rules", "contract-block.md"),
+                   os.path.join(ROOT, "rules",
+                                "contract-block-sections.md"))
+CONTRACT = CONTRACT_PARTS[0]      # the half that names the rule set
+
+
+def contract_text():
+    """Both halves as one body of text — ⭐ the contract as it reads."""
+    out = []
+    for q in CONTRACT_PARTS:
+        try:
+            out.append(open(q, encoding="utf-8", errors="replace").read())
+        except OSError:
+            # ⬜ A half that cannot be read is half a contract, and the
+            # caller reports that rather than measuring against it.
+            continue
+    return "\\n".join(out)
+
 BLOCKS = os.path.join(ROOT, "work", "blocks")
 
 # ⭐ ONE reader for a block's sections — bin/blockread.py. It lived as four
@@ -34,7 +56,7 @@ def declared():
     "a declared period" while the period was a literal in this file."""
     days, ceil = 0, {}
     try:
-        t = open(CONTRACT, encoding="utf-8", errors="replace").read()
+        t = contract_text()
     except OSError:
         return days, ceil
     m = re.search(r"⬜ stale period[^|]*\|\s*(\d+)", t)
