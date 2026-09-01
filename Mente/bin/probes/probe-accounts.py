@@ -178,9 +178,9 @@ case("⑱ ⛔ un registro ilegible no revienta la comprobación",
 
 shutil.rmtree(WORK, ignore_errors=True)
 good = sum(1 for _, ok in results if ok)
-print("\n  ➜ %d de %d correctos" % (good, len(results)))
+print("\n  ➜ %d of %d correct" % (good, len(results)))
 for l, ok in results:
     if not ok:
         print("     🔴 %s" % l)
-print("  restos: %s" % ("ninguno" if not os.path.exists(WORK) else "🔴 copia"))
+print("  leftovers: %s" % ("none" if not os.path.exists(WORK) else "🔴 copia"))
 sys.exit(0 if good == len(results) else 1)

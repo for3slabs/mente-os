@@ -222,7 +222,7 @@ case("💓 deja su latido para check-gates",
 
 shutil.rmtree(WORK, ignore_errors=True)
 good = sum(1 for _, ok in results if ok)
-print("\n  ➜ %d de %d correctos" % (good, len(results)))
+print("\n  ➜ %d of %d correct" % (good, len(results)))
 for l, ok in results:
     if not ok:
         print("     🔴 %s" % l)
@@ -232,6 +232,6 @@ for l, ok in results:
 left = [p for p in (WORK, os.path.join(ROOT, ".secrets-lease.json"),
                     os.path.join(ROOT, "secrets", ".access-log.md"))
         if os.path.exists(p)]
-print("  restos: %s" % ("ninguno" if not left else
+print("  leftovers: %s" % ("none" if not left else
                         "🔴 " + ", ".join(os.path.basename(p) for p in left)))
 sys.exit(0 if good == len(results) and not left else 1)

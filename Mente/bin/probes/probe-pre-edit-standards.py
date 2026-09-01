@@ -71,32 +71,32 @@ clean()
 # ① the claimed file → the block answers, with its standards
 plant()
 r = run("work/%s-owner-src/a.py" % MARK)
-case("① archivo reclamado · nombra el bloque y su §D",
+case("① a claimed file · names the block and its §D",
      MARK + "-owner" in r.stderr and "contract-block" in r.stderr,
      r.stderr.strip().split("\n")[0][:40])
 
 # ② ⭐ a path cited INSIDE the prose is not a claim
 r = run("docs/%s-owner-foreign.md" % MARK)
-case("② ⭐ citado en la PROSA · no lo reclama", not r.stderr.strip(),
-     "silencio" if not r.stderr.strip() else "🔴 lo reclamó")
+case("② ⭐ cited in PROSE · does not claim it", not r.stderr.strip(),
+     "silence" if not r.stderr.strip() else "🔴 it claimed it")
 
 # ③ ⛔ segment match, never substring
 r = run("work/%s-owner-src-other/x.py" % MARK)
-case("③ ⛔ prefijo parcial del nombre · no casa", not r.stderr.strip(),
+case("③ ⛔ a partial name prefix · does not match", not r.stderr.strip(),
      "silencio")
 
 # ④ an empty §D is a finding, not silence
 clean(); plant(std="—")
 r = run("work/%s-owner-src/a.py" % MARK)
-case("④ §D vacía · lo dice en vez de callar", "BLK-STD-001" in r.stderr,
+case("④ an empty §D · it says so instead of staying quiet", "BLK-STD-001" in r.stderr,
      r.stderr.strip().split("\n")[-1][:40])
 
 # ⑤ an OPEN sub-block on the same file is surfaced
 clean()
 plant(sub="| 1 | migrate it | `%s-owner-src/a.py` | — | active |" % MARK)
 r = run("work/%s-owner-src/a.py" % MARK)
-case("⑤ sub-bloque ABIERTO sobre el archivo · avisa",
-     "sub-block for this file" in r.stderr, "el patrón arreglo-sobre-arreglo")
+case("⑤ an OPEN sub-block over the file · it warns",
+     "sub-block for this file" in r.stderr, "the fix-on-fix pattern")
 
 # ⑥ 🔴 it must NEVER block, whatever arrives
 clean()
@@ -106,21 +106,21 @@ for label, payload in (("payload roto", "{not json"),
                        ("sin file_path", '{"tool_input":{}}')):
     r = run("", payload=payload)
     if r.returncode != 0:
-        case("⑥ nunca bloquea · %s" % label, False, "exit=%d" % r.returncode)
+        case("⑥ never blocks · %s" % label, False, "exit=%d" % r.returncode)
         break
 else:
-    case("⑥ 🔴 nunca bloquea · 4 payloads inválidos", True, "exit=0 en los cuatro")
+    case("⑥ 🔴 never blocks · 4 invalid payloads", True, "exit=0 in all four")
 
 # ⑦ ⭐ no block claims the file → silence, not a guess
 r = run("work/nobody/x.py")
-case("⑦ archivo de nadie · silencio", not r.stderr.strip(), "silencio")
+case("⑦ a file nobody owns · silence", not r.stderr.strip(), "silencio")
 
 clean()
 good = sum(1 for _, ok in results if ok)
-print("\n  ➜ %d de %d correctos" % (good, len(results)))
+print("\n  ➜ %d of %d correct" % (good, len(results)))
 for l, ok in results:
     if not ok:
         print("     🔴 %s" % l)
-print("\n  restos: %s" % ("ninguno" if not [n for n in os.listdir(BLOCKS)
+print("\n  leftovers: %s" % ("none" if not [n for n in os.listdir(BLOCKS)
                                             if n.startswith(MARK)] else "🔴 quedan"))
 sys.exit(0 if good == len(results) else 1)

@@ -288,10 +288,10 @@ else:
 
 clean()
 good = sum(1 for _, ok in results if ok)
-print("\n  ➜ %d de %d correctos" % (good, len(results)))
+print("\n  ➜ %d of %d correct" % (good, len(results)))
 for l, ok in results:
     if not ok:
         print("     🔴 %s" % l)
 leftovers = glob.glob(os.path.join(ROOT, "**", MARK + "*"), recursive=True)
-print("\n  restos: %s" % (leftovers or "ninguno"))
+print("\n  leftovers: %s" % (leftovers or "none"))
 sys.exit(0 if good == len(results) and not leftovers else 1)
