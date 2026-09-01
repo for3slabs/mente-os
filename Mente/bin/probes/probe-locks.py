@@ -123,6 +123,31 @@ case("⑨ ⭐ and reports the three counts it measured",
      "declared" in r.stdout and "cited in code" in r.stdout
      and "delegated" in r.stdout)
 
+# ── CHK-DIS-001 · a 📖 row says WHICH of two things it is ──────────────────
+# ⛔ "Nothing verifies this" hides two opposite facts: a script CANNOT check it,
+# or one has not been WRITTEN yet. ⚠️ Mixed into one symbol the buildable ones
+# are invisible — and a backlog nobody can see is a backlog nobody works.
+plant("| `ZZP-III-001` | unbuilt | 📖 | ⚠️ nothing verifies this yet |\n")
+r = run()
+case("⑫ ⭐ a 📖 row saying `yet` is counted as WORK",
+     "ZZP-III-001" in r.stdout and "are WORK" in r.stdout)
+
+plant("| `ZZP-JJJ-001` | a real limit | 📖 | ⛔ a script cannot know intent |\n")
+r = run()
+case("⑬ ⭐ a 📖 row that EXPLAINS its limit is not counted",
+     "ZZP-JJJ-001" not in r.stdout)
+
+# ⚠️ And the ambiguous middle is reported as ambiguous — not as a finding, and
+# not silently: a row a reader cannot act on is worth naming.
+plant("| `ZZP-KKK-001` | unclear | 📖 | ⛔ nothing verifies this |\n")
+r = run()
+case("⑭ ⚠️ a 📖 row that says neither → reported as ambiguous",
+     "WHICH KIND" in r.stdout)
+
+# ⛔ and none of the three is a FAILURE: a discipline row breaks nothing
+case("⑮ ⛔ none of them fails the check — 📖 is not a violation",
+     r.returncode == 0, "exit=%d" % r.returncode)
+
 # ── ⬜ WHAT IT CANNOT SEE, IT SAYS ──────────────────────────────────────────
 # ⛔ With no code at all every lock looks unimplemented — reporting 199 findings
 # would be technically true and completely useless.
