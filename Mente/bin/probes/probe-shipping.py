@@ -44,14 +44,14 @@ if not HAS_GIT:
 else:
     p.baseline()
 
-p.case("① una etapa del ciclo sin dueño",
+p.case("① a loop stage with no owner",
        lambda: edit("| 10 | ⭐ **DETECT the merge** — look, do not ask | §8 |",
                     "| 10 | ⭐ **DETECT the merge** — look, do not ask |  |"),
        "SHP-CYC-001")
-p.case("② una etapa desaparece de la tabla",
+p.case("② a stage disappears from the table",
        lambda: edit("| 12 | **DELETE the branch** — local and remote, ⚠️ with its exceptions | §8 |", ""),
        "SHP-CYC-001")
-p.case("③ el techo de agrupación no declarado",
+p.case("③ the grouping ceiling undeclared",
        lambda: edit("items_per_proposal: 4", "N: 4"), "SHP-GRP-001")
 
 
@@ -75,9 +75,9 @@ p.clean()
 hide_gate()
 code, out, err = p.run()
 hit = "SHP-LCK-001" in out
-print("  %-46s %s %s" % ("④ declara 🔒 y no hay candado", "✅" if hit else "🔴",
+print("  %-46s %s %s" % ("④ declares 🔒 and no lock exists", "✅" if hit else "🔴",
                          "FAIL" if hit else "NOT_DETECTED"))
-p.results.append(("④ 🔒 sin candado", "FAIL" if hit else "NOT_DETECTED"))
+p.results.append(("④ 🔒 with no lock", "FAIL" if hit else "NOT_DETECTED"))
 restore_gate()
 p.clean()
 
@@ -86,11 +86,11 @@ p.clean()
 # ⬜ NOT MEASURED of SHP-BAS-001 as a false positive — the probe blaming the
 # checker for saying what the rule requires it to say.
 if HAS_GIT:
-    p.inverse("⑤ el estado real", lambda: None)
+    p.inverse("⑤ the real state", lambda: None)
 else:
-    print("  ⑤ el estado real                               "
-          "⬜ NOT_MEASURED · requiere repositorio")
-    p.results.append(("⑤ el estado real", "PASS"))
+    print("  ⑤ the real state                               "
+          "⬜ NOT_MEASURED · needs a repository")
+    p.results.append(("⑤ the real state", "PASS"))
 
 # ── B · the gate is INVOKED, not merely found
 print("\n═══ B · EL CANDADO SE INVOCA, no se da por presente ═══\n")
@@ -121,7 +121,7 @@ try:
     r = run("git", "commit", "-qm", "on branch")
     passed = r.returncode == 0
     print("  %-46s %s %s" % ("⑦ commit sobre una rama", "✅" if passed else "🔴",
-                             "NO dispara (correcto)" if passed else "falso positivo"))
+                             "does NOT fire (correct)" if passed else "false positive"))
     p.results.append(("⑦ commit sobre una rama", "PASS" if passed else "FALSE_POSITIVE"))
 
     # ⭐ the escape hatch works, and it is loud
@@ -160,7 +160,7 @@ try:
     _ok2 = cs.ok("git", "merge-base", "--is-ancestor", "main", "HEAD") is True
     print("  %-46s %s %s" % ("⑩ BAS · una rama cortada BIEN no dispara",
                              "✅" if _ok2 else "🔴",
-                             "NO dispara (correcto)" if _ok2 else "falso positivo"))
+                             "does NOT fire (correct)" if _ok2 else "false positive"))
     p.results.append(("⑩ base correcta", "PASS" if _ok2 else "FALSE_POSITIVE"))
 
     # SHP-BAS-003 · chained on another open branch
@@ -197,7 +197,7 @@ try:
     _quiet = "SHP-CLS-001" not in _o
     print("  %-46s %s %s" % ("⑬ CLS · la declaración real no dispara",
                              "✅" if _quiet else "🔴",
-                             "NO dispara (correcto)" if _quiet else "falso positivo"))
+                             "does NOT fire (correct)" if _quiet else "false positive"))
     p.results.append(("⑬ cierre correcto", "PASS" if _quiet else "FALSE_POSITIVE"))
 finally:
     open(_rule, "w", encoding="utf-8").write(_orig)

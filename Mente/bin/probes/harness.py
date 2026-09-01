@@ -102,8 +102,8 @@ class Probe:
         mine = self._mine(out)
         ok = not mine
         print("  %-46s %s %s" % (label, "✅" if ok else "🔴",
-                                 "NO dispara (correcto)" if ok
-                                 else "falso positivo: " + mine[0][:70]))
+                                 "does NOT fire (correct)" if ok
+                                 else "false positive: " + mine[0][:70]))
         self.clean()
         self.results.append((label, "PASS" if ok else "FALSE_POSITIVE"))
         return ok
@@ -126,7 +126,7 @@ class Probe:
             src.replace("def main():", 'def main():\n    raise RuntimeError("boom")', 1))
         r = subprocess.run([sys.executable, p], cwd=ROOT, capture_output=True, text=True)
         ok = "crashed ·" in r.stdout and "Traceback" not in r.stdout
-        print("  %-46s %s %s" % ("⑨ CRASH · sale como hallazgo",
+        print("  %-46s %s %s" % ("⑨ CRASH · reported as a finding",
                                  "✅" if ok else "🔴",
                                  "reportado, no un trace" if ok
                                  else (r.stdout or r.stderr).strip()[:70]))
@@ -138,13 +138,13 @@ class Probe:
         self.clean()
         good = sum(1 for _, v in self.results if v in ("FAIL", "PASS"))
         bad = [(l, v) for l, v in self.results if v not in ("FAIL", "PASS")]
-        print("\n  ➜ %d de %d correctos" % (good, len(self.results)))
+        print("\n  ➜ %d of %d correct" % (good, len(self.results)))
         for l, v in bad:
             print("     🔴 %-42s %s" % (l, v))
         leftovers = [p for p in glob.glob(os.path.join(ROOT, "**", MARK + "*"),
                                           recursive=True)]
-        print("\n  restos: %s" % (leftovers or "ninguno"))
+        print("\n  leftovers: %s" % (leftovers or "none"))
         r = subprocess.run([sys.executable, "bin/" + self.checker], cwd=ROOT,
                            capture_output=True, text=True)
-        print("  estado: %s" % r.stdout.strip().replace("\n", "\n          "))
+        print("  state: %s" % r.stdout.strip().replace("\n", "\n          "))
         return not bad and not leftovers
