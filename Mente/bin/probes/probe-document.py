@@ -33,15 +33,15 @@ def put(text, name=MARK + "-fixture.md"):
 print("═══ A · SABOTAJE · check-document ═══\n")
 p.baseline()
 
-p.case("① cabecera incompleta",
+p.case("① an incomplete header",
        lambda: put(GOOD.replace(" · **Owner:** someone", "")), "DOC-HDR-001")
-p.case("② Status inválido",
+p.case("② an invalid Status",
        lambda: put(GOOD.replace("**Status:** current", "**Status:** alive")), "DOC-HDR-002")
-p.case("③ Type inexistente",
+p.case("③ a Type that does not exist",
        lambda: put(GOOD.replace("**Type:** rule", "**Type:** invented")), "DOC-HDR-003")
-p.case("④ fecha no ISO",
+p.case("④ a non-ISO date",
        lambda: put(GOOD.replace("2026-01-15", "15 Jan 2026")), "DOC-HDR-004")
-p.case("⑤ superseded sin reemplazo",
+p.case("⑤ superseded with no replacement",
        lambda: put(GOOD.replace("**Status:** current", "**Status:** superseded")),
        "DOC-HDR-005")
 # ⭐ The fixture must exceed the ceiling the CONTRACT declares, read from the
@@ -54,28 +54,28 @@ def _ceiling(kind="rule"):
     return int(m.group(1)) if m else 250
 
 
-p.case("⑥ techo superado",
+p.case("⑥ over the ceiling",
        lambda: put(GOOD.replace("Nothing of consequence.",
                                 "\n".join("line %d" % i
                                           for i in range(_ceiling() + 50)))),
        "DOC-SIZ-001")
-p.case("⑦ sin Purpose",
+p.case("⑦ no Purpose",
        lambda: put(GOOD.replace("## Purpose", "## Something else")), "DOC-BOD-001")
-p.case("⑧ numeración -bis",
+p.case("⑧ -bis numbering",
        lambda: put(GOOD.replace("## 1 · Content", "## 1-bis · Content")), "DOC-BOD-002")
-p.case("⑨ número vivo en prosa",
+p.case("⑨ a live number in prose",
        lambda: put(GOOD.replace("Nothing of consequence.",
                                 "The suite runs 42 checks today.")), "DOC-CNT-002")
-p.case("⑩ puntero que no resuelve",
+p.case("⑩ a pointer that does not resolve",
        lambda: put(GOOD.replace("Nothing of consequence.",
                                 "See `rules/ghost.md` for detail.")), "DOC-CNT-004")
-p.case("⑪ generated sin decirlo en el cuerpo",
+p.case("⑪ generated without saying so in the body",
        lambda: put(GOOD.replace("**Owner:** someone",
                                 "**Owner:** someone · **Authority:** generated")),
        "DOC-AUT-002")
-p.case("⑫ nombre con versión", lambda: put(GOOD, MARK + "-thing-v2.md"), "DOC-NAM-004")
-p.case("⑬ nombre con guion bajo", lambda: put(GOOD, MARK + "-a_b.md"), "DOC-NAM-001")
-p.case("⑭ fecha en el nombre",
+p.case("⑫ a name carrying a version", lambda: put(GOOD, MARK + "-thing-v2.md"), "DOC-NAM-004")
+p.case("⑬ a name with an underscore", lambda: put(GOOD, MARK + "-a_b.md"), "DOC-NAM-001")
+p.case("⑭ a date in the name",
        lambda: put(GOOD, MARK + "-2026-01-15-thing.md"), "DOC-NAM-003")
 
 # ⭐ DOC-SIZ-001 now checks that the SPLIT was named, not just that the ceiling
@@ -84,28 +84,28 @@ p.case("⑭ fecha en el nombre",
 # ⛔ 300 lines does NOT cross a `rule` ceiling of 700 — the first version of
 # this case planted the defect where no ceiling was, and read the working check
 # as broken. The count must exceed the ceiling of the fixture's OWN type.
-p.case("⑭b SIZ · pasa el techo y nadie nombró la división",
+p.case("⑭b SIZ · over the ceiling and nobody named the split",
        lambda: put(GOOD.replace("Nothing of consequence.",
                                 "\n".join("line %d" % i for i in range(750)))),
        "DOC-SIZ-001")
 
 # ⭐ DOC-IDS-001 · an id is an address. Measured: a real contract carried one
 # twice after a rule was added beside an existing one.
-p.case("⑭c IDS · el mismo id en dos filas",
+p.case("⑭c IDS · the same id in two rows",
        lambda: put(GOOD.replace("Nothing of consequence.",
                                 "| `ABC-XYZ-001` | first | 🔒 | x |\n"
                                 "| `ABC-XYZ-001` | second | 🔒 | y |")),
        "DOC-IDS-001")
-p.inverse("⑭d IDS · dos ids distintos no disparan",
+p.inverse("⑭d IDS · two different ids do not fire",
           lambda: put(GOOD.replace("Nothing of consequence.",
                                    "| `ABC-XYZ-001` | first | 🔒 | x |\n"
                                    "| `ABC-XYZ-002` | second | 🔒 | y |")))
 
-p.case("⑮ una credencial pegada en el cuerpo",
+p.case("⑮ a credential pasted into the body",
        lambda: put(GOOD.replace("Nothing of consequence.",
                                 'Run it with `--token=abc123def456ghi789`.')),
        "DOC-CNT-005")
-p.case("⑯ el nombre del archivo nombra a una persona",
+p.case("⑯ the filename names a person",
        lambda: put(GOOD.replace("**Owner:** someone", "**Owner:** alexandra"),
                    MARK + "-alexandra-notes.md"), "DOC-NAM-007")
 
@@ -115,18 +115,18 @@ p.case("⑯ el nombre del archivo nombra a una persona",
 _contract = os.path.join(ROOT, "rules", "contract-document.md")
 _orig = open(_contract, encoding="utf-8").read()
 try:
-    p.inverse("⑰ sin umbral declarado, NADA se mide (fecha vieja)",
+    p.inverse("⑰ with no declared threshold, NOTHING is measured (old date)",
               lambda: put(GOOD))
     open(_contract, "w", encoding="utf-8").write(
         _orig.replace("| ⬜ staleness threshold | 0 days |",
                       "| ⬜ staleness threshold | 30 days |"))
-    p.case("⑱ `current` con fecha vieja, con umbral declarado",
+    p.case("⑱ `current` with an old date, threshold declared",
            lambda: put(GOOD), "DOC-LIF-001")
 finally:
     open(_contract, "w", encoding="utf-8").write(_orig)
     p.clean()
 
-p.inverse("⑲ un documento CORRECTO", lambda: put(GOOD))
+p.inverse("⑲ a CORRECT document", lambda: put(GOOD))
 p.crash_guard()
 
 print("\n═══ B · CORRIDA CRUZADA · documentos reales de otra instancia ═══\n")
@@ -153,19 +153,19 @@ for k in sorted(by):
 # reference went unchecked. Measured: 170 of those in this tree, 24 resolving to
 # nothing, including QUICKSTART.md — the first file a newcomer reads — naming
 # six commands of which one existed.
-p.case("㉒ un puntero SIN extensión que no resuelve",
+p.case("㉒ a pointer with NO extension that does not resolve",
        lambda: put(GOOD + "\nRun `bin/check-zznothing` to verify.\n"),
        "DOC-CNT-004")
 
 # ⭐ and the same pointer marked ⬜ is correct — planned, not broken
-p.inverse("㉓ el mismo puntero marcado ⬜ NO se reporta",
+p.inverse("㉓ the same pointer marked ⬜ is NOT reported",
           lambda: put(GOOD + "\nRun \u2b1c `bin/check-zznothing` later.\n"))
 
 # ⭐ A CONTRAST REFERENCE names where something ELSE belongs — "that is
 # `docs/plans/`". ⛔ It is a destination an installation may create, not a claim
 # that a file is there, and reporting it would push writers to stop drawing the
 # line at all.
-p.inverse("㉔ ⭐ «that is `docs/zzelsewhere/`» es contraste, no puntero roto",
+p.inverse("㉔ ⭐ «that is `docs/zzelsewhere/`» is a contrast, not a broken pointer",
           lambda: put(GOOD + "\nA plan does not go here — that is "
                              "`docs/zzelsewhere/`.\n"))
 
@@ -187,7 +187,7 @@ p.clean()
 # every clone and in no working tree. ⛔ check-structure already derived the same
 # exemption from BOTH sources; two pieces answering one question differently is
 # how one of them ends up wrong.
-p.inverse("㉖ 🔴 citar un archivo GENERADO (gitignored) no es puntero roto",
+p.inverse("㉖ 🔴 citing a GENERATED file (gitignored) is not a broken pointer",
           lambda: put(GOOD + "\nNumbers live in `docs/METRICS.md`.\n"))
 
 # ── DOC-CAP-001/002 · the map and the tree must agree, BOTH ways ────────────

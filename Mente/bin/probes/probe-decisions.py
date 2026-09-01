@@ -61,22 +61,22 @@ def put(text, name="901-" + MARK + ".md"):
 print("═══ SABOTAJE · check-decisions ═══\n")
 p.baseline()
 
-p.case("① falta un campo de cabecera",
+p.case("① a header field is missing",
        lambda: put(GOOD.replace("decided-by: the owner\n", "")), "DEC-FLD-001")
-p.case("② fecha no ISO", lambda: put(GOOD.replace("2026-01-15", "15 Jan 2026")),
+p.case("② a non-ISO date", lambda: put(GOOD.replace("2026-01-15", "15 Jan 2026")),
        "DEC-FLD-001")
-p.case("③ status inválido",
+p.case("③ an invalid status",
        lambda: put(GOOD.replace("status: accepted", "status: agreed")), "DEC-FLD-002")
-p.case("④ falta una sección",
+p.case("④ a section is missing",
        lambda: put(re.sub(r"## Reverting\n.*", "", GOOD, flags=re.S)), "DEC-FLD-003")
-p.case("⑤ Evidence vacío",
+p.case("⑤ an empty Evidence",
        lambda: put(re.sub(r"## Evidence\n\n.*?\n\n", "## Evidence\n\n\n", GOOD, flags=re.S)),
        "DEC-FLD-004")
-p.case("⑥ nombre sin número", lambda: put(GOOD, MARK + "-thing.md"), "DEC-NUM-001")
-p.case("⑦ número reutilizado",
+p.case("⑥ a name with no number", lambda: put(GOOD, MARK + "-thing.md"), "DEC-NUM-001")
+p.case("⑦ a reused number",
        lambda: (put(GOOD, "901-" + MARK + "-a.md"), put(GOOD, "901-" + MARK + "-b.md")),
        "DEC-NUM-002")
-p.case("⑧ enlace supersede de un solo lado",
+p.case("⑧ a one-sided supersede link",
        lambda: (put(GOOD.replace("superseded-by: —", "superseded-by: 902"),
                     "901-" + MARK + "-a.md"),
                 put(GOOD.replace("# 901 ·", "# 902 ·")
@@ -84,10 +84,10 @@ p.case("⑧ enlace supersede de un solo lado",
                              "applies-to: a different subject entirely"),
                     "902-" + MARK + "-b.md")),
        "DEC-SUP-001")
-p.case("⑨ supersede a un registro inexistente",
+p.case("⑨ supersedes a record that does not exist",
        lambda: put(GOOD.replace("supersedes: —", "supersedes: 099"),
                    "901-" + MARK + "-a.md"), "DEC-SUP-002")
-p.case("⑩ superseded pero status accepted",
+p.case("⑩ superseded but status accepted",
        lambda: (put(GOOD.replace("superseded-by: —", "superseded-by: 902"),
                     "901-" + MARK + "-a.md"),
                 put(GOOD.replace("# 901 ·", "# 902 ·")
@@ -98,60 +98,60 @@ p.case("⑩ superseded pero status accepted",
                     "902-" + MARK + "-b.md")), "DEC-SUP-003")
 
 # ── las 5 reglas nuevas
-p.case("⑪ sin estado de implementación",
+p.case("⑪ no implementation state",
        lambda: put(GOOD.replace("implementation: verified\n", "")), "DEC-IMP-001")
-p.case("⑫ estado de implementación desconocido",
+p.case("⑫ an unknown implementation state",
        lambda: put(GOOD.replace("implementation: verified", "implementation: done")),
        "DEC-IMP-001")
-p.case("⑬ aceptado hace mucho y nunca empezado",
+p.case("⑬ accepted long ago and never started",
        lambda: put(GOOD.replace("implementation: verified",
                                 "implementation: not-started")), "DEC-IMP-003")
-p.case("⑭ supersedes sin decir por qué",
+p.case("⑭ supersedes without saying why",
        lambda: put(GOOD.replace("supersedes: —", "supersedes: 099")), "DEC-FLD-006")
-p.case("⑮ sin declarar dónde aplica",
+p.case("⑮ it never declares where it applies",
        lambda: put(re.sub(r"applies-to: .*\n", "", GOOD)), "DEC-FLD-007")
-p.case("⑯ alternativas rechazadas sin nombrar",
+p.case("⑯ rejected alternatives left unnamed",
        lambda: put(re.sub(r"## Rejected alternatives\n\n.*?\n\n",
                           "## Rejected alternatives\n\nwe looked at some others\n\n",
                           GOOD, flags=re.S)), "DEC-FLD-005")
 
-p.case("⑰b ONE · la decisión es una TABLA de filas",
+p.case("⑰b ONE · the decision is a TABLE of rows",
        lambda: put(GOOD.replace(
            "One decision is one file.",
            "| # | choice |\n|---|---|\n| 1 | this |\n| 2 | that |\n| 3 | other |")),
        "DEC-ONE-001")
 
-p.case("⑰c NUM · revertida sin decir por qué",
+p.case("⑰c NUM · reverted without saying why",
        lambda: put(GOOD.replace("status: accepted", "status: reverted")
                        .replace("## Rationale\n\nA file carries its evidence, "
                                 "its boundary and its exit; a row carries none.\n", "")),
        "DEC-NUM-003")
 
-p.case("⑰d SRC · dos registros vigentes sobre el mismo asunto",
+p.case("⑰d SRC · two standing records on the same subject",
        lambda: (put(GOOD),
                 put(GOOD.replace("# 901 ·", "# 902 ·"), "902-" + MARK + ".md")),
        "DEC-SRC-003")
 
-p.case("⑰e NUM · el nombre del archivo nombra a quien decidió",
+p.case("⑰e NUM · the filename names who decided",
        lambda: put(GOOD.replace("decided-by: the owner", "decided-by: alexandra"),
                    "903-" + MARK + "-alexandra-decides.md"), "DEC-NUM-004")
 
 # ⭐ the inverse: the same owner, a filename that names the DECISION — must not fire.
-p.inverse("⑰f NUM · el mismo dueño, nombre que describe la decisión",
+p.inverse("⑰f NUM · the same owner, a name describing the decision",
           lambda: put(GOOD.replace("decided-by: the owner", "decided-by: alexandra"),
                       "904-" + MARK + "-one-file-per-record.md"))
 
-p.case("⑰g SUP · cita en prosa un ADR que no existe",
+p.case("⑰g SUP · it cites in prose an ADR that does not exist",
        lambda: put(GOOD.replace("## Rationale",
                                 "## Consequences\n\n- `ADR-777` — something\n\n## Rationale")),
        "DEC-SUP-004")
 
 # ⭐ the inverse: the same citation marked ⬜ planned must NOT fire.
-p.inverse("⑰h SUP · la misma cita, marcada ⬜ planned",
+p.inverse("⑰h SUP · the same citation, marked ⬜ planned",
           lambda: put(GOOD.replace("## Rationale",
                                    "## Consequences\n\n- ⬜ `ADR-777` (planned) — something\n\n## Rationale")))
 
-p.inverse("⑰ un registro CORRECTO", lambda: put(GOOD))
+p.inverse("⑰ a CORRECT record", lambda: put(GOOD))
 p.crash_guard()
 
 # ── B · CORRIDA CRUZADA
