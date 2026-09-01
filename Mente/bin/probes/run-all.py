@@ -11,6 +11,30 @@ from concurrent.futures import ThreadPoolExecutor
 HERE = os.path.dirname(os.path.abspath(__file__))
 BIN = os.path.dirname(HERE)
 
+# ── 🔴 THE RECURSION GUARD · this cost the machine once ─────────────────────
+# 🔴 MEASURED, 2026-09-01: a generator read the battery's result by RUNNING the
+# battery. The battery runs every probe; one probe exercises that generator;
+# that generator ran the battery. Ten of these probes copy the whole tree into a
+# temporary directory first, so each level spawned a full suite AND a full copy.
+# ⛔ It reached 655 live processes, load average 609, and 2,800 abandoned copies
+# before it was stopped by hand.
+#
+# ⚠️ IT DID NOT LOOK LIKE A LOOP. It looked like slowness — the first symptom was
+# a probe timing out, which is the most ordinary failure there is.
+#
+# ⭐ THE FIX IS STRUCTURAL, NOT A RULE. Nobody can be trusted to remember not to
+# invoke the battery from something the battery invokes: the call is three files
+# away from where the loop closes. So the battery marks its own descendants, and
+# refuses to be one.
+if os.environ.get("MENTE_BATTERY_RUNNING") == "1":
+    print("⛔ REFUSED · the battery is already running in a parent process.\n"
+          "   Something the battery invoked tried to invoke it back — that is a\n"
+          "   loop, and each turn of it copies the tree and spawns a full suite.\n"
+          "   ⭐ Read the last result from cache/last-battery.txt instead.",
+          file=sys.stderr)
+    sys.exit(2)
+os.environ["MENTE_BATTERY_RUNNING"] = "1"
+
 probes = sorted(glob.glob(os.path.join(HERE, "probe-*.py")))
 # ⛔ Not every validator is named `check-*`. Filtering on that prefix left
 # `grade-block` out of the count, so coverage read "13 validators, 14 probes" —
@@ -125,6 +149,20 @@ print("     validadores: %d · con sonda: %d%s"
 for c in missing:
     print("     ⬜ %s · NO PROBADO — un validador sin sonda no esta demostrado" % c)
 
-print("\n  ➜ checks: %d · failed: %d%s"
-      % (total, failed, "" if not failed else "  🔴"))
+_line = ("  ➜ checks: %d · failed: %d%s"
+         % (total, failed, "" if not failed else "  🔴"))
+print("\n" + _line)
+
+# ⭐ The result is RECORDED where bin/generate-metrics can read it. ⛔ That
+# generator used to run the battery to learn this number — which recursed
+# (the battery runs the probe that exercises the generator) and cost a full
+# verification run per read. ⚠️ A metric nobody can afford to regenerate is a
+# stale number wearing a measured face.
+try:
+    _c = os.path.join(os.path.dirname(BIN), "cache")
+    os.makedirs(_c, exist_ok=True)
+    with open(os.path.join(_c, "last-battery.txt"), "w", encoding="utf-8") as _fh:
+        _fh.write(_line.strip() + "\n")
+except OSError:
+    pass          # ⛔ recording the result never breaks the run that produced it
 sys.exit(1 if failed or missing else 0)
