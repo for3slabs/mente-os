@@ -195,7 +195,7 @@ where it is inconvenient are exactly the places it was written for.
 | 5 | ⭐ **at least one citation into another discipline** | ⛔ a file citing nobody is not part of a system |
 | 6 | **the header carries all five fields** | it fails its own document contract |
 | 7 | ⭐ **§0 names a failure, not a topic** | ⛔ it will not survive its first inconvenient verdict |
-| 8 | **declared in the piece table** (`../../../piezas.tsv`) | ⭐ undeclared is invisible to every check |
+| 8 | **declared in the piece table** (`../../../pieces.tsv`) | ⭐ undeclared is invisible to every check |
 
 > ## ⚠️ `⬜` HAS TWO USES — check 1 only covers the first
 > | Use | Example | Check 1 |

@@ -3,7 +3,7 @@
 **Status:** current · **Type:** folder-readme · **Updated:** {{date}} · **Owner:** {{owner}}
 **Scope:** ⚠️ **INSTANCE** — the folder ships empty. Everything written here belongs to one
 machine and never travels.
-**Governance:** `owner` in `piezas.tsv` · **Gitignored:** in full
+**Governance:** `owner` in `pieces.tsv` · **Gitignored:** in full
 
 ---
 

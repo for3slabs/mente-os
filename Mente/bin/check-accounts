@@ -22,8 +22,8 @@ import sys
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 RULE = os.path.join(ROOT, "rules", "rule-accounts.md")
-REG = os.environ.get("MENTE_ACCOUNTS") or os.path.join(ROOT, "cuentas.tsv")
-TEMPLATE = os.path.join(ROOT, "templates", "cuentas.tsv.template")
+REG = os.environ.get("MENTE_ACCOUNTS") or os.path.join(ROOT, "accounts.tsv")
+TEMPLATE = os.path.join(ROOT, "templates", "accounts.tsv.template")
 
 COLUMNS = ["repo", "cuenta", "rol", "remoto", "ruta_local", "por_que_existe", "guia"]
 # ⭐ ACC-REG-004 · the roles are DISCOVERED from the template's own declaration,

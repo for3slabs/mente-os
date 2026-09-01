@@ -183,7 +183,7 @@ _rule = os.path.join(ROOT, "rules", "rule-shipping.md")
 _orig = open(_rule, encoding="utf-8").read()
 try:
     open(_rule, "w", encoding="utf-8").write(
-        _orig.replace("`templates/RETOMAR.md.template`", "`templates/ghost.template`"))
+        _orig.replace("`templates/RESUME.md.template`", "`templates/ghost.template`"))
     _c, _o, _e = p.run()
     _hit = "SHP-CLS-001" in _o
     print("  %-46s %s %s" % ("⑫ CLS · una ruta declarada que no resuelve",

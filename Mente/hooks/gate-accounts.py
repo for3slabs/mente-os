@@ -42,7 +42,7 @@ MENTE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from _beat import beat                                         # noqa: E402
 
-REG = os.environ.get("MENTE_ACCOUNTS") or os.path.join(MENTE, "cuentas.tsv")
+REG = os.environ.get("MENTE_ACCOUNTS") or os.path.join(MENTE, "accounts.tsv")
 RETIRED = "archivado"
 
 # ⚠️ ANCHORED to the start of the command or to a separator, never loose in the

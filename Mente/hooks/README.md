@@ -2,7 +2,7 @@
 
 **Status:** current · **Type:** folder-readme · **Updated:** {{date}} · **Owner:** {{owner}} · **Scope:** ⚠️ ENGINE — travels identical to every
 clone. Nothing here is edited per instance.
-**Governance:** `engine` in `piezas.tsv`
+**Governance:** `engine` in `pieces.tsv`
 
 ---
 
@@ -168,5 +168,5 @@ machine's history.
 ---
 
 Related: `bin/README.md` (what you invoke on purpose) · `../CAPABILITIES.md` §3 (what runs without
-you) · `../rules/` (the contracts the gates enforce) · `../piezas.tsv` (where each hook is
+you) · `../rules/` (the contracts the gates enforce) · `../pieces.tsv` (where each hook is
 declared) · `../.gitignore` (why the marks never travel).

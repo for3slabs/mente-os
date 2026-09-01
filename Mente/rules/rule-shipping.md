@@ -342,7 +342,7 @@ any of them existed. A lock over an artifact with no declared address is not a l
 | # | ⬜ Path | Ships as |
 |---|---|---|
 | 1 | ⬜ session record | ⬜ declare it — the engine ships no default |
-| 2 | ⬜ cold-start brief | `templates/RETOMAR.md.template` → the instance names where it lands |
+| 2 | ⬜ cold-start brief | `templates/RESUME.md.template` → the instance names where it lands |
 | 6 | ⬜ the active block | ⭐ resolved from the block itself, never declared here |
 
 ⭐ **The engine fixes that there IS a place, never which one.** ⛔ A path missing from this table

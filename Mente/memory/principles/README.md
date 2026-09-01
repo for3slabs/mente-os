@@ -216,4 +216,4 @@ acts on those declarations** — the gaps, with what would close each, are in
 
 Related: `../README.md` (⭐ **the parent — read it for context**) · `../../rules/README.md` (what
 must happen, as opposed to how to judge it) · `../../hooks/README.md` (what injects these before
-an edit) · `../../docs/ENGINE-BACKLOG.md` (what this folder still owes) · `../../piezas.tsv`.
+an edit) · `../../docs/ENGINE-BACKLOG.md` (what this folder still owes) · `../../pieces.tsv`.

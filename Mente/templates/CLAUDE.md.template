@@ -37,16 +37,16 @@ It stores no rules and no state — it points at them, so the value is read from
 
 ## 🚀 STARTUP (always do this, without the owner asking)
 
-1. **READ FIRST** `Mente/memory/RETOMAR.md` (~5 KB) — the cold-start brief: where we left off +
+1. **READ FIRST** `Mente/memory/RESUME.md` (~5 KB) — the cold-start brief: where we left off +
    next step + flags + pointers. **In ~90% of cases it is ALL you need.**
 2. ⛔ **Do NOT read** any large historical file unless a pointer in
-   RETOMAR sends you there explicitly. Reading it "just in case" burns tokens — measured.
+   RESUME sends you there explicitly. Reading it "just in case" burns tokens — measured.
 3. **If a block is active** → load its Tier 1 (`§A-E` of `Mente/work/blocks/active/*/BLOCK.md`).
    ⭐ **And if that block belongs to a CAMPAIGN** (`Mente/work/campaigns/*/CAMPAIGN.md` lists it in its
    `§E`) → also load the campaign's **`§F Shared context`**. It is the BIG context, the same for
    all its blocks: without it, switching blocks **resets the why**.
    If `§A-E` is not enough → **say so, do not infer.**
-4. If the owner says "read RETOMAR" → that file + its pointers.
+4. If the owner says "read RESUME" → that file + its pointers.
 
 **Why:** resuming after a pause resends the whole conversation (cache miss) = expensive. Mente OS
 stores everything on disk, so `/clear` is safe **when the session is registered** (§ rule below).
@@ -77,7 +77,7 @@ stores everything on disk, so `/clear` is safe **when the session is registered*
 | 🤖 **WHAT I CAN RUN and what I must not touch** — the validators, the gates, the engine/instance line | ⭐ `Mente/CAPABILITIES.md` |
 | 🗺️ **Where everything on THIS machine is** — repos, what is locked, where secrets live (never their value) | `Mente/docs/WORKSPACE.md` |
 | 🚢 **How a PR ships** — branch → verify → PR → ⛔ do not merge (owner's discipline) | `Mente/rules/rule-shipping-flow.md` |
-| ⭐ **WHICH REPO this work goes to and who governs it** | declared in `Mente/cuentas.tsv` |
+| ⭐ **WHICH REPO this work goes to and who governs it** | declared in `Mente/accounts.tsv` |
 
 > ⭐ **Rules ADD UP, they never loosen.** Two blocks share rules only if one declares the other in
 > its `§C`. On conflict, **the stricter one wins.**
@@ -93,7 +93,7 @@ stores everything on disk, so `/clear` is safe **when the session is registered*
 | before editing | `Mente/hooks/gate-critical.py` → 🔴 DB with no rollback · 🔴 closing an insufficient block · ⚠️ a piece with dependents |
 | before a commit | `Mente/hooks/pre-commit.sh` → 🔴 **BLOCKS** a block that violates its contract |
 | is this product or MVP? | ⬜ a block grader → **measured** verdict, never opinion |
-| is the tree the declared one? | `Mente/bin/check-structure` → reads `Mente/piezas.tsv` |
+| is the tree the declared one? | `Mente/bin/check-structure` → reads `Mente/pieces.tsv` |
 | regenerate the indexes | `Mente/bin/generate-index` → 🤖 `docs/INDEX.md` + `docs/STATES.md` |
 | before `/clear` | `Mente/bin/check-clear-ready` → 🔴 refuses if something would be lost |
 | **the whole system** | `Mente/bin/check-all` → the only thing that matters is `failed: 0` · the count lives in the generated metrics file |
@@ -127,7 +127,7 @@ be recovered from disk.
 | `Mente/memory/principles/` | the owners (owner-0..3) + `expertise/` |
 | `Mente/bin/` · `Mente/hooks/` | 🤖 the validators and the gates |
 | `Mente/docs/` | plans, analyses, phase logs · 🤖 `Mente/docs/INDEX.md` and `Mente/docs/STATES.md` generated |
-| `Mente/piezas.tsv` | ⭐ **where each key piece lives** — moving something costs 1 line |
+| `Mente/pieces.tsv` | ⭐ **where each key piece lives** — moving something costs 1 line |
 | `Mente/Cerebro/vision/` `Mente/work/` `Mente/memory/` `Mente/connection/bridges/` | 🆕 vision · the work · live memory · the gate |
 | `Mente/Cerebro/` | your project's own thinking — the architecture pillar and the vision |
 
@@ -148,11 +148,11 @@ table below. NEVER put numbers here (they belong in `Mente/docs/METRICS.md`).
 
 | You need… | Read it from… |
 |---|---|
-| ⭐ **real state + next step** | `Mente/memory/RETOMAR.md` |
+| ⭐ **real state + next step** | `Mente/memory/RESUME.md` |
 | any **live number** (battery, gaps, permissions, quotes) | 🤖 `Mente/docs/METRICS.md` |
-| product version · closed phases · which blocks exist | `Mente/memory/RETOMAR.md` §5 |
-| open pending items | `Mente/memory/PENDIENTES.md` |
+| product version · closed phases · which blocks exist | `Mente/memory/RESUME.md` §5 |
+| open pending items | `Mente/memory/PENDING.md` |
 
 ---
 
-Related: `PROJECT-RULES.md` (🏢 the project level this router declares) · `Mente/base-rules.md` (🌐 universal) · `Mente/memory/RETOMAR.md` (the real state) · `Mente/rules/rule-inheritance.md` (why rules do NOT go here) · `Mente/rules/contract-document.md` (the form this file meets).
+Related: `PROJECT-RULES.md` (🏢 the project level this router declares) · `Mente/base-rules.md` (🌐 universal) · `Mente/memory/RESUME.md` (the real state) · `Mente/rules/rule-inheritance.md` (why rules do NOT go here) · `Mente/rules/contract-document.md` (the form this file meets).

@@ -42,7 +42,7 @@ from datetime import date
 MENTE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 REPO = os.path.dirname(MENTE)
 TEMPLATES = os.path.join(MENTE, "templates")
-TABLE = os.path.join(MENTE, "piezas.tsv")
+TABLE = os.path.join(MENTE, "pieces.tsv")
 SUFFIX = ".template"
 IMPORT_LINE = "@%s/CLAUDE-MENTE-OS.md" % os.path.basename(MENTE)
 
@@ -270,14 +270,14 @@ def main():
     if not os.path.isdir(TEMPLATES):
         die("no templates/ — this clone has nothing to install from")
     if not os.path.exists(TABLE):
-        die("no piezas.tsv — nothing declares where the pieces live")
+        die("no pieces.tsv — nothing declares where the pieces live")
 
     items, unresolved = plan()
     if unresolved:
         die("%d template(s) declare no destination: %s\n"
             "   ⛔ A blueprint nothing stamps is a file the install silently "
             "leaves out.\n"
-            "   Declare its destination in piezas.tsv."
+            "   Declare its destination in pieces.tsv."
             % (len(unresolved), ", ".join(unresolved)))
 
     # ⭐ Asked ONLY when it cannot be found, and after the plan is known: no

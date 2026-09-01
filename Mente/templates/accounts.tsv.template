@@ -1,5 +1,5 @@
 # ══════════════════════════════════════════════════════════════════════════
-# cuentas.tsv — the single source of truth for WHICH ACCOUNT governs each repo.
+# accounts.tsv — the single source of truth for WHICH ACCOUNT governs each repo.
 #
 # Read by:  bin/check-accounts (verifies)  ·  bin/conectar-cuenta (resolves)
 #           hooks/gate-accounts.py (blocks a push to a repo declared elsewhere)

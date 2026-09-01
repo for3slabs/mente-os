@@ -90,7 +90,7 @@ PLANNED = re.compile(r"⬜[^\n]{0,90}$")
 # file it produces is the instance's and a clean clone legitimately lacks it.
 #
 # Measured on a clean clone: seven documents cited `mente.config.yml` and
-# `cuentas.tsv`, both correctly .gitignored as instance files, and the checker
+# `accounts.tsv`, both correctly .gitignored as instance files, and the checker
 # called all seven broken pointers. ⚠️ In the tree where it was written it
 # reported zero — the files were there.
 _SHAPES = {"BLOCK.md", "README.md", "SUMMARY.md", "connections.md",
@@ -201,7 +201,7 @@ def check(path, rel, ceilings, quiet):
         # fixes that it IS recorded, and that the record names this file.
         named = False
         for q in (os.path.join(ROOT, "docs", "ENGINE-BACKLOG.md"),
-                  os.path.join(ROOT, "memory", "PENDIENTES.md")):
+                  os.path.join(ROOT, "memory", "PENDING.md")):
             try:
                 if os.path.basename(rel) in open(q, encoding="utf-8",
                                                  errors="replace").read():
@@ -265,8 +265,8 @@ def check(path, rel, ceilings, quiet):
         # ⭐ An INSTANCE file stays an instance file when cited with its path.
         # ⛔ Requiring a bare name conflated two different exemptions: "this
         # names a type" and "this names a file the installation creates".
-        # Measured on a clean clone: `Mente/cuentas.tsv` was reported broken
-        # while the bare `cuentas.tsv` was not, for the same missing file.
+        # Measured on a clean clone: `Mente/accounts.tsv` was reported broken
+        # while the bare `accounts.tsv` was not, for the same missing file.
         if os.path.basename(ref) in _instance_files():
             continue
         if any(os.path.exists(os.path.join(b, ref))

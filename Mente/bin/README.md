@@ -113,7 +113,7 @@ possible failure**: it looks like it is protecting you and it is not.
 | `test-` | runs the whole battery | `check-all` |
 | `verify-` | a composite pre-release pass | `verify-all` |
 
-⛔ **Do not invent a prefix.** Someone reading `piezas.tsv` must be able to tell whether a command
+⛔ **Do not invent a prefix.** Someone reading `pieces.tsv` must be able to tell whether a command
 writes to disk without opening it. A new prefix is a new promise nobody knows about.
 
 ---
@@ -127,7 +127,7 @@ Answer all four, or it does not belong here yet.
    something nobody acts on, and gets ignored until it is removed.
 3. **Can it be verified by sabotage?** ⭐ Break the thing on purpose and confirm it turns red.
    **A check that has never been seen failing is not evidence** — it is a hope with an exit code.
-4. **Is it declared in `piezas.tsv`?** A piece written but not declared is a piece
+4. **Is it declared in `pieces.tsv`?** A piece written but not declared is a piece
    `check-structure` goes **silent** about the day it disappears.
 
 ---
@@ -147,6 +147,6 @@ nothing, nothing is wrong.
 
 ---
 
-Related: `hooks/README.md` (what fires on its own) · `../piezas.tsv` (where each piece is
+Related: `hooks/README.md` (what fires on its own) · `../pieces.tsv` (where each piece is
 declared) · `../CAPABILITIES.md` §2 (what may be run) · `../rules/` (the contracts these verify) ·
 `../docs/README.md` (where the generated output lands).

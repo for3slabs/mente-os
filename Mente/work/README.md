@@ -2,7 +2,7 @@
 
 **Status:** current · **Type:** folder-readme · **Updated:** {{date}} · **Owner:** {{owner}}
 **Scope:** ⚠️ **INSTANCE** — the folders and their READMEs travel; ⛔ the work inside never does.
-**Governance:** `owner` in `piezas.tsv`
+**Governance:** `owner` in `pieces.tsv`
 
 ---
 

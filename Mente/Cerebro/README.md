@@ -2,7 +2,7 @@
 
 **Status:** current · **Type:** folder-readme · **Updated:** {{date}} · **Owner:** {{owner}}
 **Scope:** ⚠️ **INSTANCE** — the folder and this README travel; ⛔ the content never does.
-**Governance:** `owner` in `piezas.tsv`
+**Governance:** `owner` in `pieces.tsv`
 
 ---
 
@@ -14,7 +14,7 @@ describes **what you are building** and **why**.
 
 ```
 Cerebro/
-├── ARQUITECTURA.md   ⭐ the architecture pillar — the ground everything is built on
+├── ARCHITECTURE.md   ⭐ the architecture pillar — the ground everything is built on
 ├── vision/           where the project is going, as opposed to what it is
 └── (the project's own records: its history, its decisions in the large)
 ```

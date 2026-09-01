@@ -29,7 +29,7 @@ import os
 import sys
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-TABLE = os.path.join(ROOT, "piezas.tsv")
+TABLE = os.path.join(ROOT, "pieces.tsv")
 TEMPLATES = os.path.join(ROOT, "templates")
 GITIGNORE = os.path.join(ROOT, ".gitignore")
 
@@ -95,7 +95,7 @@ def planned():
 def main():
     quiet = "--quiet" in sys.argv
     if not os.path.exists(TABLE):
-        print("🔴 piezas.tsv not found · nothing declares what this tree should "
+        print("🔴 pieces.tsv not found · nothing declares what this tree should "
               "contain")
         return 2
 
@@ -141,7 +141,7 @@ def main():
     if stale:
         print()
         for n, name, path in stale:
-            print("🔴 piezas.tsv:%d · STR-ROW-001 · `%s` declares %s, which does "
+            print("🔴 pieces.tsv:%d · STR-ROW-001 · `%s` declares %s, which does "
                   "not exist\n"
                   "   It is neither generated nor planned — the file was "
                   "replaced and the row stayed.\n"

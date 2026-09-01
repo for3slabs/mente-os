@@ -25,7 +25,7 @@ only way that leaves no trace: it went somewhere, and it was the wrong somewhere
 
 ## 1 · ⭐ THE REGISTRY IS THE DECLARATION, AND A SCRIPT CHECKS IT
 
-`cuentas.tsv` names every repository this installation may push to. ⬜ It is **instance data** —
+`accounts.tsv` names every repository this installation may push to. ⬜ It is **instance data** —
 a clone receives the header and zero rows, because nobody inherits somebody else's accounts.
 
 > ## ⚠️ WHY A FILE AND NOT MEMORY
@@ -148,5 +148,5 @@ first: **absence of evidence read as evidence of absence.**
 ---
 
 Related: `rule-shipping.md` (how a change leaves the workspace) · `rule-config-hygiene.md`
-(⛔ the secret rules this one inherits) · `../templates/cuentas.tsv.template` (the registry's
+(⛔ the secret rules this one inherits) · `../templates/accounts.tsv.template` (the registry's
 shape) · `../secrets/README.md` (where the `guia` column points) · `contract-document.md`.
