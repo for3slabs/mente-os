@@ -567,6 +567,7 @@ different reason.** ⛔ Otherwise it is a sub-block of one that exists.
 |---|---|---|---|
 | `BLK-OPN-001` | **A, B, C, D present at open** | 🔒 | the four sections exist |
 | `BLK-OPN-002` | ⭐ **The block is declared where blocks are listed** | 🔒 | ⛔ otherwise nothing knows it exists |
+| `BLK-OPN-003` | ⭐ **An index names no block that does not exist** | 🔒 | ⛔ the other direction of `BLK-OPN-002` — an entry outlives the folder it named |
 
 ---
 
