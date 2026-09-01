@@ -57,8 +57,6 @@ val-suficiencia	bin/check-sufficiency	engine	canonical	a block can be resumed fr
 val-clear	bin/check-clear-ready	engine	canonical	refuses a reset if anything would be lost
 installer	bin/init	engine	canonical	generates the instance files from templates/
 # ── engine · the gates + hooks ──
-puerta-critica	hooks/gate-critical.py	engine	canonical	blocks a destructive change with no rollback, and an insufficient close
-pre-edit	hooks/pre-edit-standards.py	engine	canonical	injects the block's standards before an edit
 pre-commit	hooks/pre-commit.sh	engine	canonical	blocks a commit that violates the block's contract
 session-start	hooks/session-start.sh	engine	canonical	runs every validator at session start — ⭐ silent unless something is wrong
 pre-edit-standards	hooks/pre-edit-standards.py	engine	executable	names a block's standards before its files are touched — ⭐ layer 3 of ADR-011
@@ -68,11 +66,6 @@ probe-watch-external	bin/probes/probe-watch-external.py	engine	executable	proves
 probe-gate-critical	bin/probes/probe-gate-critical.py	engine	executable	proves the gate blocks what it must and NOTHING else — 5 inverses to 4 blocks
 probe-pre-edit	bin/probes/probe-pre-edit-standards.py	engine	executable	proves the injection hook names the RIGHT block, and never blocks
 # ── engine · the contracts + inheritance model ──
-contrato-bloque	rules/contract-block.md	engine	canonical	which fields a block carries (§A-K)
-contrato-campana	rules/contract-campaign.md	engine	canonical	which fields a campaign carries, and its lower ceiling
-contrato-doc	rules/contract-document.md	engine	canonical	the shape every document in the system follows
-contrato-adr	rules/contract-adr.md	engine	canonical	the shape of a recorded decision
-herencia	rules/rule-inheritance.md	engine	canonical	the 3 levels and how rules add up
 # ── engine · the reference docs ──
 capacidades	CAPABILITIES.md	engine	canonical	what may run and what must not be touched — engine vs instance
 readme-motor	README.md	engine	canonical	the engine's front page — from clone to working
@@ -186,7 +179,6 @@ rule-shipping	rules/rule-shipping.md	engine	canonical	how a change leaves the wo
 check-shipping	bin/check-shipping	engine	executable	enforces the lock rows of the shipping rule
 probe-shipping	bin/probes/probe-shipping.py	engine	executable	proves check-shipping detects what the shipping rule claims
 probe-session-start	bin/probes/probe-session-start.py	engine	executable	proves the startup hook is silent when healthy, loud when not, and never blocks
-hook-pre-commit	hooks/pre-commit.sh	engine	executable	refuses a commit on the base branch — SHP-LCK-001
 contract-archive	rules/contract-archive.md	engine	canonical	what survives when a block closes — the three files and what goes inside them
 check-archive	bin/check-archive	engine	executable	enforces the lock rules of the archive contract
 probe-archive	bin/probes/probe-archive.py	engine	executable	proves check-archive detects what the archive contract claims

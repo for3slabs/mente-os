@@ -84,6 +84,11 @@ def gate_close(target, body):
     # edit is what would close it, and disk still holds the previous state.
     for row in re.findall(r"^\|[^|]*\|[^|]*\|[^|]*\|\s*([^|]+?)\s*\|",
                           body_of(body, "F") or "", re.M):
+        # ⚠️ `estado` is not engine language — it is a HEADER an owner may have
+        # typed in their own. ⛔ Reading a table's header row as a sub-block
+        # would refuse every close on a table written that way, and the refusal
+        # would be impossible to understand. Input tolerance, never doctrine:
+        # what this engine WRITES is English, what it READS may not be.
         if row and not CLOSED_WORDS.match(row) and row.lower() not in ("state", "estado"):
             return refuse(
                 "block `%s` still has an open sub-block: `%s`" % (name, row[:24]),

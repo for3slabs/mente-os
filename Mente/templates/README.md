@@ -68,7 +68,7 @@ literal text behind.
 
 | Template | Generates | Notes |
 |---|---|---|
-| `CLAUDE.md.template` | `CLAUDE.md` | the router. Mostly doctrine; the § ESTADO block is the only ⬜ zone. Points at the architecture pillar via config, never by filename |
+| `CLAUDE.md.template` | `CLAUDE.md` | the router. Mostly doctrine; the § STATE block is the only ⬜ zone. Points at the architecture pillar via config, never by filename |
 | `PROJECT-RULES.md.template` | `PROJECT-RULES.md` | project rules. Doctrine + a ⬜ scope zone and a ⬜ repos zone. §5 carries no security values — WHERE, never WHAT |
 | `mente.config.yml.template` | `mente.config.yml` | the instance declaration. Mostly ⬜: `owner`, `pillars`, `gates`, `siblings`. `gates`/`siblings` default to `[]` and take zero, one, or many entries |
 | `WORKSPACE.md.template` | ⬜ `docs/WORKSPACE.md` (created at install) | ⭐ the model — almost all ⬜. Carries no values: says WHERE a secret lives, never WHAT |

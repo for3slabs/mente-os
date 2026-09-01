@@ -96,7 +96,18 @@ def main():
     # the piece existed AND the real row — different name, different class,
     # different description. ⚠️ Same shape as a duplicated decision table: the
     # copies do not stay equal, they diverge, and nothing says which one is true.
+    # 🔴 BOTH TABLES, and the second was the one that mattered. Eight duplicate
+    # rows were cleaned from the live table and left untouched in the template —
+    # so every FRESH INSTALL still received them, and the tree that had been
+    # fixed reported clean. ⛔ A rule that measures one of two copies leaves the
+    # copy that travels unmeasured, which is the worse half.
     repeats = {p: rows for p, rows in declared.items() if len(rows) > 1}
+    tpl_rows = declared_paths(TEMPLATE)
+    if tpl_rows:
+        for path, rows in tpl_rows.items():
+            if len(rows) > 1:
+                repeats.setdefault("%s (in %s)"
+                                   % (path, os.path.basename(TEMPLATE)), rows)
 
     # DOC-IDS-003 · THE TABLE AND ITS TEMPLATE DECLARE THE SAME ENGINE PIECES.
     # ⛔ They were kept in step by hand, which is the arrangement that holds

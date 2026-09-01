@@ -96,8 +96,16 @@ else:
         results = list(_ex.map(run_probe, probes))
 
 for name, r in results:
-    m = re.search(r"➜ (\d+) de (\d+) correctos", r.stdout)
-    leftovers = "restos: ninguno" not in r.stdout
+    # ⭐ BOTH SPELLINGS, and only while the translation is in flight. The
+    # harness parses the probe's own tally line, so changing that line in one
+    # probe before the parser accepts the new wording would make it report NO
+    # tally — and a probe with no tally counts as CRASHED. ⛔ Translating 30
+    # probes and the parser in one step is the change that cannot be verified
+    # in batches, which is exactly what was asked for.
+    # ⚠️ The Spanish alternative is removed once the last probe is translated.
+    m = re.search(r"➜ (\d+) (?:de|of) (\d+) (?:correctos|correct)", r.stdout)
+    leftovers = ("restos: ninguno" not in r.stdout
+                 and "leftovers: none" not in r.stdout)
     if not m:
         # 🔴 A PROBE THAT NEVER REPORTED ITS TALLY DID NOT RUN — it crashed, or
         # it died before its last line. ⛔ Scored as (0, 0) this passed the
