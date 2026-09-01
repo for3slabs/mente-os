@@ -37,7 +37,9 @@ SKIP_DIR_PATHS = {"rules/decisions"}
 # failed check-document, on creation, with nothing wrong with it.
 # ⚠️ By FILENAME, not by folder: blocks live under active/, blocked/ and
 # archive/, and a folder list would miss whichever state was added later.
-OWNED_ELSEWHERE = {"BLOCK.md"}
+# ⚠️ A campaign declares its identity as FIELDS too, and contract-campaign
+# measures every one — same reasoning, same exemption.
+OWNED_ELSEWHERE = {"BLOCK.md", "CAMPAIGN.md"}
 
 # DOC-CNT-005 · a credential shape. ⛔ `-p` is deliberately absent: a
 # one-letter flag matched a directory name in a real file (rule-config-hygiene §2).

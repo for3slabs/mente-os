@@ -57,9 +57,10 @@ SPECIAL = {"CLAUDE.md": None,                       # ⛔ never stamped: see ③
 # installation has zero of these until somebody starts one, and writing a blank
 # copy would put an unfilled scope (or an empty block) on disk where a validator
 # reads it as a real one.
-#   · handoff.yml — one manifest belongs to one delegation
-#   · BLOCK.md    — bin/new-block stamps it, once per unit of work
-NOT_INSTALLED = {"handoff.yml", "BLOCK.md"}
+#   · handoff.yml  — one manifest belongs to one delegation
+#   · BLOCK.md     — bin/new-block stamps it, once per unit of work
+#   · CAMPAIGN.md  — bin/new-campaign, once per campaign
+NOT_INSTALLED = {"handoff.yml", "BLOCK.md", "CAMPAIGN.md"}
 
 
 def die(msg, code=2):

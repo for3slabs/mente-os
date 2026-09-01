@@ -1,0 +1,153 @@
+#!/usr/bin/env python3
+"""new-campaign — opens a campaign with the three sections its contract requires.
+
+⭐ WHAT A CAMPAIGN IS FOR: holding several blocks together when one is not
+enough and a project is too much. ⛔ And a campaign with no blocks orders
+nothing — it is a title. So this refuses to open one without at least the block
+it exists to coordinate.
+
+⚠️ OPENING COSTS THREE SECTIONS ON PURPOSE — mission, authority, blocks. A
+campaign that cost ten would be replaced by an informal list somewhere, and then
+nothing measures it at all. The rest is added as it runs.
+
+⛔ IT REFUSES rather than guesses: an id already in use, an id that cannot be a
+folder name, a named block that does not exist, no declared owner. ⚠️ Each of
+those accepted produces a campaign that LOOKS valid, and check-campaign reports
+it later — against work already organised around it.
+
+Usage:
+  bin/new-campaign <id> --blocks <id>[,<id>...] [--mission TEXT]
+Exit: 0 opened · 1 refused · 2 could not complete
+"""
+import os
+import re
+import sys
+
+MENTE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, os.path.join(MENTE, "bin"))
+from scaffold import owner, stamp, used_ids, valid_id                # noqa: E402
+
+TEMPLATE = os.path.join(MENTE, "templates", "CAMPAIGN.md.template")
+CAMPAIGNS = os.path.join(MENTE, "work", "campaigns")
+BLOCKS = os.path.join(MENTE, "work", "blocks")
+# ⭐ The sections check-campaign requires to OPEN. Named here because this tool
+# writes them; the checker owns whether they are present, and the template owns
+# what they say.
+OPEN_SECTIONS = ("Mission", "Authority", "Blocks")
+
+
+def die(msg, code=1):
+    print("🔴 %s" % msg, file=sys.stderr)
+    sys.exit(code)
+
+
+def block_rows(ids):
+    """The blocks table, one row per block. ⭐ Written from real ids, so the
+    campaign satisfies CMP-BLK-002 the moment it exists rather than after
+    somebody remembers to replace a placeholder."""
+    head = "| Block | What it contributes |\n|---|---|\n"
+    return head + "".join(
+        "| `%s` | ⬜ why this campaign needs it |\n" % b for b in ids)
+
+
+def main():
+    args = sys.argv[1:]
+    if not args or args[0].startswith("-"):
+        print(__doc__)
+        return 1
+
+    cid = valid_id(args[0])
+    if not cid:
+        die("invalid id %r · expected lowercase letters, digits and hyphens · "
+            "it becomes a folder name and is cited from other files" % args[0])
+
+    def opt(flag):
+        return args[args.index(flag) + 1] if flag in args and args.index(
+            flag) + 1 < len(args) else None
+
+    # ⛔ CMP-BLK-001 · a campaign with no blocks orders nothing. Refused at
+    # creation, because a campaign opened empty is one that never gets its
+    # blocks added — the emptiness stops being visible the moment it exists.
+    raw = opt("--blocks")
+    if not raw:
+        die("no blocks named · --blocks <id>[,<id>...]\n"
+            "   ⛔ A campaign with no blocks orders nothing: it is a title.")
+    names = [b.strip() for b in raw.split(",") if b.strip()]
+
+    # ⛔ CMP-BLK-002 · every named block must EXIST. A row pointing at nothing
+    # is a plan pretending to be work, and it reads exactly like a real one.
+    known = used_ids(BLOCKS, "BLOCK.md")
+    absent = [b for b in names if b not in known.keys()]
+    if absent:
+        die("named block(s) do not exist: %s\n"
+            "   ⛔ A row pointing at nothing is a plan pretending to be work.\n"
+            "   Open each first: bin/new-block <id> --type <type>"
+            % ", ".join(absent))
+
+    if cid in used_ids(CAMPAIGNS, "CAMPAIGN.md").keys():
+        die("id %r is already used · ⛔ resolution is exact: two campaigns "
+            "sharing an id make every citation ambiguous" % cid)
+
+    who = owner(MENTE)
+    if not who:
+        die("no owner declared · run bin/init first\n"
+            "   ⛔ A campaign with no owner is work nobody answered for.", 2)
+
+    dest_dir = os.path.join(CAMPAIGNS, cid)
+    dest = os.path.join(dest_dir, "CAMPAIGN.md")
+    if os.path.exists(dest):
+        die("%s already exists · refusing to overwrite an open campaign"
+            % os.path.relpath(dest, MENTE))
+
+    body = stamp(TEMPLATE, {"id": cid, "owner": who})
+    if body is None:
+        die("no templates/CAMPAIGN.md.template · the shape a campaign must have "
+            "is not available to copy", 2)
+
+    mission = opt("--mission")
+    if mission:
+        body = body.replace(
+            "⬜ one sentence: what is true when this campaign is done", mission)
+    # ⭐ The placeholder row is REPLACED by the real blocks, not appended beside
+    # it: a table holding both would declare a block called `block-id` that
+    # CMP-BLK-002 correctly reports as missing.
+    body = re.sub(r"\| Block \| What it contributes \|\n\|---\|---\|\n"
+                  r"\| ⬜ `block-id` \|[^\n]*\n", block_rows(names), body)
+
+    # ⛔ Verified before writing: a scaffold that emits a campaign the checker
+    # rejects has handed somebody broken paperwork to organise work around.
+    missing = [s for s in OPEN_SECTIONS if "\n## %s" % s not in body]
+    if missing:
+        die("the template is missing opening section(s) %s · fix "
+            "templates/CAMPAIGN.md.template" % " ".join(missing), 2)
+
+    try:
+        os.makedirs(dest_dir, exist_ok=True)
+        open(dest, "w", encoding="utf-8").write(body)
+    except OSError as e:
+        die("could not write %s · %s" % (os.path.relpath(dest, MENTE),
+                                         e.__class__.__name__), 2)
+
+    # ⚠️ Reports what is ACTUALLY still ⬜, not a fixed sentence: saying
+    # "mission is ⬜" right after filling it teaches the reader to skim the line,
+    # and then the one thing that IS missing goes unread.
+    pending = [n for n, filled in (("mission", mission), ("authority", None))
+               if not filled]
+    print("🎯 %s\n   · %d block(s) declared: %s\n   · still ⬜: %s"
+          % (os.path.relpath(dest, MENTE), len(names), ", ".join(names),
+             ", ".join(pending)))
+    print("\n👉 An empty authority means nobody knows which yardstick decided "
+          "it succeeded.\n   Then: bin/check-campaign")
+    return 0
+
+
+if __name__ == "__main__":
+    try:
+        sys.exit(main())
+    except SystemExit:
+        raise
+    except Exception as e:                                     # noqa: BLE001
+        print("🔴 %s crashed · %s: %s"
+              % (os.path.basename(__file__), type(e).__name__, e),
+              file=sys.stderr)
+        sys.exit(2)
