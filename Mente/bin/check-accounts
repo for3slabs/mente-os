@@ -120,6 +120,8 @@ def check(n, f, roles):
                     "here stays in history, so this is ROTATED, not deleted"))
 
     # ACC-VRF-001 / 002 · measured against the machine, or said to be unmeasured
+    # ACC-VRF-002 · a row with no local path is a CLAIM, and the report says
+    # so rather than treating silence as verification.
     if ruta and ruta != "-":
         p = os.path.expanduser(ruta)
         if not os.path.isdir(p):
@@ -131,6 +133,10 @@ def check(n, f, roles):
 
 def layer2_wired():
     """ACC-LYR-004 · is the unavoidable layer actually going to run?
+
+    ⭐ Also enforces ACC-LYR-001: the unavoidable layer must EXIST, not only the
+    readable one — an installation with layer 1 alone is protected by a pattern
+    over command text, and this is what says so.
 
     🔴 THE FAILURE THIS CATCHES LOOKS EXACTLY LIKE SUCCESS. The hook file exists,
     its code is correct and its probe passes — but if nothing linked it into the

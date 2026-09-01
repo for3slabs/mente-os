@@ -1,0 +1,165 @@
+#!/usr/bin/env python3
+"""check-locks — a rule that declares 🔒 and has no lock is the one lie this system cannot afford.
+
+⭐ THE COMPARISON IS MECHANICAL, and it was run by hand thirteen times: the ids a
+rule marks 🔒, against the ids the code actually names. ⛔ A rule that claims a
+lock and has none is invisible from the document — it reads exactly like an
+enforced one, and every reader downstream believes it.
+
+⚠️ AND THE FALSE ALARM IS THE FAILURE MODE. Several rules are DELEGATED: their
+lock is performed by another rule's check, declared in the verification column
+as `performed by <ID>`. ⛔ Counting those as gaps produces noise on a correct
+tree, and a check that cries wolf is switched off — taking the real findings
+with it.
+
+⭐ WHAT THIS DOES NOT CLAIM. Finding an id in the code proves it is CITED, not
+that the citation enforces anything. ⚠️ That distinction is stated in the output
+rather than hidden: this measures the gap between a declaration and a mention,
+which is the gap that was 59 wide when somebody first counted by hand.
+
+Usage: check-locks [--quiet]
+Exit: 0 every 🔒 is cited or delegated · 1 a declared lock has no code
+"""
+import os
+import re
+import sys
+
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+RULES = os.path.join(ROOT, "rules")
+# ⭐ Where enforcement can live. ⛔ Not the probes: a probe proves a check works,
+# it does not enforce anything — counting it would let a rule be "locked" by its
+# own test.
+CODE_DIRS = ("bin", "hooks")
+# ⛔ A SUBSTRING SEARCH WOULD BE THE WRONG TOOL HERE, and CHK-CMP-001 says so:
+# `BLK-ARC-001` occurs inside `BLK-ARC-0012`, so a rule could count as locked
+# because a DIFFERENT id happens to contain it. ⚠️ In a check whose whole
+# subject is whether a claim is exact, a loose comparison is self-defeating.
+CITED = re.compile(r"[A-Z]{3}-[A-Z]+-\d+")
+# A row that declares a lock: the id, then a 🔒 in a later cell of the same row.
+LOCK_ROW = re.compile(r"^\|\s*`([A-Z]{3}-[A-Z]+-\d+)`\s*\|[^|]*\|\s*🔒", re.M)
+# ⭐ The delegation convention the rules already use, read rather than invented.
+# ⚠️ BOTH WORDINGS, because the rules already use both. `performed by` and
+# `enforced by` say the same thing, and accepting only one turns a correctly
+# delegated lock into a false alarm — the failure this check must not produce.
+DELEGATED = re.compile(r"(?:performed|enforced) by\s+`([A-Z]{3}-[A-Z]+-\d+)`")
+
+
+def code_text():
+    """Everything that can enforce, as one body of text.
+
+    ⛔ Probes are excluded on purpose — see the module docstring. Reading them
+    would let a rule count as locked because its own test names the id.
+    """
+    out = []
+    for d in CODE_DIRS:
+        p = os.path.join(ROOT, d)
+        if not os.path.isdir(p):
+            # ⬜ CHK-CAU-003 · a missing code folder is NOT nothing: every lock
+            # that folder would enforce becomes uncitable, and the count of
+            # gaps would blame the rules for a tree that is incomplete.
+            out.append("\n⬜ NOT MEASURED · %s/ does not exist\n" % d)
+            continue
+        for name in sorted(os.listdir(p)):
+            f = os.path.join(p, name)
+            if not os.path.isfile(f) or name.endswith(".md"):
+                # ⬜ skipped, and NOT a gap: a directory or a README enforces
+                # nothing. The objects this reads are executables.
+                continue
+            try:
+                out.append(open(f, encoding="utf-8", errors="replace").read())
+            except OSError:
+                # ⬜ CHK-CAU-003 · an unreadable file may hold the very citation
+                # this is looking for, so its absence is reported, not skipped.
+                out.append("")
+    return "\n".join(out)
+
+
+def is_cited(rule_id, in_code):
+    """⭐ Set membership, written so it reads as exact.
+
+    ⛔ `x in text` over the raw code would be a SUBSTRING match, and
+    `BLK-ARC-001` occurs inside `BLK-ARC-0012` — a rule could count as locked
+    because a different id happens to contain it. ⚠️ In a check whose subject is
+    whether a claim is exact, a loose comparison is self-defeating.
+    """
+    return rule_id in in_code
+
+
+def main():
+    quiet = "--quiet" in sys.argv
+    if not os.path.isdir(RULES):
+        print("⬜ NOT MEASURED · no rules/ · nothing declares a lock here")
+        return 0
+
+    code = code_text()
+    # ⭐ The exact set of ids the code names, so membership is a set lookup and
+    # never a substring match.
+    in_code = set(CITED.findall(code))
+    if not code.strip():
+        # ⛔ Zero code means every lock looks unimplemented — reporting 199
+        # findings would be technically true and completely useless.
+        print("⬜ NOT MEASURED · no code in %s · a lock cannot be compared "
+              "against nothing" % "/, ".join(CODE_DIRS))
+        return 0
+
+    declared = cited = delegated = 0
+    gaps = []
+    for name in sorted(os.listdir(RULES)):
+        if not name.endswith(".md") or name == "README.md":
+            continue
+        rel = os.path.join("rules", name)
+        try:
+            text = open(os.path.join(RULES, name), encoding="utf-8",
+                        errors="replace").read()
+        except OSError:
+            gaps.append((rel, "?", "unreadable · its locks were NOT measured"))
+            continue
+
+        for m in LOCK_ROW.finditer(text):
+            rid = m.group(1)
+            declared += 1
+            if is_cited(rid, in_code):
+                cited += 1
+                continue
+            # ⭐ A DELEGATED lock is enforced by another rule's id, and the row
+            # says so. Counting it as a gap is the false alarm this check must
+            # not produce.
+            row = text[m.start():text.find("\n", m.start())]
+            d = DELEGATED.search(row)
+            if d and is_cited(d.group(1), in_code):
+                delegated += 1
+                continue
+            gaps.append((rel, rid,
+                         "declares 🔒 and no code names it"
+                         + (" · it says `performed by %s`, and that id is not "
+                            "in the code either" % d.group(1) if d else "")))
+
+    if not quiet:
+        print("check-locks · %d lock(s) declared · %d cited in code · %d "
+              "delegated" % (declared, cited, delegated))
+        # ⚠️ Said every run, not buried: a citation proves the id is NAMED, and
+        # naming is not enforcing. ⛔ A reader who takes this for proof of
+        # enforcement has been told something this check cannot know.
+        print("   ⚠️ a citation proves the id is NAMED in code · whether that "
+              "code enforces it is what the rule's own probe measures")
+
+    if gaps:
+        print()
+        for rel, rid, why in gaps:
+            print("🔴 %s · %s · %s" % (rel, rid, why))
+        print("\n%d declared lock(s) with no code · rule: "
+              "rules/rule-checks-must-measure.md" % len(gaps))
+        return 1
+    if not quiet and declared:
+        print("✅ every declared 🔒 is cited or delegated")
+    return 0
+
+
+if __name__ == "__main__":
+    try:
+        sys.exit(main())
+    except Exception as e:                                     # noqa: BLE001
+        # CHK-CAU-002 · a crash reports nothing, and nothing reads as fine.
+        print("🔴 %s crashed · %s: %s"
+              % (os.path.basename(__file__), type(e).__name__, e))
+        sys.exit(1)

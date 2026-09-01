@@ -76,7 +76,7 @@ while IFS=$'\t' read -r repo cuenta rol remoto ruta why guia; do
 done < "$REG"
 
 if [ -z "$REPO" ]; then
-  # 🔴 FAIL CLOSED. There is no "ask" inside a push: it either proceeds or it
+  # 🔴 ACC-LYR-003 · FAIL CLOSED. There is no "ask" inside a push: it either proceeds or it
   # aborts. ⭐ Aborting costs nothing — the work stays local. Letting an
   # unverified destination through costs everything, invisibly: it succeeds.
   cat >&2 <<MSG

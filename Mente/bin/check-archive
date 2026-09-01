@@ -15,6 +15,9 @@ ARCHIVE = os.path.join(ROOT, "work", "blocks", "archive")
 BLOCKS = os.path.join(ROOT, "work", "blocks")
 
 REQUIRED_FILES = ["SUMMARY.md", "connections.md", "BLOCK.md"]
+# ⭐ Together these satisfy BLK-ARC-002 from the block contract: an
+# archive carries a summary AND what it affected. ⛔ The block
+# contract declares the lock; this file is where it is measured.
 # ARC-SUM-001 · the fields the summary must answer. Matched on intent, not on
 # an exact heading: a contract that pins the wording makes every installation
 # that phrases it differently fail for a reason that is not a defect.
@@ -130,7 +133,8 @@ def check(d, rel):
                         % (m_per.group(1), m_per.group(2),
                            m_closed.group(1), m_closed.group(2))))
 
-    # ARC-DEL-002 · an archived block keeps its NAME. ⛔ Renaming breaks every
+    # ARC-DEL-002 · and with it BLK-ARC-001: an archived block keeps its
+    # name, because renaming breaks every pointer at once. · an archived block keeps its NAME. ⛔ Renaming breaks every
     # pointer at once, and no pointer says so — they resolve to nothing and
     # each reader concludes the block never existed.
     m_id = re.search(r"^\s*id:\s*([^\n·]+)", block, re.M)
