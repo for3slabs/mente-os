@@ -525,11 +525,21 @@ a backlog nobody can see is a backlog nobody works.
 
 ---
 
-## E-29 · ⬜ declarations have no completeness report
+## E-29 · ✅ CLOSED — the unfilled ⬜ are listed, and never counted as debt
 
 - **Surfaced by:** the audit — 100 ⬜ markers across the thirteen rules
 - **Affects:** every rule that defers a threshold, a path or a vocabulary to the installation
-- **Closes when:** a check lists the ⬜ declarations an installation has not filled
+- **Closed:** 2026-09-01 — `bin/check-declarations`, over both surfaces: the
+  thresholds a RULE defers (a ⬜ row whose value is `0`) and the values an
+  INSTANCE declaration has not been given (`null`, `[]`, `""`).
+- ⛔ **AND IT NEVER FAILS.** Every line it prints is a decision the owner may
+  leave open forever. ⚠️ A check exiting non-zero over those turns a deliberate
+  choice into debt, and the next person "fixes" it by inventing the very numbers
+  this engine refuses to invent.
+- ⭐ **It also tells an unfilled tree from an uninstalled one.** Without a config
+  nothing distinguishes "the owner left these open" from "nobody installed this
+  yet" — ⛔ and reporting the second as the first makes a fresh clone look
+  neglected.
 
 **Why it matters.** ⭐ **`⬜` is the mechanism that makes this engine portable:** thresholds,
 section names, base branch, code extensions. ⛔ **An unfilled one is NOT MEASURED, and every rule

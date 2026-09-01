@@ -335,7 +335,12 @@ def main():
     as_json, quiet = "--json" in argv, "--quiet" in argv
 
     if not args:
-        print(__doc__)
+        # ⭐ CHK-QUI-001 · `--quiet` is the exit code ONLY, and that holds for a
+        # usage error too: a caller that asked for a number gets a number.
+        # ⛔ Printing the whole docstring into a hook's output is how a hook
+        # gets narrowed until it checks nothing.
+        if not quiet:
+            print(__doc__)
         return 1
     # ⛔ A glob would silently grade a DIFFERENT block than the one asked for.
     if not re.fullmatch(r"[a-z0-9][a-z0-9-]*(_\d{4}-\d{2})?", args[0]):

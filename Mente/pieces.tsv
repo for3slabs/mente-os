@@ -209,3 +209,5 @@ probe-connect-account	bin/probes/probe-connect-account.py	engine	executable	prov
 adr-031	rules/decisions/ADR-031-the-engine-reads-the-tool-never-the-network.md	engine	canonical	the engine READS the host's tool and never reaches the network — ⛔ read only, local only, absence is a gap
 check-locks	bin/check-locks	engine	executable	compares every declared 🔒 against the code that must enforce it — ⛔ and sees delegation, or it cries wolf
 probe-locks	bin/probes/probe-locks.py	engine	executable	proves an unimplemented 🔒 is caught and a delegated one is not
+check-declarations	bin/check-declarations	engine	executable	lists the ⬜ an installation has not filled — ⛔ each one switches its rule off, and that is the owner's call
+probe-declarations	bin/probes/probe-declarations.py	engine	executable	proves the unfilled ⬜ are counted and never treated as faults
