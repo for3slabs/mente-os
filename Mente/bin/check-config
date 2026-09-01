@@ -9,6 +9,13 @@ Exit: 0 clean · 1 violations · 2 the rule itself is missing
 """
 import os, stat, re, sys, json
 
+# ⭐ ONE way to report many findings, shared by every validator —
+# CHK-SHR-001. ⛔ Thirteen validators each inventing a grouping is
+# thirteen report formats, and a reader who must learn one per
+# validator learns none.
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from findings import report                                    # noqa: E402
+
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 RULE = os.path.join(ROOT, "rules", "rule-config-hygiene.md")
 GITIGNORE = os.path.join(ROOT, ".gitignore")
@@ -358,10 +365,7 @@ def main():
         if not quiet:
             print("⬜ %s · %s" % (rel, msg))
     if findings:
-        for cid, rel, msg in findings:
-            print("🔴 %s · %s · %s" % (rel, cid, msg))
-        print("\n%d violations · rule: rules/rule-config-hygiene.md" % len(findings))
-        return 1
+        return report(findings, "rules/rule-config-hygiene.md", quiet)
     if not quiet and (configs or os.path.isdir(secrets_dir)):
         print("✅ 0 violations")
     return 0

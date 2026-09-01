@@ -572,11 +572,24 @@ a rule, not in a comment somebody has to find.
 
 ---
 
-## E-31 · Repeated findings are grouped in one validator only
+## E-31 · ✅ CLOSED — grouping lives in one reader, used by eight validators
 
 - **Surfaced by:** audit 12 — a real list produced 590 findings that were 5 distinct shapes
 - **Affects:** every validator that iterates over many objects
-- **Closes when:** grouping lives in one place every validator uses
+- **Closed:** 2026-09-01 — `bin/findings.py`, shared under `CHK-SHR-001`.
+  Eight validators report through it; ⭐ the rest emit too few findings to group
+  and are left alone rather than migrated for uniformity.
+- 🔴 **The extracted logic did not work outside where it grew.** It keyed on
+  (id, FILE, shape) — right for one list with many items, wrong for many files
+  with one item each: six blocks sharing one defect stayed six shapes because
+  the file differed. ⛔ Measured: 18 findings reported as 18 shapes when they
+  were 3. A path is a subject too, and so is a quoted value — the object a
+  finding is ABOUT differs per object by definition.
+- ⚠️ **And three inserted imports landed inside a docstring and inside a
+  multi-line import**, breaking the files at parse time. ⛔ Both only failed when
+  the file was RUN, and an exit 0 over a clean tree hid it — ⭐ which is why the
+  verification plants a defect and watches the validator FAIL, rather than
+  watching it pass.
 
 **Why it matters.** ⛔ **A report nobody finishes is a report nobody applies** — the same argument
 this engine makes against long documents, applied to its own output. ⭐ **`check-pending` groups

@@ -9,6 +9,13 @@ Exit: 0 clean · 1 violations · 2 the contract itself is missing
 """
 import os, re, sys, glob
 
+# ⭐ ONE way to report many findings, shared by every validator —
+# CHK-SHR-001. ⛔ Thirteen validators each inventing a grouping is
+# thirteen report formats, and a reader who must learn one per
+# validator learns none.
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from findings import report                                    # noqa: E402
+
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 CONTRACT = os.path.join(ROOT, "rules", "contract-archive.md")
 ARCHIVE = os.path.join(ROOT, "work", "blocks", "archive")
@@ -249,10 +256,7 @@ def main():
         print("check-archive · %d archived block(s)%s"
               % (len(dirs), " · nothing measured" if not dirs else ""))
     if findings:
-        for cid, rel, msg in findings:
-            print("🔴 %s · %s · %s" % (rel, cid, msg))
-        print("\n%d violations · rule: rules/contract-archive.md" % len(findings))
-        return 1
+        return report(findings, "rules/contract-archive.md", quiet)
     if not quiet and dirs:
         print("✅ 0 violations")
     return 0

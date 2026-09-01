@@ -9,6 +9,9 @@ Exit: 0 clean · 1 violations · 2 the contract itself is missing
 """
 import os, re, sys
 
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from findings import report                                    # noqa: E402
+
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 CONTRACT = os.path.join(ROOT, "rules", "contract-pending.md")
 MEMORY = os.path.join(ROOT, "memory")
@@ -287,24 +290,11 @@ def main():
     if not quiet:
         print("check-pending · %d list(s)%s"
               % (len(found), " · nothing measured" if not found else ""))
+    # ⭐ Grouping lives in bin/findings.py — the shape that was proven here and
+    # is now shared. ⛔ Thirteen validators each inventing one is thirteen report
+    # formats, and a reader who must learn a new one per validator learns none.
     if findings:
-        # ⛔ A list of 590 lines is a report nobody finishes, and one nobody
-        # finishes is one nobody applies — the same argument this folder makes
-        # against long documents. ⭐ One defect repeated across a hundred items
-        # is ONE defect: show it once, with its count and an example.
-        groups = {}
-        for cid, rel, msg in findings:
-            key = (cid, rel, re.sub(r"\b[A-Z][\w-]*\d+\b", "<item>", msg))
-            groups.setdefault(key, []).append(msg)
-        for (cid, rel, shape), all_msgs in groups.items():
-            if len(all_msgs) == 1:
-                print("🔴 %s · %s · %s" % (rel, cid, all_msgs[0]))
-            else:
-                print("🔴 %s · %s · ×%d · %s" % (rel, cid, len(all_msgs), shape))
-                print("      e.g. %s" % all_msgs[0][:96])
-        print("\n%d violation(s) in %d distinct shape(s) · rule: "
-              "rules/contract-pending.md" % (len(findings), len(groups)))
-        return 1
+        return report(findings, "rules/contract-pending.md", quiet)
     if not quiet and found:
         print("✅ 0 violations")
     return 0
