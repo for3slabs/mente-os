@@ -1,7 +1,7 @@
 # ══════════════════════════════════════════════════════════════════════════
 # accounts.tsv — the single source of truth for WHICH ACCOUNT governs each repo.
 #
-# Read by:  bin/check-accounts (verifies)  ·  bin/conectar-cuenta (resolves)
+# Read by:  bin/check-accounts (verifies)  ·  bin/connect-account (answers from it)
 #           hooks/gate-accounts.py (blocks a push to a repo declared elsewhere)
 #
 # 📦 THIS FILE IS INSTANCE DATA. It describes YOUR accounts and YOUR repos.

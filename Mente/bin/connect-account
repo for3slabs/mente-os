@@ -1,0 +1,206 @@
+#!/usr/bin/env python3
+"""connect-account — which account governs this repository, and where its access lives.
+
+⭐ THE QUESTION NOTHING ANSWERED. `bin/check-accounts` VERIFIES the registry —
+it reports what is wrong with it. Nothing CONSULTS it, so the fact it holds
+("which account may push here, and where the access guide lives") stayed
+readable only by opening the file and matching rows by eye.
+
+⛔ AND MATCHING BY EYE IS WHERE THE DRIFT ENTERS. The registry exists because
+"which account governs this repo" lives in three places at once — the remote,
+the documentation, and somebody's memory — and nothing compares them. A person
+comparing them by hand is a fourth place.
+
+⚠️ IT ANSWERS, IT NEVER ACTS. No credential is read, nothing is configured,
+nothing is pushed. ⭐ The `guia` column is a POINTER to where the access steps
+live; this prints the pointer, never what it points at.
+
+⬜ Bounded by ADR-031: the host's tool is READ to learn this clone's remotes,
+never written and never reached over the network. Its absence is a gap.
+
+Usage:
+  bin/connect-account            the repository this clone points at
+  bin/connect-account <repo>     a named repository
+  bin/connect-account --list     every declared repository
+Exit: 0 answered · 1 nothing declared, or no match · 2 no registry
+"""
+import os
+import re
+import subprocess
+import sys
+
+MENTE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+REPO = os.path.dirname(MENTE)
+REG = os.environ.get("MENTE_ACCOUNTS") or os.path.join(MENTE, "accounts.tsv")
+COLUMNS = ("repo", "account", "role", "remote", "local_path", "why_it_exists",
+           "guide")
+RETIRED = "archivado"
+
+
+def rows():
+    """Every declared repository, as a dict per row. ⭐ Short rows are KEPT and
+    padded: dropping one would make a malformed registry look emptier than it
+    is, and check-accounts is what reports the malformation."""
+    out = []
+    try:
+        for line in open(REG, encoding="utf-8", errors="replace"):
+            if line.startswith("#") or not line.strip():
+                continue
+            f = [c.strip() for c in line.rstrip("\n").split("\t")]
+            if not f or f[0] in ("repo", ""):
+                continue
+            f += [""] * (len(COLUMNS) - len(f))
+            out.append(dict(zip(COLUMNS, f)))
+    except OSError:
+        return None
+    return out
+
+
+def local_remotes():
+    """What this clone's remotes actually say → {name: url}.
+
+    ⬜ ADR-031: read only, local only. ⛔ Its absence is a GAP — an installation
+    without the tool is not a broken one, and reporting it as a failure would
+    send the reader to fix the wrong thing.
+    """
+    try:
+        r = subprocess.run(("git", "remote", "-v"), cwd=REPO,
+                           capture_output=True, text=True, timeout=20)
+    except (OSError, subprocess.SubprocessError):
+        return None
+    if r.returncode != 0:
+        return None
+    out = {}
+    for line in r.stdout.splitlines():
+        parts = line.split()
+        if len(parts) >= 2:
+            out.setdefault(parts[0], parts[1])
+    return out
+
+
+def show(row, remotes):
+    """One repository, answered. ⭐ Every field says what it means, because a
+    reader who has to remember what column four was is a reader who guesses."""
+    print("📍 %s" % row["repo"])
+    print("   governed by : %s" % (row["account"] or "⬜ not declared"))
+    print("   role        : %s%s"
+          % (row["role"] or "⬜ not declared",
+             "   ⛔ RETIRED — it receives no work"
+             if row["role"].lower() == RETIRED else ""))
+    print("   why it exists: %s" % (row["why_it_exists"] or "⬜ not declared"))
+
+    guide = row["guide"]
+    # ⭐ The pointer, never the content. ⛔ Printing the guide would put access
+    # steps into a terminal and a transcript — the exact move secrets/ exists to
+    # prevent, done by the tool meant to respect it.
+    if guide and guide != "-":
+        p = os.path.join(MENTE, guide)
+        print("   access guide : %s%s"
+              % (guide, "" if os.path.exists(p) else
+                 "   ⚠️ declared and NOT FOUND — the pointer resolves to nothing"))
+    else:
+        print("   access guide : ⬜ none declared")
+
+    # ⭐ The comparison the registry's own contract asks for: re-measure against
+    # the machine, never trust the row alone.
+    name = row["remote"]
+    if remotes is None:
+        print("   remote       : ⬜ NOT MEASURED · the host's tool did not answer")
+    elif not name or name == "-":
+        print("   remote       : ⬜ none declared · this row was never checked "
+              "against a clone")
+    elif name not in remotes:
+        print("   remote       : 🔴 `%s` is declared and this clone has no such "
+              "remote\n"
+              "                  ⛔ the row describes a clone that is not this "
+              "one" % name)
+    elif row["repo"].lower() not in remotes[name].lower():
+        print("   remote       : 🔴 `%s` points at %s\n"
+              "                  ⛔ the declared repo and the real remote "
+              "disagree — a renamed or\n"
+              "                  transferred repository keeps redirecting, so "
+              "both look alive"
+              % (name, remotes[name]))
+    else:
+        print("   remote       : ✅ `%s` → %s" % (name, remotes[name]))
+
+
+def main():
+    args = [a for a in sys.argv[1:] if not a.startswith("--")]
+    listing = "--list" in sys.argv
+
+    data = rows()
+    if data is None:
+        print("🔴 no %s · this installation declares no repository\n"
+              "   Run bin/init, then add a row per repository you push to."
+              % os.path.basename(REG), file=sys.stderr)
+        return 2
+    if not data:
+        # ⬜ Empty is the correct state of a fresh clone, and saying so is the
+        # difference between "nothing governs this" and "nothing was checked".
+        print("⬜ %s has no rows · a clone starts empty on purpose.\n"
+              "   Declare a repository before asking which account governs it."
+              % os.path.basename(REG))
+        return 1
+
+    remotes = local_remotes()
+
+    if listing:
+        print("%d repositor%s declared" % (len(data),
+                                           "y" if len(data) == 1 else "ies"))
+        for row in data:
+            print()
+            show(row, remotes)
+        return 0
+
+    if args:
+        wanted = args[0].lower()
+        # ⭐ Exact first, then a unique tail match. ⛔ Never a substring: `api`
+        # matching `org/api-old` and `org/api` would answer confidently about
+        # whichever came first.
+        hit = [r for r in data if r["repo"].lower() == wanted]
+        if not hit:
+            hit = [r for r in data
+                   if r["repo"].lower().split("/")[-1] == wanted]
+        if not hit:
+            print("🔴 %r is not declared in %s · an undeclared repository has "
+                  "no governing account" % (args[0], os.path.basename(REG)),
+                  file=sys.stderr)
+            return 1
+        if len(hit) > 1:
+            print("🔴 %r matches %d rows: %s · name it in full"
+                  % (args[0], len(hit), ", ".join(r["repo"] for r in hit)),
+                  file=sys.stderr)
+            return 1
+        show(hit[0], remotes)
+        return 0
+
+    # ⭐ No argument: answer for THIS clone, matched through its own remotes —
+    # which is the question somebody standing in a repository actually has.
+    if remotes is None:
+        print("⬜ NOT MEASURED · the host's tool did not answer, so this clone's "
+              "own remotes are unknown.\n   Name a repository, or use --list.")
+        return 1
+    here = [r for r in data
+            if any(r["repo"].lower() in u.lower() for u in remotes.values())]
+    if not here:
+        print("🔴 none of the %d declared repositories matches a remote of this "
+              "clone.\n"
+              "   ⛔ Work pushed from here goes somewhere the registry does not "
+              "describe.\n"
+              "   Remotes here: %s"
+              % (len(data), ", ".join(remotes) or "none"), file=sys.stderr)
+        return 1
+    for row in here:
+        show(row, remotes)
+    return 0
+
+
+if __name__ == "__main__":
+    try:
+        sys.exit(main())
+    except Exception as e:                                     # noqa: BLE001
+        print("🔴 %s crashed · %s: %s"
+              % (os.path.basename(__file__), type(e).__name__, e),
+              file=sys.stderr)
+        sys.exit(2)

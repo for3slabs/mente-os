@@ -727,7 +727,7 @@ loosens.
 
 ---
 
-## E-40 · ⬜ What the accounts system still owes — and which gap is urgent
+## E-40 · ✅ CLOSED — all three gaps, and the third was not the question it looked like
 
 **Found:** while building the two layers, 2026-08-30.
 
@@ -772,27 +772,52 @@ shape — an installer that runs once and knows about everything — fails the s
 way twice: it does not run again when somebody recreates the thing, and it puts
 the knowledge somewhere other than the piece that owns it.
 
-### 🟡 2 · ⬜ `bin/conectar-cuenta` · promised by name, does not exist
+### ✅ 2 · CLOSED — `bin/connect-account` answers from the registry
 
 The registry's own header names it as the piece that RESOLVES which account
 governs a repository. ⛔ A template that ships a name for something absent is a
 promise the reader cannot tell from a fact.
 
-⚠️ Either build it or stop naming it — ⭐ and the second option is not free: the
-name is there because resolving the governing account is a real question, and
-deleting the name deletes the question with it.
+**Closed:** 2026-09-01. ⭐ `check-accounts` VERIFIES the registry; nothing
+CONSULTED it, so the fact it holds was readable only by opening the file and
+matching rows by eye — ⛔ and a person matching by eye is a FOURTH place the
+truth lives, which is the drift the registry exists to end.
 
-### 🟢 3 · Nothing measures the registry against the remotes that exist
+⚠️ It answers, it never acts: no credential is read, nothing is configured. The
+`guia` column is a POINTER, and the tool prints the pointer — ⛔ printing the
+guide would put access steps into a terminal and a transcript, the exact move
+`secrets/` exists to prevent, made by the piece meant to respect it.
+
+⭐ And it never guesses: an ambiguous name is REFUSED rather than resolved to
+whichever row came first. An answer about which account may push is acted on
+immediately, and a confident wrong one sends work somewhere nobody looks.
+
+⚠️ Renamed on the way in: the promise said `conectar-cuenta`, in a template that
+travels. ADR-023 governs it.
+
+### ✅ 3 · CLOSED — and the decision it was waiting for had already been made three times
 
 `ACC-VRF-001` checks a declared local path. ⛔ Nothing compares the registry with
 what the machine's remotes actually say — ⚠️ **which is exactly where the drift
 this rule describes happens**: the remote, the documentation and someone's
 memory disagree, and none of them knows.
 
-⭐ **This one needs a DECISION before code, which is why it ranks last and not
-because it matters least.** Reading real remotes means running the host's tool,
-and that is the frontier this engine does not cross without declaring it —
-⚠️ the same frontier that kept a specific forge out of both gates.
+🔴 **THE FRONTIER WAS ALREADY CROSSED, AND NOTHING SAID SO.** Measured while
+closing this: `check-clear-ready`, `check-shipping` and `hooks/pre-push.sh` all run the
+host's tool, all three identically — read only, absence never a failure. ⭐ The
+criterion was right and invisible, and the fourth piece would have reinterpreted
+it again.
+
+⭐ **`ADR-031` now declares it**, and the scope question it was waiting for had
+also been answered already — in the registry's own template, which instructs the
+reader to re-measure with the LOCAL remote listing. ⛔ The decision lived in a
+template and was never promoted to a rule, which is the shape of every gap in
+this backlog.
+
+⭐ `bin/connect-account` performs the comparison inside that boundary: it reads
+this clone's remotes and reports three distinct disagreements — a declared repo
+that does not match the real remote, a declared remote this clone does not have,
+and a clone whose remotes match no declared row at all.
 
 ---
 

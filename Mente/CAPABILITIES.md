@@ -77,6 +77,7 @@ answers exactly one question. None of them decides anything: they check what is 
 | `bin/check-pending` | is a debt written in the shape somebody else can pick up |
 | `bin/check-config` | is the permission surface complete, portable and free of pasted secrets |
 | `bin/check-accounts` | ⭐ does every push target declare who governs it — and does the unavoidable layer RUN |
+| `bin/connect-account [repo]` | ⭐ which account governs a repository, and where its access guide lives — ⛔ the pointer, never the credential |
 | `bin/check-adr-wiring` | does every consequence a decision claims resolve to a rule or an artefact |
 | `bin/check-gates` | ⭐ **has a gate gone quiet** — a dead gate looks exactly like one with nothing to block |
 | `bin/grade-block <block>` | ⭐ **product or MVP — measured**, never opinion (layer 1) |
