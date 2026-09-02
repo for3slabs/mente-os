@@ -41,6 +41,12 @@ HEADER = (
     "> ## ⭐ THIS IS THE ONLY PLACE A LIVE NUMBER BELONGS.\n"
     "> ⛔ A number copied into prose is correct exactly once. Documents name the\n"
     "> metric; this file holds the value.\n\n"
+    "> ## ⭐ WHAT `rules.enforced_pct` DOES NOT COVER\n"
+    "> ⛔ It is computed over rows already in a **rule table**. A contract or rule\n"
+    "> declaring none contributes nothing to either half — ⚠️ so doctrine can grow\n"
+    "> without enforcement and this percentage cannot fall, which is the drift it\n"
+    "> exists to detect. ⭐ `rules.unenforceable_docs` and `rules.unenforceable_lines`\n"
+    "> say how much sits outside it.\n\n"
     "⚠️ Every row below was measured when this file was generated. ⛔ Reading it\n"
     "later tells you what was true THEN — regenerate before quoting it.\n\n"
     "---\n\n")
@@ -137,6 +143,44 @@ def enforcement():
             for _, mark in _RULE_ROW.findall(text):
                 lv[mark] = lv.get(mark, 0) + 1
     return lv, skipped
+
+
+def unenforceable():
+    """⭐ E-49 · what `rules.enforced_pct` does NOT measure, counted.
+
+    ⛔ The ratio is computed over rows already in a rule table. A `contract` or
+    `rule` that declares none is criterion nothing can count — ⚠️ so doctrine
+    can grow without enforcement and the percentage cannot fall, which is the
+    exact drift it exists to detect.
+
+    ⭐ Reported rather than fixed: a principle is meant to be read and reasoned
+    with, and forcing every paragraph into an id-shaped row would turn criterion
+    into a checklist. ⛔ What is not defensible is the ratio staying silent
+    about what it left out.
+    """
+    files, lines, unread = 0, 0, []
+    for dp, dn, fn in os.walk(ROOT):
+        dn[:] = [d for d in dn if d not in (".git", "__pycache__", "cache")]
+        for f in fn:
+            if not f.endswith(".md"):
+                continue
+            try:
+                t = open(os.path.join(dp, f), encoding="utf-8",
+                         errors="replace").read()
+            except OSError:
+                # ⛔ CHK-CAU-003 · a skip is SAID. ⚠️ A document that could not
+                # be read is one this count did not see, and an undercount here
+                # makes the exclusion look smaller than it is — the opposite of
+                # what this metric exists to disclose.
+                unread.append(os.path.relpath(os.path.join(dp, f), ROOT))
+                continue
+            m = re.search(r"\*\*Type:\*\*\s*([a-z-]+)", t)
+            if not m or m.group(1) not in ("contract", "rule"):
+                continue
+            if not _RULE_ROW.search(t):
+                files += 1
+                lines += len(t.splitlines())
+    return files, lines, unread
 
 
 def backlog():
@@ -244,6 +288,14 @@ def rows():
     if w_unread:
         add("documents.unread", "%d · %s" % (len(w_unread),
                                              " ".join(w_unread[:3])))
+    # ⭐ E-49 · the ratio says what it does NOT cover. ⛔ A percentage whose
+    # denominator is silent about its own gap reads as complete.
+    u_files, u_lines, u_unread = unenforceable()
+    add("rules.unenforceable_docs", u_files)
+    add("rules.unenforceable_lines", u_lines)
+    if u_unread:
+        add("rules.unenforceable_unread",
+            "%d · %s" % (len(u_unread), " ".join(u_unread[:3])))
     done, all_ = backlog()
     add("backlog.closed", done)
     add("backlog.entries", all_)
