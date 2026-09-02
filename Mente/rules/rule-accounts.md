@@ -147,6 +147,20 @@ first: **absence of evidence read as evidence of absence.**
 
 ---
 
+## WHO GOVERNS THIS FILE
+
+| Change | Who |
+|---|---|
+| ⬜ the registry's rows | ⭐ the owner of the instance — ⚠️ it is instance data, never engine content |
+| the rules and their IDs | whoever maintains the engine, through a recorded decision |
+| ⛔ pushing to a destination the registry does not name | **nobody** — ⭐ an unregistered remote is a divergence waiting |
+| ⛔ a secret's VALUE written into the registry | **nobody** — ⚠️ the `guia` column points at where it lives; ⛔ what is written stays in history |
+
+⭐ **The rows are the instance's and the rules are the engine's.** ⛔ Confusing the two is how a
+registry ends up shipped to every clone carrying one machine's remotes.
+
+---
+
 Related: `rule-shipping.md` (how a change leaves the workspace) · `rule-config-hygiene.md`
 (⛔ the secret rules this one inherits) · `../templates/accounts.tsv.template` (the registry's
 shape) · `../secrets/README.md` (where the `guia` column points) · `contract-document.md`.
