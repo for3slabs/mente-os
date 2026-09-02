@@ -1102,12 +1102,13 @@ other. ⭐ **Two topics, and the contract itself says `split by topic`.**
 
 ---
 
-## E-35 · Nesting has no bound, and the intermediate level was never built
+## E-35 · ✅ CLOSED — the level exists, the bound is enforced, and ADR-015 is no longer not-started
 
 - **Surfaced by:** ADR-015 — the first decision brought in with `implementation: not-started`
-- **Affects:** `rules/contract-block.md` · a rule that does not exist yet
-- **Closes when:** a rule counts nesting depth and refuses beyond the declared bound, and the
-  block contract defines the intermediate level
+- **Affects:** `../rules/contract-block-sections.md` §F · `../bin/check-block` ·
+  `../rules/decisions/ADR-015-nesting-is-bounded-at-three.md`
+- **Closed:** 2026-09-02 — `BLK-SUB-005` declared and enforced, four probe cases, ADR moved to
+  `verified`
 
 **Why it matters.** ⭐ **Measured: real blocks reach fourteen flat sub-blocks**, which is the exact
 failure the decision predicted for two fixed levels. ⛔ **The intermediate level was decided and
@@ -1116,6 +1117,27 @@ never built**, so large work flattened instead of grouping.
 ⚠️ **Not urgent, and the record says why:** fourteen flat sub-blocks proves the level is NEEDED —
 ⛔ **it does not prove it would be USED.** ⭐ Those are different claims, and building the level is
 how the second one gets tested.
+
+⭐ **The level costs no column.** The number in `#` carries it: `2` is a group, `2.1` is its task,
+and every row written before this rule stays valid unchanged.
+
+```
+| 2   | the parser      | …    ← a GROUP
+| 2.1 | read the header | …    ← its task
+| 2.1.1 …                      ⛔ refused
+```
+
+⛔ **The bound is enforced; the grouping is offered.** ⚠️ Nothing forces a group to exist — a
+block needing a FOURTH level is a block that should have been two blocks, and that is the finding
+rather than a formatting problem.
+
+⚠️ **The `#` column is found by its header, not its position** — the same lesson as
+`BLK-SUB-004`: inserting a column ahead of it would move the check to the wrong cell silently.
+
+⭐ **`implementation:` has a vocabulary, and writing prose into it was caught immediately.**
+`DEC-IMP-001` refused `done · BLK-SUB-005 in …`; the field takes
+`implemented|in-progress|not-started|verified`, and `verified` is the true one here — rule, code
+and probe all exist.
 
 ---
 
