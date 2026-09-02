@@ -67,16 +67,30 @@ on every edit.
 
 ---
 
-## E-03 · A checkpoint has no required content
+## E-03 · ✅ CLOSED — a checkpoint carries its eight fields, and the checker reads them from the contract
 
 - **Surfaced by:** `../memory/principles/owner-2-dev.md` §6 · measured against the block contract, where a checkpoint
   is a single line
 - **Affects:** the block contract · the sufficiency check
-- **Closes when:** the sufficiency check verifies a checkpoint carries its fields
+- **Closed:** 2026-09-01 — `BLK-CHK-001..004` declared in `../rules/contract-block-sections.md` §I,
+  enforced in `../bin/check-block` beside the sufficiency test, with eight probe cases
 
-**Why it matters.** *"backend done"* satisfies the current shape and records nothing anyone can
+**Why it mattered.** *"backend done"* satisfies the current shape and records nothing anyone can
 act on. ⭐ The two fields that matter most — **what did not change** and **whether the scope held**
 — are the two a free-form note never contains.
+
+⚠️ **§I was the only section of the contract with no rule table** — one sentence, *"a safe point to
+resume from — not a diary"*, against §K's seven named fields. ⭐ The eight fields were not invented
+here: they already existed in `../memory/principles/owner-2-dev.md` §7 with nothing able to check
+them, and were brought into the contract so something could.
+
+⭐ **The reader takes the field list FROM the contract**, so renaming one there changes what is
+demanded — probe case ㉝ proves it. ⛔ Hardcoding the eight would make two places declare one thing,
+and the copy is the half that goes stale.
+
+⚠️ **It stays quiet on an empty §I.** A block that has not reached a checkpoint has no §I, which is
+a state and not a defect; §I is 🟡, and demanding it exist would make every fresh block fail its
+own contract.
 
 ---
 
@@ -1052,4 +1066,23 @@ how one of them ends up wrong.
 ⚠️ **Its first version cried wolf on prose:** it counted any non-ascii token opening a line, so ⬜
 notices and ⭐ headings read as colliding cases — 7 of the 15 were false. ⭐ It reads numerals only,
 and a lettered suffix counts as part of the address.
+
+---
+
+## E-43 · ✅ CLOSED — `p.track()` deleted a contract, and its name did not say it could
+
+- **Surfaced by:** closing E-03 — a probe case edited the real contract and marked it with
+  `track()` so it would be tidied up
+- **Affects:** `../bin/probes/harness.py` · every probe
+- **Closed:** 2026-09-01 — `track()` refuses any path that is not this probe's own fixture
+
+**Why it mattered.** 🔴 `track()` registers a path for `clean()`, and `clean()` calls `os.remove` —
+⛔ **it deletes, it does not restore.** ⚠️ The name reads like bookkeeping, and the file was gone:
+`../rules/contract-block-sections.md`, recovered from the last commit, with the `BLK-CHK-*` declaration
+written since then lost and rewritten by hand.
+
+⭐ **A probe must never write to the engine it is measuring.** To measure against a modified engine,
+copy the tree and edit the copy — which is what case ㉝ does now. ⛔ The guard is a refusal rather
+than a comment because *"the probe cleans up after itself"* is precisely the assumption that made
+the deletion possible.
 

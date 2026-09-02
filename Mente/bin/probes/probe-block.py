@@ -140,6 +140,99 @@ p.inverse("㉕ a field after a `·` on the same line IS read",
                       "created: 2026-01-10 · updated: " +
                       __import__("datetime").date.today().isoformat()))
 
+# ── BLK-CHK-001..004 · a checkpoint is EVIDENCE, not a note ────────────────
+# ⛔ "backend done" satisfies a free-form shape and records nothing anybody can
+# act on. ⭐ The two fields that decide whether the work can be trusted are the
+# two nobody writes unprompted: what did NOT change, and whether the scope held.
+_CHK = ("- **2026-01-15 · iteration 1**\n"
+        "  changed: the reader\n"
+        "  did not change: the gate, the template\n"
+        "  pieces: bin/check-block\n"
+        "  standard: rules/rule-checks-must-measure.md\n"
+        "  verified: bin/probes/run-all.py → all green\n"
+        "  unexpected: none\n"
+        "  remains: none\n"
+        "  scope: held\n")
+
+
+def _with_i(bid, body):
+    """Append a §I to a fixture block — ⚠️ the fixture writes none, which is
+    itself correct: a block that has not reached a checkpoint has no §I."""
+    q = _path(bid)
+    open(q, "a", encoding="utf-8").write("\n## I · Checkpoints\n\n%s\n" % body)
+    return bid
+
+
+p.case("㉖ ⛔ the note E-03 names: «backend done»",
+       lambda: _with_i(block(p, "a"), "- **backend done**"), "BLK-CHK-001")
+
+p.case("㉗ ⭐ `did not change` omitted — the half that proves the scope held",
+       lambda: _with_i(block(p, "a"),
+                       _CHK.replace("  did not change: the gate, the template\n", "")),
+       "BLK-CHK-001")
+
+p.case("㉘ ⭐ `scope` present but blank answers nothing",
+       lambda: _with_i(block(p, "a"), _CHK.replace("scope: held", "scope:")),
+       "BLK-CHK-004")
+
+# ⛔ THE `break` THAT HIDES THE REST — DOC-CNT-004 already paid for this one.
+p.case("㉙ ⛔ three checkpoints, the middle one incomplete → it is named",
+       lambda: _with_i(block(p, "a"),
+                       _CHK + "- **2026-01-16 · iteration 2**\n  changed: x\n"
+                       + _CHK.replace("iteration 1", "iteration 3")),
+       "BLK-CHK-001")
+
+p.inverse("㉚ ⭐ the eight fields present → no finding",
+          lambda: _with_i(block(p, "a"), _CHK))
+
+# ⭐ `widened: <what>` is an ANSWER, not a violation: scope may widen, and
+# BLK-SCP-004 requires the decision be visible — which is what this records.
+p.inverse("㉛ ⭐ `widened: the parser` is a valid answer",
+          lambda: _with_i(block(p, "a"),
+                          _CHK.replace("scope: held", "scope: widened: the parser")))
+
+# ⬜ A block with no §I has not reached a checkpoint — a state, not a defect.
+# ⛔ §I is 🟡; demanding it exist would make every fresh block fail its contract.
+p.inverse("㉜ ⬜ no §I at all → silence, not a demand", lambda: block(p, "a"))
+
+# ⭐ THE CASE THAT KEEPS THE FIELDS IN ONE PLACE: rename one in the CONTRACT and
+# the checker must demand the new name. ⛔ Without this, someone "simplifies" the
+# reader by hardcoding the eight, and the copy is the half that goes stale.
+#
+# 🔴 IT RUNS ON A COPY OF THE TREE, NEVER THIS ONE. The first version edited the
+# real contract and marked it with p.track() to be tidied up — ⛔ but track()
+# DELETES its fixtures, and the contract was deleted. ⚠️ A probe that writes to
+# the engine it is measuring can destroy it, and "the probe cleans up after
+# itself" is exactly the assumption that made it possible.
+def _contract_follows():
+    import shutil as _sh, subprocess as _sp, tempfile as _tf
+    w = _tf.mkdtemp(prefix="mente-chk-")
+    t = os.path.join(w, "Mente")
+    _sh.copytree(ROOT, t, ignore=_sh.ignore_patterns(
+        "__pycache__", ".beats", ".test-lock", ".git", "cache"))
+    d = os.path.join(t, "work", "blocks", "active", "zzchk")
+    os.makedirs(d, exist_ok=True)
+    _sh.copy(_path(block(p, "a")), os.path.join(d, "BLOCK.md"))
+    p.clean()
+    open(os.path.join(d, "BLOCK.md"), "a", encoding="utf-8").write(
+        "\n## I · Checkpoints\n\n%s\n" % _CHK)
+    q = os.path.join(t, "rules", "contract-block-sections.md")
+    c = open(q, encoding="utf-8").read()
+    open(q, "w", encoding="utf-8").write(
+        c.replace("| `remains` |", "| `zzremains` |", 1))
+    r = _sp.run([sys.executable, os.path.join(t, "bin", "check-block")],
+                cwd=t, capture_output=True, text=True)
+    _sh.rmtree(w, ignore_errors=True)
+    return "zzremains" in r.stdout
+
+
+_ok = _contract_follows()
+print("  %-46s %s %s"
+      % ("㉝ ⭐ a field renamed IN THE CONTRACT is demanded", "✅" if _ok else "🔴",
+         "the reader follows the contract" if _ok
+         else "🔴 it is hardcoded somewhere"))
+p.results.append(("㉝ contract follows", "FAIL" if _ok else "NOT_DETECTED"))
+
 p.inverse("㉑ a CORRECT block", lambda: block(p, "a"))
 p.crash_guard()
 

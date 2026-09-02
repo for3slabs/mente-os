@@ -33,6 +33,48 @@ def contract_text():
             continue
     return "\\n".join(out)
 
+
+# ── BLK-CHK-001 · the checkpoint fields, READ FROM THE CONTRACT ─────────────
+# ⛔ Hardcoding them here would make two places declare one thing, and the copy
+# is the one that goes stale — measured twice in this engine already. ⭐ The
+# contract's §I field table is the source; this only reads it.
+_FIELD_ROW = re.compile(r"^\|\s*(?:⭐\s*)?`([a-z ]+)`\s*\|", re.M)
+
+
+def checkpoint_fields():
+    """The field names §I requires, in the order the contract lists them.
+
+    ⬜ An unreadable or reworded contract yields an EMPTY list, and an empty
+    list checks nothing — ⛔ said here rather than silently defaulting to a
+    guessed set, because a checker measuring against its own guess reports
+    defects the contract never declared.
+    """
+    t = contract_text()
+    m = re.search(r"### I · Checkpoints.*?(?=\n### |\n---\n)", t, re.S)
+    return _FIELD_ROW.findall(m.group(0)) if m else []
+
+
+def _checkpoints(body):
+    """The individual entries in §I.
+
+    ⭐ Split on the heading or list marker that opens each one, because a block
+    accumulates checkpoints and only reporting the first would hide the rest —
+    the same `break` defect DOC-CNT-004 already paid for.
+    ⚠️ A §I with no separator at all is ONE entry, not zero: an unsplittable
+    body still has to carry its fields.
+    """
+    parts = re.split(r"\n(?=\s*(?:#{3,}\s|[-*]\s*\*\*|\|\s*\d))", body)
+    return [q for q in parts if re.search(r"[A-Za-z]", q)] or [body]
+
+
+def _first_line(entry):
+    """A short label for the entry, so a finding says WHICH checkpoint."""
+    for line in entry.strip().splitlines():
+        line = line.strip(" -*#|").strip()
+        if line:
+            return line[:40]
+    return "(unnamed)"
+
 BLOCKS = os.path.join(ROOT, "work", "blocks")
 
 # ⭐ ONE reader for a block's sections — bin/blockread.py. It lived as four
@@ -316,6 +358,40 @@ def check(path, rel, ids):
         bad.append(("BLK-STD-001", rel,
                     "section D declares no standard · with none, nothing in "
                     "this block can be rejected on any basis"))
+
+    # ── BLK-CHK-001..004 · a checkpoint is EVIDENCE, not a note ────────────
+    # ⛔ "backend done" satisfies a free-form shape and records nothing anybody
+    # can act on. ⭐ The two fields that decide whether the work can be trusted
+    # are the two nobody writes unprompted: what did NOT change, and whether the
+    # scope held.
+    # ⚠️ Only when §I HAS content: an empty §I is a block that has not reached a
+    # checkpoint yet, which is a state, not a defect. ⭐ §I is 🟡, and demanding
+    # it exist would make every fresh block fail its own contract.
+    ibody = body_of(text, "I") or ""
+    if re.search(r"[A-Za-z]", ibody):
+        fields = checkpoint_fields()
+        for entry in _checkpoints(ibody):
+            missing = [f for f in fields
+                       if not re.search(r"^\s*[-*|]?\s*%s\s*[:|]" % re.escape(f),
+                                        entry, re.M | re.I)]
+            if missing:
+                bad.append(("BLK-CHK-001", rel,
+                            "checkpoint %r omits %s · ⛔ a checkpoint is "
+                            "evidence, not a note — the fields are named in "
+                            "contract-block-sections.md §I"
+                            % (_first_line(entry), ", ".join(missing))))
+                continue
+            # ⭐ BLK-CHK-004 · `scope` present but blank answers nothing. The
+            # field exists to make the §B lock auditable, and "scope:" alone
+            # reads as answered while recording nothing.
+            m = re.search(r"^\s*[-*|]?\s*scope\s*[:|]\s*(.*)$", entry,
+                          re.M | re.I)
+            if m and not re.search(r"held|widen|narrow", m.group(1), re.I):
+                bad.append(("BLK-CHK-004", rel,
+                            "checkpoint %r · `scope` says %r · ⭐ it answers "
+                            "`held` or `widened: <what>` — the lock of §B, made "
+                            "auditable" % (_first_line(entry),
+                                           m.group(1).strip()[:30])))
 
     # BLK-TRN-001 · `closed` requires acceptance AND sufficiency — never one.
     if st == "closed":
