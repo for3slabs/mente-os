@@ -209,7 +209,7 @@ def wire_import(dry):
     return "created" if current is None else "appended"
 
 
-def wire_hook(dry):
+def wire_hook(dry, name="pre-push"):
     """④ Link the layer that cannot be walked around.
 
     🔴 A HOOK FILE THAT IS NOT LINKED NEVER RUNS, and looks installed. Git
@@ -217,19 +217,19 @@ def wire_hook(dry):
     it exists the only defence left is the layer a pattern over command text
     can be walked past.
     """
-    src = os.path.join(MENTE, "hooks", "pre-push.sh")
+    src = os.path.join(MENTE, "hooks", "%s.sh" % name)
     hooks = os.path.join(REPO, ".git", "hooks")
     if not os.path.exists(src):
-        return "⬜ no pre-push.sh to link"
+        return "⬜ no %s.sh to link" % name
     if not os.path.isdir(hooks):
-        return "⬜ not a git repository — layer 2 not wired"
-    link = os.path.join(hooks, "pre-push")
+        return "⬜ not a git repository — %s not wired" % name
+    link = os.path.join(hooks, name)
     if os.path.exists(link):
         return ("already wired"
                 if os.path.realpath(link) == os.path.realpath(src)
-                else "⚠️ .git/hooks/pre-push points elsewhere — left untouched")
+                else "⚠️ .git/hooks/%s points elsewhere — left untouched" % name)
     if dry:
-        return "would link layer 2"
+        return "would link %s" % name
     try:
         os.symlink(os.path.relpath(src, hooks), link)
     except OSError as e:
@@ -310,7 +310,12 @@ def main():
 
     filled = fill_engine(values, dry)
     imported = wire_import(dry)
+    # ⭐ BOTH git hooks, not one. ⛔ pre-commit.sh shipped implementing
+    # SHP-LCK-001 — the rule that refuses a commit on the base branch — and
+    # nothing installed it: a hook file that is not linked never runs and looks
+    # installed, which is the failure this whole step exists for.
     hooked = wire_hook(dry)
+    hooked_commit = wire_hook(dry, "pre-commit")
     tightened = harden(dry)
 
     head = "🔎 dry run — nothing was written\n" if dry else ""
@@ -326,7 +331,8 @@ def main():
         print("   ⬜ kept (already there — use --force to replace): %s"
               % ", ".join(kept))
     print("   · router import: %s" % imported)
-    print("   · layer 2 hook: %s" % hooked)
+    print("   · layer 2 hook (pre-push):  %s" % hooked)
+    print("   · base-branch hook (pre-commit): %s" % hooked_commit)
     if tightened:
         print("   · %s" % tightened)
     if not dry:
