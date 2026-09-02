@@ -31,7 +31,7 @@
 #    data. The frontier in mente.config.yml is the authority; this column must
 #    agree with it.
 # ══════════════════════════════════════════════════════════════════════════
-piece	path	governance	class	what_it_is
+# piece	path	governance	class	what_it_is
 # ── engine · the validators — the motor, nobody edits per instance ──
 check-health-piece	bin/check-health	engine	canonical	is the system healthy
 val-estructura	bin/check-structure	engine	canonical	the tree is the one this table declares
