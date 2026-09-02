@@ -129,15 +129,33 @@ findings — measured, not assumed.
 
 ---
 
-## E-05 · Size limits have no declared unit
+## E-05 · ✅ CLOSED — the unit is `lines`, declared, verified, and published as a number
 
 - **Surfaced by:** `../memory/principles/owner-1-docs.md` §6
-- **Affects:** the document contract's size table · the health check
-- **Closes when:** every limit states its unit, and one command measures it
+- **Affects:** the document contract's size table · `../bin/check-document` · `../bin/generate-metrics`
+- **Closed:** 2026-09-01 — `DOC-SIZ-003` declared and enforced, three probe cases, and
+  `documents.closest_to_ceiling` published in `METRICS.md`
 
-**Why it matters.** *"Too long"* is an opinion. ⭐ A ceiling with no unit cannot be checked, so it
-is enforced by whoever happens to notice — which is the definition of a rule that holds half the
-time.
+**Why it mattered.** *"Too long"* is an opinion. ⭐ A ceiling with no unit cannot be checked, so it
+is enforced by whoever happens to notice.
+
+⚠️ **The units were already written — and never verified.** All eight numeric rows said `lines`,
+and the reader's regex captured the digits and **discarded the word beside them**. ⛔ A row saying
+`250 words` would still have been measured in LINES: the table claiming one thing, the check doing
+another, and both looking correct on inspection. ⭐ That is the defect one layer in from the one
+the entry describes.
+
+⭐ **The second half of the criterion — *one command measures it* — is now a live number.**
+`documents.closest_to_ceiling` reports the smallest margin left, not the biggest file: a 700-line
+contract under a 700 ceiling is fine, a 260-line entry-point over a 250 one is not.
+
+🔴 **Its first run found `README.md` at exactly 250 of 250 lines** — not a violation, and with no
+margin at all. Filed as E-46.
+
+⚠️ **A stale table in the principle, found on the way.** `../memory/principles/owner-1-docs.md`
+declared that the four shape contracts *"are not written yet"* and that size limits were *"not
+declared anywhere yet"*. ⛔ All of them exist. The table now names each contract and the validator
+that enforces it.
 
 ---
 
@@ -1161,4 +1179,17 @@ an absence.
 ⭐ **Nine local ticks remain and are correct**: their subject always exists — documents, validators,
 the engine's own rules — so an unconditional ✅ is the true verdict there. ⛔ Migrating them for
 symmetry would have made three correct validators say ⬜ over a subject that was never missing.
+
+---
+
+## E-46 · `README.md` sits at exactly its ceiling, with no margin
+
+- **Surfaced by:** the first run of `documents.closest_to_ceiling` (E-05)
+- **Affects:** `../README.md`
+- **Closes when:** it is split, or its type's ceiling is reconsidered on the record
+
+**Why it matters.** ⭐ 250 of 250 lines is not a violation — `DOC-SIZ-001` fires above the ceiling,
+not at it. ⚠️ It is also zero margin: the next line added breaks it, and the person who adds that
+line will be doing something else at the time. ⛔ A ceiling reached exactly is a decision waiting
+to be made under time pressure, which is when the answer becomes *"trim"* rather than *"split"*.
 

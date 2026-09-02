@@ -11,6 +11,7 @@ from datetime import date
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 CONTRACT = os.path.join(ROOT, "rules", "contract-document.md")
+REL_CONTRACT = "rules/contract-document.md"
 
 STATUSES = {"draft", "current", "superseded", "fossil"}
 
@@ -173,6 +174,17 @@ def _stale_target(hit):
             % os.path.relpath(hit, ROOT))
 
 
+def bad_units(ceilings):
+    """⭐ DOC-SIZ-003 · which declared ceilings name a unit this cannot measure.
+
+    ⛔ Checked against the TABLE, once, rather than against every document that
+    carries the type: the defect is in the declaration, and reporting it per
+    file would bury one contract error under fifty identical findings.
+    """
+    return sorted((t, c, u) for t, (c, u) in ceilings.items()
+                  if c is not None and u != UNIT)
+
+
 def read_ceilings(text):
     """DOC-SIZ-001 · the ceilings live in the contract, and are read from it."""
     out = {}
@@ -183,8 +195,12 @@ def read_ceilings(text):
         # no ceiling at all. ⛔ A type declared in the contract that no document
         # can legally carry: check-document reported `Type not in the
         # contract's table` for a type that is right there.
-        m = re.match(r"^\|([^|]+)\|\s*\*{0,2}(?:⭐\s*)?\*{0,2}(\d+|none|frozen)",
-                     line)
+        # ⭐ DOC-SIZ-003 · THE UNIT IS CAPTURED, not skipped past. ⛔ The first
+        # version took the digits and discarded the word beside them, so a row
+        # reading `250 words` would still have been measured in LINES — the
+        # table saying one thing, the check doing another, both looking right.
+        m = re.match(r"^\|([^|]+)\|\s*\*{0,2}(?:⭐\s*)?\*{0,2}"
+                     r"(\d+|none|frozen)\s*([a-z]*)", line)
         if not m:
             continue
         names = re.findall(r"`([a-z-]+)`", m.group(1))
@@ -192,8 +208,16 @@ def read_ceilings(text):
             continue          # ⬜ a header or separator row, not a declaration
         value = None if m.group(2) in ("none", "frozen") else int(m.group(2))
         for n in names:
-            out[n] = value
+            # ⚠️ The unit rides WITH the ceiling, so the caller cannot read one
+            # without the other — which is how it came to be ignored.
+            out[n] = (value, m.group(3) or None)
     return out
+
+
+# ⭐ DOC-SIZ-003 · the unit this checker can actually measure. ⛔ Declaring any
+# other one is a contract the code cannot honour, and a rule nothing can enforce
+# is worse than no rule: the belief replaces the vigilance.
+UNIT = "lines"
 
 
 def check(path, rel, ceilings, quiet):
@@ -242,7 +266,7 @@ def check(path, rel, ceilings, quiet):
                     "superseded with no replacement named · a dead end"))
 
     # DOC-SIZ-001 · the ceiling for its type
-    cap = ceilings.get(ty)
+    cap, unit = ceilings.get(ty) or (None, None)
     if cap and len(lines) > cap:
         # ⭐ DOC-SIZ-001 says a file over its ceiling owes a SPLIT, and that the
         # split is NAMED WORK rather than a warning. ⛔ Until now the rule only
@@ -544,9 +568,18 @@ def main():
     if not ceilings:
         print("🔴 no ceiling table found in the contract · DOC-SIZ-001 cannot be checked")
         return 2
+    # ⭐ DOC-SIZ-003 · a numeric ceiling states a unit this checker can measure.
+    # ⛔ A number whose unit nothing measures is not a limit: the table would say
+    # one thing and the check would do another, and both would look correct.
+    unit_bad = bad_units(ceilings)
 
     cap = capability_map()
     findings = list(cap) if cap else []
+    for _t, _c, _u in unit_bad:
+        findings.append(("DOC-SIZ-003", REL_CONTRACT, 0,
+                         "the ceiling for %r is %d %s · ⛔ this check measures "
+                         "%s · a number whose unit nothing measures is not a "
+                         "limit" % (_t, _c, _u or "(no unit)", UNIT)))
     if cap is None and not quiet:
         print("⬜ NOT MEASURED · no CAPABILITIES.md · whether the map matches "
               "the tree was not checked")
