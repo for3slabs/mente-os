@@ -1673,13 +1673,13 @@ purpose reports defects the thing under test never had.
 
 ---
 
-## E-52 · Three decisions are declared and not built, and nothing said so
+## E-52 · ✅ CLOSED — three decisions, three different reasons, none of them still debt
 
 - **Surfaced by:** the folder-by-folder audit of `../rules/decisions/` — the backlog read 0 open
   while three ADRs read `not-started` or `in-progress`
 - **Affects:** `../rules/decisions/ADR-019-*.md` · `../rules/decisions/ADR-020-*.md` · one
   in-progress · `../bin/generate-metrics`
-- **Closes when:** each is built, or its record says on the page why it will not be
+- **Closed:** 2026-09-02 — measured one by one; `decisions.pending` **3 → 0**
 
 **Why it matters.** ⭐ **A decision written and not built holds only while somebody remembers it**
 — which is exactly how E-35 and E-37 were found, both of them ADRs sitting at `not-started` for
@@ -1692,5 +1692,16 @@ months. ⛔ The backlog reaching zero says nothing about them, because they were
 | (one more) | `in-progress` |
 
 ⭐ **Now measured:** `decisions.pending` in `METRICS.md`. ⛔ Before this the only decision number
-was `decisions: 26` — **inflated by counting the folder's own README as a decision**, so it could
-not even be reconciled against the tree, let alone say how many were waiting.
+was `decisions: 26` — **inflated by counting the folder's own README as a decision**.
+
+⚠️ **Measuring each one found three different answers, and none was "build it":**
+
+| ADR | What was true |
+|---|---|
+| `ADR-014` | ⭐ its measurable half was **missing a number**: nothing said how much of layer 2 an installation had declared. Now `dimensions.declared` / `dimensions.undeclared` — **0 of 6 in the template**, so a fresh install can see layer 2 does not exist yet. Its other two consequences are 📖 **by construction**: a script judging whether a written criterion IS criterion would be the agent writing it |
+| `ADR-019` | ⛔ its own record said *"nothing completes anything yet"* and *"the generators do not exist"* — ⚠️ **both false since the generators shipped**. Two exist, each writes exactly one file and announces it |
+| `ADR-020` | ⛔ `status: superseded`, replaced by `ADR-030`, which is `implemented` — ⚠️ **it was never debt**, and the metric counted it because it read only the `implementation:` field |
+
+⭐ **The metric was wrong in the honest direction and is fixed:** a superseded record is not
+pending, whatever its implementation field says. ⛔ Counting it asks somebody to build a decision
+that was replaced.
