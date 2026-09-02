@@ -190,6 +190,41 @@ print("  %-46s %s %d de 3 punteros rotos vistos"
 p.results.append(("㉕ tres punteros rotos", "FAIL" if _n == 3 else "NOT_DETECTED"))
 p.clean()
 
+# ── DOC-CNT-007 · ⭐ RESOLVING IS NOT ENOUGH ────────────────────────────────
+# ⛔ A pointer to a superseded document is worse than a broken one: the broken
+# one announces itself, while this one resolves, opens, and reads as authority.
+# ⚠️ Measured before building: this template holds ZERO superseded or fossil
+# documents and a reference installation holds three — so the fixture must
+# PLANT the target, and a probe that waited to find one would pass forever
+# while measuring nothing.
+def _target(status, extra="", name="zztarget"):
+    """Plant a target document, return the fixture that points AT it."""
+    put(("# %s\n\n**Status:** %s · **Type:** plan · **Updated:** 2026-01-15"
+         " · **Owner:** someone\n%s\n## Purpose\n\nA planted target.\n\n"
+         "Related: `README.md`.\n") % (name, status, extra),
+        "%s-%s.md" % (MARK, name))
+    return put(GOOD + "\nThe detail is in `docs/%s-%s.md`.\n" % (MARK, name))
+
+p.case("㉘ ⭐ a pointer to a SUPERSEDED document",
+       lambda: _target("superseded",
+                       "**Superseded by:** `docs/%s-fixture.md`\n" % MARK),
+       "DOC-CNT-007")
+
+p.case("㉙ ⭐ a pointer to a FOSSIL · DOC-LIF-003 leaves 📖",
+       lambda: _target("fossil", name="zzfossil"), "DOC-CNT-007")
+
+# ⭐ THE HALF THAT MATTERS AS MUCH: a target still in force is NOT reported.
+# ⛔ A check that fires on every pointer measures nothing and gets ignored.
+p.inverse("㉚ ⛔ a pointer to a CURRENT document is NOT reported",
+          lambda: _target("current", name="zzcurrent"))
+
+# ⚠️ Only `.md` carries a status header. A checker that guessed at a .tsv would
+# report prose as a defect.
+p.inverse("㉛ ⛔ a pointer to a NON-.md file is out of scope, not assumed fine",
+          lambda: put(GOOD + "\nThe pieces are in `pieces.tsv`.\n"))
+
+p.clean()
+
 # 🔴 THE DEFECT A CLEAN CLONE FOUND, INVISIBLE IN THE WORKING TREE ──────────
 # A GENERATED file has no template — a generator writes it — and it is
 # gitignored, so every clone lacks it. The instance-file exemption was derived

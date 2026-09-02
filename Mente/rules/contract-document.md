@@ -303,6 +303,7 @@ when a document grew past its shape and nobody wanted to renumber. ⚠️ **It i
 | `DOC-CAP-002` | ⭐ **A capability map names everything that IS built** | 🔒 | ⚠️ a piece nobody can find is a piece nobody uses |
 | `DOC-CNT-005` | ⛔ **No credential, not even as an example** | 🔒 | ⚠️ what is written stays in history |
 | `DOC-CNT-006` | ⭐ **A quotation is verbatim, or it is not a quotation** | 📖 | ⛔ see below |
+| `DOC-CNT-007` | ⭐ **A pointer to a `superseded` or `fossil` document is REPORTED** | 🔒 | ⛔ it resolves, and still sends the reader to the wrong page |
 
 ⭐ **`DOC-CNT-006` matters more than it looks.** A paraphrase presented as a quote is the agent's
 reading standing in for someone's words — ⚠️ **and the reader cannot tell which they are getting.**
@@ -319,6 +320,20 @@ reading standing in for someone's words — ⚠️ **and the reader cannot tell 
 
 ⭐ **`DOC-CNT-004` has a second half the checker enforces:** a path must not only carry a
 directory — ⛔ **it must RESOLVE.** ⚠️ A well-formed pointer to nothing reads as a promise.
+
+> ## ⭐ `DOC-CNT-007` · RESOLVING IS NOT ENOUGH — the target must still be IN FORCE
+> Replacing duplication with pointers is correct, and it moves the risk rather than removing it:
+> ⛔ **the target can exist and still be the wrong thing to read.**
+>
+> ⚠️ **A pointer to a superseded document is worse than a broken one** — the broken one announces
+> itself, while this one resolves, opens, and reads as authority. ⭐ It is the same walk
+> `DOC-CNT-004` already makes, asking one more question at the end of it: *not only did it
+> resolve — what did it resolve TO?*
+>
+> ⭐ **This is what raises `DOC-LIF-003` off the page.** That rule — *a fossil MUST NOT be used as
+> a current authority* — sat in 📖 with nothing behind it. ⚠️ A `superseded` target names its
+> replacement (`DOC-HDR-005`), so the report can say where to point instead; a `fossil` names
+> nobody, and the reader is told to find the current authority themselves.
 
 ---
 
@@ -401,7 +416,7 @@ draft ──▶ current ──▶ superseded ──▶ fossil
 |---|---|---|---|
 | `DOC-LIF-001` | ⭐ **`current` with an old `Updated` is stale, not current** | 🔒 | `bin/check-document`, against the ⬜ threshold below |
 | `DOC-LIF-002` | **A fossil is archived, never removed** | 📖 | ⚠️ nothing checks this |
-| `DOC-LIF-003` | ⭐ **A fossil MUST NOT be used as a current authority** | 📖 | §6, row 6 |
+| `DOC-LIF-003` | ⭐ **A fossil MUST NOT be used as a current authority** | 🔒 | ⭐ enforced by `DOC-CNT-007` — every pointer into one is reported |
 
 ⭐ **What `current` promises:** somebody verified it, its date reflects the last real change, its
 type declares its limits, and someone identified keeps it true. ⛔ **Missing one, it promises

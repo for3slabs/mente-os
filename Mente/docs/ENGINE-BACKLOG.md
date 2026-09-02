@@ -104,15 +104,25 @@ time.
 
 ---
 
-## E-06 · Nothing verifies that a pointer's target is still current
+## E-06 · ✅ CLOSED — a pointer is now asked what it resolved TO, not only whether it resolved
 
 - **Surfaced by:** external review of `../memory/principles/owner-1-docs.md`
 - **Affects:** the citation check
-- **Closes when:** a pointer to a `superseded` or `fossil` document is reported
+- **Closed:** 2026-09-01 — `DOC-CNT-007` declared in `../rules/contract-document.md`, enforced
+  inside the walk `DOC-CNT-004` already makes, with four probe cases (㉘ superseded · ㉙ fossil ·
+  ㉚ a current target is NOT reported · ㉛ a non-`.md` is out of scope)
 
-**Why it matters.** Replacing duplication with pointers is correct, and it moves the risk rather
+**Why it mattered.** Replacing duplication with pointers is correct, and it moves the risk rather
 than removing it: the target can exist and still be the wrong thing to read. ⭐ A pointer that
 resolves to a superseded document is worse than a broken one — the broken one announces itself.
+
+⭐ **It also raises `DOC-LIF-003` off the page.** *A fossil MUST NOT be used as a current
+authority* sat in 📖 with nothing behind it; every pointer into one is now reported.
+
+⚠️ **Measured before building, and it decided the design:** this template holds ZERO superseded or
+fossil documents while a reference installation holds three, cited from dozens of places. ⛔ So the
+rule is born empty here and bites where the engine is USED — and the probe must PLANT its target,
+because one that waited to find one would pass forever while measuring nothing.
 
 ---
 
@@ -999,3 +1009,16 @@ have been dead for one run rather than for days.
 
 Related: `README.md` (folder) · `../memory/principles/README.md` (where the owners live) ·
 `../rules/README.md` (where a closed entry usually lands) · `../CAPABILITIES.md`.
+
+---
+
+## E-42 · `probe-document` reuses case numerals across its two sections
+
+- **Surfaced by:** adding the `DOC-CNT-007` cases (E-06) — ㉒㉓㉔㉕ were already duplicated
+- **Affects:** `../bin/probes/probe-document.py`
+- **Closes when:** every case in that probe carries a numeral used once
+
+**Why it matters.** The probe runs two sections (`check-document` and the capability map) and each
+restarts its numbering, so a failure reported as ㉕ has two possible homes. ⚠️ Small while the
+probe is green; ⛔ it costs exactly when it is not, which is the moment the numeral is read.
+
