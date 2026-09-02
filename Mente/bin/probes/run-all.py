@@ -92,7 +92,13 @@ rows = []
 if SERIAL:
     results = [run_probe(q) for q in probes]
 else:
-    with ThreadPoolExecutor(max_workers=min(8, len(probes))) as _ex:
+    # ⭐ TWELVE, MEASURED — not a round number. On a 16-core WSL box with 7 GB:
+    #   8 → 20.4 s · 12 → 18.0 s · 16 → 21.0 s
+    # ⛔ Sixteen is worse than eight: the probes spawn processes, and past a
+    # point the box spends more on scheduling than the parallelism buys.
+    # ⚠️ The floor is ~7.8 s (the slowest probe), so the gap between 18 and 7.8
+    # is the MACHINE, never the design — adding workers cannot close it.
+    with ThreadPoolExecutor(max_workers=min(12, len(probes))) as _ex:
         results = list(_ex.map(run_probe, probes))
 
 # ⭐ A CASE LABEL IS AN ADDRESS — the same rule ids obey (DOC-IDS-001).
