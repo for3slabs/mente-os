@@ -522,15 +522,31 @@ than a check that measures length and calls it hierarchy.
 
 ---
 
-## E-17 · A decision is a field, not a response type
+## E-17 · ✅ CLOSED — the type existed; what was missing is that asking beats writing
 
 - **Surfaced by:** external review of the voice contract
-- **Affects:** the response modes
-- **Closes when:** *"you must choose"* is a shape of its own, not a section inside a larger one
+- **Affects:** `../memory/principles/contract-delivery.md` §9 · §11
+- **Closed:** 2026-09-02 — the host's decision mechanism is a ⬜ declaration, and §9 says to use it
+  when there is one
 
-**Why it matters.** ⭐ When the only thing that matters is that the reader chooses, everything
-around the choice is noise — and burying it in a closing block is how a decision waits a turn
-longer than it had to.
+**Why it mattered.** ⭐ When the only thing that matters is that the reader chooses, everything
+around the choice is noise — and burying it in a closing block costs a turn.
+
+⚠️ **The type already existed and was already first.** `⚖️ DECISION` is one of the five in §3, it
+wins the first-match ladder, and §9 gives its shape with the risk inside each option. ⛔ The
+doctrine was complete.
+
+🔴 **What was missing was measured on this engine the same day.** A decision was written into the
+closing block's 🙋 field as prose — while the host had a selection mechanism available. ⭐ §9
+described a markdown TABLE as the shape of a decision, so writing one felt like compliance; ⛔ the
+reader still had to compose an answer to a question that could have been one click.
+
+⭐ **The engine declares the need; the installation declares the mechanism** — the same shape as
+`MENTE_HOOK_REGISTRY` in E-10, and for the same reason: this engine does not know what any
+particular host provides, and guessing produces a confident wrong answer.
+
+⚠️ **The 🙋 field records that a decision is pending. It does not ask.** ⛔ A block that both names
+the decision and IS the asking has merged the two again.
 
 ---
 
