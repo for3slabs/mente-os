@@ -178,6 +178,54 @@ case("⑰ ⛔ with no write permission → it says so, it does not crash",
      r.returncode == 2 and "Traceback" not in r.stderr, "exit=%d" % r.returncode)
 os.chmod(DOCS, 0o755)
 
+# ── ⭐ E-21 · the engine measuring how much of itself it can check ──────────
+# ⛔ Designing a lot and validating a little is the failure mode a governance
+# engine is likeliest to commit, because writing a rule feels like solving the
+# problem. ⚠️ A ratio only ever stated in prose is the symptom, so the ratio is
+# GENERATED — and these cases prove it is read from the tree, not asserted.
+run("generate-metrics")
+m = read("METRICS.md")
+_dec = re.search(r"`rules\.declared` \| (\d+)", m)
+_loc = re.search(r"`rules\.locked` \| (\d+)", m)
+_pct = re.search(r"`rules\.enforced_pct` \| ([\d.]+)%", m)
+case("⑱ ⭐ it publishes declared / locked / the percentage",
+     bool(_dec and _loc and _pct),
+     "%s reglas · %s 🔒 · %s%%" % (_dec.group(1) if _dec else "—",
+                                   _loc.group(1) if _loc else "—",
+                                   _pct.group(1) if _pct else "—"))
+
+# ⭐ THE HALF THAT MAKES IT A MEASUREMENT: it moves when the tree moves.
+# ⛔ A ratio that stays put while rules are added is a constant wearing a
+# measured face — which is the exact defect E-21 describes.
+_qq = os.path.join(TREE, "rules", "zzprobe-rules.md")
+open(_qq, "w", encoding="utf-8").write(
+    "# zz\n\n| id | rule | level | why |\n|---|---|---|---|\n"
+    "| `ZZQ-AAA-001` | one | 📖 | x |\n| `ZZQ-AAA-002` | two | 📖 | y |\n")
+run("generate-metrics")
+_m2 = read("METRICS.md")
+_d2 = re.search(r"`rules\.declared` \| (\d+)", _m2)
+_p2 = re.search(r"`rules\.enforced_pct` \| ([\d.]+)%", _m2)
+case("⑲ ⭐ two 📖 rules added → declared rises, the percentage FALLS",
+     bool(_d2 and _dec and int(_d2.group(1)) == int(_dec.group(1)) + 2
+          and _p2 and _pct and float(_p2.group(1)) < float(_pct.group(1))),
+     "%s→%s reglas · %s%%→%s%%" % (_dec.group(1) if _dec else "—",
+                                   _d2.group(1) if _d2 else "—",
+                                   _pct.group(1) if _pct else "—",
+                                   _p2.group(1) if _p2 else "—"))
+os.remove(_qq)
+
+# ⬜ and with no backlog to read it is a GAP, never a 0 — the same rule the
+# battery result obeys: an absent row and a zero look identical in a table.
+_bk = os.path.join(DOCS, "ENGINE-BACKLOG.md")
+_keep = open(_bk, encoding="utf-8").read() if os.path.exists(_bk) else None
+if _keep is not None:
+    os.remove(_bk)
+run("generate-metrics")
+case("⑳ ⬜ no backlog file → NOT MEASURED, not a 0",
+     "`backlog.closed` | ⬜ NOT MEASURED" in read("METRICS.md"))
+if _keep is not None:
+    open(_bk, "w", encoding="utf-8").write(_keep)
+
 shutil.rmtree(WORK, ignore_errors=True)
 good = sum(1 for _, ok in results if ok)
 print("\n  ➜ %d of %d correct" % (good, len(results)))
