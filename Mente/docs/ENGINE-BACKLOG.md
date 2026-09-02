@@ -246,15 +246,43 @@ universal.
 
 ---
 
-## E-09 · Disciplines are loaded whole, not by relevance
+## E-09 · ✅ CLOSED — a standard may declare WHEN it applies, and the gate honours it
 
 - **Surfaced by:** external review of `../memory/principles/owner-2-dev.md`
-- **Affects:** the gate that injects standards before an edit
-- **Closes when:** only the disciplines a change actually touches are loaded
+- **Affects:** `../hooks/pre-edit-standards.py` · `../rules/contract-block-sections.md` §D
+- **Closed:** 2026-09-01 — `BLK-STD-003` declared, the gate filters own AND inherited standards,
+  three probe cases
 
-**Why it matters.** ⭐ Context is the scarce resource. Loading every discipline for a change that
+**Why it mattered.** ⭐ Context is the scarce resource. Loading every discipline for a change that
 touches one spends it on material that does not apply — and lets one discipline's criterion bleed
 into a decision belonging to another.
+
+⚠️ **Measured before building:** editing one `.md` named **seven** disciplines, five of which — the
+three `dev-*` and both `val-*` — had nothing to say about it. ⛔ The reader cannot tell which of
+the seven was meant for the file in front of them.
+
+⭐ **The scope is DECLARED, never inferred.** `dev-frontend` sounds like it means `.tsx` and
+nothing says so; ⛔ a gate that guessed from a filename would be right until the day it was not,
+and wrong silently. A line narrows itself:
+
+```
+- `memory/principles/expertise/dev-backend.md`   — for: *.py
+- `memory/principles/expertise/doc-structure.md` — for: *.md
+- `rules/rule-working-in-a-block.md`
+```
+
+⬜ **A line with no `— for:` applies to everything**, which is why the rule is 🟡: every block
+written before it keeps working unchanged, and narrowing is opt-in. ⚠️ **Inherited standards are
+filtered the same way** — filtering only the block's own would leave the gate spending context on
+exactly the standards a block did not write itself.
+
+⛔ **The expertise README says *"a file nobody reads costs nothing"***, and that is true on disk
+and false in a prompt. ⭐ Which is why the answer was to narrow the LOADING, never to delete a
+discipline: what is irrelevant today may not be next quarter.
+
+⚠️ **A stale claim, corrected on the way.** §D said *"the engine ships this declaration, not the
+gate that would inject it"* — true when written, false since `../hooks/pre-edit-standards.py`
+exists, and nothing had noticed.
 
 ---
 

@@ -140,6 +140,34 @@ r = run("docs/%s-owner-foreign.md" % MARK)
 case("⑨ ⛔ no block open · no scope report", not r.stderr.strip(),
      "silence — nothing to be outside of")
 
+# ── BLK-STD-003 · only the disciplines a change actually touches ───────────
+# ⛔ Context is the scarce resource and this gate spends it on EVERY edit.
+# ⚠️ Measured before building: editing one `.md` named seven disciplines, five
+# of which had nothing to say about it — ⭐ and one discipline's criterion
+# bleeding into a decision belonging to another is worse than the waste.
+clean()
+_SCOPED = ("- `rules/contract-block.md`\n"
+           "- `rules/rule-shipping.md` — for: *.py\n"
+           "- `rules/rule-accounts.md` — for: *.md, *.tsv")
+plant(std=_SCOPED)
+
+r = run("work/%s-owner-src/a.py" % MARK)
+case("⑩ ⭐ editing a .py · only the .py standard is named",
+     "rule-shipping" in r.stderr and "rule-accounts" not in r.stderr,
+     "shipping ✅ · accounts excluded")
+
+r = run("work/%s-owner-src/a.md" % MARK)
+case("⑪ ⭐ editing a .md · only the .md standard is named",
+     "rule-accounts" in r.stderr and "rule-shipping" not in r.stderr,
+     "accounts ✅ · shipping excluded")
+
+# ⬜ A line with no `— for:` applies to everything: that is why the rule is 🟡
+# and every block written before it keeps working unchanged.
+case("⑫ ⬜ a line with no scope applies to BOTH edits",
+     "contract-block" in r.stderr
+     and "contract-block" in run("work/%s-owner-src/a.py" % MARK).stderr,
+     "unscoped = always")
+
 clean()
 good = sum(1 for _, ok in results if ok)
 print("\n  ➜ %d of %d correct" % (good, len(results)))
