@@ -222,6 +222,11 @@ Every checkpoint states:
 | what remains | so the next session does not re-derive it |
 | ⭐ whether the scope stayed intact | the lock, made auditable |
 
+| ID | Rule | Enf | Verify |
+|---|---|---|---|
+| `DEV-CHK-001` | ⭐ **A checkpoint carries every field above** | 🔒 | `../../rules/contract-block-sections.md` · `BLK-CHK-001` reads the list FROM the contract |
+| `DEV-CHK-002` | ⛔ **`did not change` and `scope` are never omitted** | 🔒 | ⭐ performed by `BLK-CHK-001` — they are two of the eight |
+
 ---
 
 ## 8 · HARD RULES WHILE BUILDING
