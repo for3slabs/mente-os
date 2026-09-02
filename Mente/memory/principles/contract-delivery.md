@@ -172,6 +172,20 @@ reason is an alarm carrying no information.
 ⛔ **Emphasis is rationed.** Headings, bold, emoji, tables, boxes, bars and rules all competing in
 one response leaves nothing to signal with — **when everything is emphasised, nothing is.**
 
+> ## ⭐ THE RATION IS THE TWO RULES ABOVE, NOT A COUNT
+> ⚠️ **A numeric cap was measured and refused.** Across 81 documents of this engine the density
+> runs 0.64 to 1.81 marks per line, median 1.04 — ⛔ and the densest are the contracts, which
+> compare rules for a living, while the sparsest are folder READMEs, which orient. A single
+> number would be wrong for one of them by construction.
+>
+> ⭐ **A response that is hard to read is almost always breaking one of the two rules above**, not
+> a threshold: a graphic that ACCOMPANIES text instead of replacing it, or one printed with no
+> prose saying why it looks that way. ⚠️ Those are the defect; the count is a symptom.
+>
+> ⛔ **And a cap calibrated so nothing currently fails measures nothing** — the failure `E-21`
+> exists to detect. ⭐ The honest position is that this one is judgement, and it is stated as
+> judgement rather than dressed as a number.
+
 ---
 
 ## 8 · THE CLOSING BLOCK — a data model, not a form
