@@ -94,15 +94,38 @@ own contract.
 
 ---
 
-## E-04 · The four verdicts are not a shared vocabulary
+## E-04 · ✅ CLOSED — the exit code carries the verdict, declared once and checked
 
 - **Surfaced by:** `../memory/principles/owner-1-docs.md` §3
 - **Affects:** all three owners · the validators' exit codes
-- **Closes when:** PASS / WARN / REJECT / PENDING mean the same thing in every piece that emits one
+- **Closed:** 2026-09-01 — `CHK-XIT-001` declared in `../rules/rule-checks-must-measure.md` §3,
+  enforced by `../bin/check-checks`, with five probe cases
 
-**Why it matters.** ⭐ REJECT and PENDING look similar and are opposite problems: *"this is wrong"*
+**Why it mattered.** ⭐ REJECT and PENDING look similar and are opposite problems: *"this is wrong"*
 versus *"nobody has decided yet"*. Collapsing them either blocks work that cannot proceed, or
 files a violation as an open question — where it waits politely and forever.
+
+⭐ **The measurement changed what the work was.** `WARN` and `REJECT` do not appear in this
+engine's code at all; what a caller actually reads is the **exit code**. And two verdict
+vocabularies already exist, both correct and neither redundant: `../memory/principles/owner-1-docs.md` §3
+judges the WORK (PASS/WARN/REJECT/PENDING), and this rule's §3 judges a PROBE's reading of a
+validator (PASS/FAIL/WRONG_CAUSE/CRASH/SKIP). ⛔ Merging them would have broken both. What was
+missing is the link between them: which number carries which verdict.
+
+| Code | Verdict | Means |
+|---|---|---|
+| `0` | ✅ PASS | every contract that applies is met |
+| `1` | 🔴 REJECT | a contract is violated |
+| `2` | ⬜ PENDING | it could NOT measure — its rule or table is missing |
+| `3` | ⚠️ WARN | ⬜ declared, no validator emits it yet |
+
+⭐ **Twelve validators already used `2` for exactly this, with nothing declaring it.** ⛔ One did
+not: `../bin/check-handoff` returned `2` for a malformed manifest — a violated contract wearing the
+code for *"could not measure"*, which is E-04's failure committed in code. It returns `1` now, and
+22 probe cases that were pinned to the old codes moved with it.
+
+⚠️ **The codes are read FROM the contract table**, so removing `2` there turns the twelve into
+findings — measured, not assumed.
 
 ---
 
@@ -1085,4 +1108,18 @@ written since then lost and rewritten by hand.
 copy the tree and edit the copy — which is what case ㉝ does now. ⛔ The guard is a refusal rather
 than a comment because *"the probe cleans up after itself"* is precisely the assumption that made
 the deletion possible.
+
+---
+
+## E-44 · Five validators emit no verdict symbol at all
+
+- **Surfaced by:** measuring symbol-vs-exit-code across all 23 validators while closing E-04
+- **Affects:** `../bin/check-archive` · `../bin/check-campaign` · `../bin/check-handoff` ·
+  `../bin/check-patterns` · `../bin/check-pending`
+- **Closes when:** every validator's output opens with ✅, 🔴, ⚠️ or ⬜
+
+**Why it matters.** ⭐ The exit code is now unambiguous (`CHK-XIT-001`), and a person reading the
+terminal does not see it. ⚠️ These five print a summary line with no verdict marker, so a human
+skimming a battery run cannot tell a pass from a nothing-to-check — ⛔ and `⬜ nothing to check`
+reading as `✅ passed` is the same collapse E-04 closed, one layer up.
 

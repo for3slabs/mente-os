@@ -87,6 +87,28 @@ p.inverse("⑦ a CORRECT validator",
                         '    try:\n        sys.exit(main())\n'
                         '    except Exception as e:\n'
                         '        print(e)\n        sys.exit(1)\n'))
+# ── CHK-XIT-001 · the exit code carries the verdict ────────────────────────
+# ⛔ A hook, a gate and the battery all decide on the NUMBER, not the text. A
+# validator returning the same code for "this is wrong" and "I could not
+# measure" makes those indistinguishable to every caller — ⭐ and they are
+# opposite problems: REJECT does not proceed, PENDING is a gap to be filed.
+# ⚠️ The entry point catches its exceptions, because CHK-CAU-002 demands it:
+# a fixture missing that fires the WRONG rule, and an inverse case then reports
+# a false positive against a check it was not testing.
+_OK = ('import sys\n\n\ndef main():\n    return %s\n\n\n'
+       'if __name__ == "__main__":\n    try:\n        sys.exit(main())\n'
+       '    except Exception as e:\n        print(e)\n        sys.exit(1)\n')
+
+p.case("⑧ ⛔ a code the contract does not declare",
+       lambda: plant(_OK % "7"), "CHK-XIT-001")
+
+# ⭐ Each declared code is accepted — including 2, which twelve validators use
+# for "I could NOT measure" and which must never read as a failure.
+for _c, _what in (("0", "PASS"), ("1", "REJECT"), ("2", "PENDING"), ("3", "WARN")):
+    p.inverse("⑧%s ⭐ exit %s (%s) is declared → accepted"
+              % ("abcd"["0123".index(_c)], _c, _what),
+              lambda c=_c: plant(_OK % c))
+
 p.crash_guard()
 
 sys.exit(0 if p.report() else 1)

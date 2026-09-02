@@ -167,7 +167,46 @@ def audit(path, rel, ignored):
                     "why, or a silent gap turns green"))
         break
 
+    # ── CHK-XIT-001 · the exit code carries the verdict ─────────────────────
+    # ⛔ A hook, a gate and the battery all decide on the NUMBER, not the text.
+    # A validator returning the same code for "this is wrong" and "I could not
+    # measure" makes those indistinguishable to every caller — and they are
+    # opposite problems. ⚠️ Measured: twelve validators already used 2 for a gap
+    # with nothing declaring it, and one used 2 for a violated contract.
+    # ⭐ Read from the CONTRACT, never hardcoded here: the table is the source.
+    allowed = exit_codes()
+    if allowed:
+        for i, line in enumerate(lines, 1):
+            m = re.match(r"\s*(?:return|sys\.exit\()\s*(\d+)", line)
+            if m and int(m.group(1)) not in allowed:
+                bad.append(("CHK-XIT-001", rel, i,
+                            "exits with %s · ⛔ the verdict codes are %s "
+                            "(rule-checks-must-measure.md §3) · a code nothing "
+                            "declares is a verdict no caller can read"
+                            % (m.group(1),
+                               ", ".join(str(c) for c in sorted(allowed)))))
+
     return bad
+
+
+# ⭐ CHK-XIT-001 · the verdict codes, READ FROM THE CONTRACT.
+# ⛔ Hardcoding them here would make two places declare one thing, and the copy
+# is the half that goes stale.
+_XIT_ROW = re.compile(r"^>\s*\|\s*`(\d+)`\s*\|", re.M)
+
+
+def exit_codes():
+    """The exit codes the rule declares, or an EMPTY set.
+
+    ⬜ An empty set checks nothing, and that is said rather than defaulting to a
+    guessed range — ⛔ a checker measuring against its own guess reports defects
+    the contract never declared.
+    """
+    try:
+        t = open(RULE, encoding="utf-8", errors="replace").read()
+    except OSError:
+        return set()
+    return {int(c) for c in _XIT_ROW.findall(t)}
 
 
 def main():

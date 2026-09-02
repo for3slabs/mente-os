@@ -128,6 +128,31 @@ else entirely** — and a red for the wrong reason looks exactly like detection.
 | `CHK-CAU-001` | ⭐ **A red counts only when the message names the intended cause** | 📖 | ⛔ read the message, not the exit code |
 | `CHK-CAU-002` | 🔴 **A crash is not a detection** | 🔒 | ⭐ a validator that dies reports nothing |
 | `CHK-CAU-003` | ⛔ **SKIP is said out loud, never counted as PASS** | 🔒 | `bin/check-checks` · ⚠️ measured: 6 guards swallowed an object in silence |
+| `CHK-XIT-001` | ⭐ **The exit code carries the verdict, and always the same one** | 🔒 | `bin/check-checks` · ⛔ see the table below |
+
+> ## ⭐ `CHK-XIT-001` · THE EXIT CODE IS THE VERDICT A CALLER READS
+> ⚠️ **A hook, a gate and the battery all decide on the number, not the text.** ⛔ So a validator
+> that returns the same code for *"this is wrong"* and *"I could not measure"* makes those two
+> indistinguishable to every caller — and they are opposite problems.
+>
+> | Code | Verdict | Means | ⭐ What the caller does |
+> |---|---|---|---|
+> | `0` | ✅ **PASS** | every contract that applies is met | proceed |
+> | `1` | 🔴 **REJECT** | ⛔ a contract is VIOLATED | ⛔ do not proceed until fixed |
+> | `2` | ⬜ **PENDING** | ⭐ it could NOT measure — its rule, contract or table is missing | ⚠️ the gap is filed, never read as a pass |
+> | `3` | ⚠️ **WARN** | an anomaly that breaks no contract | recorded, does not block · ⬜ declared, no validator emits it yet |
+>
+> ⛔ **`2` IS NOT A WORSE `1`.** ⭐ **REJECT and PENDING look similar and are opposite problems:**
+> *"this is wrong"* versus *"nobody could tell yet"*. ⚠️ Collapsing them either blocks work that
+> could proceed, or files a violation as an open question — where it waits politely and forever.
+>
+> ⬜ **`3` is declared and unused, and that is said rather than left to be guessed.** ⚠️ A code no
+> validator emits is vocabulary available for an anomaly worth recording, ⛔ not evidence that
+> warnings are already handled somewhere.
+>
+> ⭐ **Measured, not invented:** twelve validators already used `2` for exactly this, with nothing
+> declaring it. ⛔ One did not — `bin/check-handoff` returned `2` for a malformed manifest, which
+> is a violated contract wearing the code for *"could not measure"*.
 
 ### ⭐ WHY `CRASH` DESERVES ITS OWN NAME
 
