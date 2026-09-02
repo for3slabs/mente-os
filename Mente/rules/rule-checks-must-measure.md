@@ -353,7 +353,20 @@ nothing — ⛔ **and "nothing" reads exactly like "the section is empty".**
 
 | ID | Rule | Enf | Verify |
 |---|---|---|---|
-| `CHK-SHR-001` | ⭐ **ONE shape read in several places gets ONE reader** | 📖 | ⛔ four copies of a block reader had already diverged when this was found |
+| `CHK-SHR-001` | ⭐ **ONE shape read in several places gets ONE reader** | 🔒 | ⛔ four copies of a block reader had already diverged when this was found |
+
+> ## ⭐ `CHK-SHR-001` · THE DIVERGENCE HAD ALREADY HAPPENED, TWICE
+> ⚠️ **Measured 2026-09-02, auditing in conjunction:** six copies of the same
+> eight-line TSV parse — `../bin/init`, `../bin/check-accounts`,
+> `../bin/connect-account`, `../bin/check-structure`, `../bin/check-declared`,
+> `../hooks/gate-accounts.py` — ⛔ **and they had patched the header FOUR
+> different ways.** Two of them read `pieces.tsv`'s header as a row, declaring a
+> piece named `piece` at a path named `path`.
+>
+> ⭐ **The reader is `../bin/tsvread.py`**, and `../bin/check-checks` refuses the
+> seventh copy. ⚠️ The first note on this rule already recorded four copies of a
+> BLOCK reader that had diverged; the rule was right and stayed 📖 for months
+> while it happened again in a different shape.
 | `CHK-SHR-002` | ⭐ **TWO shapes never share a reader — the second gets its own** | 📖 | ⚠️ a reader pointed at a shape it does not know returns empty, not an error |
 | `CHK-SHR-003` | ⭐ **The criterion lives in the RULE, and the reader cites it** | 📖 | ⛔ a criterion written only in a docstring is copied, not cited |
 

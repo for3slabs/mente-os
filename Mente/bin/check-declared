@@ -15,6 +15,8 @@ import os
 import sys
 
 MENTE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, os.path.join(MENTE, "bin"))
+import tsvread                                                 # noqa: E402
 os.chdir(MENTE)
 
 TABLE = "pieces.tsv"
@@ -63,12 +65,11 @@ def declared_paths(table=None):
     if not os.path.exists(table):
         return None
     out = {}
-    for n, line in enumerate(open(table, encoding="utf-8", errors="replace"), 1):
-        if line.startswith("#") or not line.strip():
-            continue
-        f = [c.strip() for c in line.rstrip("\n").split("\t")]
-        if len(f) >= 2 and f[0] != "piece":
-            out.setdefault(f[1].replace("repo:", "").lstrip("./"), []).append((n, f[0]))
+    # ⭐ CHK-SHR-001 · ONE reader for the shape (bin/tsvread.py). ⛔ This was one
+    # of six copies of the same eight lines, each having patched the header row
+    # its own way — `f[0] != "piece"` here, nothing at all elsewhere.
+    for n, f in tsvread.rows(table, want=2):
+        out.setdefault(f[1].replace("repo:", "").lstrip("./"), []).append((n, f[0]))
     return out
 
 
