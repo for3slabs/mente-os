@@ -66,8 +66,31 @@ case("② ⭐ the file exists where the contract says", os.path.exists(path))
 
 c = checker()
 mine = [l for l in c.stdout.splitlines() if "zzprobe-one" in l and "🔴" in l]
-case("③ ⭐⭐ the block PASSES its own contract UNEDITED", not mine,
-     mine[0][:60] if mine else "")
+# ⭐⭐ THE GUARANTEE CHANGED, and the reason is measured. This case used to say
+# the block passes its contract UNEDITED. 🔴 Found by installing from scratch:
+# `bin/new-block` ends with "fill the ⬜ in §B before starting" and check-block
+# answered ✅ on the untouched template — ⛔ an engine that asks for something it
+# does not require is how a new user learns the ⬜ are decoration.
+# ⭐ So the guarantee is now the opposite and stronger: everything EXCEPT the
+# scope is valid, and the scope is the one thing only the author can write.
+scope_only = mine and all("BLK-SCP-001" in l for l in mine)
+case("③ ⭐⭐ UNEDITED, the ONLY thing missing is the scope",
+     bool(scope_only), "%d finding(s), all BLK-SCP-001" % len(mine))
+
+# ⭐ And once the author writes it, nothing else is missing.
+# ⚠️ `path` already points at it — rebuilding the path is how a probe
+# ends up looking somewhere the file was never written.
+_t = open(path, encoding="utf-8").read()
+open(path, "w", encoding="utf-8").write(
+    _t.replace("- ⬜ declare what this block may touch",
+               "- `docs/thing.md` — the file this block writes.")
+      .replace("- ⬜ declare a limit · DERIVED: replace this with a real one "
+               "and its source",
+               "- `bin/` — owned elsewhere, see `work/blocks/README.md`."))
+_c2 = checker()
+case("③b ⭐ with the scope written, it passes clean",
+     not [l for l in _c2.stdout.splitlines()
+          if "zzprobe-one" in l and "🔴" in l], "nothing else was missing")
 
 # ── 🔴 BLK-OPN-002 · THE HALF A SCAFFOLD USUALLY SKIPS ──────────────────────
 # A block on disk that no index names is one nothing knows exists: never picked
