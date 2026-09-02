@@ -425,17 +425,37 @@ nothing, so the case measured the DEFAULT lane while its label claimed another.
 
 ---
 
-## E-14 · ⭐ The delivery contract is a data model printed as a template
+## E-14 · ✅ CLOSED — the two layers are named, and a one-sided split is now reported
 
 - **Surfaced by:** external review of the voice contract
-- **Affects:** the voice · every response the agent produces
-- **Closes when:** what must EXIST in a response is declared separately from how it is SHOWN
+- **Affects:** `../memory/principles/contract-delivery.md` · `../memory/principles/owner-0-voice.md` ·
+  `../bin/check-document`
+- **Closed:** 2026-09-01 — both layers named in a box each side, `DOC-BOD-004` declared and
+  enforced, three probe cases
 
-**Why it matters.** ⭐ **Rigidity for the machine, naturalness for the human.** The contract should
-govern the information; the presentation layer should decide how it reaches the reader. Today they
-are the same thing, so the agent exposes its internal model — printing every field of the closing
-block whether or not the reader needed it. ⚠️ A protocol that feels like a protocol gets skimmed,
-and a skimmed delivery is a delivery that did not land.
+**Why it mattered.** ⭐ **Rigidity for the machine, naturalness for the human.** ⚠️ A protocol that
+feels like a protocol gets skimmed, and a skimmed delivery did not land.
+
+⚠️ **The separation already existed and was never named as one.**
+`../memory/principles/contract-delivery.md` §8 is a data model with conditional presence, and
+`../memory/principles/owner-0-voice.md` §5.3 is the density axis — ⛔ but neither said *"I am one
+of two layers, the other is over there"*, so either could quietly absorb the other and nothing
+would read wrong.
+
+⭐ **The test that keeps them apart, written into the contract:** a field is in the model because a
+reader would be worse off not knowing it — ⛔ never because the block looks incomplete without it.
+A field added to fill a gap in the layout is presentation wearing the model's clothes.
+
+⛔ **Neither layer is scored, and that is deliberate.** `../memory/principles/owner-0-voice.md` §2
+says a response is not rejected for its voice; a script grading delivery would judge the one thing
+this engine leaves to a person. ⭐ What IS checkable is that the split stays declared from both
+sides — `DOC-BOD-004`.
+
+⚠️ **Two reader defects, both measured.** The first matcher inferred a split from PHRASING and
+found **zero** of the two that exist — one declares its pair in a table, the other in prose. ⛔ And
+once it matched, it accepted the other side merely CITING this one: the pair still passed after
+the marker was deleted, because the two documents cite each other anyway. ⭐ A split is declared
+with `⚖️ split-with:`, never implied.
 
 ---
 
@@ -1414,3 +1434,26 @@ emitting `dimensions`, which `../bin/check-block` requires at close.
 correct alone. ⚠️ `probe-conjunction` misses it too — it proves gate↔validator pairs, and this is
 producer↔consumer.
 
+---
+
+## E-49 · The doctrine is outside the ratio it is judged by
+
+- **Surfaced by:** measuring `../memory/principles/contract-delivery.md` while closing E-14 — a 272-line contract with
+  no rule table at all
+- **Affects:** `../memory/principles/` (14 files) · `../bin/generate-metrics` · the E-21 ratio
+- **Closes when:** either the principles declare enforceable ids, or `rules.enforced_pct` states
+  what it excludes
+
+**Why it matters.** ⭐ **4,097 lines of doctrine declare 3 rules with an id.** Everything the
+owners and disciplines say — the eight voice rules, the checkpoint fields, the four evidence
+conditions, the six quality dimensions — is prose no `check-*` can count.
+
+⚠️ **This makes the E-21 number narrower than it reads.** `rules.enforced_pct` says 59.3% and
+measures only rows already in a table; ⛔ the largest body of criterion in the engine is not in the
+denominator, so the ratio cannot fall when doctrine grows without enforcement — which is precisely
+the drift E-21 exists to detect.
+
+⭐ **Not obviously a defect, and that is why it is an entry rather than a fix.** A principle is
+meant to be read and reasoned with, and forcing every paragraph into an id-shaped row would turn
+criterion into a checklist — the failure `../rules/contract-quality-verdict.md` §5 warns about. ⛔ What is
+not defensible is the ratio staying silent about what it left out.
