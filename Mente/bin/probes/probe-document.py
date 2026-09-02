@@ -277,6 +277,43 @@ p.inverse("㊵ ⭐ the fixture as written, WITH its governance",
 p.inverse("㊶ ⛔ a `plan` grants no authority → not demanded",
           lambda: put(GOOD.replace("**Type:** rule", "**Type:** plan")))
 
+# ── DOC-BOD-004 · a layer split is declared from BOTH sides ────────────────
+# ⛔ Declared once, a split survives exactly until someone reads the other
+# document alone — and that reader has no way to know a half is missing.
+def _one_sided():
+    """A file declaring a split with one that does not declare it back."""
+    put(GOOD, MARK + "-half.md")
+    return put(GOOD.replace("Nothing of consequence.",
+                            "⚖️ split-with: `%s-half.md`" % MARK))
+
+
+p.case("㊷ ⛔ a split the other side never declares back",
+       _one_sided, "DOC-BOD-004")
+
+
+def _both_sides():
+    put(GOOD.replace("Nothing of consequence.",
+                     "⚖️ split-with: `%s-fixture.md`" % MARK), MARK + "-half.md")
+    return put(GOOD.replace("Nothing of consequence.",
+                            "⚖️ split-with: `%s-half.md`" % MARK))
+
+
+p.inverse("㊸ ⭐ both sides declare it → no finding", _both_sides)
+
+# ⛔ A CITATION IS NOT A DECLARATION: the first version looked for the file's
+# name in the other document, and the pair passed after the marker was deleted
+# because the two cite each other in prose anyway.
+def _mention_only():
+    put(GOOD.replace("Nothing of consequence.",
+                     "See `%s-fixture.md` for the rest." % MARK),
+        MARK + "-half.md")
+    return put(GOOD.replace("Nothing of consequence.",
+                            "⚖️ split-with: `%s-half.md`" % MARK))
+
+
+p.case("㊹ ⛔ a mention in prose does not count as declaring it",
+       _mention_only, "DOC-BOD-004")
+
 p.clean()
 
 # ── DOC-SIZ-003 · a numeric ceiling states a unit this checker measures ─────

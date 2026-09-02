@@ -166,6 +166,26 @@ one response leaves nothing to signal with — **when everything is emphasised, 
 
 ## 8 · THE CLOSING BLOCK — a data model, not a form
 
+> ## ⭐ THE TWO LAYERS, NAMED — so neither can quietly absorb the other
+> ⛔ **This section declares WHAT MUST EXIST. Nothing here declares HOW IT LOOKS.**
+>
+> ⚖️ split-with: `owner-0-voice.md`
+>
+> | Layer | Lives in | Decides |
+> |---|---|---|
+> | ⭐ **model** | this section | which answers a delivery owes · which are conditional · which is never omitted |
+> | **presentation** | `owner-0-voice.md` §5.3 | how much of it arrives as a table, a light, a bar — or a sentence |
+>
+> ⚠️ **The test that keeps them apart:** a field is in the model because a reader would be worse
+> off not knowing it — ⛔ never because the block looks incomplete without it. ⭐ A field added to
+> fill a gap in the layout is presentation wearing the model's clothes, and it is how a delivery
+> becomes a form nobody reads.
+>
+> ⛔ **Neither layer is scored.** `owner-0-voice.md` §2 says why: a response is not rejected for
+> its voice, and a script that graded delivery would be judging the one thing this engine
+> deliberately leaves to a person. ⚠️ What IS checkable is that the two layers stay declared
+> apart — this box is the declaration.
+
 ⭐ **What follows is what a delivery must be able to answer.** It is not a template to print
 whole: ⛔ **an empty field is deleted, never filled with "none"** — except the decision field,
 where silence cannot be told apart from forgetting.

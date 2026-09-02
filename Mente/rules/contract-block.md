@@ -336,6 +336,8 @@ measured in whether anyone ever responds.
 
 ---
 
+⚖️ split-with: `contract-block-sections.md`
+
 ## 15 · WHO GOVERNS THIS FILE
 
 | Change | Who |

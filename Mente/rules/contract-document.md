@@ -296,6 +296,16 @@ in the validation owner · `NOT_MEASURED` in the functional criterion. ⭐ **One
 | `DOC-BOD-001` | **A `Purpose` and a `Related` MUST exist** | 🔒 | both present |
 | `DOC-BOD-002` | ⛔ **No `N-bis`, `N-ter`, `N-quater` numbering** | 🔒 | ⭐ see below |
 | `DOC-BOD-003` | ⭐ **A `contract` or a `rule` declares WHO MAY CHANGE IT** | 🔒 | ⛔ an authority that writes its own criteria is circular — see below |
+| `DOC-BOD-004` | ⭐ **A layer split is declared from BOTH sides** | 🔒 | ⛔ a one-sided split is one document quietly absorbing the other |
+
+> ## ⭐ `DOC-BOD-004` · A SPLIT DECLARED ONCE IS NOT A SPLIT
+> ⚠️ When two documents divide one subject — what a delivery must CONTAIN versus how it is SHOWN,
+> a block's lifecycle versus its sections — ⛔ **each must name the other and say which half it
+> holds.**
+>
+> ⭐ **Declared from one side only, the split survives exactly until someone reads the other
+> document alone** — and that reader has no way to know a half is missing. ⚠️ It is the same
+> failure a campaign has when only one side declares the link: it silently never loads.
 
 > ## ⭐ `DOC-BOD-003` · A FILE THAT GRANTS AUTHORITY DECLARES WHO GOVERNS IT
 > ⚠️ **An owner that writes its own acceptance criteria is a circular authority:** *"acceptable"*
