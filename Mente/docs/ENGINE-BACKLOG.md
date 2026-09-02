@@ -327,16 +327,33 @@ engine ships now does.
 
 ---
 
-## E-11 · Closing produces no artefact
+## E-11 · ✅ CLOSED — a close writes `close.json`, and closing without one is refused
 
 - **Surfaced by:** `../memory/principles/owner-3-validation.md`
-- **Affects:** the closing procedure · the quality verdict
-- **Closes when:** a close writes a machine-readable record — verdict, level, which dimensions
-  passed, which are UNKNOWN, and the evidence behind each
+- **Affects:** `../bin/grade-block` · `../bin/check-block` · `../rules/contract-block-sections.md` §K
+- **Closed:** 2026-09-01 — `BLK-CLS-007` declared and enforced, `--json` gained the six
+  dimensions, three probe cases
 
-**Why it matters.** ⭐ Today a close is a sentence somebody wrote. With an artefact it becomes
-**state the system holds**, and a later disagreement can be settled by reading it instead of
-re-arguing it. It also makes the UNKNOWN list survive the session that produced it.
+**Why it mattered.** ⭐ A close was a sentence somebody wrote. As a record it becomes **state the
+system holds**, and a later disagreement is settled by reading instead of re-arguing.
+
+⭐ **`--json` already existed** and carried the verdict, the metrics and the reds. ⛔ What it did
+NOT carry is the half E-11 names explicitly: **which of the six layer-2 dimensions are still ⬜
+UNKNOWN**. `../bin/grade-block` counted the undeclared rows and never said WHICH — a number
+without names cannot be acted on.
+
+⭐ **The dimensions are read FROM `../rules/contract-quality-verdict.md`**, never listed in code:
+the frame travels with the engine and the criterion belongs to the installation, so a hardcoded
+list would be the engine deciding what the installation judges. ⚠️ Verified by declaring one
+dimension and watching only that row change.
+
+⛔ **The record does not replace §K.** §K is what a person reads; `close.json` is what a machine
+re-reads. A close writing only the record would be unreadable to the next human.
+
+⚠️ **Three probe fixtures were closing blocks with no record**, so every closing case began
+failing twice — ⛔ the second finding being the fixture's own defect, not the checker's. ⭐ A
+fixture must be valid except for the thing under test: `../bin/probes/fixtures.py` writes the
+record whenever it plants a closed block, and the cases that test its absence opt out.
 
 ---
 

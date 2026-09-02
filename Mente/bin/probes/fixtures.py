@@ -58,11 +58,21 @@ updated: %(d)s
                 "status": status, "lane": lane, "d": TODAY, "extra": extra}
 
 
-def block(probe, name, **kw):
-    """Plant a block whose declared id EQUALS what dependencies point at."""
+def block(probe, name, record=True, **kw):
+    """Plant a block whose declared id EQUALS what dependencies point at.
+
+    ⭐ A CLOSED block gets its close.json, because BLK-CLS-007 requires one and
+    a fixture must be valid except for the defect under test — ⛔ otherwise
+    every closing case fails twice and the second finding is the fixture's own.
+    ⚠️ `record=False` is for the cases that test the record's absence.
+    """
     bid = MARK + "-" + name
     d = probe.track(os.path.join(BLOCKS, bid))
     os.makedirs(d, exist_ok=True)
     open(os.path.join(d, "BLOCK.md"), "w", encoding="utf-8").write(
         block_text(bid, **kw))
+    if record and kw.get("status") == "closed":
+        open(os.path.join(d, "close.json"), "w", encoding="utf-8").write(
+            '{"block": "%s", "verdict": "MVP", "dimensions": '
+            '{"architecture": "undeclared"}}' % bid)
     return bid
