@@ -128,6 +128,8 @@ whole = re.sub(r"^status: .*$", "status: closed",
 whole += ("\n## K · Closing\n\nclosed: 2026-01-15\ncompleted: the work\n"
           "not completed: nothing remains\nlearned: a lesson\n"
           "evidence: the battery, all green · 2026-01-15\n"
+          # ⭐ BLK-CLS-008 · the lane this block declares needs its level named.
+          "evidence level: L3\n"
           "acceptance: criteria met\nsufficiency: pass\n")
 open(B, "w", encoding="utf-8").write(whole)
 case("⑪ closing with no close.json is refused",

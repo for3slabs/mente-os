@@ -393,15 +393,35 @@ probe failure mode #3, already named in the harness.
 
 ---
 
-## E-13 · No level is declared for the evidence a block needs
+## E-13 · ✅ CLOSED — the level is DERIVED from the lane, which was already measured
 
 - **Surfaced by:** `../memory/principles/owner-3-validation.md` §5b
-- **Affects:** the block contract · the quality verdict
-- **Closes when:** a block declares the evidence level its risk requires, and closing checks it
+- **Affects:** `../rules/contract-block-sections.md` §K · `../bin/check-block`
+- **Closed:** 2026-09-01 — `BLK-CLS-008` declared and enforced, five probe cases
 
-**Why it matters.** *"Tested"* means whatever the last person had time for. ⭐ A change that can
-break a live flow needs end-to-end proof; one that renames a variable does not. Without a declared
-level, both close on whichever was cheaper to produce.
+**Why it mattered.** *"Tested"* means whatever the last person had time for. ⭐ A change that can
+break a live flow needs end-to-end proof; one that renames a variable does not.
+
+⭐ **The risk was already measured, and that decided the design.** `../rules/rule-working-in-a-block.md` §2
+chooses a block's lane **from the dependency graph, never from judgement** — so the minimum level
+is derived from the lane instead of being a second opinion nobody can check:
+
+| Lane | Minimum | ⭐ Why |
+|---|---|---|
+| `direct` | L1 | nothing depends on it |
+| `task` | L2 | one piece, proven in isolation |
+| `full-block` | ⭐ L3 | ⛔ it has dependents — proving the piece alone proves nothing about them |
+
+⚠️ **A minimum, never a ceiling:** L5 on a `direct` lane is fine and says something real; L1 on a
+`full-block` is the case this refuses. ⛔ The levels themselves stay in
+`../memory/principles/owner-3-validation.md` §5b — this rule binds a block to one, it does not
+restate them.
+
+⚠️ **Two reader defects, both measured.** The lane→level table is read from the contract, and the
+first regex required the bold value to follow the pipe — which silently dropped `full-block`, the
+one lane where the level matters most, because its cell carries a ⭐ first. ⭐ And a probe case
+passed its lane by substituting text into a fixture that already writes a `lane:` line: it did
+nothing, so the case measured the DEFAULT lane while its label claimed another.
 
 ---
 
