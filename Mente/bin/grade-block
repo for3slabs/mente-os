@@ -502,7 +502,14 @@ def main():
                           "scope": dirs, "measured_files": measured,
                           "metrics": {l: (v if na is None else "n/a")
                                       for l, v, na, _, _ in rows},
-                          "reds": reds, "verdict": verdict,
+                          "reds": reds,
+                          # ⭐ QLT-LAY-003 · KEYED AS LAYER 1, never as "the"
+                          # verdict. ⛔ Whoever produces the evidence must not
+                          # decide what it proves: a machine re-reading a bare
+                          # `verdict` has no way to know this is measurement
+                          # alone, and with every dimension still ⬜ undeclared
+                          # it cannot be a closing verdict at all.
+                          "layer1_verdict": verdict,
                           # ⭐ BLK-CLS-007 · the half that dies in prose: WHICH
                           # of the six are still UNKNOWN, by name.
                           "dimensions": layer2()}, indent=2))

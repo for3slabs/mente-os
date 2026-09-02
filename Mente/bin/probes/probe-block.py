@@ -14,7 +14,11 @@ from fixtures import block, BLOCKS
 # is the operator's business, never the engine's: a hardcoded path makes
 # this probe measure one machine (rule-checks-must-measure.md §5).
 REF = os.environ.get("MENTE_CROSSRUN_BLOCKS", "")
-p = Probe("check-block", "BLK")
+# ⭐ TWO FAMILIES, because check-block reports both: the block contract (BLK-*)
+# and QLT-LAY-003, the rule that keeps the measuring layer from signing the
+# closing verdict. ⛔ Filtering on BLK alone reported a working check as
+# undetected — a filter narrower than what the checker emits.
+p = Probe("check-block", "(?:BLK|QLT)")
 
 def _path(bid):
     return os.path.join(BLOCKS, bid, "BLOCK.md")
@@ -307,6 +311,21 @@ p.case("㊴ ⛔ a record with no `dimensions` · the half prose loses",
 
 p.inverse("㊵ ⭐ closed WITH a record carrying its dimensions",
           lambda: block(p, "a", status="closed", extra=_KOK))
+
+
+# ⭐ QLT-LAY-003 · the one who MEASURES is not the one who DECIDES.
+# ⛔ A bare `verdict` in the record reads as THE verdict, and it is measurement
+# alone: with the six dimensions undeclared it cannot be a closing verdict at
+# all, and a script does not sign one.
+def _bare_verdict():
+    bid = block(p, "a", status="closed", extra=_KOK, record=False)
+    open(os.path.join(BLOCKS, bid, "close.json"), "w", encoding="utf-8").write(
+        '{"verdict": "PRODUCT", "dimensions": {"naming": "undeclared"}}')
+    return bid
+
+
+p.case("㊶ ⛔ a record whose verdict is not keyed to its layer",
+       _bare_verdict, "QLT-LAY-003")
 
 p.inverse("㉑ a CORRECT block", lambda: block(p, "a"))
 p.crash_guard()
