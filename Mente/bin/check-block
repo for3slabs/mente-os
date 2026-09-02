@@ -6,7 +6,7 @@ the one found, so it is actionable without opening this file.
 
 Exit: 0 clean · 1 violations · 2 the contract itself is missing
 """
-import os, re, sys, glob, datetime
+import os, re, sys, json, glob, datetime
 from datetime import date
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -494,6 +494,32 @@ def check(path, rel, ids):
             bad.append(("BLK-CLS-003", rel,
                         "closing does not state what was NOT done · expected a "
                         "'not completed' line · silence reads as completeness"))
+
+        # ⭐ BLK-CLS-007 · a close writes a machine-readable RECORD.
+        # ⛔ A verdict pasted into §K as prose cannot be re-read, compared with
+        # the next close, or checked against what was measured — ⚠️ and the
+        # UNKNOWN list, the most valuable part, dies with the session.
+        record = os.path.join(os.path.dirname(path), "close.json")
+        if not os.path.exists(record):
+            bad.append(("BLK-CLS-007", rel,
+                        "closed with no close.json · ⭐ run `bin/grade-block %s "
+                        "--json > %s` · a verdict in prose is not state the "
+                        "system holds"
+                        % (bid or "<name>",
+                           os.path.relpath(record, ROOT))))
+        else:
+            # ⚠️ Present is not enough: a record missing `dimensions` says
+            # nothing about which of the six are still UNKNOWN, which is the
+            # half this rule exists to preserve.
+            try:
+                rec = json.load(open(record, encoding="utf-8"))
+            except Exception:                                  # noqa: BLE001
+                rec = None
+            if not isinstance(rec, dict) or "dimensions" not in rec:
+                bad.append(("BLK-CLS-007", rel,
+                            "close.json carries no `dimensions` · ⛔ which of "
+                            "the six are still ⬜ UNKNOWN is the half a prose "
+                            "verdict loses"))
 
     return bad
 
