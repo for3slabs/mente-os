@@ -118,7 +118,7 @@ open(os.path.join(d, "BLOCK.md"), "w", encoding="utf-8").write(body_closed)
 # fixture missing it fails a rule this case was not testing, and the inverse
 # then reports a false positive against the gate.
 open(os.path.join(d, "close.json"), "w", encoding="utf-8").write(
-    '{"block": "%s", "verdict": "MVP", "dimensions": '
+    '{"block": "%s", "layer1_verdict": "MVP", "dimensions": '
     '{"architecture": "undeclared"}}' % bid)
 r = run(path, body_closed)
 case("⑤ ⭐ a CORRECT close passes", r.returncode == 0, "exit=0")

@@ -73,6 +73,6 @@ def block(probe, name, record=True, **kw):
         block_text(bid, **kw))
     if record and kw.get("status") == "closed":
         open(os.path.join(d, "close.json"), "w", encoding="utf-8").write(
-            '{"block": "%s", "verdict": "MVP", "dimensions": '
+            '{"block": "%s", "layer1_verdict": "MVP", "dimensions": '
             '{"architecture": "undeclared"}}' % bid)
     return bid
