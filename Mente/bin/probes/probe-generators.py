@@ -247,6 +247,46 @@ case("㉒ ⭐ `decisions` counts ADRs, not the folder's README",
 case("㉓ ⬜ and `decisions.pending` says how many are unbuilt",
      bool(_p), _p.group(1) + " pending" if _p else "—")
 
+# ⛔ A SUPERSEDED decision is not debt, whatever its implementation field says.
+# ⚠️ Measured: ADR-020 reads `not-started` and its own body says it was
+# superseded before implementation — counting it as pending asks somebody to
+# build a decision that was replaced.
+_dp = os.path.join(TREE, "rules", "decisions", "zzprobe-ADR-999-planted.md")
+open(_dp, "w", encoding="utf-8").write(
+    "# ADR-999 · zz\n\ndate: 2026-01-15\nstatus: superseded\n"
+    "implementation: not-started\nsuperseded-by: ADR-030\n\n"
+    "**Status:** current · **Type:** rule · **Updated:** 2026-01-15 · "
+    "**Owner:** {{owner}}\n\n## Purpose\n\nPlanted.\n\n"
+    "## WHO GOVERNS THIS FILE\n\n| Change | Who |\n|---|---|\n"
+    "| it | nobody |\n\nRelated: `README.md`.\n")
+run("generate-metrics")
+_pd = re.search(r"`decisions\.pending` \| (\d+)", read("METRICS.md"))
+case("㉕ ⛔ a superseded decision is not counted as pending",
+     bool(_pd) and _pd.group(1) == "0", "pending = %s"
+     % (_pd.group(1) if _pd else "—"))
+os.remove(_dp)
+
+# ⭐ ADR-014 · the criterion belongs to the OWNER, so the engine reports how
+# much is still missing rather than filling it in. ⛔ grade-block counted the
+# empty rows for ONE block; nothing said how many are unfilled across the
+# installation — and six undeclared means every quality verdict is layer 1
+# wearing a review's shape.
+# ⚠️ TWO tables carry numbered dimension rows and reading both gave 11 where
+# six exist: §5 asks what each dimension JUDGES, the block below declares what
+# makes it pass HERE, and only the second is the declaration.
+_qv = os.path.join(TREE, "rules", "contract-quality-verdict.md")
+_u0 = re.search(r"`dimensions\.undeclared` \| (\d+)", read("METRICS.md"))
+_qt = open(_qv, encoding="utf-8").read()
+open(_qv, "w", encoding="utf-8").write(
+    _qt.replace("| 4 | naming | ⬜ undeclared |",
+                "| 4 | naming | a name explains itself in three reads |", 1))
+run("generate-metrics")
+_u1 = re.search(r"`dimensions\.undeclared` \| (\d+)", read("METRICS.md"))
+case("㉔ ⭐ declaring one dimension drops `dimensions.undeclared`",
+     bool(_u0 and _u1) and int(_u1.group(1)) == int(_u0.group(1)) - 1,
+     "%s → %s" % (_u0.group(1) if _u0 else "—", _u1.group(1) if _u1 else "—"))
+open(_qv, "w", encoding="utf-8").write(_qt)
+
 # ⬜ and with no backlog to read it is a GAP, never a 0 — the same rule the
 # battery result obeys: an absent row and a zero look identical in a table.
 _bk = os.path.join(DOCS, "ENGINE-BACKLOG.md")
