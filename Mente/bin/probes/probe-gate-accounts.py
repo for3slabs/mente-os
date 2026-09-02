@@ -125,7 +125,7 @@ case("⑫ 🔴 layer 2 · a RETIRED destination → ABORTS", r.returncode == 1,
 EVASIONS = [
     ("un alias", "gp origin main"),
     ("a shell function", "deploy_now"),
-    ("una variable con el verbo", "P=push; git $P origin main"),
+    ("a variable whose value carries the verb", "P=push; git $P origin main"),
     ("un eval", "eval \"$CMD\""),
     ("un constructor de argumentos", "echo origin main | xargs git push"),
 ]

@@ -413,7 +413,7 @@ if real:
     # counting it as illegibility hid a genuine defect behind a probe warning.
     shape = [l for l in mine if "BLK-OPN-001" in l]
     print("  %d bloques reales · %d hallazgos" % (len(real), len(mine)))
-    print("     ⭐ de FORMA (el detector no los lee): %d %s"
+    print("     ⭐ by SHAPE (the detector cannot read them): %d %s"
           % (len(shape), "✅" if not shape else "🔴"))
     by = {}
     for l in mine:

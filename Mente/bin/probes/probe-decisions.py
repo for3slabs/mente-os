@@ -97,7 +97,7 @@ p.case("⑩ superseded but status accepted",
                                                                "supersedes: 901"),
                     "902-" + MARK + "-b.md")), "DEC-SUP-003")
 
-# ── las 5 reglas nuevas
+# ── the 5 new rules
 p.case("⑪ no implementation state",
        lambda: put(GOOD.replace("implementation: verified\n", "")), "DEC-IMP-001")
 p.case("⑫ an unknown implementation state",

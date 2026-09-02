@@ -51,7 +51,7 @@ drop_stamp()
 r = run("git push origin main", watch=CHANGED)
 case("② ⭐ an URGENT action · it looks and says WHAT changed",
      "External state changed" in r.stdout and "merged" in r.stdout,
-     "el aviso nombra el cambio")
+     "the notice names the change")
 
 # ③ ⛔ the truce: right after looking, a non-urgent action must NOT look again
 r = run("ls -la", watch=CHANGED)
@@ -61,7 +61,7 @@ case("③ ⛔ the truce · an ordinary action does not look again",
 # ④ ⭐ but an URGENT action ignores the truce
 r = run("git commit -m x", watch=CHANGED)
 case("④ ⭐ what is URGENT ignores the truce", "External state changed" in r.stdout,
-     "el instante en que el aviso sirve")
+     "the instant the notice is worth anything")
 
 # ⑤ nothing new → silence even when it looked
 drop_stamp()
@@ -72,7 +72,7 @@ case("⑤ nothing changed · silence", not r.stdout.strip(), "exit 0 sin salida"
 drop_stamp()
 r = run("git push", watch="no-such-command-anywhere")
 case("⑥ ⛔ a broken command · silence, not noise", not r.stdout.strip(),
-     "sin red o sin la herramienta, calla")
+     "with no network or no tool, it stays quiet")
 
 # ⑦ ⛔ a malformed urgency pattern must not make everything urgent
 drop_stamp()
@@ -80,7 +80,7 @@ r = run("ls", watch=CHANGED, env={"MENTE_WATCH_URGENT": "[unclosed"})
 open(STAMP, "w").close()
 r2 = run("ls", watch=CHANGED, env={"MENTE_WATCH_URGENT": "[unclosed"})
 case("⑦ ⛔ a MALFORMED urgency pattern · it respects the truce",
-     not r2.stdout.strip(), "no todo se vuelve urgente")
+     not r2.stdout.strip(), "not everything becomes urgent")
 
 # ⑧ 🔴 never blocks, whatever arrives
 for label, raw in (("payload roto", "{not json"), ("array", "[]"), ("null", "null")):
