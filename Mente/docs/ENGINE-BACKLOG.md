@@ -212,15 +212,37 @@ rows.
 
 ---
 
-## E-08 · Governance of the governing files is undeclared
+## E-08 · ✅ CLOSED — 28 of 28 authority-bearing files declare who governs them, and a lock keeps it
 
 - **Surfaced by:** external review of `../memory/principles/owner-1-docs.md`
-- **Affects:** the owner files · the contracts
-- **Closes when:** each declares who may change it, and it is not itself
+- **Affects:** the owner files · the contracts · `../bin/check-document`
+- **Closed:** 2026-09-01 — four missing sections written, `DOC-BOD-003` declared and enforced,
+  four probe cases
 
-**Why it matters.** ⚠️ An owner that writes its own acceptance criteria is a circular authority:
-*"acceptable"* converges on *"whatever it already does"*. ⭐ The two owner files written so far
-declare this; the contracts do not.
+**Why it mattered.** ⚠️ An owner that writes its own acceptance criteria is a circular authority:
+*"acceptable"* converges on *"whatever it already does"* — ⛔ and nothing inside the file can
+reveal it, because it reads as coherent precisely by agreeing with itself.
+
+⚠️ **The entry was out of date.** It said two owner files declared this and the contracts did not;
+measured, **all four principles and 11 of 15 contracts** already did. The four without were
+`../rules/contract-block-sections.md` (the E-34 split left it behind),
+`../rules/contract-campaign.md`, `../rules/contract-quality-verdict.md` and
+`../rules/rule-accounts.md`.
+
+⭐ **Two fields share a word and nothing else**, and separating them was half the work:
+
+| | Answers |
+|---|---|
+| `**Governance:**` — a header field | does this file travel identical to every clone, or does the installation write it? |
+| `## WHO GOVERNS THIS FILE` — a section | ⭐ **who may change WHAT inside it** |
+
+⭐ **The section names what NOBODY may change**, not only who may. ⚠️ A table listing only
+permissions reads as *"everything is negotiable by someone"*, and the rows that carry the weight
+are the ones with no holder at all.
+
+⛔ **Only `contract` and `rule` carry it.** A plan or an analysis grants no authority, and
+demanding a governance section everywhere would make the marker meaningless by making it
+universal.
 
 ---
 

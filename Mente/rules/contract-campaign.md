@@ -226,6 +226,21 @@ question.
 
 ---
 
+## WHO GOVERNS THIS FILE
+
+| Change | Who |
+|---|---|
+| ⬜ the ceilings in §1 | ⭐ the owner of the instance, ⚠️ **once, in writing** |
+| the rules and their IDs | whoever maintains the engine, through a recorded decision |
+| ⛔ a campaign that executes work itself | **nobody** — ⭐ it orders; the work happens in the blocks |
+| ⛔ a link declared from one side only | **nobody** — ⚠️ a one-sided link silently never loads |
+
+⭐ **A campaign cannot widen its own authority.** ⛔ It inherits standards and channels context; a
+campaign that could grant itself powers its blocks do not have would be a project wearing a
+smaller name.
+
+---
+
 Related: `rules/contract-block.md` (the form this one imitates) · `rules/rule-inheritance.md` (why
 standards are inherited and not copied) · `rules/rule-working-in-a-block.md` (the isolation the
 channel channels, never relaxes) · `rules/contract-archive.md` (the outward-facing record this

@@ -295,6 +295,24 @@ in the validation owner · `NOT_MEASURED` in the functional criterion. ⭐ **One
 |---|---|---|---|
 | `DOC-BOD-001` | **A `Purpose` and a `Related` MUST exist** | 🔒 | both present |
 | `DOC-BOD-002` | ⛔ **No `N-bis`, `N-ter`, `N-quater` numbering** | 🔒 | ⭐ see below |
+| `DOC-BOD-003` | ⭐ **A `contract` or a `rule` declares WHO MAY CHANGE IT** | 🔒 | ⛔ an authority that writes its own criteria is circular — see below |
+
+> ## ⭐ `DOC-BOD-003` · A FILE THAT GRANTS AUTHORITY DECLARES WHO GOVERNS IT
+> ⚠️ **An owner that writes its own acceptance criteria is a circular authority:** *"acceptable"*
+> converges on *"whatever it already does"*, and nothing in the file can reveal that — it reads
+> as coherent precisely because it agrees with itself.
+>
+> ⭐ **Only `contract` and `rule` carry this.** ⛔ A plan, an analysis or a logbook grants no
+> authority, and demanding a governance section there would make the marker meaningless by making
+> it universal.
+>
+> ⭐ **The section names what NOBODY may change**, not only who may. ⚠️ A governance table listing
+> only permissions reads as *"everything is negotiable by someone"* — and the rows that matter are
+> the ones with no holder at all.
+>
+> ⛔ **Not to be confused with the `Governance:` HEADER field**, which answers a different
+> question: whether the file travels identical to every clone or the installation writes it. ⚠️ One
+> is about distribution, the other about authority; they share a word and nothing else.
 
 ⭐ **`DOC-BOD-002` is 🔒 because it is a symptom, not a style preference.** That numbering appears
 when a document grew past its shape and nobody wanted to renumber. ⚠️ **It is the smell that says

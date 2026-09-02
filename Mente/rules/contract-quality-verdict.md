@@ -274,6 +274,21 @@ BLOCK <name> · type: code — measured quality · <date>
 **Also decided by:** `decisions/ADR-014-the-criterion-belongs-to-the-owner.md` — ⭐ **whose criterion layer 2 is**, and why an agent writing its own dimensions has written a linter.
 **Also decided by:** `decisions/ADR-013-the-verdict-has-two-layers.md` — ⭐ **why two layers**, what each one fails at alone, and the nine minutes that produced the decision.
 
+## WHO GOVERNS THIS FILE
+
+| Change | Who |
+|---|---|
+| ⬜ which dimensions this installation weighs | ⭐ the owner — ⚠️ **declared before the verdict, never after seeing it** |
+| the rules and their IDs | whoever maintains the engine, through a recorded decision |
+| ⛔ raising a 🔴 MVP to 🟢 PRODUCT without new evidence | **nobody** — ⭐ the verdict follows the measurement, never the other way |
+| ⛔ grading your own work as the deciding voice | **nobody** — ⚠️ whoever produces the evidence is not who decides what it authorises |
+
+⚠️ **The bar is declared before the work is measured against it.** ⛔ A standard chosen after
+seeing the result converges on *"whatever this already does"*, which is the circular authority
+this file exists to break.
+
+---
+
 Related: `rules/contract-block.md` (the closing that carries this verdict) ·
 `rules/rule-checks-must-measure.md` (why layer 1 must be able to fail) ·
 `rules/rule-config-hygiene.md` (the pasted-secret rule this enforces per block) ·

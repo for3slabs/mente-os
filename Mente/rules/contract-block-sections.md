@@ -442,4 +442,18 @@ successes teaches the next reader that this kind of work always succeeds.**
 
 ---
 
+## WHO GOVERNS THIS FILE
+
+| Change | Who |
+|---|---|
+| ⬜ the sections this installation adds beyond A-K | ⭐ the owner — ⚠️ **appended, never renumbered** |
+| the rules and their IDs | whoever maintains the engine, through a recorded decision |
+| ⛔ an `OUT` line with no source | **nobody** — ⚠️ ⭐ it is the field the whole scope lock rests on |
+| ⛔ a checkpoint without `did not change` or `scope` | **nobody** — ⭐ they are the two a free-form note never contains |
+
+⚠️ **This half and `contract-block.md` are ONE contract.** ⛔ A change to either that leaves them
+disagreeing is a change to both — the split was for size, never for authority.
+
+---
+
 Related: `contract-block.md` (the lifecycle half — opening, stopping, closing) · `contract-document.md` (the ceiling this split obeys) · `../bin/check-block` (the validator that reads both halves).

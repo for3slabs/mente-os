@@ -20,6 +20,13 @@ A fixture used to prove the checker detects what it claims to.
 
 Nothing of consequence.
 
+## WHO GOVERNS THIS FILE
+
+| Change | Who |
+|---|---|
+| the rules | the engine maintainer |
+| ⛔ an exemption | **nobody** |
+
 Related: `README.md`.
 """
 
@@ -244,6 +251,31 @@ p.case("㉝ ⚠️ a yaml block before it does not knock the fences out of step"
 # the shape at all.
 p.inverse("㉞ ⛔ the same name inside a ```python block is an example",
           lambda: put(GOOD + '\n```python\n"""check-zzexample — a template."""\n```\n'))
+
+# ── DOC-BOD-003 · a file that grants authority declares who governs it ─────
+# ⚠️ An authority that writes its own acceptance criteria is circular:
+# "acceptable" converges on "whatever it already does", and nothing inside the
+# file can reveal it — it reads as coherent because it agrees with itself.
+# ⭐ The fixture is a VALID rule, so it carries its governance; these cases
+# REMOVE it. ⛔ Making the fixture typeless instead would have hidden the rule
+# behind a type it never applies to.
+_NOGOV = re.compile(r"## WHO GOVERNS THIS FILE.*?\n\n(?=Related:)", re.S)
+
+p.case("㊳ ⛔ a `contract` with no governance section",
+       lambda: put(_NOGOV.sub("", GOOD.replace("**Type:** rule",
+                                               "**Type:** contract"))),
+       "DOC-BOD-003")
+
+p.case("㊴ ⛔ a `rule` with no governance section",
+       lambda: put(_NOGOV.sub("", GOOD)), "DOC-BOD-003")
+
+p.inverse("㊵ ⭐ the fixture as written, WITH its governance",
+          lambda: put(GOOD))
+
+# ⛔ Only contract and rule. A plan grants no authority, and demanding a
+# governance section everywhere would make the marker meaningless.
+p.inverse("㊶ ⛔ a `plan` grants no authority → not demanded",
+          lambda: put(GOOD.replace("**Type:** rule", "**Type:** plan")))
 
 p.clean()
 

@@ -297,6 +297,20 @@ def check(path, rel, ceilings, quiet):
     if not re.search(r"^Related:", text, re.M):
         bad.append(("DOC-BOD-001", rel, len(lines), "no Related line"))
 
+    # ⭐ DOC-BOD-003 · a file that GRANTS authority declares who governs it.
+    # ⚠️ An authority that writes its own acceptance criteria is circular:
+    # "acceptable" converges on "whatever it already does", and nothing inside
+    # the file can reveal that — it reads as coherent because it agrees with
+    # itself.
+    # ⛔ Only contract and rule: a plan or an analysis grants no authority, and
+    # demanding it everywhere would make the marker meaningless.
+    if ty in ("contract", "rule") and "WHO GOVERNS THIS FILE" not in text:
+        bad.append(("DOC-BOD-003", rel, len(lines),
+                    "a %s with no `WHO GOVERNS THIS FILE` section · ⛔ an "
+                    "authority that writes its own criteria is circular · ⚠️ the "
+                    "rows that matter are the ones whose holder is **nobody**"
+                    % ty))
+
     # DOC-BOD-002 · no -bis / -ter / -quater numbering
     m = BIS.search(text)
     if m:
