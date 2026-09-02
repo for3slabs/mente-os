@@ -299,6 +299,19 @@ case("⑳ ⬜ no backlog file → NOT MEASURED, not a 0",
 if _keep is not None:
     open(_bk, "w", encoding="utf-8").write(_keep)
 
+# ⭐ THE DURATION, PER PROBE. ⛔ A total compared against a total with a
+# different probe count turned 28% growth into an apparent 3.3× degradation:
+# 14 probes at 4.5 s versus 38 at 15 s is 0.32 → 0.41 s each, not 3.3×.
+open(os.path.join(TREE, "cache", "last-battery.txt"), "w").write(
+    "➜ checks: 123 · failed: 4\nseconds: 20.0 · probes: 40 · per_probe: 0.50\n")
+run("generate-metrics")
+_m = read("METRICS.md")
+case("㉖ ⭐ the battery's DURATION is recorded, per probe",
+     "`battery.seconds` | 20.0 " in _m
+     and "`battery.seconds_per_probe` | 0.50 " in _m,
+     "20 s over 40 probes")
+
+
 shutil.rmtree(WORK, ignore_errors=True)
 good = sum(1 for _, ok in results if ok)
 print("\n  ➜ %d of %d correct" % (good, len(results)))

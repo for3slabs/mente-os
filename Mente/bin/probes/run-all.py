@@ -5,7 +5,7 @@ A green here means each validator has been SEEN to fail on a state that
 breaks what it claims to measure, with the message naming the real cause.
 ⛔ A validator with no probe is unproven, and this reports that too.
 """
-import os, re, subprocess, sys, glob, shutil, tempfile
+import os, time, re, subprocess, sys, glob, shutil, tempfile
 from concurrent.futures import ThreadPoolExecutor
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -57,6 +57,12 @@ checkers = sorted(f for f in os.listdir(BIN)
 #
 #    plain sequence  11.1s  ·  hybrid  14.2s  ·  isolated + parallel  4.5s
 #
+# ⚠️ THOSE NUMBERS ARE FROM 14 PROBES. Today there are 38 and the suite takes
+# ~15 s — ⛔ which reads as a 3.3× degradation and is not one: per probe it went
+# 0.32 s → 0.41 s, and today's probes carry more cases each (probe-document
+# alone has 58). ⭐ A total compared against a total with a different
+# denominator is the arithmetic that turns growth into alarm.
+#
 # ⬜ MENTE_PROBES_SERIAL=1 forces the old behaviour, for debugging a probe
 # whose failure only appears in the real tree.
 ROOT = os.path.dirname(BIN)
@@ -86,6 +92,7 @@ def run_probe(q):
 
 print("═══ TODAS LAS SONDAS ═══%s\n"
       % ("" if not SERIAL else "  (serial · MENTE_PROBES_SERIAL=1)"))
+_started = time.time()
 total = failed = 0
 rows = []
 
@@ -326,7 +333,14 @@ try:
     _c = os.path.join(os.path.dirname(BIN), "cache")
     os.makedirs(_c, exist_ok=True)
     with open(os.path.join(_c, "last-battery.txt"), "w", encoding="utf-8") as _fh:
+        # ⭐ THE DURATION TOO, and per probe. ⛔ Without it, comparing today
+        # against a comment written when there were 14 probes is arithmetic
+        # between different denominators — it reads as a 3.3× degradation and
+        # is a 28% one. ⚠️ A total means nothing without its count.
         _fh.write(_line.strip() + "\n")
+        _el = time.time() - _started
+        _fh.write("seconds: %.1f · probes: %d · per_probe: %.2f\n"
+                  % (_el, len(probes), _el / max(1, len(probes))))
 except OSError:
     pass          # ⛔ recording the result never breaks the run that produced it
 sys.exit(1 if failed or missing else 0)

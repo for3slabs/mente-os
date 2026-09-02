@@ -265,6 +265,28 @@ mark* verifies the same thing on any machine.
 the same in an empty tree?** ⛔ **If it depends on how much work is done, the check is measuring
 the work, not the system.**
 
+### D-ter · ⭐ A TIMING that depends on what else the machine is doing
+
+⚠️ **D-bis is about a number that changes between MACHINES. This one changes between two runs on
+the SAME machine** — and it is the harder of the two, because rerunning it looks like confirming
+it.
+
+| ⛔ The reading | ⭐ What was actually measured |
+|---|---|
+| a probe timed while 50 batteries ran in the background | the background, not the probe — measured 6.09 s, real value 1.81 s |
+| a worker count compared under self-inflicted load | ⛔ *"16 threads is worse than 8"*, which reversed on an idle box |
+| a duration taken once | ⚠️ nothing: the spread across runs was ±3 s, wider than every difference being compared |
+
+> ## ⭐ THE TEST: WOULD THIS NUMBER SURVIVE THE MACHINE BEING BUSY?
+> ⛔ **A timing is not a measurement until the conditions are stated.** ⚠️ Measured 2026-09-02
+> auditing this engine's own performance: **five readings out of eight were contaminated**, all by
+> the measuring itself — the load average went 1.37 → 6.25 while the numbers were being taken.
+>
+> ⭐ **Three things make a timing worth quoting:** the load at the time, at least three runs, and
+> a comparison only when the difference exceeds the spread. ⛔ Two of the changes those numbers
+> would have justified were wrong: one piece optimised that was never slow, and a setting reversed
+> from its true direction.
+
 ### E · ⭐ Measuring the wrong shape — the check reads one form and the defect wears another
 
 | ID | Rule | Enf | Verify |
