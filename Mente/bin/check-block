@@ -453,7 +453,13 @@ def main():
         return 2
     if not os.path.isdir(BLOCKS):
         if not quiet:
-            print("check-block · no work/blocks directory · nothing to check")
+        # ⛔ CHK-TRV-002 · an early return that says "nothing" without a ⬜
+        # is a silent gap: it never reaches report(). 🔴 The sibling in
+        # check-archive was found on a CLEAN CLONE and only there — git
+        # stores no empty directory, so this branch never runs where the
+        # author works.
+            print("check-block · no work/blocks directory · nothing to check\n"
+                  "⬜ NOT MEASURED · no block to check · nothing was verified here")
         return 0
 
     found, ids, findings = [], {}, []

@@ -75,9 +75,16 @@ def main():
         print("🔴 the contract itself is missing: rules/contract-adr.md")
         return 2
     if not os.path.isdir(DECISIONS):
+        # ⛔ CHK-TRV-002 · an early return saying "nothing" without a ⬜ is a
+        # silent gap: it never reaches report(). 🔴 Its sibling in
+        # check-archive was found on a CLEAN CLONE and only there — git
+        # stores no empty directory, so this branch never runs where the
+        # author works.
         if not quiet:
-            print("check-decisions · no rules/decisions directory · "
-                  "nothing measured (the folder ships empty)")
+            print("check-decisions · no rules/decisions directory "
+                  "(the folder ships empty)\n"
+                  "⬜ NOT MEASURED · no decision to check · nothing was "
+                  "verified here")
         return 0
 
     files = sorted(f for f in os.listdir(DECISIONS)
