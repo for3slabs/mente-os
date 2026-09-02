@@ -229,6 +229,12 @@ happened and never says whether the system is better for it.
 
 🔴 **A red health line is never buried at the bottom — it moves to the top of the response.**
 
+| ID | Rule | Enf | Verify |
+|---|---|---|---|
+| `DLV-MOD-001` | ⭐ **An empty field is DELETED, never filled with "none"** | 📖 | ⛔ nothing scores a response — `../owner-0-voice.md` · `VOI-VRD-001` |
+| `DLV-MOD-002` | ⭐ **The decision field is the one exception: silence and forgetting read alike** | 📖 | ⚠️ and if the host can ask, it is asked — §9 |
+| `DLV-MOD-003` | ⛔ **The model declares what EXISTS; nothing here declares how it LOOKS** | 🔒 | `../../rules/contract-document.md` · `DOC-BOD-004` · the split is declared from both sides |
+
 ⭐ **The closing block reports; it does not judge.** What it states as done was measured by
 `owner-3-validation.md`, and the four conditions that make a datum count as evidence live in
 `expertise/val-functional.md` §2.1. ⛔ **A block claiming a result owner-3 never verified is a

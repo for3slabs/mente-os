@@ -82,6 +82,11 @@ blocks work that cannot proceed, or hides a hole as if it were resolved.
 is a violation. Using PENDING as a soft REJECT turns the pending list into a place where problems
 go to be forgotten politely.
 
+| ID | Rule | Enf | Verify |
+|---|---|---|---|
+| `DOK-VRD-001` | ⭐ **The four verdicts travel as an EXIT CODE** | 🔒 | `../../rules/rule-checks-must-measure.md` · `CHK-XIT-001` · 0 PASS · 1 REJECT · 2 PENDING · 3 WARN |
+| `DOK-VRD-002` | ⛔ **PENDING is never a soft REJECT** | 🔒 | ⭐ performed by `CHK-XIT-001` — measured: one validator returned 2 for a violated contract |
+
 ---
 
 ## 4 · WHAT EACH STATUS CLAIMS
