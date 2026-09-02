@@ -83,6 +83,32 @@ def _first_line(entry):
 DATE = re.compile(r"\b20\d{2}-\d{2}-\d{2}\b")
 
 
+def _subblock_numbers(body):
+    """The `#` cell of every sub-block row — ⭐ the level lives in the number.
+
+    ⚠️ Read by HEADER like the evidence cell, never by position: the contract's
+    table has seven columns and inserting one ahead of `#` would move the check
+    to the wrong cell.
+    """
+    out, col = [], None
+    for line in body.splitlines():
+        if not line.strip().startswith("|"):
+            continue
+        cells = [c.strip() for c in line.strip().strip("|").split("|")]
+        if col is None:
+            for i, c in enumerate(cells):
+                if c.strip() in ("#", "no", "n"):
+                    col = i
+                    break
+            continue
+        if len(cells) <= col or set(cells[0]) <= set("- :"):
+            continue
+        n = cells[col].strip("`* ")
+        if re.fullmatch(r"\d+(?:\.\d+)*", n):
+            out.append(n)
+    return out
+
+
 def _subblock_evidence(body):
     """(row label, evidence cell) for each sub-block row that HAS evidence.
 
@@ -374,6 +400,18 @@ def check(path, rel, ids):
     # a claim that cannot be found wrong is not evidence, it is a statement.
     # ⚠️ Only rows that HAVE an evidence cell filled: an ⬜ row is a sub-block
     # nobody has finished, which is a state and not a defect.
+    # ── BLK-SUB-005 · at most three levels of nesting (ADR-015) ────────────
+    # ⛔ The decision fixed three — unit of work · GROUP · task — and only two
+    # were built, so large work arrived flat: measured at fourteen sub-blocks
+    # in one real block. ⚠️ Three is a CEILING: a block needing four is a block
+    # that should have been two, and that is the finding, not a format problem.
+    for num in _subblock_numbers(body_of(text, "F") or ""):
+        if num.count(".") >= 2:
+            bad.append(("BLK-SUB-005", rel,
+                        "sub-block %r is a fourth level · ⛔ ADR-015 fixes three "
+                        "(unit · group · task) · ⭐ work needing a fourth is work "
+                        "that should have been two blocks" % num))
+
     for row, ev in _subblock_evidence(body_of(text, "F") or ""):
         if not DATE.search(ev):
             bad.append(("BLK-SUB-004", rel,
