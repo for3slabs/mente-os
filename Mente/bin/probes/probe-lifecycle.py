@@ -147,6 +147,14 @@ case("⑬ and the record names all six dimensions",
      len(rec.get("dimensions", {})) == 6,
      "%d dimension(s)" % len(rec.get("dimensions", {})))
 
+# ⭐ QLT-LAY-003 · the one who MEASURES does not sign the close.
+open(os.path.join(D, "close.json"), "w", encoding="utf-8").write(
+    json.dumps({"verdict": "PRODUCT",
+                "dimensions": {"naming": "undeclared"}}))
+case("⑮ a record whose verdict is not keyed to its layer is refused",
+     "QLT-LAY-003" in tool("check-block").stdout)
+open(os.path.join(D, "close.json"), "w", encoding="utf-8").write(g.stdout)
+
 # ⭐ THE PAIR: the gate must not refuse what its own validator accepts.
 r = gate("gate-critical.py",
          {"tool_name": "Write",

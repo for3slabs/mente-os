@@ -520,6 +520,17 @@ def check(path, rel, ids):
                             "close.json carries no `dimensions` · ⛔ which of "
                             "the six are still ⬜ UNKNOWN is the half a prose "
                             "verdict loses"))
+            # ⭐ QLT-LAY-003 · the record keys the two layers apart. ⛔ A bare
+            # `verdict` reads as THE verdict, and it is measurement alone:
+            # whoever produces the evidence does not decide what it proves.
+            elif "verdict" in rec:
+                bad.append(("QLT-LAY-003", rel,
+                            "close.json carries a bare `verdict` · ⭐ layer 1 is "
+                            "keyed `layer1_verdict` · ⛔ a script does not sign "
+                            "the closing verdict, and %d of the six dimensions "
+                            "are still undeclared"
+                            % sum(1 for v in rec.get("dimensions", {}).values()
+                                  if v == "undeclared")))
 
     return bad
 
