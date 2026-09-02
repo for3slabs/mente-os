@@ -1,6 +1,6 @@
 # CONTRACT · BLOCK
 
-**Status:** current · **Type:** contract · **Updated:** 2026-09-01 · **Owner:** Ada Lovelace
+**Status:** current · **Type:** contract · **Updated:** {{date}} · **Owner:** {{owner}}
 **Applies to:** every `BLOCK.md` — open, blocked, closed or archived
 **Enforcement:** 🔒 lock — `bin/check-block`
 **Level:** 🌐 universal — ⭐ travels identical to every clone; a lower level may ADD or TIGHTEN, never loosen
