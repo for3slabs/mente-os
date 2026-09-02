@@ -53,6 +53,7 @@ created: 2026-01-10 · updated: 2026-01-15
 completed: the thing
 not completed: nothing
 acceptance: passed
+evidence level: L3
 sufficiency: A-E resume the work
 """
 
