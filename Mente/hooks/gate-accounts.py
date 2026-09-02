@@ -39,6 +39,8 @@ import re
 import sys
 
 MENTE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, os.path.join(MENTE, "bin"))
+import tsvread                                                 # noqa: E402
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from _beat import beat                                         # noqa: E402
 
@@ -69,12 +71,9 @@ def registry():
     """repo → (role, remote, account). Empty when nothing is declared."""
     out = {}
     try:
-        for line in open(REG, encoding="utf-8", errors="replace"):
-            if line.startswith("#") or not line.strip():
-                continue
-            f = [c.strip() for c in line.rstrip("\n").split("\t")]
-            if len(f) < 4 or f[0] == "repo":
-                continue
+        # ⭐ CHK-SHR-001 · ONE reader (bin/tsvread.py). ⛔ Six copies had
+        # patched the header four different ways.
+        for _n, f in tsvread.rows(REG, want=4):
             out[f[0].lower()] = (f[2].lower(), f[3], f[1])
     except OSError:
         pass

@@ -167,6 +167,22 @@ def audit(path, rel, ignored):
                     "why, or a silent gap turns green"))
         break
 
+    # ── CHK-SHR-001 · ONE shape read in several places gets ONE reader ─────
+    # ⛔ Measured 2026-09-02: SIX copies of the same eight-line TSV parse, and
+    # they had patched the header FOUR different ways — `f[0] == "piece"`,
+    # `== "repo"`, `in ("repo", "")`, and one with `!=`. ⚠️ That spread IS the
+    # divergence, already happened: pieces.tsv's header was read as a row by
+    # two of them, declaring a piece named `piece` at a path named `path`.
+    # ⭐ The reader is bin/tsvread.py; this refuses the seventh copy.
+    if os.path.basename(rel) != "tsvread.py":
+        for i, line in enumerate(lines, 1):
+            if re.search(r'rstrip\(["\']\\n["\']\)\.split\(["\']\\t["\']\)', line):
+                bad.append(("CHK-SHR-001", rel, i,
+                            "a seventh copy of the TSV parse · ⭐ import "
+                            "bin/tsvread.py · ⛔ six copies had already drifted "
+                            "into four different header rules"))
+                break
+
     # ── CHK-XIT-001 · the exit code carries the verdict ─────────────────────
     # ⛔ A hook, a gate and the battery all decide on the NUMBER, not the text.
     # A validator returning the same code for "this is wrong" and "I could not

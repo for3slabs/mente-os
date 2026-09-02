@@ -164,6 +164,45 @@ r = gate("gate-critical.py",
 case("⑭ the gate lets through a close the validator accepts",
      r.returncode == 0, "exit=%d" % r.returncode)
 
+# ── ⭐ THE OTHER PRODUCER↔CONSUMER PAIR: the battery and the metric ─────────
+# 🔴 Measured 2026-09-02 by auditing in conjunction: rename the field the
+# battery WRITES into cache/last-battery.txt and the battery stays green at
+# 695 · 0 while the metric turns ⬜ NOT MEASURED. ⛔ Two pieces stopped agreeing
+# and every probe passed — the same shape as E-48, in a different pair.
+# ⭐ It degrades honestly (⬜, never a made-up number), and that is exactly why
+# nothing noticed: an honest gap is invisible until somebody asks for the value.
+# ⚠️ THE LINE COMES FROM THE PRODUCER, never hand-written here. ⛔ The first
+# version wrote the file itself in the correct format and passed while the
+# agreement was broken — it was testing the consumer, not the pair. ⭐ The
+# producer's own source is what has to be read.
+_ra = open(os.path.join(TREE, "bin", "probes", "run-all.py"),
+           encoding="utf-8").read()
+_fmt = re.search(r'_line = \("([^"]+)"', _ra)
+_rep = os.path.join(TREE, "cache", "last-battery.txt")
+os.makedirs(os.path.dirname(_rep), exist_ok=True)
+open(_rep, "w", encoding="utf-8").write(
+    ((_fmt.group(1) if _fmt else "  ➜ checks: %d · failed: %d%s")
+     % (42, 7, "")) + "\n")
+tool("generate-metrics")
+try:
+    _m = open(os.path.join(TREE, "docs", "METRICS.md"), encoding="utf-8").read()
+except OSError:
+    _m = ""
+case("⑯ ⭐ the metric READS what the battery wrote",
+     "`battery.checks` | 42 " in _m and "`battery.failed` | 7 " in _m,
+     "42/7 round-tripped")
+
+# ⛔ And the shape is the contract: a renamed field must not read as a value.
+open(_rep, "w", encoding="utf-8").write("  ➜ total: 42 · failed: 7\n")  # noqa
+tool("generate-metrics")
+try:
+    _m2 = open(os.path.join(TREE, "docs", "METRICS.md"), encoding="utf-8").read()
+except OSError:
+    _m2 = ""
+case("⑰ ⛔ a renamed field degrades to ⬜, never to a wrong number",
+     "`battery.checks` | ⬜ NOT MEASURED" in _m2,
+     "the gap is said, not guessed")
+
 shutil.rmtree(WORK, ignore_errors=True)
 good = sum(1 for _, ok in results if ok)
 print("\n  ➜ %d of %d correct" % (good, len(results)))

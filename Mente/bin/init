@@ -40,6 +40,8 @@ import sys
 from datetime import date
 
 MENTE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, os.path.join(MENTE, "bin"))
+import tsvread                                                 # noqa: E402
 REPO = os.path.dirname(MENTE)
 TEMPLATES = os.path.join(MENTE, "templates")
 TABLE = os.path.join(MENTE, "pieces.tsv")
@@ -78,12 +80,9 @@ def declared_paths():
     it is declared.
     """
     out = {}
-    for line in open(TABLE, encoding="utf-8", errors="replace"):
-        if line.startswith("#") or not line.strip():
-            continue
-        f = [c.strip() for c in line.rstrip("\n").split("\t")]
-        if len(f) < 2 or f[0] == "piece":
-            continue
+    # ⭐ CHK-SHR-001 · ONE reader (bin/tsvread.py). ⛔ Six copies had
+    # patched the header four different ways.
+    for n, f in tsvread.rows(TABLE, want=2):
         p = f[1]
         if p.startswith("templates/"):
             continue          # the blueprint itself, not a destination
