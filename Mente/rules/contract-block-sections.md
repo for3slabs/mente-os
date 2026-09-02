@@ -247,12 +247,38 @@ the reader remembers.**
 |---|---|---|---|
 | `BLK-STD-001` | ⭐ **At least one standard declared** | 🔒 | ⛔ none means no basis for rejection |
 | `BLK-STD-002` | **Each declared file exists** | 🔒 | ⚠️ a standard pointing at nothing is not a standard |
+| `BLK-STD-003` | ⭐ **A standard MAY declare WHEN it applies** — `— for: <glob>` | 🟡 | ⛔ without it every standard is named on every edit |
+
+> ## ⭐ `BLK-STD-003` · CONTEXT IS THE SCARCE RESOURCE, AND THE GATE SPENDS IT ON EVERY EDIT
+> ⚠️ **Measured: editing one `.md` named seven disciplines**, five of which — the three `dev-*`
+> and both `val-*` — had nothing to say about it. ⛔ Not merely wasteful: **one discipline's
+> criterion bleeds into a decision belonging to another**, and the reader cannot tell which of
+> the seven was meant for the file in front of them.
+>
+> ```
+> - `memory/principles/expertise/dev-backend.md`   — for: *.py
+> - `memory/principles/expertise/doc-structure.md` — for: *.md
+> - `rules/rule-working-in-a-block.md`
+> ```
+>
+> ⭐ **A line with no `— for:` applies to everything**, which is why this is 🟡 and not 🔒: every
+> block written before this rule keeps working unchanged, and narrowing is opt-in.
+>
+> ⛔ **The engine does not GUESS the scope from a filename.** `dev-frontend` sounds like it means
+> `.tsx` and nothing says so — ⚠️ a gate that inferred it would be right until the day it was not,
+> and wrong silently.
 
 > ## ⭐ THIS FIELD EXISTS BECAUSE A STANDARD THAT IS MERELY FINDABLE IS NOT READ.
 > ⚠️ **Measured: a method that existed, was locatable, and went unread in most sessions.**
 > ⭐ **Declared here, the standard travels WITH the work**, instead of sitting in an index nobody
-> opens. ⬜ **The engine ships this declaration, not the gate that would inject it** — ⛔ claiming
-> an injection no hook performs would have a reader trust a layer that is not there
+> opens. ⭐ **The engine ships the gate too**: `../hooks/pre-edit-standards.py` names these back
+> before the file is written. ⛔ It REPORTS and never blocks — an unbearable guard gets deleted,
+> and a deleted guard protects nothing.
+>
+> ⚠️ **This paragraph said the opposite until 2026-09-01** — *"the engine ships this declaration,
+> not the gate that would inject it"* — which was true when written and stopped being true without
+> anything noticing. ⭐ The reasoning behind it still holds and is why the gate reports rather than
+> promises: claiming a layer that is not there has a reader trust it
 > (`decisions/ADR-011-four-layers-guarantee-reading.md`).
 
 ---

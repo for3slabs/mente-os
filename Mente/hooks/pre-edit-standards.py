@@ -10,7 +10,7 @@ an unbearable guard is deleted — which protects nothing at all.
 
 Contract: a PreToolUse payload on stdin · always exit 0.
 """
-import os, re, sys, glob, json
+import os, re, sys, glob, json, fnmatch
 
 MENTE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -62,20 +62,52 @@ def owns(scope, target):
     return False
 
 
-def listed(section):
-    """The entries of a bullet list — the shape both §D and a campaign use."""
-    return [m.group(1) for m in re.finditer(r"^\s*[-*]\s*`?([^`\s]+)`?", section, re.M)]
+def listed(section, target=None):
+    """The entries of a bullet list — the shape both §D and a campaign use.
+
+    ⭐ BLK-STD-003 · a line may narrow itself with `— for: <glob>[, <glob>]`,
+    and with `target` given, one that does not match is left out.
+
+    ⛔ Context is the scarce resource and this gate spends it on EVERY edit:
+    measured, editing one `.md` named seven disciplines, five of which had
+    nothing to say about it. ⚠️ Worse than waste — one discipline's criterion
+    bleeds into a decision belonging to another, and the reader cannot tell
+    which of the seven was meant for the file in front of them.
+
+    ⬜ A line with no `— for:` applies to everything. ⛔ The scope is never
+    GUESSED from the filename: `dev-frontend` sounds like it means `.tsx` and
+    nothing says so, and a gate that inferred it would be wrong silently.
+    """
+    out = []
+    for line in section.splitlines():
+        m = re.match(r"^\s*[-*]\s*`?([^`\s]+)`?(.*)$", line)
+        if not m:
+            continue
+        globs = re.search(r"[—-]\s*for:\s*(.+?)\s*$", m.group(2))
+        if target and globs and not any(
+                fnmatch.fnmatch(os.path.basename(target), g.strip())
+                or fnmatch.fnmatch(target, g.strip())
+                for g in globs.group(1).split(",")):
+            continue
+        out.append(m.group(1))
+    return out
 
 
-def campaign_of(block):
+def campaign_of(block, target=None):
     """⭐ Membership is declared by the CAMPAIGN, never by the block: a block
     cannot adopt itself into looser standards, nor be orphaned by forgetting to
-    declare one. Returns (name, [inherited])."""
+    declare one. Returns (name, [inherited]).
+
+    ⚠️ BLK-STD-003 narrows an inherited standard the same way it narrows an own
+    one — ⛔ filtering only one side would leave the gate spending context on
+    exactly the standards a block did not write itself.
+    """
     for path in sorted(glob.glob(os.path.join(CAMPAIGNS, "*", "CAMPAIGN.md"))):
         text = read(path)
         if block not in (body_of(text, "F") or "") and block not in text:
             continue
-        return os.path.basename(os.path.dirname(path)), listed(body_of(text, "D") or "")
+        return (os.path.basename(os.path.dirname(path)),
+                listed(body_of(text, "D") or "", target))
     return None, []
 
 
@@ -110,8 +142,8 @@ def main():
             continue
 
         name = os.path.basename(os.path.dirname(bpath))
-        own = listed(body_of(text, "D") or "")
-        camp, inherited = campaign_of(name)
+        own = listed(body_of(text, "D") or "", target)
+        camp, inherited = campaign_of(name, target)
 
         # ⭐ INHERITED, never copied: the campaign's standards are READ on every
         # edit. Copying them into the child makes the two lists diverge, and a
