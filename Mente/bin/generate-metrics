@@ -100,9 +100,22 @@ def battery():
     try:
         text = open(report, encoding="utf-8", errors="replace").read()
     except OSError:
-        return None, None
+        # ⛔ FOUR values, like every other exit from this function. Changing the
+        # signature and missing one return path is how a caller unpacks two
+        # into four and the whole generator dies — measured 2026-09-02: it took
+        # ten probe cases down at once and each looked like a different defect.
+        return None, None, None, None
     m = re.search(r"checks:\s*(\d+)\s*·\s*failed:\s*(\d+)", text)
-    return (int(m.group(1)), int(m.group(2))) if m else (None, None)
+    # ⭐ The DURATION too, per probe. ⛔ A total compared against a total with a
+    # different probe count is the arithmetic that turned 28% growth into an
+    # apparent 3.3× degradation — measured 2026-09-02, comparing 38 probes
+    # against a comment written when there were 14.
+    d = re.search(r"seconds:\s*([\d.]+)\s*·\s*probes:\s*(\d+)\s*·\s*"
+                  r"per_probe:\s*([\d.]+)", text)
+    if m:
+        return (int(m.group(1)), int(m.group(2)),
+                d.group(1) if d else None, d.group(3) if d else None)
+    return (None, None, None, None)
 
 
 # ⭐ E-21 · THE ONE MEASUREMENT THIS ENGINE OWES ITSELF.
@@ -290,9 +303,12 @@ def rows():
         out.append((name, "⬜ NOT MEASURED" if value is None
                     else "%s%s" % (value, unit)))
 
-    checks, failed = battery()
+    checks, failed, secs, per = battery()
     add("battery.checks", checks)
     add("battery.failed", failed)
+    # ⬜ From the LAST recorded run, never by running it — that was a recursion.
+    add("battery.seconds", secs)
+    add("battery.seconds_per_probe", per)
     # ⭐ E-21 · declared versus enforced, the ratio the engine is judged on.
     lv, unread = enforcement()
     total = sum(lv.values())
