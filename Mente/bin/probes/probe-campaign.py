@@ -218,6 +218,6 @@ if real:
     for l in mine[:5]:
         print("     " + l.split(" · ", 2)[-1][:96])
 else:
-    print("  ⑮ ⬜ NOT_MEASURED · set MENTE_CROSSRUN_CAMPAIGNS to a real campaigns/ folder")
+    print("  ⬜ NOT_MEASURED · set MENTE_CROSSRUN_CAMPAIGNS to a real campaigns/ folder")
 
 sys.exit(0 if p.report() else 1)

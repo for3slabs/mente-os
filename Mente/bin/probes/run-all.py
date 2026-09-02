@@ -95,6 +95,33 @@ else:
     with ThreadPoolExecutor(max_workers=min(8, len(probes))) as _ex:
         results = list(_ex.map(run_probe, probes))
 
+# ⭐ A CASE LABEL IS AN ADDRESS — the same rule ids obey (DOC-IDS-001).
+# ⛔ Measured in probe-document: two sections each restarted their numbering, so
+# five numerals addressed two cases each and a failure reported as ㉕ had two
+# possible homes. ⚠️ Cheap while a probe is green; it costs exactly when the
+# numeral is read, which is when something broke.
+# ⭐ Checked HERE and not in the harness: 23 of the 30 probes print their own
+# results and never construct a Probe, so a guard living in the harness would
+# cover seven and read as if it covered all of them.
+# ⚠️ NUMERALS ONLY — ⛔ not every leading marker. The first version counted any
+# non-ascii token that opened a line, so a probe's ⬜ notice and its ⭐ heading
+# read as colliding cases: seven of the fifteen it reported were prose, and a
+# guard that cries wolf on prose is switched off.
+_NUMERAL = re.compile(r"^ {2}([\u2460-\u24FF\u3251-\u32BF])(\w?)\s", re.M)
+
+
+def duplicate_labels(out):
+    """The numerals a probe used more than once, read from its printed lines.
+
+    ⭐ A suffix is part of the address: ⑭ and ⑭b are two cases, not one used
+    twice — inserting a lettered case is how a probe grows without renumbering.
+    """
+    seen = {}
+    for base, suffix in _NUMERAL.findall(out):
+        seen[base + suffix] = seen.get(base + suffix, 0) + 1
+    return sorted(k for k, n in seen.items() if n > 1)
+
+
 for name, r in results:
     # ⭐ The probe's own tally line. ⚠️ While the output was being translated
     # this accepted both spellings — ⛔ and the tolerance was REMOVED once the
@@ -117,7 +144,16 @@ for name, r in results:
         print("  %-24s 🔴 CRASHED · %s" % (name, crash[:60]))
         continue
     good, all_ = int(m.group(1)), int(m.group(2))
-    ok = r.returncode == 0 and good == all_ and not leftovers
+    dups = duplicate_labels(r.stdout)
+    if dups:
+        # ⭐ One failure, not one per numeral: the defect is the probe's
+        # numbering, and reporting it five times would rank a labelling slip
+        # above a validator that stopped working.
+        total += 1
+        failed += 1
+        print("  %-24s 🔴 case label used twice: %s"
+              % (name, " ".join(dups)[:44]))
+    ok = r.returncode == 0 and good == all_ and not leftovers and not dups
     total += all_
     failed += all_ - good
     rows.append((name, good, all_, ok, leftovers))

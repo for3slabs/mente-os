@@ -92,7 +92,8 @@ for word in ("performed", "enforced"):
     plant("| `ZZP-CCC-001` | delegated | 🔒 | ⭐ %s by `ZZP-DDD-001` |\n" % word,
           "# ZZP-DDD-001 is the one that runs\n")
     r = run()
-    case("④ ⭐ `%s by` a cited id → not a gap" % word, not mine(r.stdout))
+    case("④%s ⭐ `%s by` a cited id → not a gap"
+         % ("ab"[("performed", "enforced").index(word)], word), not mine(r.stdout))
 
 # ⛔ but a delegation to an id NOTHING implements is still a gap — otherwise
 # `performed by` becomes a way to declare a lock into existence.

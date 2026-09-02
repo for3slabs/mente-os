@@ -1012,13 +1012,31 @@ Related: `README.md` (folder) · `../memory/principles/README.md` (where the own
 
 ---
 
-## E-42 · `probe-document` reuses case numerals across its two sections
+## E-42 · ✅ CLOSED — a case numeral is an address, and the battery now refuses a repeated one
 
 - **Surfaced by:** adding the `DOC-CNT-007` cases (E-06) — ㉒㉓㉔㉕ were already duplicated
-- **Affects:** `../bin/probes/probe-document.py`
-- **Closes when:** every case in that probe carries a numeral used once
+- **Affects:** `../bin/probes/run-all.py` · `../bin/probes/harness.py` · 12 probes
+- **Closed:** 2026-09-01 — the battery reports a repeated numeral as one failure, proved by
+  planting a duplicate in a copy: `probe-locks 🔴 case label used twice: ④`
 
-**Why it matters.** The probe runs two sections (`check-document` and the capability map) and each
-restarts its numbering, so a failure reported as ㉕ has two possible homes. ⚠️ Small while the
-probe is green; ⛔ it costs exactly when it is not, which is the moment the numeral is read.
+**Why it mattered.** A failure reported as ㉕ had two possible homes. ⚠️ Cheap while a probe is
+green; ⛔ it costs exactly when the numeral is read, which is when something broke.
+
+⭐ **It was bigger than the entry said.** Measured across the battery: **fifteen** probes carried a
+repeated numeral, not one — and three separate causes hid behind the same symptom.
+
+| Cause | Reach | Fix |
+|---|---|---|
+| the shared harness printed its crash case as a fixed `⑨` | 11 probes | ⭐ it is NAMED, not numbered — one hand-written number in a shared piece collided eleven ways |
+| a section notice reused the last case's numeral | 9 probes | it carries no numeral, the way `probe-grade` already did it |
+| one case applied to several subjects printed one row each | 2 probes | ⭐ a suffix per subject (`⑤a`…`⑤d`), so a failure names WHICH |
+
+⛔ **The guard lives in the battery, not the harness.** 23 of the 30 probes print their own results
+and never construct a `Probe`, so a harness-side guard would cover seven while reading as though it
+covered all thirty. ⚠️ It was written there first and moved — two pieces answering one question is
+how one of them ends up wrong.
+
+⚠️ **Its first version cried wolf on prose:** it counted any non-ascii token opening a line, so ⬜
+notices and ⭐ headings read as colliding cases — 7 of the 15 were false. ⭐ It reads numerals only,
+and a lettered suffix counts as part of the address.
 

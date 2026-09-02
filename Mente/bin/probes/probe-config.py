@@ -127,6 +127,6 @@ if REF and os.path.exists(REF):
     for l in mine[:4]:
         print("     " + l.split(" · ", 2)[-1][:96])
 else:
-    print("  ⑪ ⬜ NOT_MEASURED · set MENTE_CROSSRUN_CONFIG to a real settings.json")
+    print("  ⬜ NOT_MEASURED · set MENTE_CROSSRUN_CONFIG to a real settings.json")
 
 sys.exit(0 if p.report() else 1)

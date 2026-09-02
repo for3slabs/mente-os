@@ -135,14 +135,14 @@ real = sorted(glob.glob(os.path.join(REF, "*.md")))[:10] if REF else []
 for i, q in enumerate(real):
     shutil.copy(q, p.track(os.path.join(D, "%s-x%02d-%s" % (MARK, i, os.path.basename(q)))))
 if not real:
-    print("  ⑳ ⬜ NOT_MEASURED · set MENTE_CROSSRUN_DOCS to a tree of real documents")
+    print("  ⬜ NOT_MEASURED · set MENTE_CROSSRUN_DOCS to a tree of real documents")
 code, out, err = p.run()
 mine = p._mine(out) if real else []
 by = {}
 for l in mine:
     for m in re.findall(r"DOC-[A-Z]+-\d+", l):
         by[m] = by.get(m, 0) + 1
-print("  ⑳ %d documentos reales · %d hallazgos" % (len(real), len(mine)))
+print("  %d documentos reales · %d hallazgos" % (len(real), len(mine)))
 for k in sorted(by):
     print("       %-14s %d" % (k, by[k]))
 
@@ -243,6 +243,12 @@ p.inverse("㉖ 🔴 citing a GENERATED file (gitignored) is not a broken pointer
 # who could not find it. Reading the map cannot reveal what the map left out.
 import shutil as _sh, subprocess as _sp, tempfile as _tf, os as _os
 
+# ⭐ THIS SECTION NUMBERS ITSELF `C1..Cn`, and that is the fix for a real bug.
+# ⛔ It used to continue the main series from ㉑ as if there were one series,
+# while section A had already reached ㉛ — so five numerals addressed two cases
+# each, and a failure reported as ㉕ had two possible homes. ⚠️ Cheap while the
+# probe is green; it costs exactly at the moment the numeral is read.
+# ⭐ A prefix per section means inserting a case in A can never collide again.
 _W = _tf.mkdtemp(prefix="mente-cap-")
 _T = _os.path.join(_W, "Mente")
 _sh.copytree(ROOT, _T, ignore=_sh.ignore_patterns(
@@ -261,19 +267,19 @@ def _cap(label, ok, detail=""):
 
 
 _base = open(_CAP, encoding="utf-8").read()
-_cap("㉑ the real map agrees with the tree", "DOC-CAP" not in _run_cap())
+_cap("C1 the real map agrees with the tree", "DOC-CAP" not in _run_cap())
 
 # 🔴 a row naming a piece that does not exist, and NOT marked as planned
 open(_CAP, "w", encoding="utf-8").write(
     _base + "\n| `bin/check-zzprobe` | a command that is not there |\n")
-_cap("㉒ 🔴 names a piece that does not exist, unmarked → detected",
+_cap("C2 🔴 names a piece that does not exist, unmarked → detected",
      "DOC-CAP-001" in _run_cap())
 
 # ⭐ and the SAME row marked ⬜ is correct: the map may describe what is planned,
 # as long as the reader can tell that from what exists today
 open(_CAP, "w", encoding="utf-8").write(
     _base + "\n⬜ | `bin/check-zzprobe` | planned, not built |\n")
-_cap("㉓ ⭐ the same row marked ⬜ is correct",
+_cap("C3 ⭐ the same row marked ⬜ is correct",
      "DOC-CAP-001" not in _run_cap())
 
 # ⛔ the other direction · a real, executable piece the map never names
@@ -281,7 +287,7 @@ open(_CAP, "w", encoding="utf-8").write(_base)
 _extra = _os.path.join(_T, "bin", "check-zzunnamed")
 open(_extra, "w").write("#!/usr/bin/env python3\n")
 _os.chmod(_extra, 0o755)
-_cap("㉔ ⛔ a REAL piece the map never names → detected",
+_cap("C4 ⛔ a REAL piece the map never names → detected",
      "DOC-CAP-002" in _run_cap())
 
 # ⚠️ but a shared helper is not a capability: demanding it be listed would turn
@@ -290,13 +296,13 @@ _os.remove(_extra)
 _helper = _os.path.join(_T, "hooks", "_zzhelper.py")
 open(_helper, "w").write("# shared\n")
 _os.chmod(_helper, 0o755)
-_cap("㉕ ⚠️ a `_` helper is NOT demanded by the map",
+_cap("C5 ⚠️ a `_` helper is NOT demanded by the map",
      "DOC-CAP-002" not in _run_cap())
 _os.remove(_helper)
 
 # ⬜ no map at all → NOT MEASURED, never a silent pass
 _os.remove(_CAP)
-_cap("㉖ ⬜ no CAPABILITIES.md → it says so, it does not stay quiet",
+_cap("C6 ⬜ no CAPABILITIES.md → it says so, it does not stay quiet",
      "NOT MEASURED" in _run_cap())
 
 _sh.rmtree(_W, ignore_errors=True)

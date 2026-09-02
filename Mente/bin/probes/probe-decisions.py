@@ -180,6 +180,6 @@ if real:
     for l in mine[:4]:
         print("     " + l.split(" · ", 2)[-1][:94])
 else:
-    print("  ⑱ ⬜ NOT_MEASURED · set MENTE_CROSSRUN_DECISIONS to a real decisions/ folder")
+    print("  ⬜ NOT_MEASURED · set MENTE_CROSSRUN_DECISIONS to a real decisions/ folder")
 p.clean()
 sys.exit(0 if p.report() else 1)

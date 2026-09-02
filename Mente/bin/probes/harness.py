@@ -132,7 +132,11 @@ class Probe:
             src.replace("def main():", 'def main():\n    raise RuntimeError("boom")', 1))
         r = subprocess.run([sys.executable, p], cwd=ROOT, capture_output=True, text=True)
         ok = "crashed ·" in r.stdout and "Traceback" not in r.stdout
-        print("  %-46s %s %s" % ("⑨ CRASH · reported as a finding",
+        # ⭐ NAMED, never numbered. ⛔ This case is printed by the shared
+        # harness into ELEVEN probes that each run their own series, so a fixed
+        # numeral here collided with whatever ⑨ each of them already had — one
+        # hand-written number in a shared piece, colliding eleven ways.
+        print("  %-46s %s %s" % ("CRASH · reported as a finding",
                                  "✅" if ok else "🔴",
                                  "reportado, no un trace" if ok
                                  else (r.stdout or r.stderr).strip()[:70]))

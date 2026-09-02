@@ -136,7 +136,7 @@ if REF and os.path.exists(REF):
     # ⛔ A directory here crashed the probe with a bare traceback. A crash
     # reports nothing, and "nothing reported" reads like "nothing wrong".
     if os.path.isdir(REF):
-        print("  ⑪ ⬜ NOT_MEASURED · MENTE_CROSSRUN_RULES must name a "
+        print("  ⬜ NOT_MEASURED · MENTE_CROSSRUN_RULES must name a "
               "base-rules FILE, not a folder: %s" % REF)
         raise SystemExit(0 if p.report() else 1)
     shutil.copy(REF, BASE)
@@ -152,7 +152,7 @@ if REF and os.path.exists(REF):
     for l in rows[:3]:
         print("     " + l.split(" · ", 2)[-1][:96])
 else:
-    print("  ⑪ ⬜ NOT_MEASURED · set MENTE_CROSSRUN_RULES to a real base-rules file")
+    print("  ⬜ NOT_MEASURED · set MENTE_CROSSRUN_RULES to a real base-rules file")
 p.clean()
 
 print("\n  base-rules identical:", open(BASE, encoding="utf-8").read() == ORIG_BASE)

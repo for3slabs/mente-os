@@ -147,10 +147,10 @@ if real:
     for l in mine:
         for m in re.findall(r"PND-[A-Z]+-\d+", l):
             by[m] = by.get(m, 0) + 1
-    print("  ⑫ %d listas reales · %d hallazgos" % (min(len(real), 4), len(mine)))
+    print("  %d listas reales · %d hallazgos" % (min(len(real), 4), len(mine)))
     for k in sorted(by):
         print("       %-14s %d" % (k, by[k]))
 else:
-    print("  ⑫ ⬜ NOT_MEASURED · set MENTE_CROSSRUN_PENDING to a real list folder")
+    print("  ⬜ NOT_MEASURED · set MENTE_CROSSRUN_PENDING to a real list folder")
 
 sys.exit(0 if p.report() else 1)
