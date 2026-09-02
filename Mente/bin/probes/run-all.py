@@ -92,12 +92,17 @@ rows = []
 if SERIAL:
     results = [run_probe(q) for q in probes]
 else:
-    # ⭐ TWELVE, MEASURED — not a round number. On a 16-core WSL box with 7 GB:
-    #   8 → 20.4 s · 12 → 18.0 s · 16 → 21.0 s
-    # ⛔ Sixteen is worse than eight: the probes spawn processes, and past a
-    # point the box spends more on scheduling than the parallelism buys.
-    # ⚠️ The floor is ~7.8 s (the slowest probe), so the gap between 18 and 7.8
-    # is the MACHINE, never the design — adding workers cannot close it.
+    # ⭐ TWELVE, and the number matters less than the reason. Measured on a
+    # 16-core WSL box with 7 GB, on an IDLE machine:
+    #   12 → 14.1-17.2 s · 16 → 15.0 s · 24 → 13.7-17.2 s
+    # ⛔ The three ranges OVERLAP: the spread within one setting (±3 s) is wider
+    # than the gap between settings, so "24 is faster" is not a claim this box
+    # supports. ⚠️ An earlier reading called 16 worse than 8 — that was taken
+    # with the machine loaded by the measurement itself.
+    # ⭐ What IS measured: the serial sum is 30.2 s and the slowest probe is
+    # 4.3 s, so the floor is ~4 s and the rest is per-probe overhead — each one
+    # gets a private COPY of the tree (isolation, 1.0 s total) and runs ~21%
+    # slower from it. ⛔ Adding workers cannot close that gap.
     with ThreadPoolExecutor(max_workers=min(12, len(probes))) as _ex:
         results = list(_ex.map(run_probe, probes))
 
