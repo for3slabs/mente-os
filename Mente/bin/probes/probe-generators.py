@@ -214,6 +214,25 @@ case("⑲ ⭐ two 📖 rules added → declared rises, the percentage FALLS",
                                    _p2.group(1) if _p2 else "—"))
 os.remove(_qq)
 
+# ⭐ E-49 · THE RATIO SAYS WHAT IT DOES NOT COVER. ⛔ enforced_pct is computed
+# over rows already in a rule table, so a contract declaring none contributes to
+# neither half — ⚠️ doctrine can grow without enforcement and the percentage
+# cannot fall, which is the drift it exists to detect.
+_before = re.search(r"`rules\.unenforceable_docs` \| (\d+)", read("METRICS.md"))
+_q = os.path.join(TREE, "rules", "zzprobe-doctrine.md")
+open(_q, "w", encoding="utf-8").write(
+    "# zz\n\n**Status:** current · **Type:** contract · **Updated:** 2026-01-15"
+    " · **Owner:** x\n\n## Purpose\n\nProse with no rule table at all.\n\n"
+    "Related: `README.md`.\n")
+run("generate-metrics")
+_after = re.search(r"`rules\.unenforceable_docs` \| (\d+)", read("METRICS.md"))
+case("㉑ ⭐ a contract with no rule table raises `unenforceable_docs`",
+     bool(_before and _after
+          and int(_after.group(1)) == int(_before.group(1)) + 1),
+     "%s → %s" % (_before.group(1) if _before else "—",
+                  _after.group(1) if _after else "—"))
+os.remove(_q)
+
 # ⬜ and with no backlog to read it is a GAP, never a 0 — the same rule the
 # battery result obeys: an absent row and a zero look identical in a table.
 _bk = os.path.join(DOCS, "ENGINE-BACKLOG.md")
