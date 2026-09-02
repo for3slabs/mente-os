@@ -135,6 +135,44 @@ def _instance_files():
 GENERIC = _SHAPES | _instance_files()
 
 
+# ⭐ DOC-CNT-007 · a target's status, read from its header and nothing else.
+_STATUS = re.compile(r"^\*\*Status:\*\*\s*([a-z-]+)", re.M)
+_REPLACED_BY = re.compile(r"^\*\*Superseded by:\*\*\s*(.+)$", re.M)
+
+
+def _stale_target(hit):
+    """Is this resolved pointer aiming at a document no longer in force?
+
+    ⭐ Returns the finding text, or None. ⛔ Only `.md` carries a status header,
+    so everything else is out of scope rather than assumed fine — a script that
+    guesses at a .tsv reports prose as a defect.
+    ⚠️ Reads the first 2 KB: the header is line 3 by contract, and a document
+    that buries its status deeper has a different defect, caught by DOC-HDR-001.
+    """
+    if not hit.endswith(".md"):
+        return None
+    try:
+        with open(hit, encoding="utf-8", errors="replace") as fh:
+            head = fh.read(2048)
+    except OSError:
+        return None
+    m = _STATUS.search(head)
+    if not m or m.group(1) not in ("superseded", "fossil"):
+        return None
+    if m.group(1) == "superseded":
+        # ⭐ DOC-HDR-005 guarantees a superseded document names its
+        # replacement, so the report can say where to point INSTEAD.
+        r = _REPLACED_BY.search(head)
+        where = ("point at %s" % r.group(1).strip()) if r else \
+            "⚠️ and it names no replacement — DOC-HDR-005"
+        return ("pointer resolves to a SUPERSEDED document: %r · %s"
+                % (os.path.relpath(hit, ROOT), where))
+    # ⛔ A fossil names nobody. DOC-LIF-003: never a current authority.
+    return ("pointer resolves to a FOSSIL: %r · ⛔ a fossil is a record of what "
+            "was once believed, never a current authority (DOC-LIF-003)"
+            % os.path.relpath(hit, ROOT))
+
+
 def read_ceilings(text):
     """DOC-SIZ-001 · the ceilings live in the contract, and are read from it."""
     out = {}
@@ -282,9 +320,22 @@ def check(path, rel, ceilings, quiet):
         # while the bare `accounts.tsv` was not, for the same missing file.
         if os.path.basename(ref) in _instance_files():
             continue
-        if any(os.path.exists(os.path.join(b, ref))
-               for b in (here, ROOT, os.path.join(here, ".."),
-                         os.path.join(here, "../.."), os.path.join(here, "../../.."))):
+        hit = next((os.path.join(b, ref)
+                    for b in (here, ROOT, os.path.join(here, ".."),
+                              os.path.join(here, "../.."),
+                              os.path.join(here, "../../.."))
+                    if os.path.exists(os.path.join(b, ref))), None)
+        if hit:
+            # ⭐ DOC-CNT-007 · it RESOLVED — and that is not the whole question.
+            # ⛔ A pointer to a superseded document is worse than a broken one:
+            # the broken one announces itself, while this one opens and reads as
+            # authority. ⚠️ Asked here, at the end of the walk DOC-CNT-004
+            # already makes, so it costs one header read and no second pass.
+            stale = _stale_target(hit)
+            if stale and ref not in seen_refs:
+                seen_refs.add(ref)
+                bad.append(("DOC-CNT-007", rel,
+                            text[:m.start()].count("\n") + 1, stale))
             continue
         if PLANNED.search(text[max(0, m.start() - 90):m.start()]):
             continue          # ⬜ marks a piece the engine has not written yet
