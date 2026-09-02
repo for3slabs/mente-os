@@ -44,6 +44,20 @@ class Probe:
 
     # ── lifecycle ────────────────────────────────────────────────────────
     def track(self, path):
+        """Register a path this probe CREATED, to be DELETED by clean().
+
+        🔴 IT DELETES — it does not restore. ⛔ Tracking a file the engine owns
+        removes it: a probe once tracked a contract in order to "tidy up" an
+        edit, and the contract was gone. ⚠️ The name reads like bookkeeping,
+        which is why the guard below is a refusal and not a comment.
+        ⭐ To measure against a modified engine, copy the tree and edit the copy.
+        """
+        rel = os.path.relpath(path, ROOT)
+        if not os.path.basename(rel).startswith(MARK) and os.path.exists(path):
+            raise AssertionError(
+                "track() DELETES, and %r is not this probe's fixture — a probe "
+                "must never remove a file the engine owns. Copy the tree and "
+                "edit the copy." % rel)
         self.made.append(path)
         return path
 

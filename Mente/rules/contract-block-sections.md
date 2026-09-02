@@ -348,6 +348,36 @@ nobody logs friction against never changes** — the friction goes around the ru
 
 ⭐ **A safe point to resume from** — ⛔ not a diary.
 
+| ID | Rule | Enf | Verify |
+|---|---|---|---|
+| `BLK-CHK-001` | ⛔ **A checkpoint is EVIDENCE, not a note** — it carries its fields | 🔒 | ⭐ the fields are read from the table below, never hardcoded |
+| `BLK-CHK-002` | ⭐ **`did not change` and `scope` are never omitted** | 🔒 | ⭐ performed by `BLK-CHK-001` — they are two of the eight, not a second check |
+| `BLK-CHK-003` | **`verified` states what was run AND its result** | 🟡 | ⛔ a claim with no check is an opinion |
+| `BLK-CHK-004` | ⭐ **`scope` answers held or widened — never blank** | 🔒 | ⭐ the lock of §B, made auditable |
+
+⭐ **The eight fields, and why each is there.** ⚠️ They are not this contract's invention: they are
+`memory/principles/owner-2-dev.md` §7, brought here so something can check them.
+
+| Field | Why it is there |
+|---|---|
+| `changed` | the claim |
+| ⭐ `did not change` | ⚠️ the half that proves the scope held |
+| `pieces` | so what depends on them can be found |
+| `standard` | so the bar is known, not assumed |
+| `verified` | ⛔ what was run, and its result |
+| `unexpected` | ⭐ the most valuable line, and the one omitted first |
+| `remains` | so the next session does not re-derive it |
+| ⭐ `scope` | `held` or `widened: <what>` — the lock of §B, made auditable |
+
+> ## ⛔ *"backend done"* SATISFIES A FREE-FORM SHAPE AND RECORDS NOTHING
+> ⭐ **A checkpoint is read by whoever resumes** — and what they need is not the good news. ⚠️ The
+> two fields that decide whether the work can be trusted are the two nobody writes unprompted:
+> **what did NOT change** (the scope held) and **what behaved unexpectedly** (the thing that will
+> cost a day if it is rediscovered instead of read).
+>
+> ⛔ **`unexpected` and `remains` may say `none`** — that is an answer. ⚠️ Leaving them out is not:
+> silence cannot be told apart from forgetting, which is the whole reason the field exists.
+
 ---
 
 ### J · Context — 🟡 · ⭐ **curated, never a log**
