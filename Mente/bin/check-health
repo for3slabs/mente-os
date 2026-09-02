@@ -91,6 +91,12 @@ def hooks_wired(cfg):
     limit is stated rather than hidden.
     """
     reg = os.environ.get("MENTE_HOOK_REGISTRY") or (cfg or {}).get("hooks.registry")
+    # ⛔ `null` IS "not declared". 🔴 Measured on a fresh install: the template
+    # ships `registry: null`, the parser hands back the four-letter STRING, and
+    # the message read "declared registry does not exist: null" — ⚠️ which tells
+    # a new user their configuration is broken when it is simply untouched.
+    if isinstance(reg, str) and reg.strip().lower() in ("null", "none", "~", ""):
+        reg = None
     if not reg:
         gap("hook wiring · ⬜ no registry declared (MENTE_HOOK_REGISTRY or "
             "hooks.registry) · whether the hooks run was NOT checked")
