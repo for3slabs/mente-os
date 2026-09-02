@@ -328,6 +328,37 @@ def find_block(name):
     return None, None
 
 
+def layer2():
+    """⭐ BLK-CLS-007 · the six dimensions and which are still ⬜ undeclared.
+
+    ⭐ Read FROM the contract, never listed here: the frame travels with the
+    engine and the criterion belongs to the installation, so a hardcoded list
+    would be the engine deciding what the installation judges.
+    ⬜ An unreadable contract yields an EMPTY dict, said rather than guessed —
+    ⛔ a verdict that invents its own dimensions is a linter calling itself a
+    review.
+    """
+    try:
+        t = open(CONTRACT, encoding="utf-8", errors="replace").read()
+    except OSError:
+        return {}
+    out = {}
+    for line in t.splitlines():
+        m = re.match(r"^\|\s*\*\*(\d)\*\*\s*\|\s*(?:🔴\s*)?([a-z ]+?)\s*\|", line)
+        if m:
+            out[m.group(2)] = None
+    # ⚠️ A row still carrying `⬜ undeclared` has no criterion, so the dimension
+    # is UNKNOWN — ⛔ never a pass. The count and the NAMES both matter: a
+    # number says how many are missing, the names say which.
+    declared = set(out)
+    for line in t.splitlines():
+        if "⬜ undeclared" in line:
+            for d in declared:
+                if d in line:
+                    out[d] = "undeclared"
+    return {k: (v or "declared") for k, v in out.items()}
+
+
 def main():
     argv = sys.argv[1:]
     args = [a for a in argv if not a.startswith("--")]
@@ -471,7 +502,10 @@ def main():
                           "scope": dirs, "measured_files": measured,
                           "metrics": {l: (v if na is None else "n/a")
                                       for l, v, na, _, _ in rows},
-                          "reds": reds, "verdict": verdict}, indent=2))
+                          "reds": reds, "verdict": verdict,
+                          # ⭐ BLK-CLS-007 · the half that dies in prose: WHICH
+                          # of the six are still UNKNOWN, by name.
+                          "dimensions": layer2()}, indent=2))
         return code
     if quiet:
         return code

@@ -280,6 +280,34 @@ p.case("㊲ ⛔ three rows, only the middle one dateless → it is named",
                        "| 3 | c | bin/z | 1 | ok | 12 hits 2026-01-14 | closed |"),
        "BLK-SUB-004")
 
+# ── BLK-CLS-007 · a close writes a machine-readable RECORD ─────────────────
+# ⛔ A verdict pasted into §K as prose cannot be re-read, compared with the next
+# close, or checked against what was measured — ⚠️ and the UNKNOWN list, the
+# most valuable part, dies with the session that produced it.
+# ⚠️ A COMPLETE §K, because BLK-TRN-001 demands acceptance AND sufficiency: a
+# fixture missing either fails a rule it was not testing.
+_KOK = ("\n## K · Closing\n\nnot completed: none\nevidence: measured\n"
+        "acceptance: the criteria were met\nsufficiency: pass\n")
+
+p.case("㊳ ⛔ closed and no close.json",
+       lambda: block(p, "a", status="closed", extra=_KOK, record=False),
+       "BLK-CLS-007")
+
+
+def _thin_record():
+    """A record that exists and says nothing about the six dimensions."""
+    bid = block(p, "a", status="closed", extra=_KOK, record=False)
+    open(os.path.join(BLOCKS, bid, "close.json"), "w",
+         encoding="utf-8").write('{"verdict": "PRODUCT"}')
+    return bid
+
+
+p.case("㊴ ⛔ a record with no `dimensions` · the half prose loses",
+       _thin_record, "BLK-CLS-007")
+
+p.inverse("㊵ ⭐ closed WITH a record carrying its dimensions",
+          lambda: block(p, "a", status="closed", extra=_KOK))
+
 p.inverse("㉑ a CORRECT block", lambda: block(p, "a"))
 p.crash_guard()
 

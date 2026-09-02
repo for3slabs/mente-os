@@ -114,6 +114,12 @@ case("④ 🔴 ⬜ the DECLARED irreversible pattern", r.returncode == 2, "bloqu
 # ── what must NOT block · the dangerous side
 body_closed = CLOSING % {"id": bid, "state": "closed"}
 open(os.path.join(d, "BLOCK.md"), "w", encoding="utf-8").write(body_closed)
+# ⭐ BLK-CLS-007 · a correct close carries its machine-readable record. ⛔ A
+# fixture missing it fails a rule this case was not testing, and the inverse
+# then reports a false positive against the gate.
+open(os.path.join(d, "close.json"), "w", encoding="utf-8").write(
+    '{"block": "%s", "verdict": "MVP", "dimensions": '
+    '{"architecture": "undeclared"}}' % bid)
 r = run(path, body_closed)
 case("⑤ ⭐ a CORRECT close passes", r.returncode == 0, "exit=0")
 
