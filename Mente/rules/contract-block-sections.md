@@ -317,6 +317,29 @@ what is presently true.**
 | `BLK-SUB-002` | ⭐ **Each row carries its acceptance and its evidence** | 🟡 | ⛔ *"done"* with nothing behind it |
 | `BLK-SUB-003` | ⛔ **The parent does not close with an open sub-block** | 🔒 | ⚠️ closing over an open task hides it |
 | `BLK-SUB-004` | ⭐ **An `evidence` field states WHAT was observed and WHEN** | 🔒 | ⛔ a claim that cannot be re-checked cannot be found wrong — see below |
+| `BLK-SUB-005` | ⭐ **A row MAY name a GROUP — `1.2` — and at most three levels exist** | 🔒 | ⛔ `ADR-015` · a fourth level is refused, see below |
+
+> ## ⭐ `BLK-SUB-005` · THE GROUP EXISTS SO LARGE WORK STOPS ARRIVING FLAT
+> ⛔ **`ADR-015` decided three levels — the unit of work · a GROUP · the task — and only two were
+> ever built.** ⚠️ Measured: real blocks reach **fourteen flat sub-blocks**, which is precisely
+> the failure the decision predicted for two fixed levels.
+>
+> ⭐ **The number in the `#` column carries the level**, so no column is added and no existing row
+> changes:
+>
+> ```
+> | 1   | migrate the reader | …      ← a task, level 2
+> | 2   | the parser         | …      ← a GROUP, level 2
+> | 2.1 | read the header    | …      ← its task, level 3
+> ```
+>
+> ⛔ **`2.1.1` is refused.** ⚠️ Three is a CEILING, not a shape: two levels stay the normal case,
+> and a block needing four is a block that should have been two blocks — ⭐ which is the finding,
+> not a formatting problem.
+>
+> ⬜ **Nothing forces a group to be used.** ⚠️ Fourteen flat sub-blocks proves the level is NEEDED;
+> ⛔ it does not prove it would be USED, and those are different claims. The bound is enforced;
+> the grouping is offered.
 
 > ## ⭐ `BLK-SUB-004` · EVIDENCE IS A CLAIM SOMEONE ELSE CAN RE-RUN
 > ⛔ **"the system has 55 documents"** and **"the system has 55 documents, `bin/check-document`,

@@ -2,7 +2,7 @@
 
 date: {{date}}
 status: accepted
-implementation: not-started
+implementation: verified
 decided-by: ⬜ declare
 supersedes: —
 superseded-by: —

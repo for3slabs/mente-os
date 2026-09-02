@@ -367,6 +367,29 @@ p.inverse("㊺ ⭐ L5 on a full-block · above the minimum",
 p.inverse("㊻ ⛔ `direct` at L1 · its own minimum, not full-block's",
           _lane_close("direct", "L1"))
 
+# ── BLK-SUB-005 · at most three levels of nesting (ADR-015) ────────────────
+# ⛔ The decision fixed three and only two were built, so large work arrived
+# flat — measured at fourteen sub-blocks in one real block.
+_ROW = "| %s | %s | bin/x | 0 | ok | ran it 2026-01-15 | closed |"
+
+
+def _nest(*nums):
+    def go():
+        return _with_f(block(p, "a"),
+                       "\n".join(_ROW % (n, "task " + n) for n in nums))
+    return go
+
+
+p.case("㊼ ⛔ a fourth level of nesting", _nest("2.1.1"), "BLK-SUB-005")
+
+# ⭐ Three is a CEILING, not a shape: two levels stay the normal case.
+p.inverse("㊽ ⭐ two levels · the normal case", _nest("1", "2"))
+p.inverse("㊾ ⭐ a GROUP and its task · three levels", _nest("2", "2.1"))
+
+# ⛔ And among rows, only the deep one is named.
+p.case("㊿ ⛔ three rows, only the deep one is reported",
+       _nest("1", "2.1", "3.1.1"), "BLK-SUB-005")
+
 p.inverse("㉑ a CORRECT block", lambda: block(p, "a"))
 p.crash_guard()
 
