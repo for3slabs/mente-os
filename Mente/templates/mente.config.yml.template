@@ -73,6 +73,21 @@ session:
   # from one of these.
   heavy_mb: 2
 
+# ── HOOKS · where THIS host records which hooks it actually runs ────────────
+# ⭐ A hook that exists and is not registered is a rule nobody enforces — and it
+#    looks identical to one that works: the file is there, its probe is green,
+#    and nothing ever calls it. ⚠️ Measured on this engine: three hooks
+#    (gate-handoff, gate-accounts, watch-external) shipped wired to nothing.
+#
+# ⛔ The engine does NOT guess this path. Every host registers hooks
+#    differently, and a guess produces a confident wrong answer — which is worse
+#    than the ⬜ NOT MEASURED you get by leaving it null.
+#
+#    Claude Code:   .claude/settings.json
+#    Leave null and `bin/check-health` reports the wiring as NOT MEASURED.
+hooks:
+  registry: null
+
 # ── GATES · other trees the AI must not read without explicit permission ────
 # ⬜ Declare the trees the AI must NOT read without permission. There may be ZERO, one, or many
 #    — add as many entries as you need, or leave the list empty [].

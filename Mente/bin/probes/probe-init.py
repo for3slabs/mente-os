@@ -178,6 +178,13 @@ case("⑯ ⚠️ a second run does not duplicate the import",
 # 🔴 A hook file that is not linked NEVER RUNS and looks installed.
 case("⑰ 🔴 layer 2 is LINKED (git cannot carry it)",
      os.path.islink(os.path.join(repo, ".git", "hooks", "pre-push")))
+
+# ⛔ BOTH git hooks, not one. pre-commit.sh shipped implementing SHP-LCK-001 —
+# the rule refusing a commit on the base branch — and init linked only pre-push:
+# ⚠️ a hook file that is not linked never runs and looks installed, which is the
+# exact failure this whole step exists for.
+case("⑰b 🔴 the base-branch hook is LINKED too",
+     os.path.islink(os.path.join(repo, ".git", "hooks", "pre-commit")))
 case("⑱ ⭐ and `secrets/` ends at 700",
      not (os.stat(os.path.join(tree, "secrets")).st_mode & 0o077))
 

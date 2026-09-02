@@ -114,7 +114,20 @@ def hooks_wired(cfg):
         gap("hook wiring · ⬜ hooks/ unreadable · nothing was compared")
         return
 
-    absent = [n for n in names if n not in text]
+    # ⭐ A GIT HOOK IS REGISTERED BY A LINK, NOT BY TEXT. `pre-commit.sh` and
+    # `pre-push.sh` live in .git/hooks/ as symlinks that git cannot carry, so
+    # they will never appear in a host's settings file — ⛔ reporting them as
+    # unregistered was a true statement about the wrong registry, and it teaches
+    # the reader to ignore the finding.
+    githooks = os.path.join(os.path.dirname(ROOT), ".git", "hooks")
+    linked = set()
+    if os.path.isdir(githooks):
+        for n in os.listdir(githooks):
+            q = os.path.join(githooks, n)
+            if os.path.islink(q):
+                linked.add(os.path.basename(os.readlink(q)))
+
+    absent = [n for n in names if n not in text and n not in linked]
     if absent:
         red("%d hook(s) exist and the registry never names them: %s\n"
             "   ⛔ A hook the host does not know about NEVER RUNS, and looks "
