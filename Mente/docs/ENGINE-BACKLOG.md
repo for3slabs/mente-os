@@ -550,16 +550,38 @@ the decision and IS the asking has merged the two again.
 
 ---
 
-## E-18 · A rule that is read and not understood is a rule that communicates badly
+## E-18 · ✅ CLOSED — the cited doctrine has ids now, and the ratio improved by adding them
 
 - **Surfaced by:** ⭐ external review — two rules were reported as gaps and both already existed,
   stated correctly, in the file being read
-- **Affects:** the voice · every contract
-- **Closes when:** a rule's mechanics are visible on first read, not inferable on close reading
+- **Affects:** 5 files in `../memory/principles/`
+- **Closed:** 2026-09-02 — 11 ids given to the doctrine other documents already cite
 
-**Why it matters.** ⚠️ Being right is not the same as being understood. ⭐ A careful reader missing
-a rule that is present and correct is evidence about the rule's form, not about the reader — and
-the installer of an engine reads exactly once, with less attention than a reviewer.
+**Why it mattered.** ⚠️ Being right is not the same as being understood. ⭐ A careful reader missing
+a rule that is present and correct is evidence about the rule's FORM, not about the reader.
+
+🔴 **Measured on this backlog, and the number is the finding: 13 of 46 closed entries — 28% —
+were opened over doctrine that already existed, written and correct.** E-03, E-07, E-08, E-11,
+E-12, E-13, E-14, E-15, E-17, E-20, E-34, E-40, E-44.
+
+⭐ **Six of the seven traced lived in `../memory/principles/`** — the 12 documents E-49 measured
+with no rule id at all. ⛔ Not a wording problem: **a rule with an id is cited 17 times in this
+engine; principle doctrine is cited 3 times, and by SECTION NUMBER, which moves when the document
+is edited.**
+
+⭐ **Ids only where something already cites it.** The most-cited sections were measured, not
+guessed, and the six busiest got them: `VAL-LVL` `VAL-EVD` `VAL-LAY` (owner-3) · `DEV-CHK`
+(owner-2) · `VOI-VRD` (owner-0) · `DOK-VRD` (owner-1) · `DLV-MOD` (delivery). ⛔ Converting all
+4,097 lines was refused for the reason E-49 already gave: criterion is not a checklist.
+
+📊 **The ratio moved the right way, which is the test.** `rules.unenforceable_docs` **12 → 7**,
+lines **3,409 → 2,030**, declared **361 → 375** — and `enforced_pct` **rose** 60.1 → 60.5, because
+the ids were given to doctrine that was already enforced somewhere and could say so.
+
+⚠️ **The new probe caught me the same hour.** `probe-init` ⑰c went red: writing the E-51 defect
+into this file left ⬜ `docs/PENDING-{{owner}}.md` unmarked, and on an install `{{owner}}` is
+substituted and the pointer dies. ⛔ Fourth time `DOC-CNT-004` has caught me citing a path
+without marking it ⬜.
 
 ---
 
@@ -1563,8 +1585,8 @@ template being clean says nothing about the thing people actually run.
 
 | Claimed, in the first two files a newcomer reads | Measured |
 |---|---|
-| `docs/PENDING-{{owner}}.md` | ⛔ nothing creates it — the real file is `../memory/PENDING.md`, and open criterion is counted by `../bin/check-declarations` |
-| `blocks/active/<name>/BLOCK.md` | ⛔ it is `work/blocks/active/` |
+| ⬜ `docs/PENDING-{{owner}}.md` | ⛔ nothing creates it — the real file is `../memory/PENDING.md`, and open criterion is counted by `../bin/check-declarations` |
+| `blocks/active/<name>/BLOCK.md` | ⛔ it is ⬜ `work/blocks/active/` — a folder an install fills, empty in a clone |
 | `METRICS.md · criterion.holes` | ⛔ that metric does not exist |
 
 ⚠️ **Two of the three failures on a fresh install were CORRECT and had to be told apart:**
