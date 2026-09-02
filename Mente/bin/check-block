@@ -75,6 +75,45 @@ def _first_line(entry):
             return line[:40]
     return "(unnamed)"
 
+
+# ── BLK-SUB-004 · the evidence cell of a sub-block row ──────────────────────
+# ⭐ The column is found by its HEADER, never by position: the contract's table
+# has seven columns and inserting one ahead of `evidence` would silently move
+# every check to the wrong cell.
+DATE = re.compile(r"\b20\d{2}-\d{2}-\d{2}\b")
+
+
+def _subblock_evidence(body):
+    """(row label, evidence cell) for each sub-block row that HAS evidence.
+
+    ⬜ A row whose evidence cell is empty or ⬜ is unfinished work, not a defect:
+    the sub-block has not produced its proof yet, and demanding one would make
+    every freshly-planned row a violation.
+    """
+    out, col, task_col = [], None, None
+    for line in body.splitlines():
+        if not line.strip().startswith("|"):
+            continue
+        cells = [c.strip() for c in line.strip().strip("|").split("|")]
+        if col is None:
+            for i, c in enumerate(cells):
+                name = re.sub(r"[^a-z]", "", c.lower())
+                if name == "evidence":
+                    col = i
+                elif name == "task":
+                    task_col = i
+            continue
+        if len(cells) <= col or set(cells[0]) <= set("- :"):
+            continue
+        ev = cells[col]
+        if ev and "⬜" not in ev and ev not in ("—", "-"):
+            # ⭐ Labelled by the TASK, not the row number: "sub-block 2" sends
+            # the reader counting rows, and the task names itself.
+            label = cells[task_col] if task_col is not None \
+                and len(cells) > task_col else cells[0]
+            out.append((label or "(unnamed)", ev))
+    return out
+
 BLOCKS = os.path.join(ROOT, "work", "blocks")
 
 # ⭐ ONE reader for a block's sections — bin/blockread.py. It lived as four
@@ -295,6 +334,19 @@ def check(path, rel, ids):
     # BLK-SUB-003 · the parent does not close over an open sub-block — the
     # check for that lives in the closing branch above and in
     # hooks/gate-critical.py, which refuses the write itself.
+
+    # ── BLK-SUB-004 · evidence is a claim someone else can re-run ───────────
+    # ⛔ "done" and "55 documents, bin/check-document, 2026-09-01" are different
+    # claims: the first cannot be re-checked, so it cannot be found wrong — ⭐ and
+    # a claim that cannot be found wrong is not evidence, it is a statement.
+    # ⚠️ Only rows that HAVE an evidence cell filled: an ⬜ row is a sub-block
+    # nobody has finished, which is a state and not a defect.
+    for row, ev in _subblock_evidence(body_of(text, "F") or ""):
+        if not DATE.search(ev):
+            bad.append(("BLK-SUB-004", rel,
+                        "sub-block %r · evidence %r names no date · ⛔ a number "
+                        "with no date is correct exactly once and quoted "
+                        "forever" % (row[:28], ev[:34])))
 
     # BLK-OPN-002 · the block is declared where blocks are LISTED.
     # ⛔ A block on disk that no index names is a block nothing knows exists:

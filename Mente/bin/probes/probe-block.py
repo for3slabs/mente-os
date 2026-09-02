@@ -233,6 +233,53 @@ print("  %-46s %s %s"
          else "🔴 it is hardcoded somewhere"))
 p.results.append(("㉝ contract follows", "FAIL" if _ok else "NOT_DETECTED"))
 
+# ── BLK-SUB-004 · evidence is a claim someone else can re-run ──────────────
+# ⛔ "the system has 55 documents" and "55 documents, bin/check-document,
+# 2026-09-01" are different claims: the first cannot be re-checked, so it cannot
+# be found wrong — ⭐ and a claim that cannot be found wrong is not evidence.
+_HDR = ("| # | task | piece | dependents | acceptance | evidence | status |\n"
+        "|---|---|---|---|---|---|---|\n")
+
+
+def _with_f(bid, rows):
+    """Insert §F where it belongs — ⛔ appending it puts F after H, and
+    BLK-SHP-002 is right to say so: a fixture that breaks a DIFFERENT rule
+    reports a false positive against the check it was meant to test."""
+    q = _path(bid)
+    t = open(q, encoding="utf-8").read()
+    block_f = "## F · Sub-blocks\n\n" + _HDR + rows + "\n\n"
+    open(q, "w", encoding="utf-8").write(
+        t.replace("## H · Friction log", block_f + "## H · Friction log", 1)
+        if "## H · Friction log" in t else t + "\n" + block_f)
+    return bid
+
+
+p.case("㉞ ⛔ evidence that says «done» and nothing else",
+       lambda: _with_f(block(p, "a"),
+                       "| 1 | migrate it | bin/x | 3 | it runs | done | closed |"),
+       "BLK-SUB-004")
+
+p.inverse("㉟ ⭐ a datum WITH its date → no finding",
+          lambda: _with_f(block(p, "a"),
+                          "| 1 | migrate it | bin/x | 3 | it runs | "
+                          "55 docs · bin/check-document · 2026-01-15 | closed |"))
+
+# ⬜ A row with no evidence yet is unfinished work, not a defect — demanding one
+# would make every freshly-planned row a violation.
+p.inverse("㊱ ⬜ a row whose evidence is still ⬜ is not a defect",
+          lambda: _with_f(block(p, "a"),
+                          "| 1 | migrate it | ⬜ | ⬜ | ⬜ what done means | "
+                          "⬜ what proves it | open |"))
+
+# ⛔ THE break THAT HIDES THE REST, and it names the TASK: "sub-block 2" sends
+# the reader counting rows.
+p.case("㊲ ⛔ three rows, only the middle one dateless → it is named",
+       lambda: _with_f(block(p, "a"),
+                       "| 1 | a | bin/x | 1 | ok | ran it 2026-01-15 | closed |\n"
+                       "| 2 | b | bin/y | 1 | ok | verified | closed |\n"
+                       "| 3 | c | bin/z | 1 | ok | 12 hits 2026-01-14 | closed |"),
+       "BLK-SUB-004")
+
 p.inverse("㉑ a CORRECT block", lambda: block(p, "a"))
 p.crash_guard()
 
