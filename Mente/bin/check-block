@@ -341,6 +341,23 @@ def check(path, rel, ids):
             bad.append(("BLK-SCP-001", rel,
                         "scope missing a half · expected both IN and OUT · "
                         "an IN with no OUT is a wish, not a boundary"))
+        else:
+            # ⭐ NON-EMPTY means FILLED IN, not merely present. 🔴 Measured on a
+            # fresh install: bin/new-block ends with "fill the ⬜ in §B before
+            # starting" and check-block answered ✅ 0 violations on the
+            # untouched template — ⛔ the engine asking for something it does
+            # not then require is how a new user learns the ⬜ are decoration.
+            for half, rx in (("IN", r"(?:✅|^)\s*IN\b(.*?)(?=\n\s*(?:###|##|⛔)|\Z)"),
+                             ("OUT", r"(?:⛔|^)\s*OUT\b(.*?)(?=\n\s*(?:###|##)|\Z)")):
+                m = re.search(rx, b, re.S | re.M)
+                body = m.group(1) if m else ""
+                lines = [l.strip() for l in body.splitlines()
+                         if l.strip().startswith(("-", "*"))]
+                if lines and all("⬜" in l for l in lines):
+                    bad.append(("BLK-SCP-001", rel,
+                                "§B %s carries only its ⬜ placeholder · ⭐ a "
+                                "boundary nobody wrote is not a boundary · "
+                                "`bin/new-block` said to fill it" % half))
 
     # BLK-SCP-002 · every OUT line states where it comes from.
     # An unsourced limit is an opinion enforced as a rule.
