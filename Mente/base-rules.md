@@ -81,8 +81,8 @@ Code, this file plus the pointers below is enough to work correctly.
 | Decisions | ⬜ `docs/DECISIONS.md` (generated) + `rules/decisions/ADR-*.md` |
 | Naming | ⬜ `rules/NAMING_CONVENTION.md` |
 | Architectural truth | the architecture pillar declared in `mente.config.yml` (`pillars.architecture`) |
-| Active blocks | `blocks/active/<name>/BLOCK.md` |
-| Open criterion the owner still owes | `docs/PENDING-{{owner}}.md` |
+| Active blocks | `work/blocks/active/<name>/BLOCK.md` |
+| Open criterion the owner still owes | ⭐ run `bin/check-declarations` — it counts every ⬜ row still unfilled |
 | Secrets | `secrets/` — ⛔ never in git |
 
 ---
