@@ -672,11 +672,12 @@ survives attention moving elsewhere.
 
 ---
 
-## E-22 · ⭐ The block contract predates the criteria that now depend on it
+## E-22 · ✅ CLOSED — the three fields exist and each has a reader, by accumulation
 
 - **Surfaced by:** writing the owner files — three of their mechanisms have nowhere to live
 - **Affects:** the block contract · the sufficiency check · the gate that fires before an edit
-- **Closes when:** the block contract carries the three fields below, and something reads them
+- **Closed:** 2026-09-02 — verified field by field and reader by reader, not assumed from the
+  three entries it named
 
 **Why it matters.** ⭐ **The owners now demand things a block cannot express.** Each is a mechanism
 declared in criterion with no field to hold it, so it holds only while somebody remembers:
@@ -692,8 +693,24 @@ the contract, and they turned out to need more than it offers. ⛔ **Writing the
 contract carries the fields would produce checks that measure nothing** — the field has to exist
 before anything can read it.
 
-⭐ **It is also the entry that unblocks three others:** E-02, E-03 and E-13 all wait on a field
-this contract does not yet have.
+⭐ **It was the entry that unblocked three others:** E-02, E-03 and E-13 all waited on a field
+this contract did not have. ⚠️ All three closed this session, so this one closes by accumulation —
+⛔ **and that is exactly the case where "it must be done by now" has to be measured instead.**
+
+| The owners demand | Field | Reader |
+|---|---|---|
+| ALLOW / DENY, separated | `### ✅ IN` and `### ⛔ OUT`, each with its own rules | `../hooks/pre-edit-standards.py` · `BLK-SCP-005` |
+| the evidence level | `evidence level: L0…L5` in §K | `../bin/check-block` · `BLK-CLS-008` |
+| checkpoints with their fields | the eight of §I | `../bin/check-block` · `BLK-CHK-001` |
+
+⚠️ **The description was out of date in a second way:** it said the scope section had *"no
+separation between the two halves"*, and IN and OUT are two subsections with different rules —
+`BLK-SCP-002` demands a source on every OUT line and asks nothing of IN.
+
+⭐ **The ordering problem did NOT recur, and that is the useful finding.** Seven entries since —
+E-02, E-03, E-05, E-07, E-08, E-11, E-13 — declared the rule and its verification **in the same
+step**. ⛔ The failure this entry named was writing checks before the field existed; the engine
+stopped doing that without a rule telling it to.
 
 ---
 
@@ -979,11 +996,12 @@ instance has many objects.
 
 ---
 
-## E-32 · ⚠️ Two real archives and one real block carry defects this engine now detects
+## E-32 · ✅ CLOSED — the installation was asked, and chose to accept and record them
 
 - **Surfaced by:** the cross-runs, against objects nobody wrote for this engine
 - **Affects:** nothing in the engine — ⭐ recorded so the findings are not lost
-- **Closes when:** the installation that owns them decides whether to fix or accept them
+- **Closed:** 2026-09-02 — re-measured against the live instance, then written into its own
+  pending list by the owner's decision
 
 **Why it matters.** ⭐ **These are not engine gaps; they are proof the engine measures something
 real:**
@@ -998,6 +1016,22 @@ real:**
 
 ⛔ **The engine does not fix these** — they belong to an installation. ⚠️ **But an audit that finds
 them and writes them nowhere has measured for nothing.**
+
+⭐ **Re-measured before deciding, not carried forward from the original run:** 1 of 6 archives with
+no `SUMMARY.md`, **4** closed blocks with no `sufficiency`, 4 project-level marks in the universal
+`base-rules.md`. ⚠️ The second number had grown from 2 to 4 since the entry was written.
+
+⭐ **Accepted, not fixed, and the reason is the point:** these are closed blocks and historical
+archives. ⛔ Writing `sufficiency: pass` today into a close made months ago would be **inventing a
+verdict nobody issued** — the failure `../rules/contract-quality-verdict.md` exists to prevent.
+
+⚠️ **One of the three still acts forward:** a project-level rule living in the universal file
+travels to every clone that inherits from it. That one is work, not a record.
+
+🔴 **A `git stash` on a live instance nearly lost the write.** Comparing the battery before and
+after my edit, `stash pop` restored only part and left three files the session had never touched
+sitting in the stash. ⛔ **On someone's working tree, measure the difference another way** — the
+five failures turned out to be pre-existing and the comparison was not worth the risk.
 
 ---
 
