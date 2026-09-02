@@ -70,7 +70,8 @@ Usage:
   bin/check-something            everything
   bin/check-something --quiet    exit code only (for hooks)
 
-Exit codes: 0 clean · 1 warnings · 2 errors
+Exit codes: 0 PASS · 1 REJECT · 2 PENDING (could not measure) · 3 WARN
+            rules/rule-checks-must-measure.md §3 · CHK-XIT-001
 """
 import os
 import sys
@@ -78,6 +79,26 @@ import sys
 MENTE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.join(MENTE, "bin"))
 ⬜ import mente_config as cfg       # planned · no validator imports it yet
+
+
+def walk(root):
+    """⭐ THE SHAPE FOR READING A TREE — copy this one too.
+
+    ⛔ `except OSError: continue` is the defect this engine writes most often:
+    it compiles, it never crashes, and it silently drops a file from a count.
+    ⚠️ Measured three times in one session, twice by an author who had just
+    fixed it — CHK-CAU-003 caught every one.
+    """
+    seen, unread = [], []
+    for dp, dn, fn in os.walk(root):
+        dn[:] = [d for d in dn if d not in (".git", "__pycache__", "cache")]
+        for f in fn:
+            try:
+                seen.append(open(os.path.join(dp, f), encoding="utf-8",
+                                 errors="replace").read())
+            except OSError:
+                unread.append(os.path.join(dp, f))   # ⬜ SAID, never swallowed
+    return seen, unread                              # ⭐ the caller reports both
 ```
 
 | Element | Rule | Why |
@@ -96,7 +117,12 @@ library**, on purpose: a dependency that must be installed is a system that does
 and this file exists precisely so cloning works. Only scripts that need an instance value import
 it; one that only inspects the tree does not have to.
 
-⭐ **Exit codes are a contract, not a convention.** `0` clean · `1` warnings · `2` errors. Hooks
+⭐ **Exit codes are a contract, not a convention** — `CHK-XIT-001`, and the table lives in
+`../rules/rule-checks-must-measure.md` §3, never here: ⛔ this paragraph said `1 warnings · 2
+errors` until 2026-09-01, which had `2` meaning the opposite of what twelve validators use it
+for. ⚠️ A template contradicting the rule it teaches is worse than no template.
+
+⭐ `0` PASS · `1` REJECT · `2` PENDING (⬜ could not measure) · `3` WARN. Hooks
 and the battery branch on them. A script that returns `0` while printing a red line **is the worst
 possible failure**: it looks like it is protecting you and it is not.
 
