@@ -13,7 +13,7 @@ inventing the numbers this engine refuses to invent.
 
 Runs against an ISOLATED COPY: the cases edit rules and a config.
 """
-import os, shutil, subprocess, sys, tempfile
+import os, re, shutil, subprocess, sys, tempfile
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from harness import ROOT                       # noqa: E402
@@ -124,6 +124,39 @@ open(os.path.join(TREE, "rules", "zzbad.md"), "wb").write(b"\xff\xfe\x00")
 r = run()
 case("⑪ ⛔ an unreadable rule does not crash the count",
      "Traceback" not in r.stderr, r.stderr.strip()[:26])
+
+# ── ⭐ BOTH TREES, AND BOTH SHAPES ──────────────────────────────────────────
+# ⛔ Reading only `rules/` and only `| ⬜ x | 0 |` reported 7 deferred values
+# when 27 exist: every discipline's §3 and every ceiling in the delivery
+# contract sat unseen, and an installation was never told they were waiting.
+# ⚠️ A validator whose reach is narrower than what it counts does not report a
+# smaller number — it reports a WRONG one, confidently.
+_pr = os.path.join(TREE, "memory", "principles")
+os.makedirs(_pr, exist_ok=True)
+_q = os.path.join(_pr, "zzprobe-principle.md")
+_before = run().stdout
+
+open(_q, "w", encoding="utf-8").write(
+    "# zz\n\n**Status:** current · **Type:** contract · **Updated:** 2026-01-15"
+    " · **Owner:** x\n\n## Purpose\n\nA planted principle.\n\n"
+    "| Thing | Value |\n|---|---|\n| a ceiling | ⬜ … |\n\n"
+    "Related: `README.md`.\n")
+_after = run().stdout
+_n = lambda t: int(re.search(r"· (\d+) rule value", t).group(1)) if \
+    re.search(r"· (\d+) rule value", t) else -1
+case("⑫ ⭐ a deferred value under principles/ is counted",
+     _n(_after) == _n(_before) + 1,
+     "%d → %d" % (_n(_before), _n(_after)))
+
+# ⛔ THE SECOND SHAPE: the VALUE cell is the ⬜, not the row marker.
+open(_q, "w", encoding="utf-8").write(
+    "# zz\n\n**Status:** current · **Type:** contract · **Updated:** 2026-01-15"
+    " · **Owner:** x\n\n## Purpose\n\nA planted principle.\n\n"
+    "| Thing | Value |\n|---|---|\n| a ceiling | 250 lines |\n\n"
+    "Related: `README.md`.\n")
+case("⑬ ⭐ and a value that IS declared stops being counted",
+     _n(run().stdout) == _n(_before), "back to %d" % _n(_before))
+os.remove(_q)
 
 shutil.rmtree(WORK, ignore_errors=True)
 good = sum(1 for _, ok in results if ok)

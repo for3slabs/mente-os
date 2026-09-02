@@ -26,34 +26,67 @@ RULES = os.path.join(ROOT, "rules")
 CONFIG = os.path.join(ROOT, "mente.config.yml")
 # ⭐ A rule row that defers a number: it carries ⬜ and the value is 0. The rules
 # say `0` = NOT MEASURED in their own words, so the marker is read, not invented.
-UNSET_ROW = re.compile(r"^\|\s*⬜[^|]*\|\s*0\s*\|", re.M)
-ROW_NAME = re.compile(r"^\|\s*⬜\s*([^|]+?)\s*\|")
+# ⭐ TWO SHAPES, and neither covers the other (CHK-SHR-002).
+#   · `| ⬜ A `Identity` | 0 |`        — the row is marked, the value is 0
+#   · `| tier-1 threshold | ⬜ … |`    — ⭐ the VALUE cell is the ⬜
+# ⛔ Reading only the first reported 7 gaps when 27 exist: every discipline's §3
+# and every ceiling in the delivery contract sat unseen, so an installation was
+# never told they were waiting.
+UNSET_ROW = re.compile(
+    r"^\|\s*⬜[^|]*\|\s*0\s*\||^\|[^|]+\|\s*⬜\s*(?:…|\.\.\.)?\s*\|", re.M)
+# ⭐ The row's NAME is its first cell, whichever shape marked it. ⚠️ Taking the
+# whole line printed the pipes back at the reader, and a row whose first cell is
+# itself a ⬜ has no name to give — it says so instead of showing an ellipsis.
+ROW_NAME = re.compile(r"^\|\s*(?:⬜\s*)?([^|]*?)\s*\|")
 # ⭐ An unfilled value in the instance declaration, in the three shapes the
 # template ships: an empty list, an explicit null, an empty string.
 UNSET_CFG = re.compile(r"^\s*([a-z_]+):\s*(null|\[\]|\"\"|'')\s*$", re.M)
 
 
 def rule_gaps():
-    """Every rule row that defers a value and has not received one."""
-    out = []
-    if not os.path.isdir(RULES):
+    """Every row that defers a value to the installation and has not got one.
+
+    ⭐ BOTH TREES. ⛔ Reading only `rules/` reported 7 gaps when there were 36:
+    the principles and the disciplines defer 29 values between them — the tier-1
+    threshold, the six quality dimensions, every discipline's §3 — and an
+    installation had no way to be told any of them were waiting.
+    ⚠️ A validator whose reach is narrower than the thing it counts does not
+    report a smaller number; it reports a WRONG one, and confidently.
+    """
+    out, roots = [], [RULES, os.path.join(ROOT, "memory", "principles")]
+    if not any(os.path.isdir(r) for r in roots):
         return None
-    for name in sorted(os.listdir(RULES)):
-        if not name.endswith(".md"):
+    for root in roots:
+        if not os.path.isdir(root):
+            # ⬜ SAID, never swallowed: a tree that is not there is a tree whose
+            # deferred values were not counted, and the total would look
+            # complete. ⚠️ Both roots ship with the engine, so an absent one is
+            # an incomplete install rather than a normal state.
+            out.append((os.path.relpath(root, ROOT),
+                        "⬜ this tree is missing · its declarations were NOT "
+                        "counted"))
             continue
-        try:
-            text = open(os.path.join(RULES, name), encoding="utf-8",
-                        errors="replace").read()
-        except OSError:
-            # ⬜ An unreadable rule may defer a value nobody will ever see.
-            out.append((os.path.join("rules", name), "unreadable · its "
-                        "declarations were NOT counted"))
-            continue
-        for m in UNSET_ROW.finditer(text):
-            row = text[m.start():text.find("\n", m.start())]
-            n = ROW_NAME.match(row)
-            out.append((os.path.join("rules", name),
-                        (n.group(1) if n else row[:40]).strip()))
+        for dp, dn, fn in os.walk(root):
+            dn[:] = [d for d in dn if d not in (".git", "__pycache__")]
+            for name in sorted(f for f in fn if f.endswith(".md")):
+                q = os.path.join(dp, name)
+                rel = os.path.relpath(q, ROOT)
+                try:
+                    text = open(q, encoding="utf-8", errors="replace").read()
+                except OSError:
+                    # ⬜ An unreadable file may defer a value nobody will see.
+                    out.append((rel, "unreadable · its declarations were NOT "
+                                     "counted"))
+                    continue
+                for m in UNSET_ROW.finditer(text):
+                    row = text[m.start():text.find("\n", m.start())]
+                    n = ROW_NAME.match(row)
+                    label = (n.group(1) if n else row[:40]).strip()
+                    # ⬜ A first cell that is only the marker names nothing —
+                    # said, rather than printed as an ellipsis nobody can act on.
+                    if not label or label in ("…", "..."):
+                        label = "⬜ an unnamed row · %s" % row.strip()[:46]
+                    out.append((rel, label))
     return out
 
 
