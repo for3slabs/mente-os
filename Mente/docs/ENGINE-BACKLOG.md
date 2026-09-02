@@ -1169,11 +1169,12 @@ need an owner.
 
 ---
 
-## E-37 · A reusable CASE is not a document type here
+## E-37 · ✅ CLOSED — the type was half-built; the filter is what was missing
 
 - **Surfaced by:** ADR-021 — the third record to ship `implementation: not-started`
-- **Affects:** `rules/README.md` (the type table) · a shape that does not exist yet
-- **Closes when:** a case has its own type with a declared shape, an entry filter, and a cap
+- **Affects:** `../rules/contract-document.md` §4 · `../bin/check-document` · ADR-021
+- **Closed:** 2026-09-02 — the shape and the three-question filter declared, `DOC-BOD-005`
+  enforced, four probe cases, ADR moved to `implemented`
 
 **Why it matters.** ⭐ **Measured in a real installation: the three-question filter admitted
 exactly ONE error as a case over months — and that case is cited by nineteen files.** ⛔ The filter
@@ -1186,6 +1187,21 @@ so the next installation records errors by instinct.
 ⭐ **The cap was never tested**, because the filter was strict enough that nothing approached it.
 ⛔ **Worth remembering when building this:** the limit that did the work was the FILTER, not the
 ceiling — building the ceiling first would protect against a problem that has never occurred.
+
+⚠️ **`case` was already half a type, and measuring found which half.** It carries a ceiling in §4
+(300 lines, shared with `analysis`) and `DOC-HDR-003` accepts any type the ceiling table names —
+so a `case` document already validated. ⛔ **What did not exist is the filter**, and that is the
+part ADR-021 was actually about.
+
+⭐ **`DOC-BOD-005` demands the three ANSWERS, not a claim of having passed.** ⛔ A filter nothing
+asks is a filter nobody applies: the next installation records errors by instinct, and an
+unfiltered collection reaches dozens in months — ⚠️ at which point nobody consults it, **including
+the two or three entries that were worth it.**
+
+⛔ **The cap stays ⬜ deliberately, and the ADR says `implemented`, not `verified`.** The filter
+has a rule, code and a probe; the ceiling has none, because building it would guard a problem
+never observed. ⭐ Saying `verified` would claim the whole decision is proven when a third of it
+was deliberately not built.
 
 ---
 

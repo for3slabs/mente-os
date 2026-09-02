@@ -314,6 +314,35 @@ def _mention_only():
 p.case("㊹ ⛔ a mention in prose does not count as declaring it",
        _mention_only, "DOC-BOD-004")
 
+
+# ── DOC-BOD-005 · a `case` answers the three entry questions (ADR-021) ─────
+# ⛔ A filter nothing asks is a filter nobody applies: the next installation
+# records errors by instinct and the collection reaches dozens in months.
+# ⚠️ Measured where the filter DID run: one error admitted over months, cited
+# by nineteen files. ⭐ Strict is the point.
+_ANS = ("\n## The three questions\n\n"
+        "1. Recurs **elsewhere**: yes — the same shape in two other readers.\n"
+        "2. The cause was a wrong **criterion**, not a wrong line.\n"
+        "3. **Actionable**: read the header, never the position.\n")
+
+p.case("㊺ ⛔ a `case` that answers none of the three",
+       lambda: put(GOOD.replace("**Type:** rule", "**Type:** case")),
+       "DOC-BOD-005")
+
+p.case("㊻ ⛔ a `case` answering only two of the three",
+       lambda: put(GOOD.replace("**Type:** rule", "**Type:** case")
+                       .replace("Nothing of consequence.",
+                                "Recurs elsewhere, and it is actionable.")),
+       "DOC-BOD-005")
+
+p.inverse("㊼ ⭐ a `case` that answers all three",
+          lambda: put(GOOD.replace("**Type:** rule", "**Type:** case")
+                          .replace("Nothing of consequence.", _ANS)))
+
+# ⛔ And the demand is on `case` alone: a rule is not a case.
+p.inverse("㊽ ⛔ a `rule` is not asked the three questions",
+          lambda: put(GOOD))
+
 p.clean()
 
 # ── DOC-SIZ-003 · a numeric ceiling states a unit this checker measures ─────
