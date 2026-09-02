@@ -286,14 +286,44 @@ exists, and nothing had noticed.
 
 ---
 
-## E-10 · No trigger contract for the owners
+## E-10 · ✅ CLOSED — four hooks shipped wired to nothing, and now the wiring itself is checked
 
 - **Surfaced by:** external review of `../memory/principles/owner-1-docs.md`
-- **Affects:** all three owners · the gates
-- **Closes when:** each owner's trigger events are wired to something that fires
+- **Affects:** `../../.claude/settings.json` · `../bin/init` · `../bin/check-health` ·
+  `../templates/mente.config.yml.template`
+- **Closed:** 2026-09-01 — 5 hooks wired → 9, `hooks.registry` added to the config template, and
+  `../bin/check-health` taught that a git hook registers by a LINK, not by text
 
-**Why it matters.** ⭐ A criterion with no trigger is applied when somebody remembers. The owner
-files now declare *when* they act; nothing yet acts on that declaration.
+**Why it mattered.** ⭐ A criterion with no trigger is applied when somebody remembers.
+
+🔴 **The measurement found something larger than the entry described.** Four hooks shipped
+**registered nowhere** — they existed, their probes were green, and no event ever ran them:
+
+| Hook | Was | Now |
+|---|---|---|
+| `../hooks/gate-accounts.py` | ⛔ nothing ran it | `PreToolUse` · `Bash` |
+| `../hooks/watch-external.py` | ⛔ nothing ran it | `PreToolUse` · `Bash` |
+| `../hooks/gate-handoff.py` | ⛔ nothing ran it | `PreToolUse` · `Agent\|Task` |
+| `../hooks/pre-commit.sh` | ⛔ `../bin/init` linked only `pre-push` | linked by `../bin/init` |
+
+⚠️ **`../hooks/pre-commit.sh` implements `SHP-LCK-001`** — the rule refusing a commit on the base
+branch — and it was installed in zero repositories. ⭐ Its own docstring names the failure it fell
+to: *"a hook file that is not linked never runs, and looks installed."*
+
+⭐ **`../bin/check-health` already knew how to catch this** — it is its concern ①, deliberately
+reporting ⬜ NOT MEASURED rather than guessing where a host registers hooks. ⛔ What was missing is
+that no installation could DECLARE it: `hooks.registry` did not exist in the config template, and
+`MENTE_HOOK_REGISTRY` was named in no document.
+
+⚠️ **Its first true answer was still half wrong.** With the registry declared it reported the two
+git hooks as unregistered — ⛔ a true statement about the wrong registry: a git hook registers by a
+symlink in `.git/hooks/`, which git cannot carry and a settings file will never name. ⭐ Reporting
+those teaches the reader to ignore the finding.
+
+⚠️ **What is NOT closed:** the fourteen trigger events the owners declare are not individually
+wired — several have no host event at all (*"a plan arrives"*, *"evidence arrives late"*). ⭐ What
+this entry asked for is that a declared trigger reach something that fires, and every hook the
+engine ships now does.
 
 ---
 
