@@ -142,6 +142,29 @@ def _instance_files():
 
 GENERIC = _SHAPES | _instance_files()
 
+# ⭐ DOC-HDR-006 · is this the template, or an installation? ⛔ The distinction
+# is the whole rule: a filled Owner is a defect in one and the point of the
+# other.
+# 🔴 THE FIRST VERSION ASKED FOR mente.config.yml, and CHK-TRV-001 refused it:
+# that file is gitignored, so it is absent from every CLONE — ⚠️ and a clone of
+# an installation would have been read as the template, reporting every header
+# its owner correctly filled in.
+# ⭐ The signal is the placeholder ITSELF. A template still carries `{{owner}}`
+# somewhere; an install has substituted them all. It travels, because it IS the
+# thing that travels.
+def _is_template():
+    for probe in ("README.md", "base-rules.md", "QUICKSTART.md"):
+        try:
+            if "{{owner}}" in open(os.path.join(ROOT, probe), encoding="utf-8",
+                                   errors="replace").read():
+                return True
+        except OSError:
+            continue          # ⬜ absent here means it cannot vote, not False
+    return False
+
+
+INSTALLED = not _is_template()
+
 
 # ⭐ DOC-CNT-007 · a target's status, read from its header and nothing else.
 _STATUS = re.compile(r"^\*\*Status:\*\*\s*([a-z-]+)", re.M)
@@ -334,6 +357,25 @@ def check(path, rel, ceilings, quiet):
                         "declares a layer split with %r and that file carries "
                         "no `⚖️ split-with:` back · ⛔ a one-sided split is one "
                         "document quietly absorbing the other" % other))
+
+    # ⭐ DOC-HDR-006 · an ENGINE document keeps its placeholders unfilled.
+    # ⛔ This engine is a published template: a name in a header travels to
+    # every clone, and the first thing a newcomer reads is somebody else's name
+    # on their own tool. ⚠️ Measured: two documents carried one for 30 commits,
+    # from running bin/init inside the template instead of a clone.
+    # ⚠️ SILENT ON AN INSTALLATION — substituting is what an install is FOR, and
+    # the config file is what tells the two apart.
+    # ⬜ A GENERATED file names its generator as owner, and that is correct: it
+    # is not a substitution, it is the truth about who writes the file. ⛔ The
+    # first version reported all four of them — a checker that fires on the
+    # right answer teaches the reader to skim it.
+    if (not INSTALLED and ty != "generated"
+            and re.search(r"\*\*Owner:\*\*\s*(?!\{\{|<)\S", text)):
+        who = re.search(r"\*\*Owner:\*\*\s*([^\n·|]{1,40})", text)
+        bad.append(("DOC-HDR-006", rel, 3,
+                    "the template carries a filled Owner: %r · ⛔ it ships to "
+                    "every clone · ⭐ expected `{{owner}}`"
+                    % (who.group(1).strip() if who else "?")))
 
     # ⭐ DOC-BOD-005 · a `case` carries its three entry answers (ADR-021).
     # ⛔ A filter nothing asks is a filter nobody applies — the next
