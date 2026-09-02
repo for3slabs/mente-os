@@ -114,6 +114,39 @@ def _subblock_evidence(body):
             out.append((label or "(unnamed)", ev))
     return out
 
+
+# ── BLK-CLS-008 · the minimum evidence level each lane requires ─────────────
+# ⭐ READ FROM THE CONTRACT, never listed here: the table binds lane to level,
+# and a copy in code is the half that goes stale. ⛔ "Tested" is not a level —
+# a change that can break a live flow needs end-to-end proof, one that renames
+# a variable does not, and without a declared level both close on whichever
+# proof was cheaper.
+LEVEL = re.compile(r"\bL([0-5])\b")
+
+
+def lane_minimum():
+    """{lane: minimum level}, or an EMPTY dict if the table cannot be read.
+
+    ⬜ Empty checks nothing, and that is said rather than defaulting to a
+    guessed floor — ⛔ a checker measuring against its own guess refuses work
+    on a bar the contract never set.
+    """
+    t = contract_text()
+    m = re.search(r"### ⭐ `BLK-CLS-008`.*?(?=\n> ⚠️ \*\*A minimum)", t, re.S) \
+        or re.search(r"`BLK-CLS-008`.*?(?=\n> ⚠️ \*\*A minimum)", t, re.S)
+    if not m:
+        return {}
+    out = {}
+    for line in m.group(0).splitlines():
+        # ⚠️ A cell may carry a ⭐ before its value — the marker is emphasis,
+        # not data, and requiring the bold to follow the pipe silently dropped
+        # the `full-block` row: the one lane where the level matters most.
+        row = re.match(r">\s*\|\s*`([a-z-]+)`\s*\|\s*(?:⭐\s*)?\*\*L(\d)\*\*",
+                       line)
+        if row:
+            out[row.group(1)] = int(row.group(2))
+    return out
+
 BLOCKS = os.path.join(ROOT, "work", "blocks")
 
 # ⭐ ONE reader for a block's sections — bin/blockread.py. It lived as four
@@ -494,6 +527,26 @@ def check(path, rel, ids):
             bad.append(("BLK-CLS-003", rel,
                         "closing does not state what was NOT done · expected a "
                         "'not completed' line · silence reads as completeness"))
+
+        # ⭐ BLK-CLS-008 · the close names the evidence LEVEL reached, and it
+        # clears the minimum its LANE requires. ⚠️ The lane is already measured
+        # from the dependency graph (rule-working-in-a-block.md §2), so the
+        # level is derived rather than being a second opinion.
+        floors = lane_minimum()
+        need = floors.get(lane)
+        if need is not None:
+            got = LEVEL.search(kbody or "")
+            if not got:
+                bad.append(("BLK-CLS-008", rel,
+                            "closing names no evidence level · ⭐ lane %r needs "
+                            "at least L%d · ⛔ \"tested\" means whatever the last "
+                            "person had time for" % (lane, need)))
+            elif int(got.group(1)) < need:
+                bad.append(("BLK-CLS-008", rel,
+                            "closing claims L%s and lane %r needs L%d · ⛔ this "
+                            "block has dependents or a declared contract: "
+                            "proving the piece alone proves nothing about them"
+                            % (got.group(1), lane, need)))
 
         # ⭐ BLK-CLS-007 · a close writes a machine-readable RECORD.
         # ⛔ A verdict pasted into §K as prose cannot be re-read, compared with
