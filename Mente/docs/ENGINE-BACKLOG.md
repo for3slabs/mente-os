@@ -484,6 +484,13 @@ paid for; ⭐ the defensible fix was the one real threshold, and it is fixed.
 judgement only the reader can make, and a script counting them would measure length and call it
 orientation.
 
+⭐ **And the declaration IS verified** — that was the half missing when this first closed.
+`../bin/check-declarations` reported **7** deferred values when **27** exist: it read only
+`../rules/` and only one of the two shapes a deferred row takes. ⛔ The tier-1 threshold, every
+ceiling in this contract and every discipline's §3 sat unseen, so an installation was never told
+they were waiting. ⚠️ A validator whose reach is narrower than what it counts does not report a
+smaller number — it reports a WRONG one, confidently.
+
 ---
 
 ## E-16 · Emphasis is not rationed
