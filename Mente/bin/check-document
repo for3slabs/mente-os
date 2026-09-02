@@ -335,6 +335,22 @@ def check(path, rel, ceilings, quiet):
                         "no `⚖️ split-with:` back · ⛔ a one-sided split is one "
                         "document quietly absorbing the other" % other))
 
+    # ⭐ DOC-BOD-005 · a `case` carries its three entry answers (ADR-021).
+    # ⛔ A filter nothing asks is a filter nobody applies — the next
+    # installation records errors by instinct, and an unfiltered collection
+    # reaches dozens in months. ⚠️ Measured where the filter DID run: one error
+    # admitted over months, cited by nineteen files.
+    if ty == "case":
+        missing = [w for w, rx in (("recurs elsewhere", r"elsewhere|recur|second place"),
+                                   ("wrong criterion", r"criterion|way of deciding"),
+                                   ("actionable rule", r"actionable|does differently"))
+                   if not re.search(rx, text, re.I)]
+        if missing:
+            bad.append(("DOC-BOD-005", rel, 1,
+                        "a `case` that does not answer: %s · ⛔ ADR-021 admits an "
+                        "error only when all three pass, and the ANSWERS are "
+                        "what the next reader checks" % ", ".join(missing)))
+
     if ty in ("contract", "rule") and "WHO GOVERNS THIS FILE" not in text:
         bad.append(("DOC-BOD-003", rel, len(lines),
                     "a %s with no `WHO GOVERNS THIS FILE` section · ⛔ an "

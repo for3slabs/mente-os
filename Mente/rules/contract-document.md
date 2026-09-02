@@ -161,6 +161,32 @@ fine and the wrong ceiling is applied to it.
 > carry no unit because they carry no number — a limit that does not exist cannot be measured in
 > anything.
 
+> ## ⭐ `case` · AN ERROR WORTH WRITING DOWN, AND THE FILTER THAT DECIDES
+> ⛔ **A case is not a post-mortem.** ⚠️ Every error is worth understanding; almost none is worth
+> a document — and a collection nobody finishes is a collection nobody consults, ⭐ **including the
+> two or three entries that were worth it.**
+>
+> ⭐ **Three questions decide entry (`ADR-021`), and all three must pass:**
+>
+> | # | The question | ⛔ What a `no` means |
+> |---|---|---|
+> | 1 | would it recur **ELSEWHERE** — is there a SECOND place with the same shape? | a one-off · write it in the block's friction log |
+> | 2 | was the cause a wrong **CRITERION** — ⛔ not a wrong line, a wrong way of deciding | a bug · fix it and move on |
+> | 3 | can it be written as an **ACTIONABLE** rule — something a reader does differently tomorrow | a story · it teaches nobody |
+>
+> ⚠️ **Measured in a real installation: the filter admitted exactly ONE error over months, and
+> that one is cited by nineteen files.** ⭐ Strict is the point — *"was it expensive?"* measures
+> the past, and these three measure whether the future changes.
+>
+> ⭐ **`DOC-BOD-005` requires the three ANSWERS in the document**, not a claim that it passed.
+> ⛔ A filter nothing asks is a filter nobody applies: the next installation records errors by
+> instinct and the collection grows the way an unfiltered one does, just later.
+>
+> ⬜ **The cap is the installation's to declare** — §11's ⬜ rows hold it. ⛔ **It was never
+> reached**, because the filter was strict enough that nothing approached it: ⚠️ the limit that
+> did the work was the FILTER, and building the ceiling first would guard a problem that has never
+> occurred.
+
 ### ⭐ THE RULE BEHIND THE CEILING
 
 > ## A file is not split because of its size. It is split when it holds TWO DISTINCT THINGS.
@@ -297,6 +323,7 @@ in the validation owner · `NOT_MEASURED` in the functional criterion. ⭐ **One
 | `DOC-BOD-002` | ⛔ **No `N-bis`, `N-ter`, `N-quater` numbering** | 🔒 | ⭐ see below |
 | `DOC-BOD-003` | ⭐ **A `contract` or a `rule` declares WHO MAY CHANGE IT** | 🔒 | ⛔ an authority that writes its own criteria is circular — see below |
 | `DOC-BOD-004` | ⭐ **A layer split is declared from BOTH sides** | 🔒 | ⛔ a one-sided split is one document quietly absorbing the other |
+| `DOC-BOD-005` | ⭐ **A `case` answers the three entry questions, in writing** | 🔒 | ⛔ a filter nothing asks is a filter nobody applies — `ADR-021` |
 
 > ## ⭐ `DOC-BOD-004` · A SPLIT DECLARED ONCE IS NOT A SPLIT
 > ⚠️ When two documents divide one subject — what a delivery must CONTAIN versus how it is SHOWN,
