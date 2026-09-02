@@ -198,7 +198,9 @@ Each ships with the interview questions already written. **The method is: the AI
 answer with real cases, the AI structures.** Never the reverse — a draft written first comes out
 as *"use best practices"*, which is as empty as *"it's fine"*.
 
-Open holes: `docs/PENDING-{{owner}}.md` (count in ⬜ `docs/METRICS.md` · `criterion.holes`).
+Open holes: ⭐ `bin/check-declarations` counts every ⬜ value the engine defers to you and
+you have not filled in yet. ⛔ It is a count, not a file — a list written by hand goes
+stale the moment a declaration is made.
 
 ---
 

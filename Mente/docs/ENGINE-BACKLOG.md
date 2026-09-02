@@ -1546,3 +1546,33 @@ returns `(seen, unread)` so the caller has to say what it missed.
 errors` — with `2` meaning the OPPOSITE of what twelve validators use it for and what
 `CHK-XIT-001` declared in E-04. ⚠️ A template contradicting the rule it teaches is worse than no
 template, and it sat one section below the shape everyone copies.
+
+---
+
+## E-51 · ✅ CLOSED — every probe measured the template; an INSTALL was red from day one
+
+- **Surfaced by:** installing from scratch and running each validator, rather than testing the
+  template again
+- **Affects:** `../README.md` · `../base-rules.md` · `../bin/probes/probe-init.py`
+- **Closed:** 2026-09-02 — three false claims corrected, and `probe-init` now runs every validator
+  over an installed tree
+
+**Why it mattered.** 🔴 **`bin/check-document` failed on every fresh install**, and no probe saw
+it: they all measured the template, which has no substituted values and no generated files. ⭐ The
+template being clean says nothing about the thing people actually run.
+
+| Claimed, in the first two files a newcomer reads | Measured |
+|---|---|
+| `docs/PENDING-{{owner}}.md` | ⛔ nothing creates it — the real file is `../memory/PENDING.md`, and open criterion is counted by `../bin/check-declarations` |
+| `blocks/active/<name>/BLOCK.md` | ⛔ it is `work/blocks/active/` |
+| `METRICS.md · criterion.holes` | ⛔ that metric does not exist |
+
+⚠️ **Two of the three failures on a fresh install were CORRECT and had to be told apart:**
+`check-clear-ready` and `check-shipping` both go green after the first commit — a repo with no
+commits has uncommitted work and no base branch. ⛔ Treating those as defects would have "fixed"
+two working validators.
+
+⭐ **The new case runs on its OWN freshly installed tree.** The first version reused the probe's
+existing tree, which had already been through the sabotage cases above — ⚠️ and reported
+`check-declared` and `check-document` as broken when neither was: a fixture reused past its
+purpose reports defects the thing under test never had.

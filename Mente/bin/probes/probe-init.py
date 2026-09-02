@@ -14,7 +14,7 @@ ABORT, not default.
 Runs against an ISOLATED COPY — ⛔ measured the hard way: running the installer
 in the source tree writes an owner name across the whole engine.
 """
-import os, shutil, subprocess, sys, tempfile
+import os, glob, shutil, subprocess, sys, tempfile
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from harness import ROOT                       # noqa: E402
@@ -185,6 +185,31 @@ case("⑰ 🔴 layer 2 is LINKED (git cannot carry it)",
 # exact failure this whole step exists for.
 case("⑰b 🔴 the base-branch hook is LINKED too",
      os.path.islink(os.path.join(repo, ".git", "hooks", "pre-commit")))
+# ── 🔴 WHAT AN INSTALLATION ACTUALLY GETS ──────────────────────────────────
+# ⛔ Every probe until here measured the TEMPLATE. An install has substituted
+# values, generated files and a config the template never has — ⚠️ and
+# check-document failed on every fresh install for exactly that reason:
+# README.md and base-rules.md promised `docs/PENDING-{{owner}}.md`, a file
+# nothing creates, so a newcomer's first `bin/check-document` was red.
+# ⭐ The template being clean says nothing about the thing people run.
+# ⚠️ ITS OWN TREE. `tree` has been through the sabotage cases above, so running
+# validators on it would measure those, not the install — ⛔ a fixture reused
+# past its purpose reports defects the thing under test never had.
+_repoC, _treeC = fresh()
+run(_treeC, "--owner", "Someone")
+_git = ["git", "-c", "user.email=p@p", "-c", "user.name=p"]
+subprocess.run(["git", "add", "-A"], cwd=_repoC, capture_output=True)
+subprocess.run(_git + ["commit", "-qm", "install"], cwd=_repoC,
+               capture_output=True)
+_dirty = []
+for _c in sorted(glob.glob(os.path.join(_treeC, "bin", "check-*"))):
+    _r = subprocess.run([sys.executable, _c], cwd=_treeC, capture_output=True,
+                        text=True, timeout=90)
+    if _r.returncode != 0:
+        _dirty.append("%s(%d)" % (os.path.basename(_c), _r.returncode))
+case("⑰c 🔴 ⭐ the INSTALLED tree passes its own validators",
+     not _dirty, ", ".join(_dirty)[:44] or "24 of 24 clean")
+
 case("⑱ ⭐ and `secrets/` ends at 700",
      not (os.stat(os.path.join(tree, "secrets")).st_mode & 0o077))
 
