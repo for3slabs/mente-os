@@ -2,7 +2,7 @@
 
 date: {{date}}
 status: accepted
-implementation: not-started
+implementation: implemented
 decided-by: ⬜ declare
 supersedes: —
 superseded-by: —
@@ -55,10 +55,14 @@ deserves neither.
 
 ## Consequences
 
-- ⬜ **Nothing completes anything yet** — `not-started`, and the engine says so
+- ⭐ **Two generators complete what they derive, and announce it** —
+  `../../bin/generate-index` and `../../bin/generate-metrics`, each writing exactly ONE file and
+  printing what it wrote. ⚠️ Measured 2026-09-02; this line read *"nothing completes anything
+  yet"* until then, and had been false since the generators shipped
 - ⭐ **The engine already ships the sharper half of this rule:** a validator never writes unless
   its NAME says so, so `check-*` and `grade-*` read while `generate-*` writes
-- ⛔ **The generators do not exist yet** — the naming rule is in place before the tools it governs
+- ⭐ **The generators exist and the naming rule governs them** — ⚠️ the rule landed first, which
+  is the order this decision wantedverns
 - 🔴 the exclusion holds regardless: ⛔ **no generator may derive a criterion, a scope or a verdict**
 
 ## What would change this decision
