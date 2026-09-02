@@ -64,6 +64,11 @@ scored afterwards — §10 is a self-check, not a review by somebody else.
 authority enforces with evidence. ⭐ **Breaking it is not a style problem — it is a claim that
 cannot be trusted**, and there it stops being this file's business and becomes owner-3's.
 
+| ID | Rule | Enf | Verify |
+|---|---|---|---|
+| `VOI-VRD-001` | ⛔ **A response is never REJECTED for its voice** | 📖 | ⭐ deliberate: nothing scores this, and a script that did would judge what the engine leaves to a person |
+| `VOI-VRD-002` | ⭐ **An unverified claim stops being style and becomes owner-3's** | 🔒 | `../../rules/contract-block-sections.md` · `BLK-SUB-004` · a claim with no date is not evidence |
+
 ---
 
 ## 3 · THE EIGHT RULES

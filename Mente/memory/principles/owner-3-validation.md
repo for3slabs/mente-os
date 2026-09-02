@@ -67,6 +67,10 @@ Collapsing these is how *"the test passed"* becomes *"the block can close"*.
 | **Criterion** | whether those facts are sufficient | new facts |
 | **Verdict** | one of three states | a fourth, improvised one |
 
+| ID | Rule | Enf | Verify |
+|---|---|---|---|
+| `VAL-LAY-001` | ⭐ **Whoever produces the evidence does not decide what it proves** | 🔒 | `../../rules/contract-quality-verdict.md` · `QLT-LAY-003` keys the record apart |
+
 ⚠️ **Measurement is not owner-3's job to invent** — it consumes what the checks produced. Its own
 work starts at criterion. ⭐ **That separation is what stops an agent from grading its own homework:**
 whoever produces the evidence is not the one who decides what it authorises.
@@ -166,6 +170,11 @@ A datum is proof only when all four hold:
 | 3 | ⭐ **it has been seen to fail** | a check never observed failing is a hope with an exit code |
 | 4 | **reproducible after a context reset** | it worked once, in conditions nobody recorded |
 
+| ID | Rule | Enf | Verify |
+|---|---|---|---|
+| `VAL-EVD-001` | ⭐ **All four conditions hold, or it is not proof** | 📖 | ⛔ nothing checks this — a person reads the four |
+| `VAL-EVD-002` | ⭐ **A datum states WHAT was observed and WHEN** | 🔒 | `../../rules/contract-block-sections.md` · `BLK-SUB-004` |
+
 ### 5b · Levels of evidence — not all proof weighs the same
 
 | Level | What it proves |
@@ -179,6 +188,11 @@ A datum is proof only when all four hold:
 
 ⛔ **A block whose risk needs L4 does not close on L1 evidence.** Declaring the level makes the gap
 visible instead of leaving "tested" to mean whatever the last person had time for.
+
+| ID | Rule | Enf | Verify |
+|---|---|---|---|
+| `VAL-LVL-001` | ⭐ **Evidence states its LEVEL, L0-L5** | 🔒 | `../../rules/contract-block-sections.md` · `BLK-CLS-008` derives the minimum from the lane |
+| `VAL-LVL-002` | ⛔ **A level below what the risk needs does not close** | 🔒 | ⭐ performed by `BLK-CLS-008` — the lane is measured, so the floor is not an opinion |
 
 ### 5c · What an evidence record states
 
