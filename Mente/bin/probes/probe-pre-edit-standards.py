@@ -60,6 +60,16 @@ def run(path, payload=None):
                           capture_output=True, text=True)
 
 
+def claimed(r):
+    """Did a block CLAIM the file? — ⭐ not merely: did the hook speak.
+
+    ⛔ Since BLK-SCP-005 the hook also reports an edit outside every open scope,
+    so "stderr is empty" stopped meaning "nobody claimed it". The claim is the
+    📦 line; the scope report is the ⚠️ line, and they are different questions.
+    """
+    return "📦" in r.stderr
+
+
 def case(label, ok, detail=""):
     print("  %-52s %s %s" % (label, "✅" if ok else "🔴", detail))
     results.append((label, ok))
@@ -77,13 +87,13 @@ case("① a claimed file · names the block and its §D",
 
 # ② ⭐ a path cited INSIDE the prose is not a claim
 r = run("docs/%s-owner-foreign.md" % MARK)
-case("② ⭐ cited in PROSE · does not claim it", not r.stderr.strip(),
-     "silence" if not r.stderr.strip() else "🔴 it claimed it")
+case("② ⭐ cited in PROSE · does not claim it", not claimed(r),
+     "not claimed" if not claimed(r) else "🔴 it claimed it")
 
 # ③ ⛔ segment match, never substring
 r = run("work/%s-owner-src-other/x.py" % MARK)
-case("③ ⛔ a partial name prefix · does not match", not r.stderr.strip(),
-     "silencio")
+case("③ ⛔ a partial name prefix · does not match", not claimed(r),
+     "not claimed")
 
 # ④ an empty §D is a finding, not silence
 clean(); plant(std="—")
@@ -111,9 +121,24 @@ for label, payload in (("payload roto", "{not json"),
 else:
     case("⑥ 🔴 never blocks · 4 invalid payloads", True, "exit=0 in all four")
 
-# ⑦ ⭐ no block claims the file → silence, not a guess
+# ⑦ ⭐ no block claims the file → it does not GUESS one
 r = run("work/nobody/x.py")
-case("⑦ a file nobody owns · silence", not r.stderr.strip(), "silencio")
+case("⑦ a file nobody owns · names no block", not claimed(r), "no guess")
+
+# ⑧ ⭐ BLK-SCP-005 · with a block OPEN, an edit outside every scope is REPORTED
+# ⛔ This is the case that was missing: the boundary was written and nothing
+# watched it, so it held exactly as long as attention did.
+plant()
+r = run("docs/%s-owner-foreign.md" % MARK)
+case("⑧ ⭐ outside every open scope · it reports it",
+     "BLK-SCP-004" in r.stderr and r.returncode == 0,
+     "reports, exit=0 — it never blocks")
+
+# ⑨ ⛔ with NO block open there is no scope to be outside of → no noise
+clean()
+r = run("docs/%s-owner-foreign.md" % MARK)
+case("⑨ ⛔ no block open · no scope report", not r.stderr.strip(),
+     "silence — nothing to be outside of")
 
 clean()
 good = sum(1 for _, ok in results if ok)
