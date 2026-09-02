@@ -145,6 +145,17 @@ the same day, for the same reason.
 | `BLK-SCP-002` | ⭐ **Every `OUT` line states WHERE it comes from** | 🔒 | see the marker table |
 | `BLK-SCP-003` | ⛔ **A system-wide rule is never restated as an `OUT`** | 🟡 | ⭐ see the two-levels test |
 | `BLK-SCP-004` | **Scope is not widened silently** | 🟡 | ⭐ a change to scope is a decision, and decisions go in §G |
+| `BLK-SCP-005` | ⭐ **An edit outside every declared scope is REPORTED** | 🔒 | ⚠️ informed, never blocked — see below |
+
+> ## ⭐ `BLK-SCP-005` · WHY IT REPORTS AND DOES NOT BLOCK
+> ⛔ **Scope creep is the characteristic failure of an agent:** it discovers a dependency and
+> decides on its own that it is in scope. ⚠️ Until now the boundary was written and nothing
+> watched it — so it held exactly as long as attention did.
+>
+> ⛔ **But blocking every edit outside a scope would be unbearable**, and an unbearable guard is
+> deleted: most edits in a tree are legitimately outside every open block, and a gate that stops
+> them stops the work. ⭐ **What is missing is not permission — it is NOTICING**, out loud, at the
+> moment it happens.
 
 ⭐ **§B is the only section that can say NO.** Everything else describes the work; this bounds it.
 ⚠️ **A block with no OUT grows until it cannot close.**

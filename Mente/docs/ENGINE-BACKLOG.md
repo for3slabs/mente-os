@@ -46,15 +46,24 @@ rule.
 
 ---
 
-## E-02 · No mechanism enforces `SCOPE LOCK`
+## E-02 · ✅ CLOSED — an edit outside every open scope is reported, and never blocked
 
 - **Surfaced by:** writing `../memory/principles/owner-2-dev.md` §2
 - **Affects:** the block contract (the scope section) · the gate that fires before an edit
-- **Closes when:** editing a piece outside the declared ALLOW is reported, or blocked
+- **Closed:** 2026-09-01 — `BLK-SCP-005` declared in `../rules/contract-block-sections.md`,
+  enforced by `../hooks/pre-edit-standards.py`, with two probe cases (⑧ it reports · ⑨ with no
+  block open it stays quiet)
 
-**Why it matters.** ⭐ Scope creep is the characteristic failure of an agent: it discovers a
-dependency and decides on its own that it is in scope. Today the boundary is written and nothing
-watches it, so it holds exactly as long as attention does.
+**Why it mattered.** ⭐ Scope creep is the characteristic failure of an agent: it discovers a
+dependency and decides on its own that it is in scope. The boundary was written and nothing
+watched it, so it held exactly as long as attention did.
+
+⭐ **It REPORTS, it does not block** — and that was the design decision, not a shortcut. Most edits
+in a tree are legitimately outside every open block; a gate that stops them stops the work, and
+then it is removed, taking the real drift with it. ⚠️ The hook already read `§B IN` to find the
+owning block; the gap was its **silence** when no block owned the file. ⛔ With no block open at
+all it still says nothing: there is no scope to be outside of, and speaking there would be noise
+on every edit.
 
 ---
 

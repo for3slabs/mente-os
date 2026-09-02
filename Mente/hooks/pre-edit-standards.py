@@ -97,9 +97,15 @@ def main():
     if not target:
         return 0
 
+    open_blocks = []
     for bpath in sorted(glob.glob(os.path.join(BLOCKS, "**", "BLOCK.md"),
                                   recursive=True)):
         text = read(bpath)
+        # ⭐ BLK-SCP-005 needs to know which blocks were OPEN, not only which
+        # one owns the file — "outside every scope" means nothing when there is
+        # no scope to be outside of.
+        if re.search(r"^status:\s*(active|open)\b", text, re.M | re.I):
+            open_blocks.append(os.path.basename(os.path.dirname(bpath)))
         if not owns(body_of(text, "B") or "", target):
             continue
 
@@ -130,6 +136,29 @@ def main():
 
         print("\n".join(lines), file=sys.stderr)
         return 0
+
+    # ── ⭐ BLK-SCP-005 · an edit outside every declared scope ────────────────
+    # ⛔ Scope creep is the characteristic failure of an agent: it discovers a
+    # dependency and decides on its own that it is in scope. ⚠️ The boundary was
+    # written and nothing watched it, so it held exactly as long as attention
+    # did.
+    #
+    # ⛔ IT REPORTS, IT DOES NOT BLOCK. Most edits in a tree are legitimately
+    # outside every open block, and a gate that stops them stops the work — then
+    # it is removed, and the real drift goes unnoticed too. ⭐ What was missing
+    # is not permission; it is NOTICING, out loud, at the moment it happens.
+    if open_blocks:
+        print("⚠️  %s is outside the scope of every open block (%s).\n"
+              "   ⭐ If this edit belongs to one, its §B IN should say so — "
+              "widening a scope\n"
+              "   is a decision, and it goes in §G (BLK-SCP-004).\n"
+              "   ⛔ If it does not belong to any, that is the answer: this is "
+              "work nobody opened."
+              % (os.path.relpath(target, os.path.dirname(MENTE))
+                 if target.startswith(os.path.dirname(MENTE)) else target,
+                 ", ".join(open_blocks[:3])), file=sys.stderr)
+    # ⬜ With no block open there is no scope to be outside of, and saying
+    # anything would be noise on every edit in a tree nobody has opened work in.
     return 0
 
 
