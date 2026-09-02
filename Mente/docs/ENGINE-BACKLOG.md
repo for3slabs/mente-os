@@ -1670,3 +1670,27 @@ two working validators.
 existing tree, which had already been through the sabotage cases above — ⚠️ and reported
 `check-declared` and `check-document` as broken when neither was: a fixture reused past its
 purpose reports defects the thing under test never had.
+
+---
+
+## E-52 · Three decisions are declared and not built, and nothing said so
+
+- **Surfaced by:** the folder-by-folder audit of `../rules/decisions/` — the backlog read 0 open
+  while three ADRs read `not-started` or `in-progress`
+- **Affects:** `../rules/decisions/ADR-019-*.md` · `../rules/decisions/ADR-020-*.md` · one
+  in-progress · `../bin/generate-metrics`
+- **Closes when:** each is built, or its record says on the page why it will not be
+
+**Why it matters.** ⭐ **A decision written and not built holds only while somebody remembers it**
+— which is exactly how E-35 and E-37 were found, both of them ADRs sitting at `not-started` for
+months. ⛔ The backlog reaching zero says nothing about them, because they were never entries.
+
+| ADR | Decides |
+|---|---|
+| `ADR-019` | ⭐ what a validator can DERIVE, it completes — and announces, never silently |
+| `ADR-020` | ⚠️ when a gate blocks, it emits an approval receipt: piece · propagation · approve/inspect/deny |
+| (one more) | `in-progress` |
+
+⭐ **Now measured:** `decisions.pending` in `METRICS.md`. ⛔ Before this the only decision number
+was `decisions: 26` — **inflated by counting the folder's own README as a decision**, so it could
+not even be reconciled against the tree, let alone say how many were waiting.

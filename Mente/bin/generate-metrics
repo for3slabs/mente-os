@@ -320,7 +320,42 @@ def rows():
                       and os.path.isfile(os.path.join(hd, n))])
         if os.path.isdir(hd) else None)
     add("rules", count_files("rules", suffix=".md"))
-    add("decisions", count_files(os.path.join("rules", "decisions"), suffix=".md"))
+    # ⭐ DECISIONS, not files. ⛔ count_files counted README.md as a decision:
+    # 26 reported where 25 exist, and a number inflated by its own folder's
+    # readme is a number nobody can reconcile with the tree.
+    # ⚠️ And the count alone hid the useful half — how many are still WAITING.
+    _dec = os.path.join(ROOT, "rules", "decisions")
+    _st = {}
+    try:
+        for _f in sorted(os.listdir(_dec)):
+            if not _f.startswith("ADR-") or not _f.endswith(".md"):
+                continue
+            # ⛔ CHK-TRV-002 · the outer try covers listdir, not each READ. An
+            # unguarded open here turns one unreadable record into a crash, and
+            # a crash reports nothing at all.
+            try:
+                _t = open(os.path.join(_dec, _f), encoding="utf-8",
+                          errors="replace").read()
+            except OSError:
+                # ⬜ NOT MEASURED, said out loud: an unreadable record is one
+                # decision this count did not see, and it surfaces as its own
+                # row rather than vanishing into the total.
+                _st["unreadable"] = _st.get("unreadable", 0) + 1
+                continue
+            _m = re.search(r"^implementation:\s*([a-z-]+)", _t, re.M)
+            _k = _m.group(1) if _m else "undeclared"
+            _st[_k] = _st.get(_k, 0) + 1
+    except OSError:
+        _st = None
+    add("decisions", sum(_st.values()) if _st else None)
+    # ⬜ A decision written and not built is a decision that holds only while
+    # somebody remembers it — E-35 and E-37 were both found that way.
+    # ⬜ Said, never swallowed — the same rule the skip above obeys.
+    if _st and _st.get("unreadable"):
+        add("decisions.unreadable", _st["unreadable"])
+    add("decisions.pending",
+        sum(v for k, v in _st.items() if k in ("not-started", "in-progress"))
+        if _st else None)
     add("templates", count_files("templates", suffix=".template"))
 
     # pieces declared
