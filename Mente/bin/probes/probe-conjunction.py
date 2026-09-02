@@ -55,6 +55,17 @@ tool("init", "--owner", "Zzprobe Owner")
 tool("new-block", "zzconj", "--type", "docs", "--intent", "A real block.")
 BLOCK = os.path.join(TREE, "work", "blocks", "active", "zzconj", "BLOCK.md")
 
+# ⭐ THE SCOPE IS WRITTEN, because BLK-SCP-001 requires it filled and only the
+# author can write it. ⚠️ A fixture left on its ⬜ placeholders fails a rule this
+# probe is not testing, and every gate case after it reads as broken.
+_b = open(BLOCK, encoding="utf-8").read()
+open(BLOCK, "w", encoding="utf-8").write(
+    _b.replace("- ⬜ declare what this block may touch",
+               "- `docs/thing.md` — the file this block writes.")
+      .replace("- ⬜ declare a limit · DERIVED: replace this with a real one "
+               "and its source",
+               "- `bin/` — owned elsewhere, see `work/blocks/README.md`."))
+
 print("═══ PROBE · gate ↔ validator, in conjunction ═══\n")
 
 # ── ⭐ THE PAIR THAT WAS BROKEN ─────────────────────────────────────────────

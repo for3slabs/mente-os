@@ -356,9 +356,20 @@ p.inverse("㊽ ⛔ a `rule` is not asked the three questions",
 # no probe saw it.
 # ⭐ The fixture ships the PLACEHOLDER, because that is what a valid engine
 # document carries; this case fills it in on purpose.
-p.case("㊾ ⛔ a filled Owner in the template",
-       lambda: put(GOOD.replace("**Owner:** {{owner}}", "**Owner:** A Person")),
-       "DOC-HDR-006")
+# ⬜ ONLY IN THE TEMPLATE. 🔴 Measured on a fresh install: this case read as a
+# failure there, because DOC-HDR-006 correctly switches itself OFF once the
+# placeholders are filled — an install is what filling them means.
+# ⛔ A probe that cannot tell the two states apart reports a working rule as
+# broken, and the first thing a new user sees after `bin/init` is a red.
+if "{{owner}}" in open(os.path.join(ROOT, "README.md"),
+                       encoding="utf-8", errors="replace").read():
+    p.case("㊾ ⛔ a filled Owner in the template",
+           lambda: put(GOOD.replace("**Owner:** {{owner}}", "**Owner:** A Person")),
+           "DOC-HDR-006")
+else:
+    print("  %-46s ⬜ %s" % ("㊾ ⬜ filled-Owner case is template-only",
+                            "NOT APPLICABLE · this tree is installed"))
+    p.results.append(("㊾ template-only", "PASS"))
 
 # ⬜ A GENERATED file names its GENERATOR, and that is the truth about who
 # writes it — not a substitution. ⛔ Reporting it teaches the reader to skim.
