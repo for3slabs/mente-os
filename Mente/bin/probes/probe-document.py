@@ -10,7 +10,7 @@ p = Probe("check-document", "DOC")
 
 GOOD = """# A probe fixture
 
-**Status:** current · **Type:** rule · **Updated:** 2026-01-15 · **Owner:** someone
+**Status:** current · **Type:** rule · **Updated:** 2026-01-15 · **Owner:** {{owner}}
 
 ## Purpose
 
@@ -41,7 +41,7 @@ print("═══ A · SABOTAGE · check-document ═══\n")
 p.baseline()
 
 p.case("① an incomplete header",
-       lambda: put(GOOD.replace(" · **Owner:** someone", "")), "DOC-HDR-001")
+       lambda: put(GOOD.replace(" · **Owner:** {{owner}}", "")), "DOC-HDR-001")
 p.case("② an invalid Status",
        lambda: put(GOOD.replace("**Status:** current", "**Status:** alive")), "DOC-HDR-002")
 p.case("③ a Type that does not exist",
@@ -77,8 +77,8 @@ p.case("⑩ a pointer that does not resolve",
        lambda: put(GOOD.replace("Nothing of consequence.",
                                 "See `rules/ghost.md` for detail.")), "DOC-CNT-004")
 p.case("⑪ generated without saying so in the body",
-       lambda: put(GOOD.replace("**Owner:** someone",
-                                "**Owner:** someone · **Authority:** generated")),
+       lambda: put(GOOD.replace("**Owner:** {{owner}}",
+                                "**Owner:** {{owner}} · **Authority:** generated")),
        "DOC-AUT-002")
 p.case("⑫ a name carrying a version", lambda: put(GOOD, MARK + "-thing-v2.md"), "DOC-NAM-004")
 p.case("⑬ a name with an underscore", lambda: put(GOOD, MARK + "-a_b.md"), "DOC-NAM-001")
@@ -113,7 +113,11 @@ p.case("⑮ a credential pasted into the body",
                                 'Run it with `--token=abc123def456ghi789`.')),
        "DOC-CNT-005")
 p.case("⑯ the filename names a person",
-       lambda: put(GOOD.replace("**Owner:** someone", "**Owner:** alexandra"),
+       # ⚠️ DOC-NAM-007 compares the filename against the OWNER, so this case
+       # has to fill the placeholder: in the template there is no name to
+       # compare with. ⭐ Two rules meeting — the fixture serves DOC-NAM-007
+       # here, and DOC-HDR-006 is what would report the filled Owner.
+       lambda: put(GOOD.replace("**Owner:** {{owner}}", "**Owner:** alexandra"),
                    MARK + "-alexandra-notes.md"), "DOC-NAM-007")
 
 # ⭐ DOC-LIF-001 · the threshold is DECLARED, so the probe declares it too:
@@ -207,7 +211,7 @@ p.clean()
 def _target(status, extra="", name="zztarget"):
     """Plant a target document, return the fixture that points AT it."""
     put(("# %s\n\n**Status:** %s · **Type:** plan · **Updated:** 2026-01-15"
-         " · **Owner:** someone\n%s\n## Purpose\n\nA planted target.\n\n"
+         " · **Owner:** {{owner}}\n%s\n## Purpose\n\nA planted target.\n\n"
          "Related: `README.md`.\n") % (name, status, extra),
         "%s-%s.md" % (MARK, name))
     return put(GOOD + "\nThe detail is in `docs/%s-%s.md`.\n" % (MARK, name))
@@ -342,6 +346,26 @@ p.inverse("㊼ ⭐ a `case` that answers all three",
 # ⛔ And the demand is on `case` alone: a rule is not a case.
 p.inverse("㊽ ⛔ a `rule` is not asked the three questions",
           lambda: put(GOOD))
+
+
+# ── DOC-HDR-006 · the template keeps its placeholders unfilled ─────────────
+# ⛔ This engine is a PUBLISHED template: a name in a header travels to every
+# clone, and the first thing a newcomer reads is somebody else's name on their
+# own tool. ⚠️ Measured 2026-09-02: two engine documents carried one for 30
+# commits, from running bin/init inside the template instead of a clone, and
+# no probe saw it.
+# ⭐ The fixture ships the PLACEHOLDER, because that is what a valid engine
+# document carries; this case fills it in on purpose.
+p.case("㊾ ⛔ a filled Owner in the template",
+       lambda: put(GOOD.replace("**Owner:** {{owner}}", "**Owner:** A Person")),
+       "DOC-HDR-006")
+
+# ⬜ A GENERATED file names its GENERATOR, and that is the truth about who
+# writes it — not a substitution. ⛔ Reporting it teaches the reader to skim.
+p.inverse("㊿ ⬜ a `generated` file may name its generator",
+          lambda: put(GOOD.replace("**Type:** rule", "**Type:** generated")
+                          .replace("**Owner:** {{owner}}",
+                                   "**Owner:** 🤖 bin/generate-index")))
 
 p.clean()
 

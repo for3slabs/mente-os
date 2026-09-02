@@ -1,6 +1,6 @@
 # CAPABILITIES — what the agent may run, and where the line is
 
-**Status:** current · **Type:** entry-point · **Updated:** 2026-09-01 · **Owner:** Ada Lovelace
+**Status:** current · **Type:** entry-point · **Updated:** {{date}} · **Owner:** {{owner}}
 **Level:** 📖 reference — it grants nothing and forbids nothing on its own; it states what the
 gates already enforce, so nobody has to discover a limit by hitting it.
 **Scope:** ⚠️ ENGINE document — it ships identical to every clone and names no machine.
