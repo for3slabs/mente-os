@@ -460,6 +460,27 @@ sufficiency:          pass | fail
 | `BLK-CLS-004` | ⭐ **The verdict cites its evidence** | 🟡 | see `../memory/principles/expertise/val-functional.md` §2.1 |
 | `BLK-CLS-006` | ⭐ **The quality verdict is MEASURED, never asserted** | 🟡 | `bin/grade-block` is layer 1 · `rules/contract-quality-verdict.md` is the criterion |
 | `BLK-CLS-005` | ⭐ **The invariants of §B were re-checked** | 🟡 | ⚠️ still true after the changes? |
+| `BLK-CLS-007` | ⭐ **A close writes a machine-readable RECORD** | 🔒 | ⛔ a verdict pasted as prose cannot be re-read by anything — see below |
+
+> ## ⭐ `BLK-CLS-007` · A CLOSE IS STATE THE SYSTEM HOLDS, NOT A SENTENCE SOMEBODY WROTE
+> ⚠️ **Today a `quality verdict:` line is text pasted into §K.** ⛔ It cannot be re-read, compared
+> against the next close, or checked against what was actually measured — ⭐ and the UNKNOWN list,
+> the most valuable part, dies with the session that produced it.
+>
+> ⭐ **`bin/grade-block <name> --json > work/blocks/<name>/close.json`** writes it. The record
+> carries what the verdict was, at which LEVEL, which dimensions passed, which are ⬜ UNKNOWN, and
+> the evidence behind each.
+>
+> | Field | ⛔ Without it |
+> |---|---|
+> | `verdict` | ⚠️ the answer itself |
+> | `date` | a verdict correct once, quoted forever |
+> | `metrics` | ⭐ what was measured, so a later disagreement is settled by reading |
+> | ⭐ `dimensions` | ⬜ **which of the six are still undeclared** — the half that dies in prose |
+>
+> ⛔ **The record does not replace §K.** §K is what a person reads; the record is what a machine
+> re-reads. ⚠️ A close writing only the record would be unreadable to the next human, and one
+> writing only §K is what this rule exists to end.
 
 ⭐ **`BLK-CLS-003` is what makes an archive worth reading.** ⛔ **A closing that lists only
 successes teaches the next reader that this kind of work always succeeds.**
