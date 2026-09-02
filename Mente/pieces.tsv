@@ -217,3 +217,4 @@ check-patterns	bin/check-patterns	engine	executable	enforces the failure-pattern
 probe-patterns	bin/probes/probe-patterns.py	engine	executable	proves the example PAIR is required — without the passing half, a detector that flags everything scores perfectly
 check-code-patterns	bin/check-code-patterns	engine	executable	finds the catalogued patterns a text matcher can find — ⚠️ every finding is a question, never a verdict
 probe-code-patterns	bin/probes/probe-code-patterns.py	engine	executable	runs each pattern's own Fails/Passes pair through its detector
+probe-conjunction	bin/probes/probe-conjunction.py	engine	executable	proves a gate and the validator it CALLS still agree — ⛔ a probe proves a piece, never a pair
