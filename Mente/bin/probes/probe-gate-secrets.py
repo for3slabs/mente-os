@@ -97,7 +97,7 @@ CLEAN = [
     ('password: null',                        "an empty value"),
     ('const apiKey = process.env.API_KEY',    "a JS environment read"),
     ("# never write a password: value here",  "the doctrine itself, in prose"),
-    # ⛔ Y estos bloqueaban trabajo correcto — el fallo que borra la puerta.
+    # ⛔ And these blocked legitimate work — the failure that gets a gate deleted.
     ('password: "$(vault read key)"',         "a lookup through a manager"),
     ('secret: "arn:aws:iam::12345:role/x"',   "a public resource identifier"),
     ('api_key: "see secrets/README.md"',      "a pointer in prose · what the rule ASKS FOR"),

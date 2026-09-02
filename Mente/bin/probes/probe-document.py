@@ -197,7 +197,7 @@ put(GOOD + "\n`bin/check-zzone` and `bin/check-zztwo` and `bin/check-zzthree`.\n
 _c, _o, _e = p.run()
 _n = len([l for l in _o.splitlines() if "DOC-CNT-004" in l and MARK in l])
 print("  %-46s %s %d de 3 punteros rotos vistos"
-      % ("㉕ ⛔ TRES punteros rotos → se ven los TRES", "✅" if _n == 3 else "🔴", _n))
+      % ("㉕ ⛔ THREE broken pointers → all three are seen", "✅" if _n == 3 else "🔴", _n))
 p.results.append(("㉕ tres punteros rotos", "FAIL" if _n == 3 else "NOT_DETECTED"))
 p.clean()
 

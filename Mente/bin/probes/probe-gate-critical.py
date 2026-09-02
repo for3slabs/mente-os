@@ -100,7 +100,7 @@ case("① 🔴 closing with an OPEN sub-block", r.returncode == 2,
 body_new = CLOSING % {"id": bid, "state": "pendiente"}
 r = run(path, body_new)
 case("② 🔴 ⭐ a NEW state word counts as open",
-     r.returncode == 2, "lista blanca invertida")
+     r.returncode == 2, "an inverted allowlist")
 
 # ⛔ capitals must not evade the gate
 body_caps = body_open.replace("status: closed", "status: CLOSED")

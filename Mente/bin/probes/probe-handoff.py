@@ -156,7 +156,7 @@ case("⑪d GATE · a field still carrying the template placeholder",
 p.inverse("⑫ a CORRECT manifest", lambda: put(GOOD))
 
 
-# ── POST-FLIGHT · lo que valida el RETORNO
+# ── POST-FLIGHT · what validates the RETURN
 def post(label, ret, want_id, want_code):
     """⭐ Validating before the specialist runs is half the problem."""
     p.clean()
@@ -180,9 +180,9 @@ def post(label, ret, want_id, want_code):
     return ok
 
 
-print("\n── POST-FLIGHT · valida lo que devolvio el especialista\n")
-post("⑬ done sin artefacto de retorno", None, "HND-PST-002", 1)
-post("⑭ artefacto con una seccion ausente",
+print("\n── POST-FLIGHT · validates what the specialist returned\n")
+post("⑬ done with no return artefact", None, "HND-PST-002", 1)
+post("⑭ an artefact with a section missing",
      RETURN.replace("## open-questions\n\nnone\n\n", ""), "HND-PST-001", 1)
 post("⑮ status fuera del conjunto",
      RETURN.replace("done\n", "finished\n"), "HND-PST-001", 1)
@@ -209,11 +209,11 @@ _r = subprocess.run([sys.executable, "bin/check-handoff", "--postflight", "--qui
 _ok = "HND-STP-003" not in _r.stdout
 print("  %-44s %s %s" % ("⑯c STP · a stop that DOES name what was missing",
                          "✅" if _ok else "🔴",
-                         "NO dispara (correcto)" if _ok else _r.stdout.strip()[:70]))
+                         "does NOT fire (correct)" if _ok else _r.stdout.strip()[:70]))
 p.results.append(("boundary stop names it", "PASS" if _ok else "FALSE_POSITIVE"))
 p.clean()
 
-# ⭐ la prueba inversa del post-flight
+# ⭐ the post-flight's inverse case
 p.clean()
 put(GOOD)
 open(os.path.join(BLOCKS, BID, "handoffs", "return.md"), "w",
@@ -222,7 +222,7 @@ r = subprocess.run([sys.executable, "bin/check-handoff", "--postflight", "--quie
                    cwd=ROOT, capture_output=True, text=True)
 ok = r.returncode == 0 and "🔴" not in r.stdout
 print("  %-44s %s %s" % ("⑰ un retorno CORRECTO", "✅" if ok else "🔴",
-                         "NO dispara (correcto)" if ok
+                         "does NOT fire (correct)" if ok
                          else r.stdout.strip()[:80]))
 p.results.append(("⑰ retorno correcto", "PASS" if ok else "FALSE_POSITIVE"))
 p.clean()
