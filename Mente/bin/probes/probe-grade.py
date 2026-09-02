@@ -170,10 +170,10 @@ code, out = run()
 na_rows = re.findall(r"^\s+(.+?) \.+\s+n/a\s+⬜", out, re.M)
 green = re.findall(r"^\s+(.+?) \.+\s+\d+\s+🟢", out, re.M)
 ok = bool(na_rows) and not (set(na_rows) & set(green))
-print("  %-46s %s %s" % ("⑩ ⬜ y 🟢 se distinguen en el reporte",
+print("  %-46s %s %s" % ("⑩ ⬜ and 🟢 are told apart in the report",
                          "✅" if ok else "🔴",
                          "%d filas ⬜, ninguna como verde" % len(na_rows) if ok
-                         else "una fila n/a se renderiza como verde"))
+                         else "an n/a row rendered as green"))
 results.append(("⬜ is not a green", ok))
 clean()
 
@@ -189,10 +189,10 @@ try:
     # unmeasured — the verdict must change without a line of the script moving.
     moved = "NOTHING MEASURED" in out or "test files ...." in out
     ok = "🔴" in out or "NOTHING" in out
-    print("  %-46s %s %s" % ("⑪ el umbral se LEE del contrato",
+    print("  %-46s %s %s" % ("⑪ the threshold is READ from the contract",
                              "✅" if ok else "🔴",
                              "editing the table changed the measurement" if ok
-                             else "la tabla no gobierna nada"))
+                             else "the table governs nothing"))
     results.append(("threshold from contract", ok))
 finally:
     open(CONTRACT, "w", encoding="utf-8").write(orig)
@@ -206,7 +206,7 @@ _c, _out = run()
 _ok = "Closing as MVP requires" in _out and "dead code" in _out
 print("  %-46s %s %s" % ("⑫b VRD · el MVP nombra su deuda",
                          "✅" if _ok else "🔴",
-                         "listada en el reporte" if _ok else "el veredicto no la nombra"))
+                         "listada en el reporte" if _ok else "the verdict never names it"))
 results.append(("MVP names its debt", _ok))
 clean()
 
