@@ -290,6 +290,23 @@ what is presently true.**
 | `BLK-SUB-001` | ⭐ **`dependents` is MEASURED, never remembered** | 🟡 | see below |
 | `BLK-SUB-002` | ⭐ **Each row carries its acceptance and its evidence** | 🟡 | ⛔ *"done"* with nothing behind it |
 | `BLK-SUB-003` | ⛔ **The parent does not close with an open sub-block** | 🔒 | ⚠️ closing over an open task hides it |
+| `BLK-SUB-004` | ⭐ **An `evidence` field states WHAT was observed and WHEN** | 🔒 | ⛔ a claim that cannot be re-checked cannot be found wrong — see below |
+
+> ## ⭐ `BLK-SUB-004` · EVIDENCE IS A CLAIM SOMEONE ELSE CAN RE-RUN
+> ⛔ **"the system has 55 documents"** and **"the system has 55 documents, `bin/check-document`,
+> 2026-09-01"** are different claims. ⚠️ The first cannot be re-checked, so it cannot be found
+> wrong — ⭐ **and a claim that cannot be found wrong is not evidence, it is a statement.**
+>
+> ⭐ **Two fields, and the second is the one that gets dropped:**
+>
+> | Part | ⛔ Without it |
+> |---|---|
+> | ⭐ **what was observed** — a number, a command, a file | *"done"* · *"works"* · *"verified"* |
+> | ⭐ **when** — an ISO date | ⚠️ a number correct once, quoted forever |
+>
+> ⚠️ **This is the shape, not the weight.** `../memory/principles/owner-3-validation.md` §5b grades
+> evidence L0-L5 and §5c lists the five fields a full record carries; ⛔ a sub-block row is one
+> line, so it carries the two without which the other three cannot be checked at all.
 
 #### ⭐ THE GRAPH IS MEASURED, NEVER WRITTEN FROM MEMORY
 

@@ -181,16 +181,34 @@ because one that waited to find one would pass forever while measuring nothing.
 
 ---
 
-## E-07 · Evidence has no structure
+## E-07 · ✅ CLOSED — the structure existed and nothing read it; now one rule does
 
 - **Surfaced by:** external review — *"a claim with no evidence"* is rejected, but evidence itself
   is undefined
-- **Affects:** the voice · the owners' acceptance criteria
-- **Closes when:** an evidence reference states what was observed, where, and when
+- **Affects:** the voice · the owners' acceptance criteria · `../bin/check-block`
+- **Closed:** 2026-09-01 — `BLK-SUB-004` declared in `../rules/contract-block-sections.md` §F and
+  enforced, with four probe cases
 
-**Why it matters.** ⭐ *"The system has N documents"* and *"the system has N documents according to
+**Why it mattered.** ⭐ *"The system has N documents"* and *"the system has N documents according to
 the inventory generated on <date>"* are different claims. The first cannot be re-checked, which
 means it cannot be found wrong — and a claim that cannot be found wrong is not evidence.
+
+⚠️ **The entry was out of date, and measuring said so.** Evidence is fully structured already:
+`../memory/principles/owner-3-validation.md` §5a gives four conditions, §5b grades it **L0-L5**,
+and §5c lists the five fields a record carries. ⛔ **No code read any of it** — the same shape as
+E-03, where eight checkpoint fields sat in a principle with nothing able to check them.
+
+⭐ **So the work was to enforce, at the one place evidence is WRITTEN**: the `evidence` cell of a
+sub-block row. `BLK-SUB-002` asked for it in 🟡 and accepted any text at all; the contract said
+*"a number with no date is not evidence"* three separate times, and `../bin/check-block` had no
+parser for that table.
+
+⚠️ **The row carries two of the five, deliberately** — what was observed, and when. ⛔ A sub-block
+row is one line; the other three (level, before→after, seen-to-fail) cannot be checked at all
+without those two, so those two are what the lock demands.
+
+⭐ **The finding names the TASK, not the row number** — *"sub-block 2"* sends the reader counting
+rows.
 
 ---
 
