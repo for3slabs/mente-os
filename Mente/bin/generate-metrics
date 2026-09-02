@@ -138,7 +138,7 @@ def rows():
         n = sum(1 for l in open(os.path.join(ROOT, "pieces.tsv"),
                                 encoding="utf-8", errors="replace")
                 if l.strip() and not l.startswith("#")
-                and not l.startswith("pieza\t"))
+                and not l.startswith("piece\t"))
         add("pieces.declared", n)
     except OSError:
         add("pieces.declared", None)

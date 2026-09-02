@@ -231,14 +231,14 @@ _cap("㉑ the real map agrees with the tree", "DOC-CAP" not in _run_cap())
 # 🔴 a row naming a piece that does not exist, and NOT marked as planned
 open(_CAP, "w", encoding="utf-8").write(
     _base + "\n| `bin/check-zzprobe` | a command that is not there |\n")
-_cap("㉒ 🔴 nombra una pieza inexistente sin ⬜ → detectado",
+_cap("㉒ 🔴 names a piece that does not exist, unmarked → detected",
      "DOC-CAP-001" in _run_cap())
 
 # ⭐ and the SAME row marked ⬜ is correct: the map may describe what is planned,
 # as long as the reader can tell that from what exists today
 open(_CAP, "w", encoding="utf-8").write(
     _base + "\n⬜ | `bin/check-zzprobe` | planned, not built |\n")
-_cap("㉓ ⭐ la misma fila marcada ⬜ es correcta",
+_cap("㉓ ⭐ the same row marked ⬜ is correct",
      "DOC-CAP-001" not in _run_cap())
 
 # ⛔ the other direction · a real, executable piece the map never names
@@ -246,7 +246,7 @@ open(_CAP, "w", encoding="utf-8").write(_base)
 _extra = _os.path.join(_T, "bin", "check-zzunnamed")
 open(_extra, "w").write("#!/usr/bin/env python3\n")
 _os.chmod(_extra, 0o755)
-_cap("㉔ ⛔ una pieza REAL que el mapa no nombra → detectado",
+_cap("㉔ ⛔ a REAL piece the map never names → detected",
      "DOC-CAP-002" in _run_cap())
 
 # ⚠️ but a shared helper is not a capability: demanding it be listed would turn
@@ -255,13 +255,13 @@ _os.remove(_extra)
 _helper = _os.path.join(_T, "hooks", "_zzhelper.py")
 open(_helper, "w").write("# shared\n")
 _os.chmod(_helper, 0o755)
-_cap("㉕ ⚠️ un helper `_` NO se exige en el mapa",
+_cap("㉕ ⚠️ a `_` helper is NOT demanded by the map",
      "DOC-CAP-002" not in _run_cap())
 _os.remove(_helper)
 
 # ⬜ no map at all → NOT MEASURED, never a silent pass
 _os.remove(_CAP)
-_cap("㉖ ⬜ sin CAPABILITIES.md → lo dice, no calla",
+_cap("㉖ ⬜ no CAPABILITIES.md → it says so, it does not stay quiet",
      "NOT MEASURED" in _run_cap())
 
 _sh.rmtree(_W, ignore_errors=True)
