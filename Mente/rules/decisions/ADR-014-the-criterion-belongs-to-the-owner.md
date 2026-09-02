@@ -2,7 +2,7 @@
 
 date: {{date}}
 status: accepted
-implementation: in-progress
+implementation: implemented
 decided-by: ⬜ declare
 supersedes: —
 superseded-by: —
@@ -56,6 +56,18 @@ it.
 - `QLT-DIM-002` 🔒 — a dimension with no declared criterion reports `⬜`, ⛔ never a pass
 - ⬜ the six dimension rows ship EMPTY, and `bin/grade-block` counts how many are still unfilled
 - `QLT-DIM-001` 📖 — a dimension is answered with EVIDENCE: ⛔ *"looks fine"* is not an answer
+
+### ⭐ WHAT IS BUILT, AND WHAT CANNOT BE — measured 2026-09-02
+
+| Consequence | State |
+|---|---|
+| `QLT-DIM-002` — an undeclared dimension reports ⬜ | 🔒 in `../contract-quality-verdict.md`, cited by `../../bin/grade-block` |
+| the six rows ship EMPTY and the count is measured | ⭐ `dimensions.declared` and `dimensions.undeclared` in `METRICS.md` — **0 of 6 declared in the template**, so a fresh install can SEE that layer 2 does not exist yet |
+| `QLT-LAY-002` — the criterion is the owner's | 📖 ⛔ **unverifiable by construction**: a script that judged whether a written criterion is *criterion* would be the agent writing it, which is the thing this decision forbids |
+| `QLT-DIM-001` — answered with evidence | 📖 ⛔ same limit — ⚠️ its checkable half is enforced elsewhere as `BLK-SUB-004`, which demands a datum and its date |
+
+⭐ **`implemented`, not `verified`**, and the difference is the two 📖 rows: what a script can hold
+is held, and what it cannot is said rather than dressed as a check.
 
 ## What would change this decision
 
