@@ -181,8 +181,8 @@ open a block  →  work inside it  →  the gates check as you go
       │                                      ▼
       │                          🔴 blocked → fix, or declare the exception
       ▼
-bin/check-sufficiency   can it be resumed from disk alone?
-⬜ a block grader       product or MVP — measured
+⬜ no command            can it be resumed from disk alone? — ⛔ only a reader can say
+bin/grade-block         product or MVP — measured
       ▼
 close it  →  the block moves to archive/ · never deleted
 ```

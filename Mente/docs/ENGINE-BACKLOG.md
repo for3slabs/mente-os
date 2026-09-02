@@ -1182,14 +1182,47 @@ symmetry would have made three correct validators say ⬜ over a subject that wa
 
 ---
 
-## E-46 · `README.md` sits at exactly its ceiling, with no margin
+## E-46 · ✅ CLOSED — the README points at the campaign contract instead of restating it
 
 - **Surfaced by:** the first run of `documents.closest_to_ceiling` (E-05)
 - **Affects:** `../README.md`
-- **Closes when:** it is split, or its type's ceiling is reconsidered on the record
+- **Closed:** 2026-09-01 — 250 → 239 lines, by condensing §4's campaign half to a pointer
 
-**Why it matters.** ⭐ 250 of 250 lines is not a violation — `DOC-SIZ-001` fires above the ceiling,
-not at it. ⚠️ It is also zero margin: the next line added breaks it, and the person who adds that
-line will be doing something else at the time. ⛔ A ceiling reached exactly is a decision waiting
-to be made under time pressure, which is when the answer becomes *"trim"* rather than *"split"*.
+**Why it mattered.** ⭐ 250 of 250 is not a violation — `DOC-SIZ-001` fires above the ceiling, not
+at it. ⚠️ It is also zero margin: the next line breaks it, and whoever adds that line will be doing
+something else at the time.
+
+⭐ **The answer was POINT, not trim.** The 24 lines on campaigns restated what
+`../rules/contract-campaign.md` already says — it does not execute, it orders, and switching blocks
+resets the why. ⛔ That is `DOC-CNT-003` (*point, never copy*) broken in the engine's own front
+door: two texts able to disagree about one concept, in the file a newcomer reads first.
+
+⚠️ **Trimming would have been the wrong fix** and it was available: eleven lines of prose could
+have been cut anywhere. ⭐ Removing a duplication takes the same eleven lines and leaves the
+document more correct, not merely shorter.
+
+---
+
+## E-47 · ✅ CLOSED — a command inside a code block is now checked, and four were phantoms
+
+- **Surfaced by:** reading `../README.md` while closing E-46 — it told the reader to run a command
+  that was deliberately never built
+- **Affects:** `../bin/check-document` · `../README.md` · `../QUICKSTART.md` · `../CAPABILITIES.md`
+- **Closed:** 2026-09-01 — `DOC-CNT-004` now walks fenced blocks, with three probe cases
+
+**Why it mattered.** ⭐ A fenced command is a **stronger** pointer than an inline one: it does not
+name a piece, it tells the reader what to RUN. ⛔ `DOC-CNT-004` only saw backticks, so four
+citations of two never-built commands — ⬜ `bin/check-all` and ⬜ `bin/check-sufficiency` — sat
+unreported in the first three files a newcomer opens.
+
+⚠️ **`check-sufficiency` will never exist**, and that is on the record: whether §A-E would let
+someone restart is the one test a script cannot run. The three documents now say so instead of
+promising a command. ⭐ `bin/grade-block` DOES exist and `CAPABILITIES.md` marked it ⬜ — the
+marker was as stale as the phantom beside it.
+
+⚠️ **The matcher took three attempts, and each failure was measured.** Pairing fences without
+anchoring the close to a line start made one block's close pair with the next block's open;
+filtering by language tag meant a `yaml` block never matched its own opening and knocked every
+fence after it out of step — 4 "blocks" captured on one README, two of them paragraphs. ⛔ A
+`python` block is exempt: source inside a docstring is an example of what to write, not a command.
 

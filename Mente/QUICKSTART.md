@@ -59,7 +59,7 @@ guessed, and who decides in an instance is criteria.
 ### ③ Check
 
 ```bash
-bin/check-all
+bin/probes/run-all.py
 ```
 
 ---
@@ -96,9 +96,14 @@ moment you register your first session.
 
 ```bash
 bin/new-block my-first-task --type docs   # creates it with its §A-K contract
-bin/check-sufficiency my-first-task       # can it be resumed by reading §A-E alone?
-⬜ a block grader                          # 🟢 product or 🔴 MVP — MEASURED, not opinion
+bin/check-block                           # does it satisfy its contract?
+bin/grade-block my-first-task             # 🟢 product or 🔴 MVP — MEASURED, not opinion
 ```
+
+⭐ **Sufficiency — *can this be resumed by reading §A-E alone?* — has no command, and
+that is deliberate.** ⛔ It is the one test a script cannot do: only a reader can say
+whether what is written would let them restart. `bin/check-block` verifies the SHAPE;
+the judgement stays yours.
 
 A **block** is a unit of work with a contract: what goes in, what does not, what it  depends on,
 under what criteria it is judged, and when it may close. ⬜ `rules/block-lifecycle.md` explains it
