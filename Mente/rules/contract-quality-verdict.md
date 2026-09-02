@@ -49,7 +49,23 @@ between was a context reset.
 |---|---|---|---|
 | `QLT-LAY-001` | 🔴 **Layer 1 is measured by a script, never asserted** | 🔒 | `bin/grade-block` |
 | `QLT-LAY-002` | ⭐ **Layer 2 criterion is declared by the installation, never by the agent** | 📖 | ⬜ each dimension carries a declared criterion or stays `⬜` |
-| `QLT-LAY-003` | **A closing verdict names BOTH layers** | 🔒 | `bin/grade-block` prints layer 2's state beside layer 1's |
+| `QLT-LAY-003` | **A closing verdict names BOTH layers** | 🔒 | `bin/grade-block` prints layer 2's state beside layer 1's · ⭐ and the RECORD keys them apart |
+
+> ## ⭐ `QLT-LAY-003` · THE ONE WHO MEASURES IS NOT THE ONE WHO DECIDES
+> ⛔ **Whoever produces the evidence must not decide what it proves.** Layer 1 answers *"this is
+> what I observed"*; layer 2 answers *"with this, it closes or it does not"*. ⚠️ Merged, an agent
+> satisfies the bar by choosing what to measure — and the bar was the only thing stopping it from
+> declaring itself done.
+>
+> ⚠️ **The printed report kept them apart and the RECORD did not.** `close.json` carried a key
+> called `verdict`, and a machine re-reading it has no way to know that is layer 1 alone — ⛔ with
+> every dimension still ⬜ undeclared, that number cannot be a closing verdict at all.
+>
+> | Key | Says |
+> |---|---|
+> | `layer1_verdict` | ⭐ what was MEASURED — a script's answer, never an opinion |
+> | `dimensions` | ⬜ which of the six layer-2 criteria are still undeclared |
+> | ⛔ `verdict` | **nothing writes this.** The closing authority is a person, and a person does not sign through a field a script filled in |
 
 ---
 

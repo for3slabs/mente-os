@@ -357,17 +357,39 @@ record whenever it plants a closed block, and the cases that test its absence op
 
 ---
 
-## E-12 · Evidence production and closure authority are the same actor
+## E-12 · ✅ CLOSED — the record keys the measuring layer apart from the deciding one
 
 - **Surfaced by:** external review · `../memory/principles/owner-3-validation.md` §1
-- **Affects:** the validation owner · the quality dimensions
-- **Closes when:** the layer that **runs** the checks is separate from the one that **decides**
-  what they authorise
+- **Affects:** `../bin/grade-block` · `../bin/check-block` · `../rules/contract-quality-verdict.md`
+- **Closed:** 2026-09-01 — `QLT-LAY-003` extended to the record, `layer1_verdict` replaces the
+  bare key, and a bare `verdict` is refused at close
 
-**Why it matters.** ⭐ Whoever produces the evidence should not be the one who decides what it
-proves. A separate evidence layer answers *"this is what I observed"*; the closure authority
-answers *"with this, it closes or it does not"*. ⚠️ Merged, an agent can satisfy the bar by
-choosing what to measure — and the bar was the only thing stopping it from declaring itself done.
+**Why it mattered.** ⭐ Whoever produces the evidence should not decide what it proves. ⚠️ Merged,
+an agent satisfies the bar by choosing what to measure — and the bar was the only thing stopping
+it from declaring itself done.
+
+⭐ **The separation was already there in three places** and measuring found where it was not: the
+principle declares three layers (measurement · criterion · verdict), `QLT-LAY-001` puts layer 1 in
+a script, and the printed report says `LAYER 1 VERDICT` with layer 2's state beside it.
+
+🔴 **The gap was in the artefact E-11 had just created.** `close.json` carried a key called
+`verdict` — and a machine re-reading what is now *state the system holds* has no way to know that
+is measurement alone. ⛔ With all six dimensions still ⬜ undeclared, that value cannot be a
+closing verdict at all.
+
+| Key | Says |
+|---|---|
+| `layer1_verdict` | ⭐ what was MEASURED |
+| `dimensions` | ⬜ which layer-2 criteria are still undeclared |
+| ⛔ `verdict` | **refused** — a script does not sign the close |
+
+⚠️ **`QLT-LAY-003` was already 🔒**, verified as *"prints layer 2's state beside layer 1's"*. ⭐ The
+rule was right and its verification covered only the text output — the same shape as `CHK-TRV-002`
+in E-44: a rule whose reach was shorter than its wording.
+
+⚠️ **The probe filtered on `BLK-*` and missed it**, reporting a working check as undetected:
+`../bin/check-block` emits two id families now, and a filter narrower than what a checker emits is
+probe failure mode #3, already named in the harness.
 
 ---
 
