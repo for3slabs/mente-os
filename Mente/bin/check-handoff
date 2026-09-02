@@ -369,12 +369,17 @@ def main():
         print("🔴 %s · %s · %s" % (rel, cid, msg))
     for cid, rel, msg in bind_all:
         print("🔴 %s · %s · %s" % (rel, cid, msg))
-    if mal_all:
-        print("\nmalformed · fix the manifest · rule: rules/contract-handoff.md")
-        return 2
-    if bind_all:
-        print("\nbinding failed · the manifest describes a world that does not exist")
-        return 3
+    # ⭐ CHK-XIT-001 · both of these are VIOLATED CONTRACTS, so both are 1.
+    # ⛔ They used to return 2 and 3, and 2 is the code every other validator
+    # uses for "I could NOT measure" — a rejection wearing the code for a gap.
+    # ⚠️ That is the exact collapse the verdict vocabulary exists to prevent: a
+    # violation filed as an open question waits politely and forever.
+    if mal_all or bind_all:
+        print("\n%s · rule: rules/contract-handoff.md"
+              % ("malformed · fix the manifest" if mal_all
+                 else "binding failed · the manifest describes a world that "
+                      "does not exist"))
+        return 1
     if not quiet and targets:
         print("✅ 0 violations")
     return 0

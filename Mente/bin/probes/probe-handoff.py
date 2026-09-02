@@ -108,50 +108,50 @@ print("═══ SABOTAGE · check-handoff · with its exit code ═══\n")
 p.baseline()
 
 case("① a required field is missing",
-     GOOD.replace('handoff_id: "2026-01-15-0900-audit"\n', ""), "HND-MAN-001", 2)
+     GOOD.replace('handoff_id: "2026-01-15-0900-audit"\n', ""), "HND-MAN-001", 1)
 case("② an unknown schema version",
-     GOOD.replace("schema_version: v1", "schema_version: v9"), "HND-MAN-002", 2)
+     GOOD.replace("schema_version: v1", "schema_version: v9"), "HND-MAN-002", 1)
 case("③ an empty stop_condition",
      GOOD.replace('stop_condition: "after the listed files, or on any read error"',
-                  'stop_condition: ""'), "HND-MAN-003", 2)
+                  'stop_condition: ""'), "HND-MAN-003", 1)
 case("④ a stop_condition that is not observable",
      GOOD.replace('stop_condition: "after the listed files, or on any read error"',
-                  'stop_condition: "when done"'), "HND-MAN-003", 2)
+                  'stop_condition: "when done"'), "HND-MAN-003", 1)
 case("⑤ a write scope with no artefact",
-     GOOD.replace('    path: "handoffs/return.md"', '    path: ""'), "HND-WRT-001", 2)
+     GOOD.replace('    path: "handoffs/return.md"', '    path: ""'), "HND-WRT-001", 1)
 case("⑤b an undeclared write mode",
-     GOOD.replace("    mode: create-only\n", ""), "HND-WRT-004", 2)
+     GOOD.replace("    mode: create-only\n", ""), "HND-WRT-004", 1)
 case("⑤c no declared capabilities",
      GOOD.replace("agent:\n  capabilities:\n    read: true\n    write: false\n", ""),
-     "HND-GAT-004", 2)
+     "HND-GAT-004", 1)
 case("⑤d an incomplete status set",
-     GOOD.replace("      - failed\n", ""), "HND-RET-002", 2)
+     GOOD.replace("      - failed\n", ""), "HND-RET-002", 1)
 case("⑥ an append to a coordinator section",
      GOOD.replace("also_append: []",
                   'also_append:\n    - "{target: BLOCK.md, section: state, max_lines: 5}"'),
-     "HND-WRT-002", 2)
+     "HND-WRT-002", 1)
 case("⑦ an append with no max_lines",
      GOOD.replace("also_append: []",
                   'also_append:\n    - "{target: BLOCK.md, section: context}"'),
-     "HND-WRT-003", 2)
+     "HND-WRT-003", 1)
 case("⑧ an incomplete return schema",
-     GOOD.replace("      - open-questions\n", ""), "HND-RET-001", 2)
+     GOOD.replace("      - open-questions\n", ""), "HND-RET-001", 1)
 case("⑨ binding · the block does not exist",
      GOOD.replace('block_path: "work/blocks/%s"' % BID,
-                  'block_path: "work/blocks/ghost"'), "HND-BND-001", 3)
+                  'block_path: "work/blocks/ghost"'), "HND-BND-001", 1)
 case("⑩ binding · the id does not match",
-     GOOD.replace('block: "%s"' % BID, 'block: "other"'), "HND-BND-001", 3)
+     GOOD.replace('block: "%s"' % BID, 'block: "other"'), "HND-BND-001", 1)
 case("⑪ binding · a read path does not resolve",
-     GOOD.replace("    - BLOCK.md", "    - MISSING.md"), "HND-BND-001", 3)
+     GOOD.replace("    - BLOCK.md", "    - MISSING.md"), "HND-BND-001", 1)
 
 case("⑪b GATE · an UNDECLARED capability",
-     GOOD.replace("    read: true\n", ""), "HND-GAT-005", 2)
+     GOOD.replace("    read: true\n", ""), "HND-GAT-005", 1)
 case("⑪c GATE · an unknown agent type",
      GOOD.replace("agent:\n  capabilities:",
                   "agent:\n  type: auditor\n  capabilities:")
-         .replace("    write: false", "    write: true"), "HND-GAT-001", 2)
+         .replace("    write: false", "    write: true"), "HND-GAT-001", 1)
 case("⑪d GATE · a field still carrying the template placeholder",
-     GOOD.replace('block: "%s"' % BID, "block: ⬜"), "HND-GAT-002", 2)
+     GOOD.replace('block: "%s"' % BID, "block: ⬜"), "HND-GAT-002", 1)
 
 p.inverse("⑫ a CORRECT manifest", lambda: put(GOOD))
 
@@ -167,6 +167,10 @@ def post(label, ret, want_id, want_code):
     r = subprocess.run([sys.executable, "bin/check-handoff", "--postflight",
                         "--quiet"], cwd=ROOT, capture_output=True, text=True)
     ids = sorted(set(re.findall(r"HND-[A-Z]+-\d+", r.stdout)))
+    # ⭐ CHK-XIT-001 · a violated contract is REJECT, and REJECT is exit 1.
+    # ⛔ These cases expected 2 and 3, and 2 is the code every other validator
+    # uses for "I could NOT measure" — a rejection wearing the code for a gap,
+    # which is the exact collapse the verdict vocabulary exists to prevent.
     ok = want_id in ids and r.returncode == want_code
     print("  %-44s %s %-14s exit=%d (esperado %d) %s"
           % (label, "✅" if ok else "🔴", "FAIL" if ids else "NOT_DETECTED",
@@ -177,19 +181,19 @@ def post(label, ret, want_id, want_code):
 
 
 print("\n── POST-FLIGHT · valida lo que devolvio el especialista\n")
-post("⑬ done sin artefacto de retorno", None, "HND-PST-002", 3)
+post("⑬ done sin artefacto de retorno", None, "HND-PST-002", 1)
 post("⑭ artefacto con una seccion ausente",
-     RETURN.replace("## open-questions\n\nnone\n\n", ""), "HND-PST-001", 3)
+     RETURN.replace("## open-questions\n\nnone\n\n", ""), "HND-PST-001", 1)
 post("⑮ status fuera del conjunto",
-     RETURN.replace("done\n", "finished\n"), "HND-PST-001", 3)
+     RETURN.replace("done\n", "finished\n"), "HND-PST-001", 1)
 post("⑯ secciones fuera de orden",
      RETURN.replace("## work", "## zz").replace("## findings", "## work")
-           .replace("## zz", "## findings"), "HND-PST-001", 3)
+           .replace("## zz", "## findings"), "HND-PST-001", 1)
 
 post("⑯b STP · a boundary stop that never says what was missing",
      RETURN.replace("## status\n\ndone\n",
                     "## status\n\nblocked\n\nI could not continue.\n"),
-     "HND-STP-003", 3)
+     "HND-STP-003", 1)
 # ⭐ the inverse: a boundary stop that DOES name what it lacked must not fire.
 # Without it the rule is only proven on broken input, and a check that fires on
 # every blocked return is a check that gets switched off.
