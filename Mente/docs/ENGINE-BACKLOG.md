@@ -493,16 +493,32 @@ smaller number — it reports a WRONG one, confidently.
 
 ---
 
-## E-16 · Emphasis is not rationed
+## E-16 · ✅ CLOSED — the ration is the two rules, and a numeric cap was measured and refused
 
 - **Surfaced by:** external review of the voice contract
-- **Affects:** the voice's graphics rules
-- **Closes when:** a cap exists on how many emphasis devices one response may use
+- **Affects:** `../memory/principles/contract-delivery.md` §7
+- **Closed:** 2026-09-02 — the owner chose judgement over a number, with the measurement on the
+  record
 
-**Why it matters.** ⭐ **When everything is emphasised, nothing is.** The rules already say a
-graphic replaces text rather than accompanying it, and that each one carries the prose saying why
-— but nothing limits how many appear at once. A response using headings, bold, emoji, tables,
-boxes, bars, quotes and rules simultaneously has no hierarchy left to signal with.
+**Why it mattered.** ⭐ **When everything is emphasised, nothing is.**
+
+⚠️ **Measured across 81 documents of this engine:** density runs **0.64 to 1.81 marks per line**,
+median **1.04**. ⛔ The densest are the contracts — which compare rules for a living — and the
+sparsest are folder READMEs, which orient. A single number would be wrong for one of them by
+construction.
+
+⭐ **The ration already exists and is not a count:** a graphic REPLACES text rather than
+accompanying it, and every graphic carries the prose saying why it looks that way. ⚠️ A response
+that is hard to read is almost always breaking one of those two; the density is a symptom.
+
+⛔ **A cap calibrated so nothing currently fails measures nothing** — the failure E-21 exists to
+detect, and 15 documents sit above 1.5 today. ⭐ Stated as judgement rather than dressed as a
+number.
+
+⚠️ **This is the second entry in a row to close without a new lock**, and that is a real cost:
+E-15 and E-16 both govern the voice, and `../memory/principles/owner-0-voice.md` §2 says a
+response is not scored. ⛔ The engine cannot check its own delivery, and saying so is more useful
+than a check that measures length and calls it hierarchy.
 
 ---
 
