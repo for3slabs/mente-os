@@ -1341,3 +1341,34 @@ filtering by language tag meant a `yaml` block never matched its own opening and
 fence after it out of step — 4 "blocks" captured on one README, two of them paragraphs. ⛔ A
 `python` block is exempt: source inside a docstring is an example of what to write, not a command.
 
+---
+
+## E-48 · ✅ CLOSED — passing separately is not passing together
+
+- **Surfaced by:** verifying the eight rules of this stretch in conjunction rather than one by one
+- **Affects:** `../bin/probes/probe-lifecycle.py` (new)
+- **Closed:** 2026-09-01 — one probe walks a block from open to close with every rule live
+
+**Why it mattered.** ⭐ Eight rules were added across one stretch, each with its own probe, each
+green. ⛔ None of them asked what a person actually does: open a block, edit inside it, edit
+outside it, write a checkpoint, record evidence, close.
+
+⚠️ **Its first run found a real defect — in the test, and the checker was right twice.** A block
+written the way a person writes one failed `BLK-SCP-002`: the `OUT` line cited a rule id instead
+of a file, AND it restated a system-wide limit that `BLK-SCP-003` forbids repeating. ⭐ No unit
+probe surfaces that, because no unit probe writes a block the way a person writes one.
+
+⭐ **Measured that it catches what nothing else does.** Sabotage: `../bin/grade-block` stops
+emitting `dimensions`, which `../bin/check-block` requires at close.
+
+| Probe | Verdict |
+|---|---|
+| `probe-grade` | ✅ 17/17 |
+| `probe-block` | ✅ 41/41 |
+| `probe-conjunction` | ✅ 10/10 |
+| ⭐ `probe-lifecycle` | 🔴 **11/14** |
+
+⛔ Three probes green and the engine broken: a producer and its consumer stopped agreeing, each
+correct alone. ⚠️ `probe-conjunction` misses it too — it proves gate↔validator pairs, and this is
+producer↔consumer.
+
