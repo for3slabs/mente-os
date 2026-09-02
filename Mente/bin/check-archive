@@ -242,8 +242,15 @@ def main():
         print("🔴 the contract itself is missing: rules/contract-archive.md")
         return 2
     if not os.path.isdir(ARCHIVE):
+        # ⛔ CHK-TRV-002 · "nothing measured" with no ⬜ is a silent gap, and
+        # this early return never reaches report(). 🔴 Found on a CLEAN CLONE
+        # and only there: git stores no empty directory, so the folder exists
+        # in the working tree and never in a fresh install — ⚠️ the branch the
+        # author cannot walk is the one that stayed mute.
         if not quiet:
-            print("check-archive · no archive directory · nothing measured")
+            print("check-archive · no archive directory\n"
+                  "⬜ NOT MEASURED · no archived block to check · nothing was "
+                  "verified here")
         return 0
 
     dirs = [os.path.join(ARCHIVE, n) for n in sorted(os.listdir(ARCHIVE))

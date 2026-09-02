@@ -62,8 +62,15 @@ def main():
         print("🔴 the rule itself is missing: rules/rule-working-in-a-block.md")
         return 2
     if not os.path.isdir(BLOCKS):
+        # ⛔ CHK-TRV-002 · an early return saying "nothing" without a ⬜ is a
+        # silent gap: it never reaches report(). 🔴 Its sibling in
+        # check-archive was found on a CLEAN CLONE and only there — git
+        # stores no empty directory, so this branch never runs where the
+        # author works.
         if not quiet:
-            print("check-work · no work/blocks directory · nothing to check")
+            print("check-work · no work/blocks directory\n"
+                  "⬜ NOT MEASURED · no block to check · nothing was verified "
+                  "here")
         return 0
 
     blocks = []
