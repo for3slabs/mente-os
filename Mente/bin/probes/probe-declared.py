@@ -40,7 +40,7 @@ def verdict(label, setup, expect_in_output=True):
     print("  %-46s %s %s" % (label, "✅" if ok else "🔴",
                              ("detectado" if seen else "NO DETECTADO")
                              if expect_in_output else
-                             ("NO dispara (correcto)" if not seen else "falso positivo")))
+                             ("does NOT fire (correct)" if not seen else "falso positivo")))
     p.clean()
     p.results.append((label, "FAIL" if ok and expect_in_output
                       else "PASS" if ok else "NOT_DETECTED"))
@@ -52,11 +52,11 @@ p.baseline()
 
 verdict("① un ejecutable sin declarar en bin/",
         lambda: plant("bin/" + MARK + "-tool", "#!/bin/sh\nexit 0\n"))
-verdict("② una regla sin declarar en rules/",
+verdict("② a rule in rules/ with no declared row",
         lambda: plant("rules/" + MARK + "-rule.md", "# x\n"))
 verdict("③ un criterio sin declarar en expertise/",
         lambda: plant("memory/principles/expertise/" + MARK + "-x.md", "# x\n"))
-verdict("④ una plantilla sin declarar",
+verdict("④ a template with no declared row",
         lambda: plant("templates/" + MARK + ".template", "x\n"))
 
 # ⭐ The inverse: a README is skipped on purpose and must not be reported.

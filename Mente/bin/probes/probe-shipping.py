@@ -40,7 +40,7 @@ print("═══ A · SABOTAGE · check-shipping ═══\n")
 HAS_GIT = os.path.isdir(os.path.join(os.path.dirname(ROOT), ".git"))
 if not HAS_GIT:
     print("  ⓪ the real tree, untouched                     "
-          "⬜ NOT_MEASURED · sin repositorio git, SHP-BAS-* no se mide\n")
+          "⬜ NOT_MEASURED · no git repository, SHP-BAS-* is not measured\n")
 else:
     p.baseline()
 
@@ -93,7 +93,7 @@ else:
     p.results.append(("⑤ the real state", "PASS"))
 
 # ── B · the gate is INVOKED, not merely found
-print("\n═══ B · EL CANDADO SE INVOCA, no se da por presente ═══\n")
+print("\n═══ B · THE LOCK IS INVOKED, never assumed present ═══\n")
 tmp = tempfile.mkdtemp(prefix="zzprobe-git-")
 try:
     env = dict(os.environ, GIT_AUTHOR_NAME="probe", GIT_AUTHOR_EMAIL="p@x",
@@ -113,7 +113,7 @@ try:
     r = run("git", "commit", "-qm", "on base")
     refused = r.returncode != 0 and "REFUSED" in (r.stderr + r.stdout)
     print("  %-46s %s %s" % ("⑥ commit sobre la base", "✅" if refused else "🔴",
-                             "RECHAZADO" if refused else "PASO — el candado no mide"))
+                             "RECHAZADO" if refused else "PASS — the lock measures nothing"))
     p.results.append(("⑥ commit sobre la base", "FAIL" if refused else "NOT_DETECTED"))
 
     # ✅ on a branch → must pass
@@ -133,7 +133,7 @@ try:
     print("  %-46s %s %s" % ("⑧ the escape hatch works",
                              "✅" if bypassed else "🔴",
                              "permitida y con rastro" if bypassed
-                             else "un candado sin salida se borra"))
+                             else "a lock with no output is deleted"))
     p.results.append(("⑧ escape hatch", "PASS" if bypassed else "FALSE_POSITIVE"))
     # ── SHP-BAS-001 / 003 · they read the REPOSITORY, not the document, so the
     # checker is pointed at this temp repo instead of the engine tree.
@@ -146,7 +146,7 @@ try:
     run("git", "commit", "-qm", "second", "--no-verify", "--allow-empty")
     run("git", "checkout", "-q", "-b", "cut-wrong", "HEAD~1")
     _ok = cs.ok("git", "merge-base", "--is-ancestor", "main", "HEAD") is False
-    print("  %-46s %s %s" % ("⑨ BAS · una rama cortada de la base equivocada",
+    print("  %-46s %s %s" % ("⑨ BAS · a branch cut from the wrong base",
                              "✅" if _ok else "🔴",
                              "detectada" if _ok
                              else "cannot tell 'not a descendant' from 'git did not run'"))
@@ -158,7 +158,7 @@ try:
     run("git", "checkout", "-q", "main")
     run("git", "checkout", "-q", "-b", "cut-right")
     _ok2 = cs.ok("git", "merge-base", "--is-ancestor", "main", "HEAD") is True
-    print("  %-46s %s %s" % ("⑩ BAS · una rama cortada BIEN no dispara",
+    print("  %-46s %s %s" % ("⑩ BAS · a branch cut correctly does not fire",
                              "✅" if _ok2 else "🔴",
                              "does NOT fire (correct)" if _ok2 else "false positive"))
     p.results.append(("⑩ base correcta", "PASS" if _ok2 else "FALSE_POSITIVE"))
@@ -172,7 +172,7 @@ try:
               and cs.ok("git", "merge-base", "--is-ancestor", "cut-right", "main") is False)
     print("  %-46s %s %s" % ("⑪ BAS · encadenada sobre otra rama abierta",
                              "✅" if _chain else "🔴",
-                             "detectada" if _chain else "no la ve"))
+                             "detectada" if _chain else "does not see it"))
     p.results.append(("⑪ encadenamiento", "PASS" if _chain else "NOT_DETECTED"))
 
 finally:
@@ -186,9 +186,9 @@ try:
         _orig.replace("`templates/RESUME.md.template`", "`templates/ghost.template`"))
     _c, _o, _e = p.run()
     _hit = "SHP-CLS-001" in _o
-    print("  %-46s %s %s" % ("⑫ CLS · una ruta declarada que no resuelve",
+    print("  %-46s %s %s" % ("⑫ CLS · a declared path that does not resolve",
                              "✅" if _hit else "🔴",
-                             "detectada" if _hit else "no la ve"))
+                             "detectada" if _hit else "does not see it"))
     p.results.append(("⑫ ruta de cierre", "PASS" if _hit else "NOT_DETECTED"))
 
     # ⭐ the inverse: the real declaration must NOT fire

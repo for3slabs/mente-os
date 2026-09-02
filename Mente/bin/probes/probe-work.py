@@ -81,11 +81,11 @@ block(p, "r", fric="\n".join(
     for _ in range(3)))
 code, out, err = p.run()
 fired = "RULE REVIEW" in out
-print("  %-46s %s %s" % ("⑨ 3 fricciones en el MISMO bloque",
+print("  %-46s %s %s" % ("⑨ 3 frictions in the SAME block",
                          "✅" if not fired else "🔴",
-                         "NO dispara (correcto)" if not fired
+                         "does NOT fire (correct)" if not fired
                          else "falso positivo — no distingue"))
-p.results.append(("⑨ mismo bloque", "PASS" if not fired else "FALSE_POSITIVE"))
+p.results.append(("⑨ same block", "PASS" if not fired else "FALSE_POSITIVE"))
 p.clean()
 
 p.inverse("⑩ a CORRECT block", lambda: block(p, "a"))
