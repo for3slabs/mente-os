@@ -225,6 +225,43 @@ p.inverse("㉛ ⛔ a pointer to a NON-.md file is out of scope, not assumed fine
 
 p.clean()
 
+# ── DOC-SIZ-003 · a numeric ceiling states a unit this checker measures ─────
+# ⛔ "Too long" is an opinion; a number with a unit is a measurement. ⚠️ The unit
+# was written in the table and never verified: the reader took the digits and
+# discarded the word beside them, so `250 words` would still have been measured
+# in LINES — the table saying one thing, the check doing another.
+#
+# ⚠️ THE DEFECT LIVES IN THE CONTRACT, so this runs on a COPY of the tree. A
+# probe must never write to the engine it is measuring (E-43: p.track deletes,
+# and a contract was lost that way).
+def _unit_case(edit):
+    import shutil as _sh, subprocess as _sp, tempfile as _tf
+    w = _tf.mkdtemp(prefix="mente-siz-")
+    t = os.path.join(w, "Mente")
+    _sh.copytree(ROOT, t, ignore=_sh.ignore_patterns(
+        "__pycache__", ".beats", ".test-lock", ".git", "cache"))
+    q = os.path.join(t, "rules", "contract-document.md")
+    c = open(q, encoding="utf-8").read()
+    open(q, "w", encoding="utf-8").write(edit(c))
+    r = _sp.run([sys.executable, os.path.join(t, "bin", "check-document")],
+                cwd=t, capture_output=True, text=True)
+    _sh.rmtree(w, ignore_errors=True)
+    return "DOC-SIZ-003" in r.stdout
+
+
+for _lbl, _edit, _want in (
+        ("㉜ ⭐ a ceiling in `words` · the unit is not the measured one",
+         lambda c: c.replace("| **250 lines** | ⭐ move content out",
+                             "| **250 words** | ⭐ move content out"), True),
+        ("㉝ ⭐ a ceiling with NO unit at all",
+         lambda c: c.replace("| **800 lines** |", "| **800** |"), True),
+        ("㉞ ⛔ the table as written → no finding",
+         lambda c: c, False)):
+    _got = _unit_case(_edit)
+    print("  %-46s %s %s" % (_lbl, "✅" if _got == _want else "🔴",
+                             "detected" if _got else "does NOT fire (correct)"))
+    p.results.append((_lbl, "FAIL" if _got == _want else "NOT_DETECTED"))
+
 # 🔴 THE DEFECT A CLEAN CLONE FOUND, INVISIBLE IN THE WORKING TREE ──────────
 # A GENERATED file has no template — a generator writes it — and it is
 # gitignored, so every clone lacks it. The instance-file exemption was derived

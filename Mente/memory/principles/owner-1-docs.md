@@ -33,17 +33,16 @@ prevents the argument *"that is not Documentation's business"* from ever being v
 | **FORM** | *is it shaped like a document of the system?* | header · type · naming · size · section structure |
 | **INTEGRITY** | *can it be trusted and acted on later?* | executability · verifiability · evidence · pointers · declared limits |
 
-| Responsibility | Contract |
-|---|---|
-| The shape of every document | ⬜ the document contract, in `rules/` |
-| The shape of every block | ⬜ the block contract, in `rules/` |
-| The shape of every decision record | ⬜ the decision-record contract, in `rules/` |
-| Naming of files and folders | ⬜ the naming convention, in `rules/` |
+| Responsibility | Contract | Enforced by |
+|---|---|---|
+| The shape of every document | `../../rules/contract-document.md` | `../../bin/check-document` |
+| The shape of every block | `../../rules/contract-block.md` + its sections half | `../../bin/check-block` |
+| The shape of every decision record | `../../rules/contract-adr.md` | `../../bin/check-decisions` |
+| Naming of files and folders | ⭐ `DOC-NAM-*`, inside the document contract | `../../bin/check-document` |
+| Size limits per type | ⭐ the ceiling table, `DOC-SIZ-001..003` | `../../bin/check-document` |
 
-⚠️ **These four are not written yet** — ⛔ **and this owner cannot enforce a shape nobody declared.**
-⭐ Until they exist, owner-1 rejects on the criteria in §5a and its two disciplines; the shapes
-themselves are ⬜ **UNKNOWN, which is not PASS.** See `../../docs/ENGINE-BACKLOG.md`.
-| Size limits per type | ⬜ **not declared anywhere yet** — ⛔ see below |
+⭐ **Naming has no file of its own on purpose:** a name is a field of a document the way its
+header is, and splitting it out would leave two contracts able to disagree about one file.
 
 ---
 
@@ -151,8 +150,14 @@ what verifies it (or ⛔ nothing yet).
 ⛔ **A ceiling with no declared unit is not a limit.** "Too long" is an opinion; a number with a
 unit is a measurement. Declare both in the size table, and use the same unit everywhere.
 
-⬜ **Pick the unit and state it:** lines · words · characters. Lines are the usual choice —
-countable with one command and stable across editors.
+⭐ **The unit is `lines`, and it is declared in the ceiling table** of
+`../../rules/contract-document.md` — countable with one command, stable across editors, and
+independent of how the text is wrapped.
+
+⛔ **`DOC-SIZ-003` verifies that the unit is written AND that it is the one measured.** ⚠️ It was
+written for a long time and never checked: the reader took the digits and discarded the word
+beside them, so a row saying `250 words` would still have been measured in lines — the table
+claiming one thing and the check doing another, both looking correct.
 
 ⭐ **Over the ceiling, the answer is SPLIT, not "trim".** Trimming removes content to satisfy a
 number; splitting keeps it and gives it a home. ⚠️ **And the halves must point at each other** —

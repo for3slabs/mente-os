@@ -155,6 +155,58 @@ def backlog():
     return sum(1 for _, c in e if c), len(e)
 
 
+# ⭐ DOC-SIZ-003 · the ceiling is measured in LINES, and the closest document to
+# its ceiling is the one worth knowing about. ⛔ "How big is the biggest" is not
+# the question — a 700-line contract under a 700 ceiling is fine and a 260-line
+# entry-point over a 250 one is not.
+def closest_to_ceiling():
+    """The document with the smallest margin left, as (name, used, ceiling).
+
+    ⬜ Returns None when the ceiling table cannot be read — ⛔ said rather than
+    reported as "everything is comfortable", which is what an absent row reads
+    as in a table of numbers.
+    """
+    q = os.path.join(ROOT, "rules", "contract-document.md")
+    try:
+        table = open(q, encoding="utf-8", errors="replace").read()
+    except OSError:
+        return None
+    caps = {}
+    for line in table.splitlines():
+        m = re.match(r"^\|([^|]+)\|\s*\*{0,2}(?:⭐\s*)?\*{0,2}(\d+)\s*lines",
+                     line)
+        if m:
+            for n in re.findall(r"`([a-z-]+)`", m.group(1)):
+                caps[n] = int(m.group(2))
+    if not caps:
+        return None
+    worst, unread = None, []
+    for dp, dn, fn in os.walk(ROOT):
+        dn[:] = [d for d in dn if d not in (".git", "__pycache__", "cache")]
+        for f in fn:
+            if not f.endswith(".md"):
+                continue
+            try:
+                text = open(os.path.join(dp, f), encoding="utf-8",
+                            errors="replace").read()
+            except OSError:
+                # ⛔ CHK-CAU-003 · a skip is said out loud. ⚠️ Here it is folded
+                # into the same counter enforcement() already reports as
+                # `rules.documents_unread` — one document that could not be
+                # read is one document neither measurement saw.
+                unread.append(os.path.relpath(os.path.join(dp, f), ROOT))
+                continue
+            m = re.search(r"^\*\*Status:.*?\*\*Type:\*\*\s*([a-z-]+)", text,
+                          re.M)
+            cap = caps.get(m.group(1)) if m else None
+            if not cap:
+                continue
+            used = len(text.splitlines())
+            if worst is None or used / cap > worst[1] / worst[2]:
+                worst = (os.path.relpath(os.path.join(dp, f), ROOT), used, cap)
+    return worst, unread
+
+
 def rows():
     out = []
 
@@ -182,6 +234,16 @@ def rows():
     # read is a count with a known hole, and the reader must be told its size.
     add("rules.documents_unread", len(unread) if not unread else
         "%d · %s" % (len(unread), " ".join(unread[:3])))
+    # ⭐ DOC-SIZ-003 · the ceiling has a unit, so it has a live number.
+    _got = closest_to_ceiling()
+    w, w_unread = _got if _got else (None, [])
+    add("documents.closest_to_ceiling",
+        "%s (%d/%d lines)" % w if w else None)
+    # ⬜ Said, never swallowed: a document that could not be read is one this
+    # measurement did not see, and an absent row reads as "nothing to report".
+    if w_unread:
+        add("documents.unread", "%d · %s" % (len(w_unread),
+                                             " ".join(w_unread[:3])))
     done, all_ = backlog()
     add("backlog.closed", done)
     add("backlog.entries", all_)

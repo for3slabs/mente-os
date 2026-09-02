@@ -146,6 +146,20 @@ fine and the wrong ceiling is applied to it.
 |---|---|---|---|
 | `DOC-SIZ-001` | ⭐ **Over its ceiling → a pending split** | 🔒 | ⛔ not a warning — named work |
 | `DOC-SIZ-002` | **A type with no ceiling MUST declare why** | 📖 | ⚠️ nothing checks this |
+| `DOC-SIZ-003` | ⭐ **A numeric ceiling MUST state its unit, and the unit is `lines`** | 🔒 | ⛔ a number with no unit is not a limit — see below |
+
+> ## ⭐ `DOC-SIZ-003` · THE UNIT IS PART OF THE CEILING, NOT DECORATION
+> ⛔ **A ceiling with no declared unit is not a limit** — *"too long"* is an opinion, a number
+> with a unit is a measurement.
+>
+> ⚠️ **The unit was written and never verified.** The reader captured the digits and discarded the
+> word beside them, so a row reading `250 words` would still have been measured in LINES — the
+> table would say one thing, the check would do another, and both would look correct.
+>
+> ⭐ **`lines` is the choice, and it is a choice:** countable with one command, stable across
+> editors, and independent of how the text is wrapped. ⛔ Rows that declare `none` or `frozen`
+> carry no unit because they carry no number — a limit that does not exist cannot be measured in
+> anything.
 
 ### ⭐ THE RULE BEHIND THE CEILING
 
