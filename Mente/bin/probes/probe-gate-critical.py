@@ -117,6 +117,20 @@ open(os.path.join(d, "BLOCK.md"), "w", encoding="utf-8").write(body_closed)
 r = run(path, body_closed)
 case("⑤ ⭐ a CORRECT close passes", r.returncode == 0, "exit=0")
 
+# 🔴 THE INVERSE, AND IT WAS SILENTLY BROKEN. The gate ran check-block with
+# `--quiet` and then looked for the block's NAME in that run's output — which is
+# empty by contract (CHK-QUI-001). ⛔ The condition could never be true, so every
+# insufficient close went through.
+# ⚠️ Found only by exercising the gates against a real installation: every probe
+# here was green, because they measured the gate and not the PAIR.
+_bad = body_closed.replace("type: docs", "type: invented")
+open(os.path.join(d, "BLOCK.md"), "w", encoding="utf-8").write(_bad)
+r = run(path, _bad)
+case("⑤b 🔴 an INSUFFICIENT close is refused", r.returncode == 2,
+     "exit=%d" % r.returncode)
+case("⑤c ⭐ and the refusal names the block", bid in r.stderr)
+open(os.path.join(d, "BLOCK.md"), "w", encoding="utf-8").write(body_closed)
+
 r = run("work/x.sql", "DROP TABLE users;")
 case("⑥ ⭐ with no declared pattern · it does NOT guess", r.returncode == 0,
      "⬜ nada declarado, nada bloqueado")

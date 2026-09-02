@@ -70,12 +70,24 @@ def gate_close(target, body):
         return 0
 
     name = os.path.basename(os.path.dirname(target))
+    # 🔴 CHK-QUI-001 · `--quiet` is the EXIT CODE ONLY, and this used to read the
+    # NAME out of a quiet run's output — which is empty by contract. ⛔ The
+    # condition could never be true, so this gate silently let every
+    # insufficient close through. ⚠️ Found only by exercising the gates against
+    # a real installation; every probe was green, because a probe measures the
+    # gate and not the pair.
+    # ⭐ Two calls: the quiet one decides whether anything is wrong, the second
+    # says WHICH block — and only that second answer can name this one.
+    checker = os.path.join(MENTE, "bin", "check-block")
     try:
-        r = subprocess.run([os.path.join(MENTE, "bin", "check-block"), "--quiet"],
-                           capture_output=True, text=True, timeout=30)
+        if subprocess.run([checker, "--quiet"], capture_output=True,
+                          timeout=30).returncode == 0:
+            return 0        # nothing is wrong with any block
+        r = subprocess.run([checker], capture_output=True, text=True,
+                           timeout=30)
     except Exception:
         return 0            # ⬜ the validator could not run · never block on that
-    if r.returncode != 0 and name in r.stdout:
+    if name in r.stdout:
         return refuse(
             "block `%s` does not meet its contract and cannot close" % name,
             "run: Mente/bin/check-block — it names what is missing")
