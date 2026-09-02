@@ -286,12 +286,25 @@ flags everything scores perfectly** — and a rule that always triggers is a rul
 
 ---
 
-## E-20 · Absorbed patterns are catalogued but not detected
+## E-20 · ✅ CLOSED — five are detected, five are named as undetectable, and one already was
 
 - **Surfaced by:** the absorbed-patterns catalogue — each entry declares HOW it is found, and
   nothing performs the finding
 - **Affects:** the quality verdict · the gate that fires before a commit
-- **Closes when:** the statically-detectable patterns are checked by something that runs
+- **Closed:** 2026-09-01 — `bin/check-code-patterns` searches five; ⭐ five more
+  are NAMED every run as not searched, with the reason. ⛔ Silence about those
+  would let a reader conclude the code is clean of patterns nothing looked for.
+- 🔴 **And one was ALREADY DETECTED with nobody knowing.** `grade-block` builds
+  the import graph — that is `FP-STRUCT-001` — and cited no id. The same defect
+  `check-locks` found among the locks: the behaviour existed, the traceability
+  did not.
+- ⚠️ **Every finding is a QUESTION, not a verdict, and the exit code says so.** A
+  text pattern finds the SHAPE of a defect, never the intent: an unbounded read
+  over three rows is fine. ⛔ A matcher that BLOCKED would be wrong often enough
+  to be switched off within a week, and then the five it does find go unfound.
+- 🔴 **The example pair caught a detector on its first run** — the unbounded-read
+  pattern fired on `select * from events limit 100`, the catalogue's own PASSING
+  example. ⭐ Exactly what E-19 built the pair for, working the day after.
 
 **Why it matters.** ⭐ The catalogue now states detection, evidence and severity for each pattern —
 which is exactly the shape a checker needs. Until one exists, these are rules followed by whoever
