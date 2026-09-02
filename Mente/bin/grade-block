@@ -217,6 +217,9 @@ def duplication(dirs, root):
 
 
 def cycles(dirs, root):
+    """⭐ Implements FP-STRUCT-001 from the pattern catalogue — a circular import
+    through a shared module. ⚠️ The detector existed before the id did, so
+    nothing connected the finding to the pattern it proves."""
     graph, own = defaultdict(set), {}
     for f in files_in(dirs, root, CODE_EXT):
         own[os.path.basename(f).rsplit(".", 1)[0]] = f

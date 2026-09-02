@@ -1,0 +1,193 @@
+#!/usr/bin/env python3
+"""check-code-patterns — finds the failure patterns the catalogue says are static.
+
+⭐ THE CATALOGUE STATES DETECTION, EVIDENCE AND SEVERITY FOR EACH PATTERN, which
+is exactly the shape a checker needs. ⛔ Until one existed, those were rules
+followed by whoever happened to remember them — the compliance rate this whole
+system was built to escape.
+
+⚠️ WHAT A TEXT PATTERN CAN AND CANNOT DO, said plainly because the difference
+decides how the output should be read:
+
+  ⭐ it can find the SHAPE of a defect — a call with no await, a read with no
+     bound, a clock inside a cached path
+  ⛔ it cannot know INTENT. A read with no bound over a table of three rows is
+     fine, and this cannot tell that from a scan of ten million.
+
+⭐ SO EVERY FINDING IS A QUESTION, NOT A VERDICT — and the exit code says so:
+this reports and returns 0. ⛔ A text matcher that BLOCKED would be wrong often
+enough to be switched off within a week, and then the nine patterns it does find
+go unfound too.
+
+⬜ WHERE THE CODE IS is the installation's: MENTE_CODE_DIRS, or the block scope
+when a block is named. ⛔ An engine that guessed would scan its own validators
+and report itself.
+
+Usage: check-code-patterns [<dir>...] [--quiet]
+Exit: 0 always — ⭐ findings are questions, and a question is not a failure
+"""
+import os
+import re
+import sys
+
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+CATALOGUE = os.path.join(ROOT, "memory", "principles", "imported-patterns.md")
+VERDICT = os.path.join(ROOT, "rules", "contract-quality-verdict.md")
+
+# ⭐ ONE ENTRY PER PATTERN, and each carries the shape it looks for AND the shape
+# it must NOT fire on — the pair the catalogue now requires, applied to the
+# detector itself. ⛔ A pattern with no counter-example is one nobody can prove
+# discriminates.
+PATTERNS = {
+    "FP-SEC-001": (
+        re.compile(r"(?:request|req|params|body|query)\s*[.\[]\s*['\"]?"
+                   r"(?:user_?id|account_?id|owner)\b", re.I),
+        "authorisation read from a client-supplied identity"),
+    "FP-PERF-002": (
+        # 🔴 THE BOUND IS THE WHOLE POINT, and the first version ignored it: it
+        # fired on `select * from events limit 100`, which is the catalogue's
+        # own PASSING example. ⛔ A detector that flags the correct shape scores
+        # perfectly and gets switched off — exactly what the example pair exists
+        # to catch, caught here on its first run.
+        re.compile(r"\bselect\s+\*\s+from\b(?![^\n]*\b(?:limit|top|fetch\s+first)\b)"
+                   r"|\bfind_?all\(\s*\)|\.all\(\s*\)(?!\s*\[)", re.I),
+        "a read with no bound"),
+    "FP-SILENT-001": (
+        # ⚠️ An async call whose result is discarded — no await, no assignment,
+        # no return. ⛔ Anchored to a statement start, or every argument that
+        # happens to be a call would match.
+        re.compile(r"^\s*(?!await\b|return\b)[\w.]*\.?"
+                   r"(?:save|write|insert|update|delete|commit|send|publish)"
+                   r"\s*\([^)]*\)\s*$", re.M),
+        "an asynchronous write whose result is discarded"),
+    "FP-SILENT-003": (
+        re.compile(r"\b(?:now|utcnow|time|today|Date\.now)\s*\(\s*\)", re.I),
+        "a clock read — ⚠️ inside a cached path this makes the cache lie"),
+    "FP-STATE-002": (
+        re.compile(r"(?:await\s+)?\w*(?:save|update|create|insert)\w*\([^)]*\)"
+                   r"\s*[;\n]\s*(?:await\s+)?\w*(?:get|load|fetch|find|read)\w*"
+                   r"\(", re.I),
+        "a read immediately after a write on the same subject"),
+}
+# ⬜ Patterns the catalogue declares static that a TEXT matcher cannot honestly
+# find. ⛔ Listing them as "no findings" would be the worst outcome: a reader
+# concludes the code is clean of them, when nothing looked.
+NOT_TEXT_DETECTABLE = {
+    "FP-SEC-002": "needs to pair a hidden UI action with its endpoint",
+    "FP-PERF-001": "needs the schema — which columns carry an index",
+    "FP-SILENT-002": "needs to know two writes belong to one transaction",
+    "FP-STATE-001": "needs to know the server already owns the value",
+    "FP-STRUCT-001": "⭐ found by bin/grade-block, which builds the import graph",
+}
+
+
+def code_extensions():
+    """⬜ Read from the quality contract, never listed here — one declaration."""
+    try:
+        t = open(VERDICT, encoding="utf-8", errors="replace").read()
+        m = re.search(r"⬜ code file extensions[^|]*\|\s*`?([^|`]+)`?\s*\|", t)
+        if m:
+            return tuple(e if e.startswith(".") else "." + e
+                         for e in m.group(1).replace(",", " ").split())
+    except OSError:
+        pass
+    return ()
+
+
+def known_patterns():
+    """The ids the catalogue declares, so a detector for a pattern that no
+    longer exists is reported rather than run."""
+    try:
+        t = open(CATALOGUE, encoding="utf-8", errors="replace").read()
+    except OSError:
+        return None
+    return set(re.findall(r"^### (FP-[A-Z]+-\d+)", t, re.M))
+
+
+def main():
+    quiet = "--quiet" in sys.argv
+    dirs = [a for a in sys.argv[1:] if not a.startswith("--")]
+    if not dirs:
+        env = os.environ.get("MENTE_CODE_DIRS", "")
+        dirs = [d.strip() for d in env.split(":") if d.strip()]
+
+    known = known_patterns()
+    exts = code_extensions()
+
+    if not dirs:
+        # ⬜ The engine does not guess where an installation keeps its code. ⛔ A
+        # default of "here" would scan the validators and report the engine.
+        if not quiet:
+            print("⬜ NOT MEASURED · no code directory given · pass one, or set "
+                  "MENTE_CODE_DIRS\n   ⛔ The engine does not guess where your "
+                  "code lives: it would scan itself.")
+        return 0
+    if not exts:
+        if not quiet:
+            print("⬜ NOT MEASURED · no code file extensions declared in %s"
+                  % os.path.relpath(VERDICT, ROOT))
+        return 0
+
+    hits, scanned, missing = [], 0, []
+    for d in dirs:
+        base = d if os.path.isabs(d) else os.path.join(ROOT, d)
+        if not os.path.isdir(base):
+            missing.append(d)
+            continue
+        for dp, dn, fn in os.walk(base):
+            dn[:] = [x for x in dn if x not in
+                     {".git", "__pycache__", "node_modules", "dist", "build"}]
+            for n in sorted(fn):
+                if not n.endswith(exts):
+                    continue
+                p = os.path.join(dp, n)
+                try:
+                    src = open(p, encoding="utf-8", errors="replace").read()
+                except OSError:
+                    # ⬜ An unreadable file is not a clean one.
+                    missing.append(os.path.relpath(p, ROOT))
+                    continue
+                scanned += 1
+                for pid, (rx, what) in PATTERNS.items():
+                    m = rx.search(src)
+                    if m:
+                        line = src[:m.start()].count("\n") + 1
+                        hits.append((pid, "%s:%d" % (os.path.relpath(p, ROOT),
+                                                     line), what))
+
+    if quiet:
+        return 0          # ⭐ CHK-QUI-001 · and the code is always 0: see below
+
+    print("check-code-patterns · %d file(s) scanned · %d of %d catalogued "
+          "pattern(s) detectable as text"
+          % (scanned, len(PATTERNS), len(known) if known else len(PATTERNS)))
+    for d in missing:
+        print("   ⬜ NOT MEASURED · %s · not read" % d)
+    # ⛔ THE ONES NOTHING LOOKED FOR ARE NAMED EVERY RUN. Silence about them
+    # would let a reader conclude the code is clean of patterns nobody scanned.
+    for pid, why in sorted(NOT_TEXT_DETECTABLE.items()):
+        print("   ⬜ %s · not searched · %s" % (pid, why))
+    if known:
+        for pid in sorted(set(PATTERNS) - known):
+            print("   ⚠️ %s · this detector runs and the catalogue no longer "
+                  "declares it" % pid)
+
+    if hits:
+        print()
+        for pid, where, what in hits:
+            print("🟡 %s · %s · %s" % (where, pid, what))
+        print("\n⚠️ %d question(s), not verdicts · a text pattern finds the "
+              "SHAPE of a defect,\n   never the intent — ⛔ each one is read by "
+              "a person before it means anything." % len(hits))
+    elif scanned:
+        print("   ✅ none of the %d searched pattern(s) matched" % len(PATTERNS))
+    return 0
+
+
+if __name__ == "__main__":
+    try:
+        sys.exit(main())
+    except Exception as e:                                     # noqa: BLE001
+        print("🔴 %s crashed · %s: %s"
+              % (os.path.basename(__file__), type(e).__name__, e))
+        sys.exit(1)

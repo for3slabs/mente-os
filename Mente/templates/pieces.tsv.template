@@ -233,3 +233,5 @@ contract-block-sections	rules/contract-block-sections.md	engine	canonical	what e
 findings	bin/findings.py	engine	executable	one way to report many findings — ⛔ a report nobody finishes is a report nobody applies
 check-patterns	bin/check-patterns	engine	executable	enforces the failure-pattern catalogue — ⛔ a pattern nobody can detect is a sentence, not a rule
 probe-patterns	bin/probes/probe-patterns.py	engine	executable	proves the example PAIR is required — without the passing half, a detector that flags everything scores perfectly
+check-code-patterns	bin/check-code-patterns	engine	executable	finds the catalogued patterns a text matcher can find — ⚠️ every finding is a question, never a verdict
+probe-code-patterns	bin/probes/probe-code-patterns.py	engine	executable	runs each pattern's own Fails/Passes pair through its detector
