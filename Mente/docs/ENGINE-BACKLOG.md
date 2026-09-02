@@ -1436,13 +1436,13 @@ producer↔consumer.
 
 ---
 
-## E-49 · The doctrine is outside the ratio it is judged by
+## E-49 · ✅ CLOSED — the ratio now states what it excludes, and the number moves
 
 - **Surfaced by:** measuring `../memory/principles/contract-delivery.md` while closing E-14 — a 272-line contract with
   no rule table at all
 - **Affects:** `../memory/principles/` (14 files) · `../bin/generate-metrics` · the E-21 ratio
-- **Closes when:** either the principles declare enforceable ids, or `rules.enforced_pct` states
-  what it excludes
+- **Closed:** 2026-09-01 — `rules.unenforceable_docs` and `rules.unenforceable_lines` published,
+  with the exclusion stated in `METRICS.md` itself; one probe case
 
 **Why it matters.** ⭐ **4,097 lines of doctrine declare 3 rules with an id.** Everything the
 owners and disciplines say — the eight voice rules, the checkpoint fields, the four evidence
@@ -1453,7 +1453,42 @@ measures only rows already in a table; ⛔ the largest body of criterion in the 
 denominator, so the ratio cannot fall when doctrine grows without enforcement — which is precisely
 the drift E-21 exists to detect.
 
-⭐ **Not obviously a defect, and that is why it is an entry rather than a fix.** A principle is
-meant to be read and reasoned with, and forcing every paragraph into an id-shaped row would turn
-criterion into a checklist — the failure `../rules/contract-quality-verdict.md` §5 warns about. ⛔ What is
-not defensible is the ratio staying silent about what it left out.
+⭐ **Not obviously a defect, and that is why the fix is disclosure rather than conversion.** A
+principle is meant to be read and reasoned with, and forcing every paragraph into an id-shaped row
+would turn criterion into a checklist — the failure `../rules/contract-quality-verdict.md` §5 warns
+about. ⛔ What was not defensible is the ratio staying silent about what it left out.
+
+⭐ **Measured, and it is now two rows plus a box in `METRICS.md`:** 16 contracts and rules carry a
+rule table, **12 carry none** — 3,409 lines. ⚠️ The probe plants a contract with no table and
+watches the count rise, so the disclosure is a measurement rather than a sentence.
+
+⛔ **The percentage itself did not change and should not have:** 60.1% is still true of what it
+measures. ⭐ What changed is that a reader can no longer take it for the whole picture.
+
+---
+
+## E-50 · ✅ CLOSED — the shape a writer copies now carries the skip list
+
+- **Surfaced by:** `../bin/check-checks` catching `CHK-CAU-003` three separate times in one
+  stretch of work, always in newly written code
+- **Affects:** anything that walks the tree reading files
+- **Closed:** 2026-09-01 — `../bin/README.md` shows a `walk()` that reports what it could not
+  read, and its exit-code line was contradicting `CHK-XIT-001`
+
+**Why it matters.** ⭐ Every walk over the tree needs a `try` around its `open()`, and the cheapest
+completion is `continue`. ⛔ It compiles, it never crashes, and it silently drops a file from a
+count — which is how *"0 findings"* and *"I could not read three of them"* become the same output.
+
+⚠️ **Measured, not supposed:** three times in one session — `enforcement()`, `closest_to_ceiling()`
+and `unenforceable()`, all in `../bin/generate-metrics`, all written by an author who had just
+fixed the same thing. ⭐ **The validator caught all three**, which is the system working; ⛔ a
+defect written three times in a row is a defect the writing side does not prevent.
+
+⭐ **The fix was not another check** — `CHK-CAU-003` catches it every time. It is that the shape a
+writer copies now carries the skip list: `../bin/README.md`'s template shows a `walk()` that
+returns `(seen, unread)` so the caller has to say what it missed.
+
+🔴 **And the same file was teaching the wrong exit codes.** It said `0 clean · 1 warnings · 2
+errors` — with `2` meaning the OPPOSITE of what twelve validators use it for and what
+`CHK-XIT-001` declared in E-04. ⚠️ A template contradicting the rule it teaches is worse than no
+template, and it sat one section below the shape everyone copies.
