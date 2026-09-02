@@ -233,6 +233,20 @@ case("㉑ ⭐ a contract with no rule table raises `unenforceable_docs`",
                   _after.group(1) if _after else "—"))
 os.remove(_q)
 
+# ⭐ DECISIONS are counted, not FILES. ⛔ count_files counted the folder's own
+# README as a decision — 26 where 25 exist — and a number inflated by a readme
+# is a number nobody can reconcile with the tree. ⚠️ The count also hid the
+# useful half: how many decisions are still waiting to be built.
+_d = re.search(r"`decisions` \| (\d+)", read("METRICS.md"))
+_p = re.search(r"`decisions\.pending` \| (\d+)", read("METRICS.md"))
+_real = len([f for f in os.listdir(os.path.join(TREE, "rules", "decisions"))
+             if f.startswith("ADR-") and f.endswith(".md")])
+case("㉒ ⭐ `decisions` counts ADRs, not the folder's README",
+     bool(_d) and int(_d.group(1)) == _real, "%s = %d ADR(s)"
+     % (_d.group(1) if _d else "—", _real))
+case("㉓ ⬜ and `decisions.pending` says how many are unbuilt",
+     bool(_p), _p.group(1) + " pending" if _p else "—")
+
 # ⬜ and with no backlog to read it is a GAP, never a 0 — the same rule the
 # battery result obeys: an absent row and a zero look identical in a table.
 _bk = os.path.join(DOCS, "ENGINE-BACKLOG.md")

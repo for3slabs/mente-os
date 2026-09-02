@@ -324,6 +324,20 @@ in the validation owner · `NOT_MEASURED` in the functional criterion. ⭐ **One
 | `DOC-BOD-003` | ⭐ **A `contract` or a `rule` declares WHO MAY CHANGE IT** | 🔒 | ⛔ an authority that writes its own criteria is circular — see below |
 | `DOC-BOD-004` | ⭐ **A layer split is declared from BOTH sides** | 🔒 | ⛔ a one-sided split is one document quietly absorbing the other |
 | `DOC-BOD-005` | ⭐ **A `case` answers the three entry questions, in writing** | 🔒 | ⛔ a filter nothing asks is a filter nobody applies — `ADR-021` |
+| `DOC-HDR-006` | ⭐ **An ENGINE document keeps its placeholders unfilled** | 🔒 | ⛔ a name inside the template travels to every clone — see below |
+
+> ## ⭐ `DOC-HDR-006` · THE TEMPLATE IS NOT AN INSTALLATION
+> ⛔ **`Owner: {{owner}}` is the shipped state.** A real name there is not a cosmetic slip: this
+> engine is a published template, so ⚠️ **whatever sits in the header travels to every clone**,
+> and the first thing a newcomer reads is somebody else's name on their own tool.
+>
+> ⚠️ **Measured 2026-09-02, and nothing had caught it:** two engine documents —
+> `../CAPABILITIES.md` and `contract-block.md` — carried a person's name and a real date for **30
+> commits**, introduced by running `bin/init` inside the template instead of a clone.
+>
+> ⭐ **It is the substitution that is checked, not the name.** ⛔ A checker looking for names would
+> need to know which strings are names; ⭐ one looking for a MISSING `{{owner}}` needs to know only
+> what the template ships — and that is written in the file itself.
 
 > ## ⭐ `DOC-BOD-004` · A SPLIT DECLARED ONCE IS NOT A SPLIT
 > ⚠️ When two documents divide one subject — what a delivery must CONTAIN versus how it is SHOWN,
