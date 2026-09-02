@@ -27,6 +27,12 @@ MARK = "zzprobe"         # every fixture carries it, so the filter cannot be nar
 
 
 class Probe:
+    # ⭐ Which checkers replace their walk with the targets they are given.
+    # ⛔ Declared, never guessed: a checker that ignores the argument loses
+    # nothing, but one that compares against the whole tree would silently
+    # measure less.
+    TARGETED = ("check-document",)
+
     def __init__(self, checker, id_prefix, also=()):
         self.checker = checker
         self.rx = re.compile(r"%s-[A-Z]+-\d+" % id_prefix)
@@ -37,6 +43,7 @@ class Probe:
         # fixture, and its findings carry no marker — filtering on the marker
         # alone reports a working check as undetected.
         self.also = tuple(also)
+        self.targeted = checker in self.TARGETED
 
     def _mine(self, out):
         keys = (MARK,) + self.also
@@ -77,8 +84,19 @@ class Probe:
         # 🔴 Measured: silencing the findings (correctly, per bin/README) broke
         # 28 probe cases at once, because they were reading output the contract
         # says is not there.
-        r = subprocess.run([sys.executable, "bin/" + self.checker],
-                           cwd=ROOT, capture_output=True, text=True)
+        # ⭐ PASS THE FIXTURES AS TARGETS when the checker takes them. The probe
+        # already throws away every finding that does not carry MARK (_mine),
+        # so validating the whole tree produced 54 results it discarded.
+        # 🔴 Measured 2026-09-02: probe-document re-parsed all 55 documents once
+        # per case — 0.28 s × 62 = 17.4 s, 87% of the entire battery.
+        # ⚠️ Only for checkers that HONOUR a target, and only for .md fixtures:
+        # passing a path to one that ignores it changes nothing, and passing one
+        # to a checker that reads the tree as a whole would narrow what it sees.
+        argv = [sys.executable, "bin/" + self.checker]
+        if self.targeted:
+            argv += [os.path.relpath(p, ROOT) for p in self.made
+                     if p.endswith(".md") and os.path.exists(p)]
+        r = subprocess.run(argv, cwd=ROOT, capture_output=True, text=True)
         return r.returncode, r.stdout, r.stderr
 
     # ── the verdict ──────────────────────────────────────────────────────

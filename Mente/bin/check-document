@@ -694,8 +694,42 @@ def capability_map():
     return bad
 
 
+def _walk(targets):
+    """(absolute, relative) for every document to check.
+
+    ⭐ With targets, EXACTLY those; without, the whole tree. ⛔ The two paths
+    produce the same pairs, so a per-document rule cannot behave differently
+    depending on how it was reached — which is the failure a filter-after-walk
+    would have introduced.
+    """
+    if targets:
+        for t in targets:
+            path = t if os.path.isabs(t) else os.path.join(ROOT, t)
+            if os.path.exists(path) and path.endswith(".md"):
+                yield path, os.path.relpath(path, ROOT)
+        return
+    for dirpath, dirnames, filenames in os.walk(ROOT):
+        dirnames[:] = [d for d in dirnames if d not in SKIP_DIRS]
+        _rel = os.path.relpath(dirpath, ROOT).replace(os.sep, "/")
+        if _rel in SKIP_DIR_PATHS:
+            continue          # ⬜ governed by contract-adr.md, not by this one
+        for name in sorted(filenames):
+            if not name.endswith(".md") or name in OWNED_ELSEWHERE:
+                continue
+            path = os.path.join(dirpath, name)
+            yield path, os.path.relpath(path, ROOT)
+
+
 def main():
     quiet = "--quiet" in sys.argv
+    # ⭐ A TARGET REPLACES THE WALK — it does not filter it afterwards.
+    # 🔴 Measured 2026-09-02: probe-document ran this validator 62 times, once
+    # per case, and each run re-parsed all 55 documents to see whether a finding
+    # appeared about ONE. 0.28 s × 62 = 17.4 s — ⛔ 87% of the whole battery in a
+    # single probe. The argument was already being passed and silently ignored.
+    # ⚠️ Filtering after the walk saves nothing: the cost is the per-document
+    # checks, not the listing (reading all 55 costs 0.002 s).
+    targets = [a for a in sys.argv[1:] if not a.startswith("-")]
     if not os.path.exists(CONTRACT):
         print("🔴 the contract itself is missing: rules/contract-document.md")
         return 2
@@ -708,27 +742,24 @@ def main():
     # one thing and the check would do another, and both would look correct.
     unit_bad = bad_units(ceilings)
 
-    cap = capability_map()
+    # ⬜ The capability map compares against the WHOLE tree, so with a target it
+    # cannot run — ⛔ SAID, never silently dropped: a run covering less than the
+    # reader thinks is the defect CHK-CAU-003 exists for.
+    cap = None if targets else capability_map()
     findings = list(cap) if cap else []
+    if targets and not quiet:
+        print("⬜ NOT MEASURED · the capability map and the ceiling units "
+              "compare against the WHOLE tree · run with no target for those")
     for _t, _c, _u in unit_bad:
         findings.append(("DOC-SIZ-003", REL_CONTRACT, 0,
                          "the ceiling for %r is %d %s · ⛔ this check measures "
                          "%s · a number whose unit nothing measures is not a "
                          "limit" % (_t, _c, _u or "(no unit)", UNIT)))
-    if cap is None and not quiet:
+    if cap is None and not targets and not quiet:
         print("⬜ NOT MEASURED · no CAPABILITIES.md · whether the map matches "
               "the tree was not checked")
     checked = 0
-    for dirpath, dirnames, filenames in os.walk(ROOT):
-        dirnames[:] = [d for d in dirnames if d not in SKIP_DIRS]
-        _rel = os.path.relpath(dirpath, ROOT).replace(os.sep, "/")
-        if _rel in SKIP_DIR_PATHS:
-            continue          # ⬜ governed by contract-adr.md, not by this one
-        for name in sorted(filenames):
-            if not name.endswith(".md") or name in OWNED_ELSEWHERE:
-                continue
-            path = os.path.join(dirpath, name)
-            rel = os.path.relpath(path, ROOT)
+    for path, rel in _walk(targets):
             checked += 1
             findings += check(path, rel, ceilings, quiet)
 
