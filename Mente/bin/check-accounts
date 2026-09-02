@@ -179,7 +179,10 @@ def main():
     # ⛔ returning early on an empty registry would hide the one finding that
     # says the unavoidable defence is not running.
     wiring = layer2_wired()
-    if wiring:
+    # ⭐ CHK-QUI-001 · the exit code ONLY. ⚠️ This print was placed before the
+    # quiet check so it would show even with an empty registry — and that broke
+    # the contract for the one caller that asks for a number.
+    if wiring and not quiet:
         print("⬜ ACC-LYR-004 · layer 2 is %s" % wiring)
 
     # ⬜ CHK-IND-002 · say WHAT WAS MEASURED. A green over zero rows is the same
