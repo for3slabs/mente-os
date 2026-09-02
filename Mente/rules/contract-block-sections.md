@@ -511,6 +511,8 @@ successes teaches the next reader that this kind of work always succeeds.**
 
 ---
 
+⚖️ split-with: `contract-block.md`
+
 ## WHO GOVERNS THIS FILE
 
 | Change | Who |

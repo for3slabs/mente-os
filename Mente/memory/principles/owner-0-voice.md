@@ -168,6 +168,13 @@ plain prose ←───────────────┼─────�
 ⬜ **Mark your point.** How much state is carried by tables, traffic lights and bars rather than
 by sentences.
 
+⚖️ split-with: `contract-delivery.md`
+
+⭐ **This axis is the PRESENTATION layer, and it is the whole of it.** ⛔ It never decides what a
+delivery must contain — that is `contract-delivery.md` §8, and the two are declared apart on
+purpose: ⚠️ a presentation layer that could add a field would be printing the agent's internal
+model, and one that could drop a required answer would be losing information to look tidy.
+
 ⭐ **Whatever the point, two rules hold:**
 ① a graphic **replaces** text — if a table and a paragraph say the same thing, delete the
 paragraph;

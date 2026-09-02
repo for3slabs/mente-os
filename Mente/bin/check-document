@@ -80,6 +80,13 @@ LIVENUM = re.compile(r"\b\d+\s*/\s*\d+\b|\b\d+\s+checks?\b", re.I)
 # would report a promise as a defect, and noise is how a validator stops being read.
 PLANNED = re.compile(r"⬜[^\n]{0,90}$")
 
+# ⭐ DOC-BOD-004 · a split is declared by a MARKER, never inferred from phrasing.
+# ⛔ The first version matched on wording — "layer split", "the other half" —
+# and found ZERO of the two splits that exist, because one declares its pair in
+# a TABLE and the other in prose. ⚠️ A checker that guesses at phrasing reports
+# nothing and looks like it passed.
+SPLIT_RX = re.compile(r"⚖️\s*split-with:\s*`([A-Za-z0-9_./-]+\.md)`")
+
 # Names that denote a KIND of file, not one file: the instance creates them at
 # install time, and a bare mention of one is not a pointer to anything.
 # A checker that cannot tell "points at a file" from "names a type of file"
@@ -304,6 +311,30 @@ def check(path, rel, ceilings, quiet):
     # itself.
     # ⛔ Only contract and rule: a plan or an analysis grants no authority, and
     # demanding it everywhere would make the marker meaningless.
+    # ⭐ DOC-BOD-004 · a layer split is declared from BOTH sides. ⛔ Declared
+    # once, it survives exactly until someone reads the other document alone —
+    # and that reader has no way to know a half is missing.
+    # ⚠️ The PAIRS are read from the tree, never listed here: each side names
+    # the other, so the pairing is what is checked, not a hardcoded roster that
+    # would go stale the day a third split is declared.
+    for other in SPLIT_RX.findall(text):
+        q = os.path.join(os.path.dirname(path), other)
+        if not os.path.exists(q):
+            continue                  # ⬜ DOC-CNT-004 already reports that
+        try:
+            back = open(q, encoding="utf-8", errors="replace").read()
+        except OSError:
+            continue
+        # ⚠️ THE MARKER, not a mention. ⛔ The first version looked for this
+        # file's NAME in the other, and the pair still passed after the marker
+        # was deleted — because the two documents cite each other in prose
+        # anyway. A split is declared, not implied by a citation.
+        if os.path.basename(rel) not in SPLIT_RX.findall(back):
+            bad.append(("DOC-BOD-004", rel, 1,
+                        "declares a layer split with %r and that file carries "
+                        "no `⚖️ split-with:` back · ⛔ a one-sided split is one "
+                        "document quietly absorbing the other" % other))
+
     if ty in ("contract", "rule") and "WHO GOVERNS THIS FILE" not in text:
         bad.append(("DOC-BOD-003", rel, len(lines),
                     "a %s with no `WHO GOVERNS THIS FILE` section · ⛔ an "
