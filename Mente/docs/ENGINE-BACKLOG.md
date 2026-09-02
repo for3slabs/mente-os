@@ -459,15 +459,30 @@ with `⚖️ split-with:`, never implied.
 
 ---
 
-## E-15 · No progressive disclosure in a response
+## E-15 · ✅ CLOSED — the tiering was written; its threshold was a feeling, and now it is declared
 
 - **Surfaced by:** external review of the voice contract
-- **Affects:** the voice · the delivery block
-- **Closes when:** a response leads with orientation, and depth is available rather than imposed
+- **Affects:** `../memory/principles/contract-delivery.md` §4 · §11
+- **Closed:** 2026-09-01 — the tier-1 threshold moved from *"roughly two screens"* to a ⬜
+  declaration in lines, and §4 states what nothing can score
 
-**Why it matters.** A document says *read top to bottom*; ⭐ an interface says *look → identify →
-go deeper only if you want to*. The engine already tiers a block's sections by reading cost — the
-same idea has never been applied to a response, so every reader pays the deepest reader's price.
+**Why it mattered.** A document says *read top to bottom*; ⭐ an interface says *look → identify →
+go deeper only if you want to*.
+
+⚠️ **§4 already was progressive disclosure**, with the five questions in the order a reader asks
+them and the rule that the state appears twice past a length. ⛔ **That length was `"roughly two
+screens"`** — and a screen is not a unit: it depends on the terminal, the font and the window.
+⭐ `DOC-SIZ-003` (E-05) had just established that a ceiling with no unit is not a limit; this was
+the one place in the engine still carrying a threshold nobody could measure.
+
+⛔ **A lock was considered and REFUSED, with the measurement behind it.** A sweep for vague
+quantities returned **46 matches, and almost all are legitimate prose** — *"several blocks under
+one mission"* is not a threshold. ⚠️ A guard firing on those is the wolf-crying check E-42 already
+paid for; ⭐ the defensible fix was the one real threshold, and it is fixed.
+
+⭐ **What nothing scores is now said in §4**, matching §8: whether the first lines were enough is a
+judgement only the reader can make, and a script counting them would measure length and call it
+orientation.
 
 ---
 
