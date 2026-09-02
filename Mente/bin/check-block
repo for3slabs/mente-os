@@ -491,11 +491,12 @@ def main():
 
     if not quiet:
         print("check-block · %d block(s) found" % len(found))
-    if findings:
-        return report(findings, "rules/contract-block.md", quiet)
-    if not quiet:
-        print("✅ 0 violations")
-    return 0
+    # ⭐ CHK-TRV-002 lives in report(): the caller passes HOW MANY things
+    # it examined. ⛔ This printed `✅ 0 violations` over an EMPTY tree —
+    # worse than the silent ones, because a false tick is more
+    # convincing than an absence.
+    return report(findings, "rules/contract-block.md", quiet,
+                  examined=len(found), subject="block")
 
 
 if __name__ == "__main__":

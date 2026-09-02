@@ -114,7 +114,8 @@ def main():
     if not quiet:
         print("check-patterns · %d pattern(s) · %d declared field(s)"
               % (len(entries), len(fields)))
-    return report(findings, REL, quiet)
+    return report(findings, REL, quiet,
+                  examined=len(entries), subject="pattern")
 
 
 if __name__ == "__main__":

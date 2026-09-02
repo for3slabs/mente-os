@@ -56,13 +56,24 @@ def group(findings):
     return out
 
 
-def report(findings, rule, quiet=False):
+def report(findings, rule, quiet=False, examined=None, subject="thing"):
     """Print the findings grouped, and return the exit code.
 
     ⭐ CHK-QUI-001 · `--quiet` is the exit code ONLY — a caller that asked for a
     number gets a number, and nothing is printed at all.
+
+    ⭐ `examined` is HOW MANY things the caller looked at, and it decides the
+    clean-run verdict: a count means ✅, a zero means ⬜ NOT MEASURED.
+    ⛔ CHK-TRV-002 · an empty collection is a SKIP, never a pass — and the caller
+    is the only one that knows what it was counting, which is why the number
+    comes in rather than being inferred here.
+    ⚠️ `None` prints nothing, for the callers that still write their own line.
     """
     if not findings:
+        if not quiet and examined is not None:
+            print("✅ 0 violations" if examined else
+                  "⬜ NOT MEASURED · no %s to check · nothing was verified here"
+                  % subject)
         return 0
     if quiet:
         return 1

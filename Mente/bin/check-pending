@@ -293,11 +293,12 @@ def main():
     # ⭐ Grouping lives in bin/findings.py — the shape that was proven here and
     # is now shared. ⛔ Thirteen validators each inventing one is thirteen report
     # formats, and a reader who must learn a new one per validator learns none.
-    if findings:
-        return report(findings, "rules/contract-pending.md", quiet)
-    if not quiet and found:
-        print("✅ 0 violations")
-    return 0
+    # ⭐ CHK-TRV-002 lives in report(): the caller passes HOW MANY things
+    # it examined, and the reporter turns 0 into ⬜ rather than silence.
+    # ⛔ Fifteen validators each wrote that tick; one had forgotten it,
+    # which is how a duplicated line fails — one straggler at a time.
+    return report(findings, "rules/contract-pending.md", quiet,
+                  examined=len(found), subject="pending list")
 
 
 if __name__ == "__main__":
