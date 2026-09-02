@@ -104,8 +104,18 @@ want.** A response is an interface.
 whoever needs the detail keeps reading. ⛔ Making everyone read to the deepest reader's level is
 how a correct delivery gets abandoned halfway.
 
-⚠️ **Above roughly two screens, the state appears twice:** three lines at the top (done · blocked ·
-next), and the full block at the bottom. **The top three must be enough to decide.**
+⛔ **Nothing scores this, and that is the same limit §8 states.** ⭐ Whether the first lines were
+enough is a judgement only the reader can make — a script counting them would measure length and
+call it orientation. ⚠️ **The one part that IS mechanical is the threshold below**, and it is
+declared rather than felt.
+
+⚠️ **Past a declared length the state appears twice:** three lines at the top (done · blocked ·
+next), and the full block at the bottom. ⭐ **The top three must be enough to decide.**
+
+⬜ **Declare that length, in lines** — §11 holds it beside the ceilings. ⛔ *"Roughly two screens"*
+is what this said until 2026-09-01, and a screen is not a unit: it depends on the terminal, the
+font and the window. ⚠️ A threshold nobody can measure is applied when somebody remembers, which
+is the same as not having one (`../../rules/contract-document.md` · `DOC-SIZ-003`).
 
 ---
 
@@ -268,6 +278,7 @@ opinion, not a limit.
 | 💬 CHAT | ⬜ … |
 | 🔧 RESULT · 🔍 ANALYSIS | ⬜ … |
 | 📦 DELIVERY | ⬜ … |
+| ⭐ **tier-1 threshold** — past this the state appears twice (§4) | ⬜ … |
 
 ⭐ **Over the ceiling, the detail goes to a file and the response points at it** — a curated
 summary, never a raw log. ⚠️ And the pointer names **what that file delivers**, not just its
