@@ -461,6 +461,28 @@ sufficiency:          pass | fail
 | `BLK-CLS-006` | ⭐ **The quality verdict is MEASURED, never asserted** | 🟡 | `bin/grade-block` is layer 1 · `rules/contract-quality-verdict.md` is the criterion |
 | `BLK-CLS-005` | ⭐ **The invariants of §B were re-checked** | 🟡 | ⚠️ still true after the changes? |
 | `BLK-CLS-007` | ⭐ **A close writes a machine-readable RECORD** | 🔒 | ⛔ a verdict pasted as prose cannot be re-read by anything — see below |
+| `BLK-CLS-008` | ⭐ **The close names the EVIDENCE LEVEL reached** — `L0`…`L5` | 🔒 | ⛔ *"tested"* means whatever the last person had time for — see below |
+
+> ## ⭐ `BLK-CLS-008` · THE LEVEL IS DERIVED FROM THE LANE, NOT ESTIMATED
+> ⛔ ***"Tested"* is not a level.** A change that can break a live flow needs end-to-end proof; one
+> that renames a variable does not. ⚠️ Without a declared level both close on whichever proof was
+> cheaper to produce, and the block that needed more is the one that looks finished.
+>
+> ⭐ **The lane is already MEASURED** — `rule-working-in-a-block.md` §2 chooses it from the
+> dependency graph, never from judgement. ⛔ So the minimum level is derived from it rather than
+> being a second opinion:
+>
+> | Lane | Minimum | ⭐ Why |
+> |---|---|---|
+> | `direct` | **L1** | nothing depends on it; that it parses is the claim |
+> | `task` | **L2** | one piece, proven in isolation |
+> | `full-block` | ⭐ **L3** | it has dependents — ⛔ proving the piece alone proves nothing about them |
+>
+> ⚠️ **A minimum, never a ceiling.** ⭐ Declaring `L5` on a `direct` lane is fine and says something
+> real; declaring `L1` on a `full-block` is the case this rule refuses.
+>
+> ⛔ **The levels themselves belong to `../memory/principles/owner-3-validation.md` §5b** — L0 an
+> assertion, L5 surviving a restart. ⚠️ This rule does not restate them: it binds a block to one.
 
 > ## ⭐ `BLK-CLS-007` · A CLOSE IS STATE THE SYSTEM HOLDS, NOT A SENTENCE SOMEBODY WROTE
 > ⚠️ **Today a `quality verdict:` line is text pasted into §K.** ⛔ It cannot be re-read, compared

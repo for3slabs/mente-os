@@ -290,7 +290,11 @@ p.case("㊲ ⛔ three rows, only the middle one dateless → it is named",
 # most valuable part, dies with the session that produced it.
 # ⚠️ A COMPLETE §K, because BLK-TRN-001 demands acceptance AND sufficiency: a
 # fixture missing either fails a rule it was not testing.
+# ⚠️ A COMPLETE §K: BLK-TRN-001 wants acceptance AND sufficiency, and
+# BLK-CLS-008 wants the evidence level its lane requires. ⛔ A fixture missing
+# either fails a rule it was not testing.
 _KOK = ("\n## K · Closing\n\nnot completed: none\nevidence: measured\n"
+        "evidence level: L3\n"
         "acceptance: the criteria were met\nsufficiency: pass\n")
 
 p.case("㊳ ⛔ closed and no close.json",
@@ -326,6 +330,42 @@ def _bare_verdict():
 
 p.case("㊶ ⛔ a record whose verdict is not keyed to its layer",
        _bare_verdict, "QLT-LAY-003")
+
+
+# ── BLK-CLS-008 · the close names the evidence LEVEL its lane requires ─────
+# ⛔ "Tested" means whatever the last person had time for. ⭐ The lane is already
+# MEASURED from the dependency graph, so the minimum is derived from it rather
+# than being a second opinion.
+def _lane_close(lane, level=""):
+    """⚠️ The lane goes through the fixture's own parameter. ⛔ Substituting it
+    into the text afterwards silently did nothing — the fixture already writes
+    a `lane:` line — and the case then measured the DEFAULT lane while its
+    label claimed another."""
+    def go():
+        # ⭐ The shared §K declares L3; these cases REPLACE that line, so
+        # each one measures the level it names and nothing else.
+        k = re.sub(r"evidence level: L\d\n",
+                   ("evidence level: %s\n" % level) if level else "", _KOK)
+        return block(p, "a", status="closed", lane=lane, extra=k)
+    return go
+
+
+p.case("㊷ ⛔ a full-block closing with no evidence level",
+       _lane_close("full-block"), "BLK-CLS-008")
+
+p.case("㊸ ⛔ a full-block claiming L1 · its dependents are unproven",
+       _lane_close("full-block", "L1"), "BLK-CLS-008")
+
+p.inverse("㊹ ⭐ the same block at L3 · the lane's minimum",
+          _lane_close("full-block", "L3"))
+
+# ⭐ A minimum, never a ceiling: above it is fine and says something real.
+p.inverse("㊺ ⭐ L5 on a full-block · above the minimum",
+          _lane_close("full-block", "L5"))
+
+# ⛔ And `direct` does NOT inherit the strictest floor: nothing depends on it.
+p.inverse("㊻ ⛔ `direct` at L1 · its own minimum, not full-block's",
+          _lane_close("direct", "L1"))
 
 p.inverse("㉑ a CORRECT block", lambda: block(p, "a"))
 p.crash_guard()
