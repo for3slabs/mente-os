@@ -333,8 +333,39 @@ def check(path, rel, ceilings, quiet):
         r"`([A-Za-z0-9_][A-Za-z0-9_./-]*\.(?:md|template|tsv|yml|py|sh))`"
         r"|`((?:bin|hooks|rules|templates|docs|work|memory|Cerebro|connection"
         r"|secrets|cache)/[A-Za-z0-9_./-]+)`")
-    for m in POINTER.finditer(text):
-        ref = (m.group(1) or m.group(2)).rstrip("/")
+    # ⭐ A FENCED COMMAND IS A STRONGER POINTER THAN AN INLINE ONE: it does not
+    # merely name a piece, it tells the reader what to RUN. ⛔ Measured: four
+    # citations of two commands that were deliberately never built — in
+    # README.md, QUICKSTART.md and CAPABILITIES.md, the first three files a
+    # newcomer opens. ⚠️ Invisible because the matcher only saw backticks.
+    fenced = []
+    # ⚠️ THE CLOSING FENCE MUST BE AT THE START OF A LINE. Without that anchor
+    # the pattern pairs one block's close with the next block's open, so the
+    # PROSE between them is read as code and real blocks are skipped — measured
+    # on this README: 4 "blocks" captured, of which two were paragraphs, and
+    # five actual commands went unseen.
+    # ⛔ AND THE LANGUAGE TAG IS NOT A FILTER. Restricting to bash/sh meant a
+    # ```yaml block did not match its own opening, so its CLOSE was paired with
+    # the next block's open — the fences fell out of step and half the file was
+    # read inside-out. ⚠️ Any block can cite a command; what matters is that the
+    # fences pair correctly.
+    # ⚠️ A `python` block is SOURCE, not an instruction to the reader: a
+    # `bin/x` inside a docstring is an example of what to write, not a command
+    # to run. ⛔ Measured: the template in bin/README.md names `check-something`
+    # as a placeholder, and reporting it would push writers to stop showing the
+    # shape at all. ⭐ Everything else counts — including an untagged block,
+    # which is where a shell command most often lands.
+    for _blk in re.finditer(r"^```(?!python)[a-z]*\n(.*?)^```", text,
+                            re.S | re.M):
+        for _c in re.finditer(r"(?:^|\s)((?:Mente/)?(?:bin|hooks)/[a-z0-9_.-]+)",
+                              _blk.group(1)):
+            fenced.append((_c.group(1), _blk.start() + _c.start(1)))
+
+    for m in list(POINTER.finditer(text)) + fenced:
+        if isinstance(m, tuple):
+            ref, _at = m[0].replace("Mente/", "", 1).rstrip("/"), m[1]
+        else:
+            ref, _at = (m.group(1) or m.group(2)).rstrip("/"), m.start()
         if os.path.basename(ref) == ref and ref in _SHAPES:
             continue          # a kind of file, not a pointer to one
         # ⭐ An INSTANCE file stays an instance file when cited with its path.
@@ -361,7 +392,7 @@ def check(path, rel, ceilings, quiet):
                 bad.append(("DOC-CNT-007", rel,
                             text[:m.start()].count("\n") + 1, stale))
             continue
-        if PLANNED.search(text[max(0, m.start() - 90):m.start()]):
+        if PLANNED.search(text[max(0, _at - 90):_at]):
             continue          # ⬜ marks a piece the engine has not written yet
         # ⭐ A CONTRAST REFERENCE names where something ELSE belongs — "that is
         # `docs/plans/`", "not here, that is X". ⛔ It is a destination an
@@ -369,12 +400,13 @@ def check(path, rel, ceilings, quiet):
         # reporting it would push writers to stop drawing the line at all.
         # ⚠️ Recognised by the FOLDER form (a trailing slash) plus the phrasing
         # that precedes it, never by the path alone.
-        if ref.endswith("/") or m.group(0).endswith("/`"):
-            lead = text[max(0, m.start() - 60):m.start()].lower()
+        if ref.endswith("/") or (not isinstance(m, tuple)
+                                 and m.group(0).endswith("/`")):
+            lead = text[max(0, _at - 60):_at].lower()
             if re.search(r"that is|belongs in|goes in|not here|instead|against",
                          lead):
                 continue
-        ln = text[:m.start()].count("\n") + 1
+        ln = text[:_at].count("\n") + 1
         # ⚠️ Deduplicated rather than stopped. The first version broke after
         # one finding per file, so a document with six broken pointers reported
         # one and looked almost right — ⛔ and the five behind it were invisible

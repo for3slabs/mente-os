@@ -223,6 +223,28 @@ p.inverse("㉚ ⛔ a pointer to a CURRENT document is NOT reported",
 p.inverse("㉛ ⛔ a pointer to a NON-.md file is out of scope, not assumed fine",
           lambda: put(GOOD + "\nThe pieces are in `pieces.tsv`.\n"))
 
+# ⭐ A FENCED COMMAND IS A STRONGER POINTER THAN AN INLINE ONE — it does not
+# name a piece, it tells the reader what to RUN. ⛔ Measured: four citations of
+# two commands deliberately never built, in README.md, QUICKSTART.md and
+# CAPABILITIES.md — the first three files a newcomer opens.
+p.case("㉜ ⛔ a command in a ```bash block that does not exist",
+       lambda: put(GOOD + "\n```bash\nbin/check-zzfenced\n```\n"),
+       "DOC-CNT-004")
+
+# ⚠️ The language tag is not a filter: restricting to bash meant a ```yaml block
+# did not match its own opening, so its CLOSE paired with the next block's OPEN
+# and the fences fell out of step — half a file read inside-out.
+p.case("㉝ ⚠️ a yaml block before it does not knock the fences out of step",
+       lambda: put(GOOD + "\n```yaml\nkey: value\n```\n\n"
+                          "```bash\nbin/check-zzafteryaml\n```\n"),
+       "DOC-CNT-004")
+
+# ⛔ A `python` block is SOURCE, not an instruction: a bin/x inside a docstring
+# is an example of what to write. Reporting it pushes writers to stop showing
+# the shape at all.
+p.inverse("㉞ ⛔ the same name inside a ```python block is an example",
+          lambda: put(GOOD + '\n```python\n"""check-zzexample — a template."""\n```\n'))
+
 p.clean()
 
 # ── DOC-SIZ-003 · a numeric ceiling states a unit this checker measures ─────
@@ -250,12 +272,12 @@ def _unit_case(edit):
 
 
 for _lbl, _edit, _want in (
-        ("㉜ ⭐ a ceiling in `words` · the unit is not the measured one",
+        ("㉟ ⭐ a ceiling in `words` · the unit is not the measured one",
          lambda c: c.replace("| **250 lines** | ⭐ move content out",
                              "| **250 words** | ⭐ move content out"), True),
-        ("㉝ ⭐ a ceiling with NO unit at all",
+        ("㊱ ⭐ a ceiling with NO unit at all",
          lambda c: c.replace("| **800 lines** |", "| **800** |"), True),
-        ("㉞ ⛔ the table as written → no finding",
+        ("㊲ ⛔ the table as written → no finding",
          lambda c: c, False)):
     _got = _unit_case(_edit)
     print("  %-46s %s %s" % (_lbl, "✅" if _got == _want else "🔴",

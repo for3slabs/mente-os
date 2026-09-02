@@ -105,37 +105,26 @@ Its first five sections (§A-E) must answer seven questions **on their own**:
 what is being built · what must NOT be touched · what it depends on · under which standards ·
 what phase · what the next step is · what is blocking it
 
-```bash
-bin/check-sufficiency my-feature     # can this restart from disk alone?
-```
+⬜ **There is no command for this**, and that is deliberate: ⛔ whether §A-E would let
+someone restart is the one test a script cannot run. `bin/check-block` verifies the
+SHAPE; the judgement stays yours.
 
 > **If §A-E do not answer those seven, the block does not close** — even if the code works.
 > The next session would rebuild your scope by inference and sound just as confident doing it.
 
 ### And when several blocks serve one mission: the CAMPAIGN
 
-A **campaign** is the figure above a block. Same shape — one file, lettered sections — one level up.
+A **campaign** is the figure above a block: same shape, one file, one level up.
 
 > ## ⛔ A campaign does not execute. It ORDERS.
 > No work happens inside one. It holds the mission, the order of attack, and the context its
-> blocks share. **The work always happens in the blocks.**
+> blocks share — written **once**, so switching blocks does not reset the why.
 
-⭐ **The problem it solves:** without it, several blocks serving one mission each carry their own
-copy of the background — why the work exists, what was already measured, what was decided across
-all of them. Two things then go wrong: the copies **drift** until they disagree and none is marked
-wrong, and **switching blocks resets the why** — an agent picking up the fourth block knows what
-that block does and nothing about what the whole thing is for.
+⚠️ **You do not start with a campaign.** Open a block. One appears when a *second* block turns out
+to serve the same mission and would otherwise repeat its whole context.
 
-A campaign writes that background **once**. Its blocks point at it instead of repeating it — the
-same rule that governs live numbers, applied to context: *name the source, never copy the value.*
-
-⭐ **The link is declared from both sides:** the campaign lists its blocks, and each block names
-its campaign. ⛔ A link declared from one side only is a link that silently never loads.
-
-⚠️ **You do not start with a campaign.** Open a block. A campaign appears when a *second* block
-turns out to serve the same mission and would otherwise repeat its whole context. Creating one
-first is building structure for work nobody has started.
-
+⭐ The shape, the two-sided link and the three ways a campaign has been measured to fail:
+`rules/contract-campaign.md`.
 ---
 
 ## 5 · What runs on its own
