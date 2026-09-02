@@ -30,6 +30,8 @@ import subprocess
 import sys
 
 MENTE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, os.path.join(MENTE, "bin"))
+import tsvread                                                 # noqa: E402
 REPO = os.path.dirname(MENTE)
 REG = os.environ.get("MENTE_ACCOUNTS") or os.path.join(MENTE, "accounts.tsv")
 COLUMNS = ("repo", "account", "role", "remote", "local_path", "why_it_exists",
@@ -41,18 +43,17 @@ def rows():
     """Every declared repository, as a dict per row. ⭐ Short rows are KEPT and
     padded: dropping one would make a malformed registry look emptier than it
     is, and check-accounts is what reports the malformation."""
-    out = []
-    try:
-        for line in open(REG, encoding="utf-8", errors="replace"):
-            if line.startswith("#") or not line.strip():
-                continue
-            f = [c.strip() for c in line.rstrip("\n").split("\t")]
-            if not f or f[0] in ("repo", ""):
-                continue
-            f += [""] * (len(COLUMNS) - len(f))
-            out.append(dict(zip(COLUMNS, f)))
-    except OSError:
+    # ⭐ CHK-SHR-001 · ONE reader (bin/tsvread.py). ⛔ Six copies had patched
+    # the header four different ways.
+    # ⚠️ ABSENT is not EMPTY: this returns None for "there is no registry" and
+    # [] for "there is one and it has no rows" — the caller acts differently on
+    # each, and the reader cannot decide that for it.
+    if not tsvread.exists(REG):
         return None
+    out = []
+    for _n, f in tsvread.rows(REG):
+        f += [""] * (len(COLUMNS) - len(f))
+        out.append(dict(zip(COLUMNS, f)))
     return out
 
 

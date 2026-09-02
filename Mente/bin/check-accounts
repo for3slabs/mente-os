@@ -21,6 +21,8 @@ import re
 import sys
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, os.path.join(ROOT, "bin"))
+import tsvread                                                 # noqa: E402
 RULE = os.path.join(ROOT, "rules", "rule-accounts.md")
 REG = os.environ.get("MENTE_ACCOUNTS") or os.path.join(ROOT, "accounts.tsv")
 TEMPLATE = os.path.join(ROOT, "templates", "accounts.tsv.template")
@@ -70,12 +72,9 @@ def rows():
     if not os.path.exists(REG):
         return None
     out = []
-    for n, line in enumerate(open(REG, encoding="utf-8", errors="replace"), 1):
-        if line.startswith("#") or not line.strip():
-            continue
-        f = [c.strip() for c in line.rstrip("\n").split("\t")]
-        if f and f[0] == "repo":
-            continue                       # the header names the columns
+    # ⭐ CHK-SHR-001 · ONE reader (bin/tsvread.py). ⛔ Six copies had patched
+    # the header four different ways.
+    for n, f in tsvread.rows(REG):
         out.append((n, f))
     return out
 

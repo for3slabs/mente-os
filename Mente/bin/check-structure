@@ -29,6 +29,8 @@ import os
 import sys
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, os.path.join(ROOT, "bin"))
+import tsvread                                                 # noqa: E402
 TABLE = os.path.join(ROOT, "pieces.tsv")
 TEMPLATES = os.path.join(ROOT, "templates")
 GITIGNORE = os.path.join(ROOT, ".gitignore")
@@ -103,12 +105,9 @@ def main():
     plan = planned()
     rows, stale, gaps = 0, [], []
 
-    for n, line in enumerate(open(TABLE, encoding="utf-8", errors="replace"), 1):
-        if line.startswith("#") or not line.strip():
-            continue
-        f = [c.strip() for c in line.rstrip("\n").split("\t")]
-        if len(f) < 2 or f[0] == "piece":
-            continue
+    # ⭐ CHK-SHR-001 · ONE reader (bin/tsvread.py). ⛔ Six copies had
+    # patched the header four different ways.
+    for n, f in tsvread.rows(TABLE, want=2):
         rows += 1
         # ⛔ `lstrip("./")` eats the leading dot of a DOTFILE: `.gitignore`
         # became `gitignore`, which exists nowhere, and the validator reported
