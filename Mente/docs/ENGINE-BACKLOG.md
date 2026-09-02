@@ -958,6 +958,35 @@ The accounts registry is where three separate systems meet:
 or to shipping arrives through this registry, and it inherits whatever is still
 open in it.
 
+---
+
+## E-41 · ✅ CLOSED — a probe proves a PIECE; nothing proved a PAIR
+
+**Found and closed:** 2026-09-01, by the exhaustive audit of the eighteen closed
+entries.
+
+🔴 **`gate-critical` had not fired for days, and every probe was green.** It ran
+`check-block --quiet` and looked for a block's name in that run's output — empty
+by contract, `CHK-QUI-001`. ⛔ The condition could never be true, so every
+insufficient close went straight through.
+
+> ## ⭐ A PROBE PROVES A PIECE WORKS. IT CANNOT PROVE TWO PIECES STILL AGREE.
+> ⚠️ That is a different question, and nothing in the suite was asking it.
+
+⛔ **The failure shape is always the same:** one side changes its contract — a
+flag stops printing, an exit code shifts, a message is reworded — and the other
+keeps reading what used to be there. **Both sides pass their own probe, and the
+pair is dead.**
+
+⭐ **`bin/probes/probe-conjunction.py` closes it.** Five gates call a validator;
+it exercises every pair against a REAL INSTALLATION — installed, with a block
+and a manifest and a registry — because a gate that only ever meets fixtures has
+never met the validator it depends on.
+
+⚠️ **Proven by reintroducing the defect:** with the old `--quiet` read restored,
+the probe drops to 8 of 10 and names the case. Had it existed, the gate would
+have been dead for one run rather than for days.
+
 
 Related: `README.md` (folder) · `../memory/principles/README.md` (where the owners live) ·
 `../rules/README.md` (where a closed entry usually lands) · `../CAPABILITIES.md`.
