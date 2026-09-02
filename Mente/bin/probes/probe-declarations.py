@@ -86,9 +86,12 @@ open(CFG, "w", encoding="utf-8").write(
     'schema: v1\nowner:\n  name: "x"\n  never_called: []\npillars:\n'
     '  architecture: null\nsession:\n  project_dir: ""\ngates: []\n')
 r = run()
-for field in ("never_called", "architecture", "project_dir", "gates"):
-    case("⑤ ⭐ config · `%s` at its empty default is counted" % field,
-         field in r.stdout)
+# ⭐ ONE CASE PER SUBJECT, so each row is its own ADDRESS: this loop applies one
+# check to four settings, and a bare "⑤ failed" would not say which.
+for _i, field in enumerate(("never_called", "architecture",
+                            "project_dir", "gates")):
+    case("⑤%s ⭐ config · `%s` at its empty default is counted"
+         % ("abcd"[_i], field), field in r.stdout)
 
 # ⭐ and a filled value disappears from the list
 open(CFG, "w", encoding="utf-8").write(

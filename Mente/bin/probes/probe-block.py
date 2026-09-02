@@ -162,7 +162,7 @@ if real:
     # REAL finding — a real block carries `A B G C D…` with G duplicated — and
     # counting it as illegibility hid a genuine defect behind a probe warning.
     shape = [l for l in mine if "BLK-OPN-001" in l]
-    print("  ⑯ %d bloques reales · %d hallazgos" % (len(real), len(mine)))
+    print("  %d bloques reales · %d hallazgos" % (len(real), len(mine)))
     print("     ⭐ de FORMA (el detector no los lee): %d %s"
           % (len(shape), "✅" if not shape else "🔴"))
     by = {}
@@ -172,7 +172,7 @@ if real:
     for k in sorted(by):
         print("       %-14s %d" % (k, by[k]))
 else:
-    print("  ⑯ ⬜ NOT_MEASURED · set %s to a tree of real blocks" % "MENTE_CROSSRUN_BLOCKS")
+    print("  ⬜ NOT_MEASURED · set %s to a tree of real blocks" % "MENTE_CROSSRUN_BLOCKS")
 
 if _had_idx:
     open(_idx, "w", encoding="utf-8").write(_orig_idx)

@@ -193,10 +193,10 @@ if real:
     for l in mine:
         for m in re.findall(r"ARC-[A-Z]+-\d+", l):
             by[m] = by.get(m, 0) + 1
-    print("  ⑨ %d archivos reales · %d hallazgos" % (len(real), len(mine)))
+    print("  %d archivos reales · %d hallazgos" % (len(real), len(mine)))
     for k in sorted(by):
         print("       %-14s %d" % (k, by[k]))
 else:
-    print("  ⑨ ⬜ NOT_MEASURED · set MENTE_CROSSRUN_ARCHIVE to a real archive")
+    print("  ⬜ NOT_MEASURED · set MENTE_CROSSRUN_ARCHIVE to a real archive")
 
 sys.exit(0 if p.report() else 1)

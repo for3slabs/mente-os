@@ -105,10 +105,10 @@ if real:
     for l in mine:
         for m in re.findall(r"WRK-[A-Z]+-\d+", l):
             by[m] = by.get(m, 0) + 1
-    print("  ⑨ %d bloques reales · %d hallazgos" % (len(real), len(mine)))
+    print("  %d bloques reales · %d hallazgos" % (len(real), len(mine)))
     for k in sorted(by):
         print("       %-14s %d" % (k, by[k]))
 else:
-    print("  ⑨ ⬜ NOT_MEASURED · set %s to a tree of real blocks" % "MENTE_CROSSRUN_BLOCKS")
+    print("  ⬜ NOT_MEASURED · set %s to a tree of real blocks" % "MENTE_CROSSRUN_BLOCKS")
 
 sys.exit(0 if p.report() else 1)
