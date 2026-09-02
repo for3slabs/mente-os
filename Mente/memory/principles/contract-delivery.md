@@ -256,8 +256,25 @@ it removes the boundary.
 
 ## 9 · WHEN A DECISION IS THE RESPONSE
 
-⚖️ **Shape:** the question in one line · a table (Option · what it means · cost) · then
-*"My recommendation: X. Reason: Y. The trade-off: Z."*
+⚖️ **Shape:** the question in one line · the options, each with its cost · then *"My
+recommendation: X. Reason: Y. The trade-off: Z."*
+
+> ## ⭐ IF THE HOST CAN ASK, ASKING BEATS WRITING
+> ⬜ **Declare the mechanism this host offers** — §11 holds it beside the ceilings. ⛔ The engine
+> does not know what any particular host provides, and guessing produces a confident wrong answer.
+>
+> | The host offers | ⭐ Then a decision is |
+> |---|---|
+> | a way to PRESENT options and receive one back | ⭐ **asked through it** — the reader selects |
+> | nothing but text | the table below, written out |
+>
+> ⚠️ **Measured on this engine, 2026-09-02:** a decision was written into the closing block's
+> 🙋 field as prose while the host had a selection mechanism available. ⛔ **The reader then has
+> to compose an answer to a question that could have been one click** — which is the turn §3 says
+> a decision must not cost.
+>
+> ⭐ **The 🙋 field still names that a decision is pending.** It records; it does not ask. ⛔ A
+> block that both names the decision and IS the asking has merged the two again.
 
 ⭐ **The risk goes INSIDE the option, not in a note afterwards.** An option presented without its
 cost is a recommendation wearing a disguise, and the reader chooses it without knowing what they
@@ -293,6 +310,7 @@ opinion, not a limit.
 | 🔧 RESULT · 🔍 ANALYSIS | ⬜ … |
 | 📦 DELIVERY | ⬜ … |
 | ⭐ **tier-1 threshold** — past this the state appears twice (§4) | ⬜ … |
+| ⭐ **decision mechanism** — how this host presents options (§9) | ⬜ … |
 
 ⭐ **Over the ceiling, the detail goes to a file and the response points at it** — a curated
 summary, never a raw log. ⚠️ And the pointer names **what that file delivers**, not just its
