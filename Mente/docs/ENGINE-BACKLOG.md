@@ -331,11 +331,14 @@ happens to remember them, which is the compliance rate the whole system was buil
 
 ---
 
-## E-21 · ⭐ The engine is designed further ahead than it is validated
+## E-21 · ✅ CLOSED — the ratio is measured on every run, and it has inverted
 
 - **Surfaced by:** the pattern this engine was built to escape, applied to itself
 - **Affects:** everything in this list
-- **Closes when:** ⭐ the ratio inverts — more of this backlog is **enforced** than is **written**
+- **Closed:** 2026-09-01 — `bin/generate-metrics` publishes `rules.declared`,
+  `rules.locked`, `rules.enforced_pct`, `backlog.closed` and `backlog.closed_pct`; three probe
+  cases in `../bin/probes/probe-generators.py` (⑱ it publishes them · ⑲ they MOVE when the tree
+  moves · ⑳ no backlog file is a gap, not a 0)
 
 **Why it matters.** ⛔ **Designing a lot and validating a little is the failure mode that produces
 systems nobody can trust** — and a governance engine is the easiest place in the world to commit
@@ -348,6 +351,16 @@ right** — a document cannot refuse, and neither can a backlog.
 
 **The test, stated plainly:** *how much of what this engine declares can it check?* Any answer
 that has to be argued rather than measured is the answer.
+
+⭐ **So the answer is generated, never written here.** Read `METRICS.md` — `rules.enforced_pct` and
+`backlog.closed_pct`. ⛔ A number copied into this paragraph would be correct exactly once, and
+this entry is the last place in the engine that should get that wrong.
+
+⚠️ **What closing this entry does NOT mean.** It does not mean the engine is finished, and it does
+not freeze the ratio: ⭐ the point was never to reach a figure, it was to stop the figure from
+being a matter of opinion. ⛔ If the written half starts growing again while the enforced half
+does not, the metric says so on the next run — which is the only form of this promise that
+survives attention moving elsewhere.
 
 ---
 
