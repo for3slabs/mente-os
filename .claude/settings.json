@@ -56,6 +56,26 @@
             "type": "command",
             "command": "python3 \"$CLAUDE_PROJECT_DIR/Mente/hooks/gate-critical.py\"",
             "$comment": "the same gate on the command path — an edit is not the only way to do damage."
+          },
+          {
+            "type": "command",
+            "command": "python3 \"$CLAUDE_PROJECT_DIR/Mente/hooks/gate-accounts.py\"",
+            "$comment": "layer 1 of the accounts gate: reads the command TEXT. Layer 2 is .git/hooks/pre-push, which cannot be walked around."
+          },
+          {
+            "type": "command",
+            "command": "python3 \"$CLAUDE_PROJECT_DIR/Mente/hooks/watch-external.py\"",
+            "$comment": "looks before an action a stale view would invalidate — the only instant the warning is worth anything."
+          }
+        ]
+      },
+      {
+        "matcher": "Agent|Task",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$CLAUDE_PROJECT_DIR/Mente/hooks/gate-handoff.py\"",
+            "$comment": "a specialist that can WRITE does not launch without a declared scope."
           }
         ]
       },
