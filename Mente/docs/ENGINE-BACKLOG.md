@@ -421,6 +421,19 @@ delete and an unrelated add, and then the log on the new name starts today.
 133 citations rewritten across 46 files — the battery stayed green throughout
 (the count is in `docs/METRICS.md`).
 
+🔴 **AND THE EXHAUSTIVE AUDIT REOPENED THIS ENTRY.** Verifying all eighteen closed
+entries BY EXECUTION rather than by reading found two things this record had
+claimed and not done: the piece table's own HEADER ROW still named its five
+columns in Spanish, and the table's id was still `piezas`.
+
+⚠️ **The header is an instruction too** — it names the columns every reader
+resolves and every writer copies by hand. ⛔ And FOUR readers compared against
+the literal `"pieza"`, so renaming the row alone would have made each one treat
+the header as a piece and report the word as an undeclared file. They moved
+together.
+
+⭐ **This is what closing by reading misses and closing by running does not.**
+
 **Why it matters.** ⭐ Every rule in this engine is written in one language, and every filename
 follows it — except four. ⚠️ **A clone in another country receives file names it cannot read**,
 and the naming rule this engine ships says a name must state its subject to a stranger.

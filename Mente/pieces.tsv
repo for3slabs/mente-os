@@ -31,7 +31,7 @@
 #    data. The frontier in mente.config.yml is the authority; this column must
 #    agree with it.
 # ══════════════════════════════════════════════════════════════════════════
-pieza	ruta	governance	clase	que_es
+piece	path	governance	class	what_it_is
 # ── engine · the validators — the motor, nobody edits per instance ──
 check-health-piece	bin/check-health	engine	canonical	is the system healthy
 val-estructura	bin/check-structure	engine	canonical	the tree is the one this table declares
@@ -95,7 +95,7 @@ tpl-pending	templates/PENDING.md.template	engine	canonical	the blueprint for the
 tpl-puentes	templates/bridges.md.template	engine	canonical	the blueprint for the registry of other installations
 tpl-pieces	templates/pieces.tsv.template	engine	canonical	the blueprint for this table — the only one shipping with content
 # ── shared · engine gives the form, owner writes the content ──
-piezas	pieces.tsv	shared	canonical	this table — where each key piece lives
+pieces	pieces.tsv	shared	canonical	this table — where each key piece lives
 accounts-register	accounts.tsv	shared	canonical	which account governs each repo — ⛔ never a token
 tpl-accounts	templates/accounts.tsv.template	engine	canonical	the blueprint for the account register — ⛔ ships with no rows
 doc-index	docs/INDEX.md	shared	generated	every document — bin/generate-index

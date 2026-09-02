@@ -67,7 +67,7 @@ def declared_paths(table=None):
         if line.startswith("#") or not line.strip():
             continue
         f = [c.strip() for c in line.rstrip("\n").split("\t")]
-        if len(f) >= 2 and f[0] != "pieza":
+        if len(f) >= 2 and f[0] != "piece":
             out.setdefault(f[1].replace("repo:", "").lstrip("./"), []).append((n, f[0]))
     return out
 
@@ -197,7 +197,7 @@ def main():
     for p in missing:
         print(f"   ⬜ {p}")
     print(f"\n   Add one row per file to {TABLE}: "
-          f"pieza <TAB> ruta <TAB> governance <TAB> clase <TAB> que_es")
+          f"piece <TAB> path <TAB> governance <TAB> class <TAB> what_it_is")
     return 1
 
 

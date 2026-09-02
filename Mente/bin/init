@@ -82,7 +82,7 @@ def declared_paths():
         if line.startswith("#") or not line.strip():
             continue
         f = [c.strip() for c in line.rstrip("\n").split("\t")]
-        if len(f) < 2 or f[0] == "pieza":
+        if len(f) < 2 or f[0] == "piece":
             continue
         p = f[1]
         if p.startswith("templates/"):
