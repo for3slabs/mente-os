@@ -1111,15 +1111,54 @@ the deletion possible.
 
 ---
 
-## E-44 · Five validators emit no verdict symbol at all
+## E-44 · ✅ CLOSED — 23 of 23 emit a verdict, and the battery refuses a silent one
 
 - **Surfaced by:** measuring symbol-vs-exit-code across all 23 validators while closing E-04
 - **Affects:** `../bin/check-archive` · `../bin/check-campaign` · `../bin/check-handoff` ·
-  `../bin/check-patterns` · `../bin/check-pending`
-- **Closes when:** every validator's output opens with ✅, 🔴, ⚠️ or ⬜
+  `../bin/check-patterns` · `../bin/check-pending` · `../bin/probes/run-all.py`
+- **Closed:** 2026-09-01 — the five now say ⬜ or ✅, and the battery counts a mute validator as a
+  failure, proved by silencing one in a copy
 
-**Why it matters.** ⭐ The exit code is now unambiguous (`CHK-XIT-001`), and a person reading the
-terminal does not see it. ⚠️ These five print a summary line with no verdict marker, so a human
-skimming a battery run cannot tell a pass from a nothing-to-check — ⛔ and `⬜ nothing to check`
-reading as `✅ passed` is the same collapse E-04 closed, one layer up.
+**Why it mattered.** ⭐ The exit code is unambiguous since `CHK-XIT-001`, and a person reading the
+terminal does not see it. ⚠️ These five printed a summary line and fell silent when their
+collection was empty — ⛔ and silence after a summary reads exactly like a tick to anyone skimming
+a battery run.
+
+⭐ **No new rule was needed: `CHK-TRV-002` already said it** — *when the instance is absent, the
+check SKIPS and SAYS SO, never a pass*. ⚠️ Its implementation measured something narrower than its
+wording (an unguarded `open()`), so the rule was right and its reach was short. The battery closes
+that gap rather than a second rule being declared beside it.
+
+⚠️ **The first count was wrong and measuring fixed it.** Reading "does a verdict symbol appear
+anywhere in the output" gave five; reading "does the LAST line carry one" gave eight. ⭐ The extra
+three (`../bin/check-code-patterns`, `../bin/check-declarations`, `../bin/check-health`) do say ⬜
+out loud and then close with explanatory prose — they never committed the defect. ⛔ The stricter
+reading would have sent three correct validators to be "fixed".
+
+---
+
+## E-45 · ✅ CLOSED — the reporter owns the clean-run verdict, and six validators stopped writing it
+
+- **Surfaced by:** closing E-44 — `../bin/check-patterns` was the one `report()` caller that never
+  printed it
+- **Affects:** `../bin/findings.py` · six validators
+- **Closed:** 2026-09-01 — `report()` takes `examined` and `subject`; six callers pass them and
+  deleted their own line
+
+**Why it mattered.** ⭐ `report()` printed nothing when there was nothing to report, so every caller
+wrote its own `✅ 0 violations`. ⚠️ Fifteen copies of one line, and one had forgotten it — which is
+precisely how a duplicated line fails: not all at once, but one straggler at a time.
+
+⭐ **The caller passes HOW MANY things it examined**, because it is the only one that knows what it
+was counting; the reporter turns `0` into ⬜ and anything else into ✅. ⛔ Inferring it inside the
+reporter would mean guessing at the caller's collection.
+
+🔴 **A worse defect surfaced while migrating.** `../bin/check-work` and `../bin/check-block` printed
+`✅ 0 violations` over a tree with **zero blocks** — not silence, an assertion that it passed.
+⚠️ That is more dangerous than the five mute ones E-44 fixed: a false tick is more convincing than
+an absence.
+
+⭐ **Nine local ticks remain and are correct**: their subject always exists — documents, validators,
+the engine's own rules — so an unconditional ✅ is the true verdict there. ⛔ Migrating them for
+symmetry would have made three correct validators say ⬜ over a subject that was never missing.
 

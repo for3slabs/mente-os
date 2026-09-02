@@ -380,8 +380,11 @@ def main():
                  else "binding failed · the manifest describes a world that "
                       "does not exist"))
         return 1
-    if not quiet and targets:
-        print("✅ 0 violations")
+    # ⛔ CHK-TRV-002 · no manifest is a SKIP, never a pass. ⚠️ Silence after a
+    # summary line reads exactly like a tick to anyone skimming a battery run.
+    if not quiet:
+        print("✅ 0 violations" if targets else
+              "⬜ NOT MEASURED · no manifest to check · nothing was verified here")
     return 0
 
 

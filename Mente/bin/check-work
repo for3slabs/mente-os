@@ -166,11 +166,12 @@ def main():
               "WRK-FRI-003 · the owner decides, never the agent"
               % (r, len(bs), ", ".join(sorted(bs))))
 
-    if findings:
-        return report(findings, "rules/rule-working-in-a-block.md", quiet)
-    if not quiet:
-        print("✅ 0 violations")
-    return 0
+    # ⭐ CHK-TRV-002 lives in report(): the caller passes HOW MANY things
+    # it examined. ⛔ This printed `✅ 0 violations` over an EMPTY tree —
+    # worse than the silent ones, because a false tick is more
+    # convincing than an absence.
+    return report(findings, "rules/rule-working-in-a-block.md", quiet,
+                  examined=len(blocks), subject="block")
 
 
 if __name__ == "__main__":

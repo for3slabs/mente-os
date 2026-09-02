@@ -255,11 +255,12 @@ def main():
     if not quiet:
         print("check-archive · %d archived block(s)%s"
               % (len(dirs), " · nothing measured" if not dirs else ""))
-    if findings:
-        return report(findings, "rules/contract-archive.md", quiet)
-    if not quiet and dirs:
-        print("✅ 0 violations")
-    return 0
+    # ⭐ CHK-TRV-002 lives in report(): the caller passes HOW MANY things
+    # it examined, and the reporter turns 0 into ⬜ rather than silence.
+    # ⛔ Fifteen validators each wrote that tick; one had forgotten it,
+    # which is how a duplicated line fails — one straggler at a time.
+    return report(findings, "rules/contract-archive.md", quiet,
+                  examined=len(dirs), subject="archived block")
 
 
 if __name__ == "__main__":

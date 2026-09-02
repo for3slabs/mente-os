@@ -220,7 +220,7 @@ def prints_usage(out):
     return "usage" in head or head.startswith(("bin/", "grade-block"))
 
 
-dirty, unmeasurable, skipped = [], [], []
+dirty, unmeasurable, skipped, mute = [], [], [], []
 for c in checkers:
     try:
         rr = subprocess.run([sys.executable, os.path.join(BIN, c), "--quiet"],
@@ -231,6 +231,22 @@ for c in checkers:
         unmeasurable.append((c, e.__class__.__name__))
         continue
     if rr.returncode == 0:
+        # ⛔ CHK-TRV-002 · A CLEAN RUN MUST STILL SAY SO. ⚠️ Five validators
+        # printed a summary line and then fell silent when their collection was
+        # empty — and silence after a summary reads exactly like a tick to
+        # anyone skimming a battery run, which is the false positive that rule
+        # exists to stop.
+        # ⭐ Checked on the VERBOSE run: `--quiet` is the exit code only, so the
+        # quiet call above has no output to inspect by contract.
+        try:
+            plain = subprocess.run([sys.executable, os.path.join(BIN, c)],
+                                   cwd=ROOT, capture_output=True, text=True,
+                                   timeout=120)
+        except (OSError, subprocess.SubprocessError) as e:
+            unmeasurable.append((c, e.__class__.__name__))
+            continue
+        if not any(v in plain.stdout for v in ("✅", "🔴", "⚠️", "⬜")):
+            mute.append(c)
         continue
     # ⭐ Measured, not parsed: a tool needing a subject says so by printing its
     # usage, and that is a SKIP — never a finding about the tree.
@@ -270,6 +286,14 @@ if dirty:
           "away" % len(dirty))
 else:
     print("     ✅ %d validator(s) run clean on this tree" % len(checkers))
+if mute:
+    # ⭐ Counted as failures: a validator whose verdict a reader cannot see has
+    # not reported, whatever its exit code says.
+    total += len(mute)
+    failed += len(mute)
+    for c in mute:
+        print("     🔴 %s exits 0 and prints no verdict · ⛔ CHK-TRV-002 · "
+              "silence reads as a pass" % c)
 
 print("\n  ── coverage")
 print("     validators: %d · with a probe: %d%s"
