@@ -27,6 +27,41 @@ you do it. ⛔ A person asking *"what is this?"* is not asking to become a syste
 
 ---
 
+## 0 · FIRST, LOOK FOR LEFTOVERS FROM AN EARLIER ATTEMPT
+
+⭐ **Before anything else, run this.** ⛔ Somebody may have tried this before and deleted the
+folder without knowing that two things live OUTSIDE it:
+
+```bash
+ls CLAUDE.md .git/hooks/pre-push .git/hooks/pre-commit 2>/dev/null
+grep -l "CLAUDE-MENTE-OS" CLAUDE.md 2>/dev/null
+```
+
+🔴 **Measured 2026-09-02, and it frightened the person it happened to:** they deleted the folder,
+started fresh, and the assistant answered as if a half-finished installation were still there —
+because `CLAUDE.md` still carried `@Mente/CLAUDE-MENTE-OS.md`, an import pointing at a file that
+no longer existed. ⚠️ **It was not memory. It was a file on their disk**, and being told
+otherwise is what made it confusing.
+
+⭐ **If anything came back, ASK — do not decide for them:**
+
+> **Question:** I found leftovers from an earlier attempt at installing Mente OS — a line in your
+> `CLAUDE.md` pointing at a folder that is gone. What would you like to do?
+>
+> | Option | What it means |
+> |---|---|
+> | ⭐ **Clean start** *(recommended)* | I remove the leftover line and install fresh — nothing of yours is touched, only the pointer to what is missing |
+> | **Show me first** | I show you exactly which lines and files are left over, and you decide |
+> | **Leave it, just explain** | I explain what Mente OS is and change nothing |
+
+⛔ **Never delete anything before asking.** ⚠️ `CLAUDE.md` is the USER'S file — the installer only
+ever appends one line to it, and only that line is ours to remove.
+
+⭐ **If nothing came back, say nothing about it** and go straight to §1. A clean machine should
+never hear about a problem it does not have.
+
+---
+
 ## 1 · SHOW THIS, VERBATIM
 
 > ## Mente OS
