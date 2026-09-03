@@ -48,11 +48,27 @@ you do it. ⛔ A person asking *"what is this?"* is not asking to become a syste
 > | **A block** | one unit of work. It says what is being built, ⭐ **what must NOT be touched**, what it depends on, and what comes next |
 > | **A campaign** | several blocks under one mission, so switching between them does not restart the reason |
 > | **The gates** | they fire on their own and stop what should not happen — a destructive change with no way back, closing work that is not finished |
-> | **The memory** | where you left off, what is still owed, what was decided and why |
+> | **The memory** | three files you will actually use — see below |
 >
-> **What you do with it:** you tell your assistant what you want to build. It opens a block,
-> writes down the boundary, works inside it, and cannot close it until the work is verified.
-> ⭐ **You do not have to remember any of that — the system does.**
+> **The memory, by name:**
+>
+> | File | ⭐ What you ask for |
+> |---|---|
+> | `memory/RESUME.md` | *"where did we leave off?"* — the assistant reads it first every session |
+> | `memory/PENDING.md` | *"what do we still owe?"* — everything postponed, so nothing is lost by forgetting |
+> | `memory/` log | *"why was this decided?"* — the reasoning, months later, when nobody remembers |
+>
+> **What you do with it — you delegate, in your own words:**
+>
+> | You say | ⭐ What happens |
+> |---|---|
+> | *"build me X"* | it opens a block, asks what it may and may not touch, and works inside that |
+> | *"where were we?"* | it reads `RESUME.md` instead of guessing |
+> | *"what's left?"* | it reads `PENDING.md` |
+> | *"is this done?"* | it cannot say yes until the checks pass — ⛔ that is not its opinion to give |
+>
+> ⭐ **You do not learn commands and you do not remember any of this.** You ask in plain words;
+> the system is what makes the assistant keep its promises.
 >
 > **What it needs:** three things most computers already have. ⚠️ **You do not have to check or
 > install them — I will.**
@@ -89,9 +105,16 @@ bin/init --owner "<their name>"
 bin/probes/run-all.py
 ```
 
-⚠️ **`bin/init` asks for a name and refuses to guess one.** ⭐ Ask the person for theirs in plain
-words — *"what name should I put as the owner?"* — and pass it. ⛔ Do not send them to edit
-`mente.config.yml`: `bin/init` writes it.
+⚠️ **`bin/init` asks for a name and refuses to guess one.** ⭐ Ask it as a plain sentence:
+
+> **What name should I put as the owner?** *(it goes in the files the system creates, and you can
+> change it later)*
+
+⛔ **Not as a multiple-choice question** — there are no options to choose between, and a chooser
+with one option is refused by the tool and never reaches the person. ⚠️ Measured 2026-09-02: an
+assistant tried exactly that and the question was rejected mid-run.
+
+⛔ **Do not send them to edit `mente.config.yml`**: `bin/init` writes it.
 
 ⭐ **Then report one line**, using the numbers the run just printed: *"Installed — N checks, 0
 failures."* ⛔ Not the log, and ⚠️ **not a number from this file**: quote what the run said, or it
@@ -114,6 +137,22 @@ I be allowed to change for this, and which are off limits?"* — write their ans
 
 ⛔ **Do not fill the boundary yourself.** It is the one thing the system exists to get from a
 person, and an assistant that writes its own limits has written no limit at all.
+
+---
+
+## 5b · TELL THEM WHAT THEY CAN ASK FOR NEXT
+
+⭐ **Once one block exists, show them these four sentences** — they are the whole interface:
+
+> | Say this | And I will |
+> |---|---|
+> | *"where did we leave off?"* | read `memory/RESUME.md` — no guessing, no re-explaining |
+> | *"what's still pending?"* | read `memory/PENDING.md` |
+> | *"can we close this?"* | run the checks — ⛔ if they fail, it does not close, and I will say what is missing |
+> | *"start something new"* | open another block, and ask you its boundary again |
+
+⚠️ **Never hand them a command to type.** ⭐ They say the sentence, you run what it means — that is
+the whole point of the system being on disk instead of in their head.
 
 ---
 

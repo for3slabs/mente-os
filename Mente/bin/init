@@ -229,11 +229,31 @@ def wire_hook(dry, name="pre-push"):
                 else "⚠️ .git/hooks/%s points elsewhere — left untouched" % name)
     if dry:
         return "would link %s" % name
+    # ⭐ A SYMLINK IS THE PREFERRED SHAPE, NOT THE ONLY ONE. 🔴 Measured on
+    # Windows 2026-09-02: os.symlink needs SeCreateSymbolicLinkPrivilege, which
+    # a normal account does not have unless Developer Mode is on — so init
+    # reported "⚠️ could not link" and BOTH git hooks silently did not exist.
+    # ⛔ The user then faced a choice about OUR platform gap, which is not a
+    # decision a user should ever be handed.
+    # ⭐ A git hook only has to be an executable file. When the link is refused,
+    # a two-line launcher does the same job on every system.
     try:
         os.symlink(os.path.relpath(src, hooks), link)
+        return "wired"
+    except (OSError, NotImplementedError, AttributeError):
+        pass
+    try:
+        with open(link, "w", encoding="utf-8", newline="\n") as fh:
+            fh.write('#!/usr/bin/env bash\n'
+                     '# ⭐ Written by bin/init because this system refused a\n'
+                     '# symlink (Windows without Developer Mode). It runs the\n'
+                     '# same hook — the shape differs, the behaviour does not.\n'
+                     'exec "$(dirname "$0")/%s" "$@"\n'
+                     % os.path.relpath(src, hooks).replace(os.sep, "/"))
+        os.chmod(link, 0o755)
     except OSError as e:
-        return "⚠️ could not link (%s)" % e.__class__.__name__
-    return "wired"
+        return "⚠️ could not wire (%s)" % e.__class__.__name__
+    return "wired (launcher — this system refused a symlink)"
 
 
 def harden(dry):
