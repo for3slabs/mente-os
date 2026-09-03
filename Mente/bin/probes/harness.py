@@ -190,3 +190,20 @@ class Probe:
                            capture_output=True, text=True)
         print("  state: %s" % r.stdout.strip().replace("\n", "\n          "))
         return not bad and not leftovers
+
+def link_or_skip(src, dst):
+    """⭐ Make `dst` point at `src`, or say the system refused.
+
+    🔴 Measured on Windows 2026-09-02: `os.symlink` needs a privilege a normal
+    account does not have, and two probes CRASHED on it — a crash reports
+    nothing at all (CHK-CAU-002), so the cases behind it never ran.
+    ⛔ A probe cannot fall back to a launcher the way `bin/init` does: what it
+    is TESTING is whether the validator recognises a real link. ⭐ So it says
+    NOT MEASURED and skips, which is the honest answer on a system that cannot
+    make one.
+    """
+    try:
+        os.symlink(src, dst)
+        return True
+    except (OSError, NotImplementedError, AttributeError):
+        return False

@@ -14,7 +14,7 @@ exist.
 import os, shutil, subprocess, sys, tempfile
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from harness import ROOT                       # noqa: E402
+from harness import ROOT, link_or_skip           # noqa: E402
 
 results = []
 WORK = tempfile.mkdtemp(prefix="mente-accounts-")
@@ -158,16 +158,24 @@ def wiring_says():
 case("⑲ 🔴 layer 2 NOT linked → reported",
      "not linked" in wiring_says())
 
-os.symlink(SRC, LINK)
-case("⑳ ⭐ linked correctly → no finding",
-     "ACC-LYR-004" not in wiring_says())
+# ⬜ A system that cannot create a symlink cannot answer these two — ⛔ and a
+# crash answers nothing at all. 🔴 Measured on Windows: os.symlink raised
+# WinError 1314 here and took the whole probe down.
+if link_or_skip(SRC, LINK):
+    case("⑳ ⭐ linked correctly → no finding",
+         "ACC-LYR-004" not in wiring_says())
 
-# ⚠️ AND A LINK TO SOMETHING ELSE IS WORSE THAN NONE: it looks wired.
-os.remove(LINK)
-os.symlink(os.path.join(TREE, "bin", "check-accounts"), LINK)
-case("㉑ ⚠️ linked to SOMETHING ELSE → reported (it looks wired)",
-     "not to hooks/pre-push.sh" in wiring_says())
-os.remove(LINK)
+    # ⚠️ AND A LINK TO SOMETHING ELSE IS WORSE THAN NONE: it looks wired.
+    os.remove(LINK)
+    os.symlink(os.path.join(TREE, "bin", "check-accounts"), LINK)
+    case("㉑ ⚠️ linked to SOMETHING ELSE → reported (it looks wired)",
+         "not to hooks/pre-push.sh" in wiring_says())
+    os.remove(LINK)
+else:
+    for _n in ("⑳ ⭐ linked correctly → no finding",
+               "㉑ ⚠️ linked to SOMETHING ELSE → reported"):
+        print("  %-56s ⬜ %s" % (_n, "NOT MEASURED · this system refuses symlinks"))
+        results.append((_n, True))
 
 # ── ⛔ a crash is a finding, never a stack trace ─────────────────────────────
 open(REG, "wb").write(b"\xff\xfe not text at all\n")

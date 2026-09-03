@@ -15,7 +15,7 @@ exist.
 import json, os, shutil, subprocess, sys, tempfile
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from harness import ROOT                       # noqa: E402
+from harness import ROOT, link_or_skip           # noqa: E402
 
 results = []
 WORK = tempfile.mkdtemp(prefix="mente-acct-")
@@ -146,11 +146,31 @@ case("⑭ ⭐ layer 2 ABORTS them all · it never reads the command", blocked)
 # everything through in silence. ⛔ A guard that fails open gives confidence
 # without giving protection.
 link = os.path.join(WORK, "linked-pre-push")
-os.symlink(L2, link)
-r = subprocess.run(["bash", link, "origin", "https://host/someone/unknown.git"],
+# ⬜ A system that refuses symlinks cannot answer this one — ⛔ and it CRASHED
+# here on Windows (WinError 1314), taking every case after it down with it.
+if link_or_skip(L2, link):
+    r = subprocess.run(["bash", link, "origin", "https://host/someone/unknown.git"],
+                       cwd=TREE, capture_output=True, text=True,
+                       env=dict(os.environ, **ENV))
+    case("⑮ 🔴 invoked through a SYMLINK it still aborts (does not fail open)",
+         r.returncode == 1, "exit=%d" % r.returncode)
+else:
+    print("  %-56s ⬜ %s" % ("⑮ 🔴 invoked through a SYMLINK",
+                            "NOT MEASURED · this system refuses symlinks"))
+    results.append(("⑮ symlink", True))
+
+# ⭐ THE LAUNCHER, which is what `bin/init` writes where a symlink is refused.
+# ⛔ It runs everywhere, so this case is never skipped: the shape differs and
+# the behaviour must not.
+launcher = os.path.join(WORK, "launcher-pre-push")
+with open(launcher, "w", encoding="utf-8", newline="\n") as fh:
+    fh.write('#!/usr/bin/env bash\nexec "%s" "$@"\n' % L2)
+os.chmod(launcher, 0o755)
+r = subprocess.run(["bash", launcher, "origin",
+                    "https://host/someone/unknown.git"],
                    cwd=TREE, capture_output=True, text=True,
                    env=dict(os.environ, **ENV))
-case("⑮ 🔴 invoked through a SYMLINK it still aborts (does not fail open)",
+case("⑮b 🔴 invoked through a LAUNCHER it still aborts",
      r.returncode == 1, "exit=%d" % r.returncode)
 
 # ── ⬜ no registry · reported, never silent ──────────────────────────────────
