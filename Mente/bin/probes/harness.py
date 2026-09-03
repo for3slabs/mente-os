@@ -18,6 +18,13 @@ VERDICTS
    identity, and its filter is derived from what it plants — never narrower.
 """
 import os, re, shutil, subprocess, sys, glob
+import os as _os, sys as _sys
+_d = _os.path.dirname(_os.path.abspath(__file__))
+while _d != _os.path.dirname(_d):
+    if _os.path.exists(_os.path.join(_d, "bin", "utf8.py")):
+        _sys.path.insert(0, _os.path.join(_d, "bin")); break
+    _d = _os.path.dirname(_d)
+import utf8                                          # noqa: F401,E402
 
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 # ⭐ The marker must not itself violate a rule the system checks: an underscore

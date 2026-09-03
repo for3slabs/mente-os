@@ -11,6 +11,13 @@ an unbearable guard is deleted — which protects nothing at all.
 Contract: a PreToolUse payload on stdin · always exit 0.
 """
 import os, re, sys, glob, json, fnmatch
+import os as _os, sys as _sys
+_d = _os.path.dirname(_os.path.abspath(__file__))
+while _d != _os.path.dirname(_d):
+    if _os.path.exists(_os.path.join(_d, "bin", "utf8.py")):
+        _sys.path.insert(0, _os.path.join(_d, "bin")); break
+    _d = _os.path.dirname(_d)
+import utf8                                          # noqa: F401,E402
 
 MENTE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))

@@ -6,6 +6,13 @@ undefined produces empty files that satisfy it. So the probe plants archives
 that LOOK complete and are hollow.
 """
 import os, re, shutil, sys, glob
+import os as _os, sys as _sys
+_d = _os.path.dirname(_os.path.abspath(__file__))
+while _d != _os.path.dirname(_d):
+    if _os.path.exists(_os.path.join(_d, "bin", "utf8.py")):
+        _sys.path.insert(0, _os.path.join(_d, "bin")); break
+    _d = _os.path.dirname(_d)
+import utf8                                          # noqa: F401,E402
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from harness import Probe, ROOT, MARK
 
