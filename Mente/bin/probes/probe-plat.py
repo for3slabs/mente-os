@@ -136,6 +136,116 @@ case("⑦ a folder that is not there is not private",
 # from one that died before its last line.
 # ⚠️ `leftovers` is stated too: this probe plants nothing on disk, and silence
 # about residue is not the same as none.
+# ── ⑧⑨⑩⑪ invoking this engine's own scripts ─────────────────────────────
+# 🔴 An external audit installed this on Windows and found gate-critical and
+# gate-secrets DEAD: both ran an extensionless Python script by bare path, and
+# CreateProcess does not read shebangs. Neither said a word.
+case("⑧ a shebang script is run by THIS interpreter",
+     plat.script(os.path.join(MENTE, "bin", "check-block"), "--quiet"),
+     [sys.executable, os.path.join(MENTE, "bin", "check-block"), "--quiet"])
+case("⑨ a .sh goes through bash, not the OS",
+     plat.script(os.path.join(MENTE, "hooks", "pre-push.sh"))[0], "bash")
+# ⭐ THE INVARIANT: no production call may hand the OS a bare engine script.
+# ⛔ Four sites did, and each failed in the direction that lets work through.
+import ast as _ast
+import glob as _glob
+raw = []
+for _f in sorted(_glob.glob(os.path.join(MENTE, "hooks", "*.py"))
+                 + [q for q in _glob.glob(os.path.join(MENTE, "bin", "*"))
+                    if os.path.isfile(q) and not q.endswith(".md")]):
+    try:
+        _t = open(_f, encoding="utf-8", errors="replace").read()
+    except OSError:
+        continue          # ⬜ unreadable · reported nowhere as agreement
+    # ⭐ Read the CODE, never the text. ⛔ A grep over lines flagged two
+    # comments that quote the broken call to explain it — a probe that cannot
+    # tell code from prose reports the fix as the defect.
+    try:
+        _tree = _ast.parse(_t)
+    except SyntaxError:
+        continue          # ⬜ not Python · nothing measured here, said below
+    for _nd in _ast.walk(_tree):
+        if not (isinstance(_nd, _ast.Call)
+                and isinstance(_nd.func, _ast.Attribute)
+                and _nd.func.attr == "run"
+                and isinstance(_nd.func.value, _ast.Name)
+                and _nd.func.value.id == "subprocess"):
+            continue
+        if not (_nd.args and isinstance(_nd.args[0], _ast.List)
+                and _nd.args[0].elts):
+            continue      # ⬜ a string argv is shell=True's business, not this
+        _first = _nd.args[0].elts[0]
+        # ⭐ Accepted heads: sys.executable, plat.script(...), or a literal
+        # command the OS genuinely knows how to start.
+        if isinstance(_first, _ast.Attribute) and _first.attr == "executable":
+            continue
+        if isinstance(_first, _ast.Constant) and _first.value in (
+                "git", "bash", "sh"):
+            continue
+        if (isinstance(_nd.args[0], _ast.List) and len(_nd.args[0].elts) == 1
+                and isinstance(_first, _ast.Starred)):
+            continue
+        raw.append("%s:%d" % (plat.rel(_f, MENTE), _nd.lineno))
+case("⑩ no engine script is run by bare path", raw, [])
+
+# 🔴 shell=True is `cmd.exe /c` on Windows and `/bin/sh -c` elsewhere — two
+# languages for one string. The watcher's `; exit 1` convention returned 0
+# there, so it reported "nothing new" forever.
+case("⑪ an owner's shell command runs under bash",
+     plat.shell("echo hi; exit 1"), ["bash", "-c", "echo hi; exit 1"])
+
+# ── ⑫⑬ deleting a tree git has written into ─────────────────────────────
+# 🔴 git writes .git/objects/** at 0o444. On POSIX the directory's mode decides
+# and they go anyway; on Windows a read-only file cannot be removed, and
+# ignore_errors=True gave up in silence — a whole repo left in %TEMP%, per run.
+import subprocess as _sp, tempfile as _tf
+_d = _tf.mkdtemp(prefix="zzprobe-rm-")
+_r = os.path.join(_d, "repo"); os.makedirs(_r)
+for _c in (["git", "init", "-q"], ["git", "config", "user.email", "a@b.c"],
+           ["git", "config", "user.name", "a"]):
+    _sp.run(_c, cwd=_r, capture_output=True)
+open(os.path.join(_r, "f.txt"), "w").write("x")
+_sp.run(["git", "add", "-A"], cwd=_r, capture_output=True)
+_sp.run(["git", "-c", "commit.gpgsign=false", "commit", "-qm", "x"],
+        cwd=_r, capture_output=True)
+# ⭐ The precondition, asserted: without a read-only object there is nothing
+# to prove, and the case would pass over a tree that never had the problem.
+_ro = [1 for _root, _, _fs in os.walk(os.path.join(_r, ".git", "objects"))
+       for _n in _fs
+       if not os.stat(os.path.join(_root, _n)).st_mode & 0o200]
+case("⑫ git really wrote read-only objects", bool(_ro), True)
+
+# 🔴 THE DELETE MUST BE MADE TO FAIL, not merely attempted. On POSIX the
+# directory's mode decides, so a read-only file is removed even with no retry
+# at all — measured while writing this: ⑬ passed against a plat.rmtree whose
+# retry was gutted. ⛔ A case that goes green over broken code measures
+# nothing. Windows refuses the unlink itself, and that is reproduced here.
+_real_unlink = os.unlink
+def _nt_unlink(_p, *a, **k):
+    """⭐ Refuse exactly what Windows refuses: unlinking a read-only file.
+
+    ⚠️ `shutil.rmtree` calls `os.unlink(name, dir_fd=...)` with a RELATIVE
+    name, so the mode has to be read through that same descriptor — measured:
+    stat-ing the bare name looked at the wrong file and the simulation never
+    fired, leaving ⑬ green over a gutted retry.
+    """
+    try:
+        _st = os.stat(_p, dir_fd=k.get("dir_fd"), follow_symlinks=False)
+        _writable = _st.st_mode & 0o200
+    except (OSError, TypeError, ValueError):
+        _writable = True          # ⬜ cannot tell · never invents a refusal
+    if not _writable:
+        raise PermissionError(13, "read-only (simulated NT)", str(_p))
+    return _real_unlink(_p, *a, **k)
+try:
+    os.unlink = _nt_unlink
+    _gone = plat.rmtree(_d)
+finally:
+    os.unlink = _real_unlink
+case("⑬ plat.rmtree removes them where NT would refuse", _gone, True)
+if os.path.exists(_d):
+    import shutil as _sh; _sh.rmtree(_d, ignore_errors=True)
+
 print("\n  leftovers: none")
 print("  ➜ %d of %d correct" % (n - len(bad), n))
 sys.exit(0 if ok_all else 1)

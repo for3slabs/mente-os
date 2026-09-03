@@ -13,6 +13,7 @@ while _d != _os.path.dirname(_d):
         _sys.path.insert(0, _os.path.join(_d, "bin")); break
     _d = _os.path.dirname(_d)
 import utf8                                          # noqa: F401,E402
+import plat                                          # noqa: E402
 from concurrent.futures import ThreadPoolExecutor
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -94,7 +95,7 @@ def run_probe(q):
             cwd=tree, capture_output=True, text=True,
             env=dict(os.environ, MENTE_PROBE_ISOLATED="1"))
     finally:
-        shutil.rmtree(d, ignore_errors=True)
+        plat.rmtree(d)
 
 
 print("═══ TODAS LAS SONDAS ═══%s\n"

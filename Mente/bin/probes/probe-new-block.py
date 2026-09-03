@@ -21,6 +21,7 @@ while _d != _os.path.dirname(_d):
         _sys.path.insert(0, _os.path.join(_d, "bin")); break
     _d = _os.path.dirname(_d)
 import utf8                                          # noqa: F401,E402
+import plat                                          # noqa: E402
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from harness import ROOT                       # noqa: E402
@@ -55,7 +56,7 @@ def checker():
 
 
 def drop(bid):
-    shutil.rmtree(os.path.join(BLOCKS, "active", bid), ignore_errors=True)
+    plat.rmtree(os.path.join(BLOCKS, "active", bid))
     t = open(INDEX, encoding="utf-8").read()
     open(INDEX, "w", encoding="utf-8").write(
         "\n".join(l for l in t.splitlines()
@@ -199,7 +200,7 @@ case("⑱ 🔴 the freshly created block is NOT rejected by check-document",
 # ── 🔴 BLK-OPN-003 · the other direction, found while building this ────────
 # Removing a block folder left its row in the index, and the tree reported
 # clean: the index then sends every reader to work that is not there.
-shutil.rmtree(os.path.join(BLOCKS, "active", "zzprobe-one"))
+plat.rmtree(os.path.join(BLOCKS, "active", "zzprobe-one"))
 c = checker()
 case("⑲ 🔴 an index entry with NO block → detected",
      "BLK-OPN-003" in c.stdout and "zzprobe-one" in c.stdout)
@@ -214,7 +215,7 @@ r = run("zzprobe-noowner", "--type", "docs")
 case("㉑ ⛔ no declared owner → refused · a block with no owner is work nobody answers for",
      r.returncode == 2 and "bin/init" in r.stderr, "exit=%d" % r.returncode)
 
-shutil.rmtree(WORK, ignore_errors=True)
+plat.rmtree(WORK)
 good = sum(1 for _, ok in results if ok)
 print("\n  ➜ %d of %d correct" % (good, len(results)))
 for l, ok in results:

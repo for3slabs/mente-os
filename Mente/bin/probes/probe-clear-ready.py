@@ -16,6 +16,7 @@ while _d != _os.path.dirname(_d):
         _sys.path.insert(0, _os.path.join(_d, "bin")); break
     _d = _os.path.dirname(_d)
 import utf8                                          # noqa: F401,E402
+import plat                                          # noqa: E402
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from harness import ROOT                       # noqa: E402
@@ -105,7 +106,7 @@ open(os.path.join(bd, "BLOCK.md"), "w").write(
 r = run(tree)
 case("⑥ ⚠️ an open block is SEEN before the cut",
      r.returncode == 1 and "still open" in r.stdout, "exit=%d" % r.returncode)
-shutil.rmtree(bd)
+plat.rmtree(bd)
 
 # ── 🔴 UNPUSHED WORK · one machine away from being the only copy ────────────
 bare = os.path.join(WORK, "remote.git")
@@ -155,7 +156,7 @@ r = run(ntree)
 case("⑭ ⛔ an unreadable configuration does not crash the check",
      "Traceback" not in r.stderr)
 
-shutil.rmtree(WORK, ignore_errors=True)
+plat.rmtree(WORK)
 good = sum(1 for _, ok in results if ok)
 print("\n  ➜ %d of %d correct" % (good, len(results)))
 for l, ok in results:

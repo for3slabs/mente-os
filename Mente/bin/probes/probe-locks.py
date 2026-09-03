@@ -21,6 +21,7 @@ while _d != _os.path.dirname(_d):
         _sys.path.insert(0, _os.path.join(_d, "bin")); break
     _d = _os.path.dirname(_d)
 import utf8                                          # noqa: F401,E402
+import plat                                          # noqa: E402
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from harness import ROOT                       # noqa: E402
@@ -169,14 +170,14 @@ case("⑩ ⬜ no code at all → NOT MEASURED, not 199 findings",
      "NOT MEASURED" in r.stdout, "exit=%d" % r.returncode)
 shutil.move(os.path.join(keep, "bin"), os.path.join(TREE, "bin"))
 shutil.move(os.path.join(keep, "hooks"), os.path.join(TREE, "hooks"))
-shutil.rmtree(keep, ignore_errors=True)
+plat.rmtree(keep)
 
 # ⭐ the real tree passes: every lock it declares is cited or delegated
 r = run()
 case("⑪ ⭐ the real tree has no unimplemented lock", r.returncode == 0,
      "exit=%d" % r.returncode)
 
-shutil.rmtree(WORK, ignore_errors=True)
+plat.rmtree(WORK)
 good = sum(1 for _, ok in results if ok)
 print("\n  ➜ %d of %d correct" % (good, len(results)))
 for l, ok in results:

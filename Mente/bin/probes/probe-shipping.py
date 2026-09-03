@@ -13,6 +13,7 @@ while _d != _os.path.dirname(_d):
         _sys.path.insert(0, _os.path.join(_d, "bin")); break
     _d = _os.path.dirname(_d)
 import utf8                                          # noqa: F401,E402
+import plat                                          # noqa: E402
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from harness import Probe, ROOT, MARK
 
@@ -183,7 +184,7 @@ try:
     p.results.append(("⑪ encadenamiento", "PASS" if _chain else "NOT_DETECTED"))
 
 finally:
-    shutil.rmtree(tmp, ignore_errors=True)
+    plat.rmtree(tmp)
 
 # ── SHP-CLS-001 · the declared closing artifacts resolve
 _rule = os.path.join(ROOT, "rules", "rule-shipping.md")

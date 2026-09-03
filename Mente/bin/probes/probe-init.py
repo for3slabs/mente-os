@@ -241,12 +241,12 @@ case("⑳ ⭐ --dry-run reports and writes NOTHING",
 
 # ── ⛔ robustness ───────────────────────────────────────────────────────────
 repo6, tree6 = fresh()
-shutil.rmtree(os.path.join(tree6, "templates"))
+plat.rmtree(os.path.join(tree6, "templates"))
 r = run(tree6, "--owner", OWNER)
 case("㉑ ⛔ no templates/ → it says so, it does not crash",
      r.returncode == 2 and "Traceback" not in r.stderr, "exit=%d" % r.returncode)
 
-shutil.rmtree(WORK, ignore_errors=True)
+plat.rmtree(WORK)
 good = sum(1 for _, ok in results if ok)
 print("\n  ➜ %d of %d correct" % (good, len(results)))
 for l, ok in results:

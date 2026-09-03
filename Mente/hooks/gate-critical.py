@@ -20,6 +20,7 @@ while _d != _os.path.dirname(_d):
         _sys.path.insert(0, _os.path.join(_d, "bin")); break
     _d = _os.path.dirname(_d)
 import utf8                                          # noqa: F401,E402
+import plat                                          # noqa: E402
 
 MENTE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -86,14 +87,28 @@ def gate_close(target, body):
     # ⭐ Two calls: the quiet one decides whether anything is wrong, the second
     # says WHICH block — and only that second answer can name this one.
     checker = os.path.join(MENTE, "bin", "check-block")
+    # 🔴 plat.script, NEVER the bare path. Measured on Windows 2026-09-02 by an
+    # external audit: `subprocess.run([checker, "--quiet"])` raised
+    # FileNotFoundError because CreateProcess does not read the `#!` line, the
+    # except below swallowed it, and THIS GATE LET EVERY INSUFFICIENT CLOSE
+    # THROUGH — while looking wired in `.claude/settings.json`.
     try:
-        if subprocess.run([checker, "--quiet"], capture_output=True,
+        if subprocess.run(plat.script(checker, "--quiet"), capture_output=True,
                           timeout=30).returncode == 0:
             return 0        # nothing is wrong with any block
-        r = subprocess.run([checker], capture_output=True, text=True,
+        r = subprocess.run(plat.script(checker), capture_output=True, text=True,
                            timeout=30)
-    except Exception:
-        return 0            # ⬜ the validator could not run · never block on that
+    except Exception as e:
+        # 🔴 A GATE THAT CANNOT MEASURE MUST SAY SO. ⛔ This returned 0 in
+        # silence, which is indistinguishable from "I checked and it is fine" —
+        # the exact shape `rules/rule-checks-must-measure.md` forbids, and how
+        # a dead gate stayed invisible on an entire platform.
+        # ⭐ It still does not BLOCK: refusing on a broken validator would stop
+        # work over a defect that is ours. But it is never again silent.
+        print("⬜ NOT MEASURED · gate-critical could not run check-block (%s) · "
+              "⚠️ whether this close is sufficient was NOT checked"
+              % e.__class__.__name__, file=sys.stderr)
+        return 0
     if name in r.stdout:
         return refuse(
             "block `%s` does not meet its contract and cannot close" % name,

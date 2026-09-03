@@ -38,6 +38,7 @@ while _d != _os.path.dirname(_d):
         _sys.path.insert(0, _os.path.join(_d, "bin")); break
     _d = _os.path.dirname(_d)
 import utf8                                          # noqa: F401,E402
+import json
 import os
 import re
 import shutil
@@ -61,7 +62,10 @@ IMPORT_LINE = "@%s/CLAUDE-MENTE-OS.md" % os.path.basename(MENTE)
 #   · the router's content already ships as CLAUDE-MENTE-OS.md — what the
 #     template describes is loaded through an import, not copied into place
 #   · the bridges registry names its file, and the table declares the folder
+#   · the gate wiring lands OUTSIDE Mente/, in the repository's own .claude/,
+#     and only when there is none — so ③b places it, not the stamping loop
 SPECIAL = {"CLAUDE.md": None,                       # ⛔ never stamped: see ③
+           "claude-settings.json": None,            # ⛔ never stamped: see ③b
            "bridges.md": "connection/bridges/BRIDGES.md"}
 # ⚠️ STAMPED PER USE, NOT AT INSTALL — and the reason is the same for both: an
 # installation has zero of these until somebody starts one, and writing a blank
@@ -225,6 +229,49 @@ def wire_import(dry):
     return "created" if current is None else "appended"
 
 
+def wire_gates(dry):
+    """③b Install the gate wiring for Claude Code — ⛔ only if there is none.
+
+    🔴 THE FAILURE THAT MADE THIS A STEP. `.claude/settings.json` used to SHIP
+    inside this repository, which meant a `git clone` alone wired five gates
+    into somebody's assistant — before `bin/init`, before they had agreed to
+    anything. ⚠️ Measured 2026-09-02: a reviewer cloned the repo to READ the
+    code, and the handoff gate started refusing their own subagents. They were
+    right to call it aggressive: nobody had asked them.
+
+    ⭐ Same doctrine as the CLAUDE.md router above: written only at install,
+    ⛔ never over a file that already exists. Two settings files at the same
+    level do not merge — one wins and silently drops the other's rules — so an
+    existing configuration is left alone and the person is told to merge.
+
+    ⚠️ The template says `python3`, which is NOT a command on most Windows
+    installs. The interpreter running this very script is, so it is stamped in.
+    """
+    src = os.path.join(TEMPLATES, "claude-settings.json.template")
+    dest = os.path.join(REPO, ".claude", "settings.json")
+    if not os.path.exists(src):
+        return "⬜ no template · gates NOT wired"
+    if os.path.exists(dest):
+        # ⬜ NOT a pass and NOT a failure: their file stands, and the gates
+        # this engine ships are simply not active until they merge it.
+        return ("⬜ .claude/settings.json already exists · left untouched · "
+                "⚠️ the gates are NOT active — merge `hooks` from %s"
+                % plat.rel(src, REPO))
+    if dry:
+        return "would wire the gates into .claude/settings.json"
+    try:
+        body = open(src, encoding="utf-8").read()
+        # ⭐ The interpreter that is running, not the name of one that may not
+        # exist. json.dumps escapes a Windows path correctly.
+        body = body.replace('"python3 ', json.dumps(sys.executable)[:-1] + ' ')
+        os.makedirs(os.path.dirname(dest), exist_ok=True)
+        with open(dest, "w", encoding="utf-8") as fh:
+            fh.write(body)
+    except (OSError, ValueError) as e:
+        return "⚠️ could not wire the gates (%s)" % e.__class__.__name__
+    return "wired into .claude/settings.json"
+
+
 def wire_hook(dry, name="pre-push"):
     """④ Link the layer that cannot be walked around.
 
@@ -366,6 +413,7 @@ def main():
 
     filled = fill_engine(values, dry)
     imported = wire_import(dry)
+    gated = wire_gates(dry)
     # ⭐ BOTH git hooks, not one. ⛔ pre-commit.sh shipped implementing
     # SHP-LCK-001 — the rule that refuses a commit on the base branch — and
     # nothing installed it: a hook file that is not linked never runs and looks
@@ -387,6 +435,7 @@ def main():
         print("   ⬜ kept (already there — use --force to replace): %s"
               % ", ".join(kept))
     print("   · router import: %s" % imported)
+    print("   · gates (Claude Code): %s" % gated)
     print("   · layer 2 hook (pre-push):  %s" % hooked)
     print("   · base-branch hook (pre-commit): %s" % hooked_commit)
     if tightened:
