@@ -52,6 +52,7 @@ probe-pre-edit	bin/probes/probe-pre-edit-standards.py	engine	executable	proves t
 capacidades	CAPABILITIES.md	engine	canonical	what may run and what must not be touched — engine vs instance
 readme-motor	README.md	engine	canonical	the engine's front page — from clone to working
 quickstart	QUICKSTART.md	engine	canonical	from clone to working in 3 steps — for someone new to the system
+start-here	START-HERE.md	engine	canonical	the script an assistant reads when handed the URL — ⛔ so it shows, never improvises
 backlog-motor	docs/ENGINE-BACKLOG.md	engine	canonical	what the engine still owes itself — gaps with their closing condition
 changelog	CHANGELOG.md	engine	canonical	the engine's change history
 version	VERSION	engine	generated	the engine's version number
