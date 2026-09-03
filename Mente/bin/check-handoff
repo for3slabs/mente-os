@@ -10,6 +10,13 @@ Usage: check-handoff <manifest.yml>
 Exit: 0 well-formed AND bound · 1 usage · 2 malformed · 3 binding failed
 """
 import os, re, sys
+import os as _os, sys as _sys
+_d = _os.path.dirname(_os.path.abspath(__file__))
+while _d != _os.path.dirname(_d):
+    if _os.path.exists(_os.path.join(_d, "bin", "utf8.py")):
+        _sys.path.insert(0, _os.path.join(_d, "bin")); break
+    _d = _os.path.dirname(_d)
+import utf8                                          # noqa: F401,E402
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 CONTRACT = os.path.join(ROOT, "rules", "contract-handoff.md")

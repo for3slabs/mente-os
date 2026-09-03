@@ -13,6 +13,13 @@ a declarable slot for the third.
 Contract: a PreToolUse payload on stdin · exit 0 allow · exit 2 BLOCK.
 """
 import os, re, sys, json, subprocess
+import os as _os, sys as _sys
+_d = _os.path.dirname(_os.path.abspath(__file__))
+while _d != _os.path.dirname(_d):
+    if _os.path.exists(_os.path.join(_d, "bin", "utf8.py")):
+        _sys.path.insert(0, _os.path.join(_d, "bin")); break
+    _d = _os.path.dirname(_d)
+import utf8                                          # noqa: F401,E402
 
 MENTE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
