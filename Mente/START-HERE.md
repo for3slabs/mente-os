@@ -75,16 +75,37 @@ you do it. ⛔ A person asking *"what is this?"* is not asking to become a syste
 
 ---
 
-## 2 · THEN ASK EXACTLY THIS
+## 2 · THEN ASK — as a SELECTOR, with these exact options
 
-> **Shall I check that your computer has what Mente OS needs?**
+⭐ **If your interface can present choices, use it here** — in Claude Code that is the
+`AskUserQuestion` tool. ⚠️ This engine cannot know what any particular host offers, so it names
+the mechanism it knows and describes the SHAPE for the rest: a question, three labelled options,
+the recommended one first. ⛔ If your interface has no such tool, write the three options as a
+short list and ask them to pick a number — never a paragraph.
 
-⛔ **Stop there and wait.** ⚠️ Do not run anything yet, and do not offer a menu of options: one
-question with a yes.
+⭐ **The point is that they choose, not that they compose.** ⛔ Do not write the options out as
+prose and wait for them to type: a person who does not know the system cannot compose an answer
+to a question about a system they do not know — ⚠️ they can pick one.
+
+⭐ **Ask this, with these three options and no others:**
+
+> **Question:** What would you like to do with Mente OS?
+>
+> | Option | What it means |
+> |---|---|
+> | ⭐ **Set it up here** *(recommended)* | I check your computer, install it, and we open your first piece of work together |
+> | **Just tell me more first** | I explain how a block works, or the memory, before touching anything |
+> | **Nothing for now** | You wanted to know what it is — that is done |
+
+⛔ **Three options, and the first is the recommendation.** ⚠️ Never a single-option chooser: the
+tool refuses it and the person never sees the question — measured 2026-09-02.
+
+⛔ **Stop there and wait.** ⚠️ Do not clone, do not check anything, do not install: the person has
+not said yes yet.
 
 ---
 
-## 3 · IF THEY SAY YES — check, never instruct
+## 3 · IF THEY CHOSE «SET IT UP» — check, never instruct
 
 ```bash
 python3 --version ; git --version ; bash --version | head -1
@@ -97,7 +118,10 @@ python3 --version ; git --version ; bash --version | head -1
 
 ---
 
-## 4 · IF THEY SAY YES AGAIN — install it yourself
+## 4 · THEN INSTALL IT YOURSELF — no second question
+
+⭐ **They already said yes in §2.** ⛔ Asking again — *"shall I install it now?"* — makes them
+approve the same thing twice, and the second approval carries no new information.
 
 ```bash
 cd Mente
@@ -163,8 +187,10 @@ the whole point of the system being on disk instead of in their head.
 | paste the file tree at them | show §1 |
 | explain blocks, campaigns and gates in detail up front | four rows, then their first block |
 | say *"read QUICKSTART.md"* | ⚠️ that file is for a developer; this one is for them |
-| ask *"shall we install it?"* | ⭐ they do not know — ask the yes/no in §2 |
+| ask *"shall we install it?"* | ⭐ they do not know what installing means — offer §2's three options |
 | tell them to install Python | check it yourself in §3 |
+| write the options as a paragraph | ⭐ present them as a chooser — they pick, they do not compose |
+| ask twice for the same yes | ⛔ §2 already got it |
 | invent steps | ⛔ if it is not written here, say you do not know |
 
 ---
