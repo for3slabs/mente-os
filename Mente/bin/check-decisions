@@ -15,6 +15,7 @@ while _d != _os.path.dirname(_d):
         _sys.path.insert(0, _os.path.join(_d, "bin")); break
     _d = _os.path.dirname(_d)
 import utf8                                          # noqa: F401,E402
+import plat                                          # noqa: E402
 
 # ⭐ ONE way to report many findings, shared by every validator —
 # CHK-SHR-001. ⛔ Thirteen validators each inventing a grouping is
@@ -102,7 +103,7 @@ def main():
 
     for name in files:
         path = os.path.join(DECISIONS, name)
-        rel = os.path.relpath(path, ROOT)
+        rel = plat.rel(path, ROOT)
         if not os.path.isfile(path):
             findings.append(("DEC-FLD-001", rel,
                              "vanished between listing and reading"))

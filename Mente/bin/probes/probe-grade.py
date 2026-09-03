@@ -18,6 +18,7 @@ while _d != _os.path.dirname(_d):
         _sys.path.insert(0, _os.path.join(_d, "bin")); break
     _d = _os.path.dirname(_d)
 import utf8                                          # noqa: F401,E402
+import plat                                          # noqa: E402
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from harness import MARK, ROOT                 # noqa: E402
@@ -26,7 +27,7 @@ REF = os.environ.get("MENTE_CROSSRUN_BLOCKS", "")
 REPO = os.path.dirname(ROOT)
 BDIR = os.path.join(ROOT, "work", "blocks", "active", MARK + "-graded")
 SCOPE = os.path.join(ROOT, "work", MARK + "-scope")
-REL = os.path.relpath(SCOPE, REPO)
+REL = plat.rel(SCOPE, REPO)
 CONTRACT = os.path.join(ROOT, "rules", "contract-quality-verdict.md")
 
 BLOCK = """# BLOCK · %(name)s

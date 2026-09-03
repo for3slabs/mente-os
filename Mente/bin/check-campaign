@@ -15,6 +15,7 @@ while _d != _os.path.dirname(_d):
         _sys.path.insert(0, _os.path.join(_d, "bin")); break
     _d = _os.path.dirname(_d)
 import utf8                                          # noqa: F401,E402
+import plat                                          # noqa: E402
 
 # ⭐ ONE way to report many findings, shared by every validator —
 # CHK-SHR-001. ⛔ Thirteen validators each inventing a grouping is
@@ -293,7 +294,7 @@ def main():
 
     owners, findings = {}, []
     for q in files:
-        findings += check(q, os.path.relpath(q, ROOT), cap, owners)
+        findings += check(q, plat.rel(q, ROOT), cap, owners)
 
     if not quiet:
         print("check-campaign · %d campaign(s) · ceiling %d/%d (file/context)%s"

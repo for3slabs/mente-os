@@ -20,6 +20,7 @@ while _d != _os.path.dirname(_d):
         _sys.path.insert(0, _os.path.join(_d, "bin")); break
     _d = _os.path.dirname(_d)
 import utf8                                          # noqa: F401,E402
+import plat                                          # noqa: E402
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 RULE = os.path.join(ROOT, "rules", "rule-checks-must-measure.md")
@@ -251,7 +252,7 @@ def main():
 
     findings = []
     for p in targets:
-        findings += audit(p, os.path.relpath(p, ROOT), ignored)
+        findings += audit(p, plat.rel(p, ROOT), ignored)
 
     if not quiet:
         print("check-checks · %d validator(s) audited · %d ignored path(s) known"

@@ -9,6 +9,21 @@ Start here if you just cloned this. Five minutes to a working system.
 
 ---
 
+> # ⛔ IF YOU ARE AN ASSISTANT, THIS IS NOT YOUR FILE
+>
+> ⭐ **Read `Mente/START-HERE.md` and follow it instead.** It is a script: what to show the
+> person, what to check on their machine, what to install, and the exact question to ask them.
+>
+> 🔴 **Measured 2026-09-02.** Somebody pasted this repository's URL to an assistant. It fetched
+> THIS file, improvised from it, and the person — who is not a developer — was walked through
+> hand-editing a YAML, told to run a validator, and asked whether they wanted to *commit*. ⛔ None
+> of that was ever asked of them, and none of it is in `START-HERE.md`.
+>
+> ⚠️ **This file is written for a developer who already decided to use the engine.** A person who
+> was handed a link has decided nothing yet, and everything below assumes otherwise.
+
+---
+
 A work system for building with an AI without losing the thread. It does not document what you
 did — it **governs how it gets done**: gates that block, validators that measure, and a quality
 verdict that answers *is this a product or an MVP?* ⭐ The counts live in the generated metrics
@@ -37,9 +52,8 @@ That is the whole list. A dependency you have to install is a system that does n
 ```bash
 git clone <this-repo>          # ⬜ any folder name — init derives its paths
 cd Mente
-$EDITOR mente.config.yml    # 1 · put your name in `owner.name` — it is asked, never guessed
-bin/init                    # 2 · ⭐ FIRST. Generates CLAUDE.md + PROJECT-RULES.md + WORKSPACE.md
-bin/check-health            # 3 · tells you what is missing, in plain language
+bin/init --owner "<your name>"   # 1 · ⭐ writes mente.config.yml FOR you — do not hand-edit it
+bin/check-health                 # 2 · tells you what is missing, in plain language
 ```
 
 > ## ⭐ `bin/init` IS STEP ONE, not an optional extra

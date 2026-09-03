@@ -15,6 +15,7 @@ while _d != _os.path.dirname(_d):
         _sys.path.insert(0, _os.path.join(_d, "bin")); break
     _d = _os.path.dirname(_d)
 import utf8                                          # noqa: F401,E402
+import plat                                          # noqa: E402
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from findings import report                                    # noqa: E402
@@ -274,7 +275,7 @@ def main():
     found = files()
     findings = []
     for p in found:
-        findings += check(p, os.path.relpath(p, ROOT))
+        findings += check(p, plat.rel(p, ROOT))
 
     # PND-CNV-002 · only one list receives writes
     if len(found) > 1:
@@ -289,7 +290,7 @@ def main():
             # Name the lists themselves, not the folder: a finding whose
             # path is a directory cannot be attributed to what caused it.
             findings.append(("PND-CNV-002",
-                             " · ".join(os.path.relpath(q, ROOT) for q in live[:3]),
+                             " · ".join(plat.rel(q, ROOT) for q in live[:3]),
                              "%d live pending lists · expected one · two live "
                              "lists diverge, and the older one is planned "
                              "against" % len(live)))
