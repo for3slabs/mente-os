@@ -24,9 +24,17 @@
 #     shared   the engine defines the FORM, the owner fills the CONTENT
 #
 #   clase — HOW the piece is born:
-#     canonical  written by hand · the source of truth
-#     generated  produced by a script (bin/generate-*)
-#     fossil     historical · kept for reference · not live
+#     canonical   written by hand · the source of truth
+#     executable  ⭐ a COMMAND · a person runs it · it carries a shebang
+#     helper      ⛔ NOT a command · another file imports it · no shebang
+#     generated   produced by a script (bin/generate-*)
+#     template    the copy bin/init hands a fresh install
+#     fossil      historical · kept for reference · not live
+#
+#   ⚠️ executable vs helper is MEASURED, not declared: bin/plat.py reads the
+#     shebang, because NTFS has no executable bit and os.access(X_OK) answers
+#     yes for every readable file there. Five helpers were reported as
+#     undocumented commands on Windows before this distinction existed.
 #
 # ⛔ governance answers a DIFFERENT question than clase. Do not merge them.
 # ⛔ No instance data in any row: no owner name, no real repo/project name in que_es.
@@ -63,6 +71,7 @@ pre-edit-standards	hooks/pre-edit-standards.py	engine	executable	names a block's
 gate-critical	hooks/gate-critical.py	engine	executable	the few actions that BLOCK — ⬜ what is irreversible is the installation's
 watch-external	hooks/watch-external.py	engine	executable	notices that external state moved before acting on a stale view — ⬜ what to watch is declared
 probe-watch-external	bin/probes/probe-watch-external.py	engine	executable	proves the watcher looks when it matters and respects its truce otherwise
+probe-plat	bin/probes/probe-plat.py	engine	executable	proves the platform answers stay right when the platform lies — 🔴 43 false failures on Windows while the battery here was green
 probe-gate-critical	bin/probes/probe-gate-critical.py	engine	executable	proves the gate blocks what it must and NOTHING else — 5 inverses to 4 blocks
 probe-pre-edit	bin/probes/probe-pre-edit-standards.py	engine	executable	proves the injection hook names the RIGHT block, and never blocks
 # ── engine · the contracts + inheritance model ──
@@ -124,7 +133,7 @@ decisiones	docs/DECISIONS.md	shared	generated	every ADR — bin/generate-index
 workspace	docs/WORKSPACE.md	owner	canonical	which repo is which on THIS machine — gitignored, never travels
 check-document	bin/check-document	engine	executable	enforces the lock rules of the document contract
 contract-document	rules/contract-document.md	engine	canonical	the shape a document must have — header, ceilings, names, moving
-blockread	bin/blockread.py	engine	executable	ONE reader for a block's sections — shared, because four copies had diverged
+blockread	bin/blockread.py	engine	helper	ONE reader for a block's sections — shared, because four copies had diverged
 check-block	bin/check-block	engine	executable	enforces the lock rules of the block contract
 contract-block	rules/contract-block.md	engine	canonical	one unit of work, one file — shape, opening, blocked, closing, archive
 check-work	bin/check-work	engine	executable	enforces the lock rules of working inside a block
@@ -220,7 +229,7 @@ new-block	bin/new-block	engine	executable	opens a unit of work with §A-D and li
 tpl-block	templates/BLOCK.md.template	engine	canonical	the shape a block has — ⭐ mirrors contract-block §5, never a copy inside the scaffolder
 probe-new-block	bin/probes/probe-new-block.py	engine	executable	proves the scaffolded block passes its own contract UNEDITED
 new-campaign	bin/new-campaign	engine	executable	opens a campaign with its 3 opening sections — ⛔ refuses one with no blocks: that is a title, not a campaign
-scaffold	bin/scaffold.py	engine	executable	what opening ANY unit of work requires — ⭐ one reader, so two tools cannot disagree about a refusal
+scaffold	bin/scaffold.py	engine	helper	what opening ANY unit of work requires — ⭐ one reader, so two tools cannot disagree about a refusal
 tpl-campaign	templates/CAMPAIGN.md.template	engine	canonical	the shape a campaign has — ⭐ mirrors contract-campaign, never a copy inside the scaffolder
 probe-new-campaign	bin/probes/probe-new-campaign.py	engine	executable	proves the scaffolded campaign passes its contract UNEDITED
 connect-account	bin/connect-account	engine	executable	answers which account governs a repo and where its guide lives — ⛔ it answers, it never acts
@@ -231,9 +240,10 @@ probe-locks	bin/probes/probe-locks.py	engine	executable	proves an unimplemented 
 check-declarations	bin/check-declarations	engine	executable	lists the ⬜ an installation has not filled — ⛔ each one switches its rule off, and that is the owner's call
 probe-declarations	bin/probes/probe-declarations.py	engine	executable	proves the unfilled ⬜ are counted and never treated as faults
 contract-block-sections	rules/contract-block-sections.md	engine	canonical	what each of §A-K carries — ⭐ the SHAPE half of the block contract, split when the two passed their ceiling
-findings	bin/findings.py	engine	executable	one way to report many findings — ⛔ a report nobody finishes is a report nobody applies
-tsvread	bin/tsvread.py	engine	executable	one reader for every TSV table — ⛔ six copies of the same eight lines had each patched the header row a different way
-utf8	bin/utf8.py	engine	executable	UTF-8 on every platform — ⛔ the engine crashed on its first emoji under a cp1252 console
+findings	bin/findings.py	engine	helper	one way to report many findings — ⛔ a report nobody finishes is a report nobody applies
+tsvread	bin/tsvread.py	engine	helper	one reader for every TSV table — ⛔ six copies of the same eight lines had each patched the header row a different way
+utf8	bin/utf8.py	engine	helper	UTF-8 on every platform — ⛔ the engine crashed on its first emoji under a cp1252 console
+plat	bin/plat.py	engine	helper	what this platform really enforces — 🔴 Windows reported 43 false failures and one false SECURITY pass
 check-patterns	bin/check-patterns	engine	executable	enforces the failure-pattern catalogue — ⛔ a pattern nobody can detect is a sentence, not a rule
 probe-patterns	bin/probes/probe-patterns.py	engine	executable	proves the example PAIR is required — without the passing half, a detector that flags everything scores perfectly
 check-code-patterns	bin/check-code-patterns	engine	executable	finds the catalogued patterns a text matcher can find — ⚠️ every finding is a question, never a verdict

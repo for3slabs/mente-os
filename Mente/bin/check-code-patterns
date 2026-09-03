@@ -34,6 +34,7 @@ while _d != _os.path.dirname(_d):
         _sys.path.insert(0, _os.path.join(_d, "bin")); break
     _d = _os.path.dirname(_d)
 import utf8                                          # noqa: F401,E402
+import plat                                          # noqa: E402
 import re
 import sys
 
@@ -132,7 +133,7 @@ def main():
     if not exts:
         if not quiet:
             print("⬜ NOT MEASURED · no code file extensions declared in %s"
-                  % os.path.relpath(VERDICT, ROOT))
+                  % plat.rel(VERDICT, ROOT))
         return 0
 
     hits, scanned, missing = [], 0, []
@@ -152,14 +153,14 @@ def main():
                     src = open(p, encoding="utf-8", errors="replace").read()
                 except OSError:
                     # ⬜ An unreadable file is not a clean one.
-                    missing.append(os.path.relpath(p, ROOT))
+                    missing.append(plat.rel(p, ROOT))
                     continue
                 scanned += 1
                 for pid, (rx, what) in PATTERNS.items():
                     m = rx.search(src)
                     if m:
                         line = src[:m.start()].count("\n") + 1
-                        hits.append((pid, "%s:%d" % (os.path.relpath(p, ROOT),
+                        hits.append((pid, "%s:%d" % (plat.rel(p, ROOT),
                                                      line), what))
 
     if quiet:

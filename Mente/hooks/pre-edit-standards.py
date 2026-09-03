@@ -18,6 +18,7 @@ while _d != _os.path.dirname(_d):
         _sys.path.insert(0, _os.path.join(_d, "bin")); break
     _d = _os.path.dirname(_d)
 import utf8                                          # noqa: F401,E402
+import plat                                          # noqa: E402
 
 MENTE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -193,7 +194,7 @@ def main():
               "   is a decision, and it goes in §G (BLK-SCP-004).\n"
               "   ⛔ If it does not belong to any, that is the answer: this is "
               "work nobody opened."
-              % (os.path.relpath(target, os.path.dirname(MENTE))
+              % (plat.rel(target, os.path.dirname(MENTE))
                  if target.startswith(os.path.dirname(MENTE)) else target,
                  ", ".join(open_blocks[:3])), file=sys.stderr)
     # ⬜ With no block open there is no scope to be outside of, and saying

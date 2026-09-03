@@ -14,6 +14,7 @@ while _d != _os.path.dirname(_d):
         _sys.path.insert(0, _os.path.join(_d, "bin")); break
     _d = _os.path.dirname(_d)
 import utf8                                          # noqa: F401,E402
+import plat                                          # noqa: E402
 from datetime import date
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -621,7 +622,7 @@ def check(path, rel, ids):
                         "--json > %s` · a verdict in prose is not state the "
                         "system holds"
                         % (bid or "<name>",
-                           os.path.relpath(record, ROOT))))
+                           plat.rel(record, ROOT))))
         else:
             # ⚠️ Present is not enough: a record missing `dimensions` says
             # nothing about which of the six are still UNKNOWN, which is the
@@ -673,7 +674,7 @@ def main():
                 found.append(os.path.join(dirpath, name))
 
     for path in found:
-        rel = os.path.relpath(path, ROOT)
+        rel = plat.rel(path, ROOT)
         findings += check(path, rel, ids)
 
     # BLK-OPN-003 · THE OTHER DIRECTION of BLK-OPN-002.
@@ -694,7 +695,7 @@ def main():
             named = m.group(1)
             if named in live or named in SKIP_INDEX_WORDS:
                 continue
-            findings.append(("BLK-OPN-003", os.path.relpath(q, ROOT),
+            findings.append(("BLK-OPN-003", plat.rel(q, ROOT),
                              "names %r and no block by that id exists · an "
                              "entry that outlived its folder sends every reader "
                              "to work that is not there" % named))

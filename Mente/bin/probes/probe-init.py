@@ -22,6 +22,7 @@ while _d != _os.path.dirname(_d):
         _sys.path.insert(0, _os.path.join(_d, "bin")); break
     _d = _os.path.dirname(_d)
 import utf8                                          # noqa: F401,E402
+import plat                                          # noqa: E402
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from harness import ROOT                       # noqa: E402
@@ -119,7 +120,7 @@ for dp, dn, fn in os.walk(tree):
         except OSError:
             continue
         if "{{owner}}" in t or "{{project}}" in t or "{{date}}" in t:
-            left.append(os.path.relpath(os.path.join(dp, n), tree))
+            left.append(plat.rel(os.path.join(dp, n), tree))
 case("⑤ 🔴 NO engine document is left with a placeholder", not left,
      str(left[:3]))
 

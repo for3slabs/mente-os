@@ -15,6 +15,7 @@ while _d != _os.path.dirname(_d):
         _sys.path.insert(0, _os.path.join(_d, "bin")); break
     _d = _os.path.dirname(_d)
 import utf8                                          # noqa: F401,E402
+import plat                                          # noqa: E402
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 RULE = os.path.join(ROOT, "rules", "rule-inheritance.md")
@@ -241,7 +242,7 @@ def main():
                 blocks.append(os.path.join(dirpath, name))
 
     for path in blocks:
-        rel = os.path.relpath(path, ROOT)
+        rel = plat.rel(path, ROOT)
         text = open(path, encoding="utf-8").read()
         scope = body_of(text, "B")
 
