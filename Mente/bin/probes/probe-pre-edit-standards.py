@@ -13,6 +13,7 @@ while _d != _os.path.dirname(_d):
         _sys.path.insert(0, _os.path.join(_d, "bin")); break
     _d = _os.path.dirname(_d)
 import utf8                                          # noqa: F401,E402
+import plat                                          # noqa: E402
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from harness import ROOT, MARK                 # noqa: E402
@@ -58,7 +59,7 @@ def plant(std="- `rules/contract-block.md`", sub="- none", bid=MARK + "-owner"):
 def clean():
     for n in os.listdir(BLOCKS) if os.path.isdir(BLOCKS) else []:
         if n.startswith(MARK):
-            shutil.rmtree(os.path.join(BLOCKS, n), ignore_errors=True)
+            plat.rmtree(os.path.join(BLOCKS, n))
 
 
 def run(path, payload=None):

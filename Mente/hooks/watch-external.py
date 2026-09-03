@@ -18,6 +18,7 @@ while _d != _os.path.dirname(_d):
         _sys.path.insert(0, _os.path.join(_d, "bin")); break
     _d = _os.path.dirname(_d)
 import utf8                                          # noqa: F401,E402
+import plat                                          # noqa: E402
 
 MENTE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -67,7 +68,11 @@ def ask():
     """Run the declared command. ⛔ Absent tool, no network or a timeout is not
     a reason for noise — it is a reason for silence."""
     try:
-        r = subprocess.run(WATCH_CMD, shell=True, cwd=MENTE,
+        # 🔴 plat.shell, never shell=True. Measured 2026-09-02: shell=True runs
+        # `cmd.exe /c` on Windows, where the documented convention
+        # `<command>; exit 1` (meaning "something changed") returned 0 — so the
+        # watcher answered "nothing new" forever and never told anyone.
+        r = subprocess.run(plat.shell(WATCH_CMD), cwd=MENTE,
                            capture_output=True, text=True, timeout=20)
     except Exception:
         return None

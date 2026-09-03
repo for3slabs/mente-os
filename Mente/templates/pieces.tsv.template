@@ -116,6 +116,7 @@ val-declarados	bin/check-declared	engine	canonical	every engine file has a row i
 tpl-router	templates/CLAUDE.md.template	engine	canonical	the blueprint bin/init stamps into the project's CLAUDE.md
 tpl-rules	templates/PROJECT-RULES.md.template	engine	canonical	the blueprint for the project-level rules
 tpl-config	templates/mente.config.yml.template	engine	canonical	the blueprint for the instance declaration
+tpl-gates	templates/claude-settings.json.template	engine	canonical	the gate wiring bin/init installs — 🔴 it used to ship ACTIVE, so a clone alone wired five gates into somebody's assistant
 tpl-workspace	templates/WORKSPACE.md.template	engine	canonical	the blueprint for the machine map — says WHERE, never WHAT
 tpl-arquitectura	templates/ARCHITECTURE.md.template	engine	canonical	the blueprint for the architecture pillar — born empty
 tpl-cold-start	templates/RESUME.md.template	engine	canonical	the blueprint for the cold-start brief

@@ -19,6 +19,7 @@ while _d != _os.path.dirname(_d):
         _sys.path.insert(0, _os.path.join(_d, "bin")); break
     _d = _os.path.dirname(_d)
 import utf8                                          # noqa: F401,E402
+import plat                                          # noqa: E402
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from harness import ROOT, link_or_skip           # noqa: E402
@@ -191,7 +192,7 @@ r = subprocess.run([sys.executable, CHECK], cwd=TREE, capture_output=True,
 case("⑱ ⛔ an unreadable registry does not crash the check",
      "Traceback" not in r.stderr, r.stderr.strip()[:30])
 
-shutil.rmtree(WORK, ignore_errors=True)
+plat.rmtree(WORK)
 good = sum(1 for _, ok in results if ok)
 print("\n  ➜ %d of %d correct" % (good, len(results)))
 for l, ok in results:

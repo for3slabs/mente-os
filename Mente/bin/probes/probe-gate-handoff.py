@@ -18,6 +18,7 @@ while _d != _os.path.dirname(_d):
         _sys.path.insert(0, _os.path.join(_d, "bin")); break
     _d = _os.path.dirname(_d)
 import utf8                                          # noqa: F401,E402
+import plat                                          # noqa: E402
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from harness import ROOT, MARK                 # noqa: E402
@@ -96,7 +97,7 @@ def plant(text=MANIFEST, name="h.yml"):
 
 
 def clear():
-    shutil.rmtree(BDIR, ignore_errors=True)
+    plat.rmtree(BDIR)
 
 
 print("═══ SONDA · gate-handoff ═══\n")
@@ -230,7 +231,7 @@ run(subagent_type="writer", description="x")
 case("⑯ ⭐ leaves its beat for check-gates",
      os.path.exists(os.path.join(TREE, ".beats", "gate-handoff")))
 
-shutil.rmtree(WORK, ignore_errors=True)
+plat.rmtree(WORK)
 good = sum(1 for _, ok in results if ok)
 print("\n  ➜ %d of %d correct" % (good, len(results)))
 for l, ok in results:

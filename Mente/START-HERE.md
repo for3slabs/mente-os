@@ -45,10 +45,17 @@ first question being right does not make the run right: **they all have to be.**
 | *"shall we keep testing or shall I explain blocks?"* | two options, the recommended one first |
 | *"do you want to commit this?"* | ⚠️ and only after §4b explains what that word means |
 | *"shall we open your first block?"* | two options — open one, or hear more first |
+| *"what name should I use?"* | ⭐ §4 reads two real ones off the machine — it is a chooser too |
 
-⚠️ **The one exception is a question with no options at all** — their name in §4. That is a blank
-to fill, not a choice between things, and a chooser with a single option is refused by the tool and
-never reaches the person (measured, same run). ⛔ Everything else is a chooser.
+⛔ **THERE IS NO EXCEPTION.** ⚠️ This file used to grant one, for the name, on the grounds that a
+blank has no options — and that single exception is the one question the person kept receiving as
+plain text, in run after run. 🔴 It was wrong twice over: `git config user.name` and `whoami` are
+two real candidates, and *"something else"* is the third.
+
+⭐ **When a question looks optionless, LOOK HARDER before dropping to prose.** The machine usually
+knows the answers already, and reading them is your job, not theirs. ⚠️ Only if that search comes
+back empty do you ask as a sentence — a chooser with one option is refused by the tool and the
+person never sees it.
 
 ### ⭐ NEVER USE A WORD THEY DID NOT ASK FOR
 
@@ -218,14 +225,33 @@ bin/init --owner "<their name>"
 bin/probes/run-all.py
 ```
 
-⚠️ **`bin/init` asks for a name and refuses to guess one.** ⭐ Ask it as a plain sentence:
+### ⭐ THE NAME IS A CHOOSER TOO — find the options before you ask
 
-> **What name should I put as the owner?** *(it goes in the files the system creates, and you can
-> change it later)*
+⚠️ **`bin/init` refuses to guess a name, and so must you.** ⛔ But *"refuses to guess"* is not
+*"ask them to type it"*: **the machine already knows real candidates.** Read them first:
 
-⛔ **Not as a multiple-choice question** — there are no options to choose between, and a chooser
-with one option is refused by the tool and never reaches the person. ⚠️ Measured 2026-09-02: an
-assistant tried exactly that and the question was rejected mid-run.
+```bash
+git config user.name ; whoami
+```
+
+⭐ **Then ask with those as the options**, the git name first — it is what they already chose to
+be called on this machine:
+
+> **Question:** What name should the system use as the owner?
+>
+> | Option | What it means |
+> |---|---|
+> | ⭐ **<the git name>** *(recommended)* | What you already use for your work on this computer |
+> | **<the account name>** | Your user account on this machine |
+> | **Something else** | Type any name — it goes in the files the system creates, and can be changed later |
+
+🔴 **Measured twice, 2026-09-02, and it is the complaint that keeps coming back.** Both runs asked
+§2 as a proper floating chooser and then typed THIS one as plain prose, because this file used to
+say it could not be a chooser. ⛔ It can: two real candidates plus an escape hatch is three
+options.
+
+⚠️ **If both commands come back empty**, then and only then ask it as a sentence — a chooser with
+one option is refused by the tool and the person never sees it.
 
 ⛔ **Do not send them to edit `mente.config.yml`**: `bin/init` writes it.
 
