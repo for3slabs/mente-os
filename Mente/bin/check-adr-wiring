@@ -19,6 +19,7 @@ while _d != _os.path.dirname(_d):
         _sys.path.insert(0, _os.path.join(_d, "bin")); break
     _d = _os.path.dirname(_d)
 import utf8                                          # noqa: F401,E402
+import plat                                          # noqa: E402
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 CONTRACT = os.path.join(ROOT, "rules", "contract-adr.md")
@@ -45,7 +46,7 @@ def main():
     bad, checked = [], 0
     for q in files:
         t = read(q)
-        rel = os.path.relpath(q, ROOT)
+        rel = plat.rel(q, ROOT)
         if "## Consequences" not in t:
             continue          # ⬜ no consequences section · nothing to resolve
         con = t.split("## Consequences")[-1].split("\n## ")[0]

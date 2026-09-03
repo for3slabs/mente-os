@@ -24,13 +24,16 @@ import sys
 MENTE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.join(MENTE, "bin"))
 import tsvread                                                 # noqa: E402
+import plat                                                    # noqa: E402
 os.chdir(MENTE)
 
 TABLE = "pieces.tsv"
 # ⭐ The table an installation RECEIVES. bin/init copies it, so a row that lives
 # in one and not the other means a fresh install starts with a different map
 # than the one verified here — and nothing downstream would ever say so.
-TEMPLATE = os.path.join("templates", "pieces.tsv.template")
+# ⭐ Spelled the way the table spells it — forward slashes — because this
+# string is COMPARED and PRINTED, not only opened. See bin/plat.py.
+TEMPLATE = plat.join("templates", "pieces.tsv.template")
 
 # Folders walked, and which file extensions count as a declarable piece there.
 # An empty tuple means every file counts.
@@ -145,10 +148,14 @@ def main():
         if not os.path.isdir(folder):
             skipped.append(folder)      # ⬜ CHK-CAU-003 · said out loud below
             continue
+        # 🔴 plat.join, not os.path.join: the latter gives `bin\\check-block`
+        # on Windows while the table declares `bin/check-block` — measured
+        # 2026-09-02, all 112 engine files reported undeclared on a clean
+        # install.
         for name in sorted(os.listdir(folder)):
-            path = os.path.join(folder, name)
+            path = plat.join(folder, name)
             if not os.path.isfile(path):
-                continue
+                continue      # ⬜ a directory is not a piece · nothing skipped
             if not is_declarable(name, exts):
                 continue
             scanned += 1

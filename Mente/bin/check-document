@@ -14,6 +14,7 @@ while _d != _os.path.dirname(_d):
         _sys.path.insert(0, _os.path.join(_d, "bin")); break
     _d = _os.path.dirname(_d)
 import utf8                                          # noqa: F401,E402
+import plat                                          # noqa: E402
 from datetime import date
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -204,11 +205,11 @@ def _stale_target(hit):
         where = ("point at %s" % r.group(1).strip()) if r else \
             "⚠️ and it names no replacement — DOC-HDR-005"
         return ("pointer resolves to a SUPERSEDED document: %r · %s"
-                % (os.path.relpath(hit, ROOT), where))
+                % (plat.rel(hit, ROOT), where))
     # ⛔ A fossil names nobody. DOC-LIF-003: never a current authority.
     return ("pointer resolves to a FOSSIL: %r · ⛔ a fossil is a record of what "
             "was once believed, never a current authority (DOC-LIF-003)"
-            % os.path.relpath(hit, ROOT))
+            % plat.rel(hit, ROOT))
 
 
 def bad_units(ceilings):
@@ -690,8 +691,13 @@ def capability_map():
             continue
         for name in sorted(os.listdir(d)):
             f = os.path.join(d, name)
+            # 🔴 os.access(X_OK) was the test here, and NTFS has no executable
+            # bit: it answers yes for every readable file, so five shared
+            # helpers were demanded as documented commands — measured on
+            # Windows 2026-09-02. plat.is_command falls back to the shebang,
+            # which records the same intent inside the file.
             if (not os.path.isfile(f) or name.startswith(("_", "."))
-                    or name.endswith(".md") or not os.access(f, os.X_OK)):
+                    or name.endswith(".md") or not plat.is_command(f)):
                 continue
             if "%s/%s" % (folder, name) not in named:
                 bad.append(("DOC-CAP-002", "CAPABILITIES.md", 0,
@@ -713,7 +719,7 @@ def _walk(targets):
         for t in targets:
             path = t if os.path.isabs(t) else os.path.join(ROOT, t)
             if os.path.exists(path) and path.endswith(".md"):
-                yield path, os.path.relpath(path, ROOT)
+                yield path, plat.rel(path, ROOT)
         return
     for dirpath, dirnames, filenames in os.walk(ROOT):
         dirnames[:] = [d for d in dirnames if d not in SKIP_DIRS]
@@ -724,7 +730,7 @@ def _walk(targets):
             if not name.endswith(".md") or name in OWNED_ELSEWHERE:
                 continue
             path = os.path.join(dirpath, name)
-            yield path, os.path.relpath(path, ROOT)
+            yield path, plat.rel(path, ROOT)
 
 
 def main():

@@ -17,6 +17,7 @@ while _d != _os.path.dirname(_d):
         _sys.path.insert(0, _os.path.join(_d, "bin")); break
     _d = _os.path.dirname(_d)
 import utf8                                          # noqa: F401,E402
+import plat                                          # noqa: E402
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 CONTRACT = os.path.join(ROOT, "rules", "contract-handoff.md")
@@ -355,7 +356,7 @@ def main():
 
     mal_all, bind_all = [], []
     for t in targets:
-        rel = os.path.relpath(t, ROOT)
+        rel = plat.rel(t, ROOT)
         try:
             m, b = check(t, rel)
             if post and not m and not b:

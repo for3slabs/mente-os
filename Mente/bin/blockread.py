@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """blockread — ONE reader for a block's sections. Shared on purpose.
 
 ⛔ This existed as four copies, one per validator, and the three comparable

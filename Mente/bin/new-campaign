@@ -27,6 +27,7 @@ while _d != _os.path.dirname(_d):
         _sys.path.insert(0, _os.path.join(_d, "bin")); break
     _d = _os.path.dirname(_d)
 import utf8                                          # noqa: F401,E402
+import plat                                          # noqa: E402
 import re
 import sys
 
@@ -104,7 +105,7 @@ def main():
     dest = os.path.join(dest_dir, "CAMPAIGN.md")
     if os.path.exists(dest):
         die("%s already exists · refusing to overwrite an open campaign"
-            % os.path.relpath(dest, MENTE))
+            % plat.rel(dest, MENTE))
 
     body = stamp(TEMPLATE, {"id": cid, "owner": who})
     if body is None:
@@ -132,7 +133,7 @@ def main():
         os.makedirs(dest_dir, exist_ok=True)
         open(dest, "w", encoding="utf-8").write(body)
     except OSError as e:
-        die("could not write %s · %s" % (os.path.relpath(dest, MENTE),
+        die("could not write %s · %s" % (plat.rel(dest, MENTE),
                                          e.__class__.__name__), 2)
 
     # ⚠️ Reports what is ACTUALLY still ⬜, not a fixed sentence: saying
@@ -141,7 +142,7 @@ def main():
     pending = [n for n, filled in (("mission", mission), ("authority", None))
                if not filled]
     print("🎯 %s\n   · %d block(s) declared: %s\n   · still ⬜: %s"
-          % (os.path.relpath(dest, MENTE), len(names), ", ".join(names),
+          % (plat.rel(dest, MENTE), len(names), ", ".join(names),
              ", ".join(pending)))
     print("\n👉 An empty authority means nobody knows which yardstick decided "
           "it succeeded.\n   Then: bin/check-campaign")

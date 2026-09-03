@@ -25,6 +25,7 @@ while _d != _os.path.dirname(_d):
         _sys.path.insert(0, _os.path.join(_d, "bin")); break
     _d = _os.path.dirname(_d)
 import utf8                                          # noqa: F401,E402
+import plat                                          # noqa: E402
 
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 # ⭐ The marker must not itself violate a rule the system checks: an underscore
@@ -66,7 +67,7 @@ class Probe:
         which is why the guard below is a refusal and not a comment.
         ⭐ To measure against a modified engine, copy the tree and edit the copy.
         """
-        rel = os.path.relpath(path, ROOT)
+        rel = plat.rel(path, ROOT)
         if not os.path.basename(rel).startswith(MARK) and os.path.exists(path):
             raise AssertionError(
                 "track() DELETES, and %r is not this probe's fixture — a probe "
@@ -101,7 +102,7 @@ class Probe:
         # to a checker that reads the tree as a whole would narrow what it sees.
         argv = [sys.executable, "bin/" + self.checker]
         if self.targeted:
-            argv += [os.path.relpath(p, ROOT) for p in self.made
+            argv += [plat.rel(p, ROOT) for p in self.made
                      if p.endswith(".md") and os.path.exists(p)]
         r = subprocess.run(argv, cwd=ROOT, capture_output=True, text=True)
         return r.returncode, r.stdout, r.stderr

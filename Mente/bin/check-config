@@ -22,6 +22,7 @@ import utf8                                          # noqa: F401,E402
 # validator learns none.
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from findings import report                                    # noqa: E402
+import plat                                                    # noqa: E402
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 RULE = os.path.join(ROOT, "rules", "rule-config-hygiene.md")
@@ -262,25 +263,32 @@ def secrets_permissions():
     # file only bin/init produces. Until then the mode is NOT MEASURED, said out
     # loud — never counted as a pass. E-39 has bin/init set it.
     if not os.path.exists(os.path.join(ROOT, "mente.config.yml")):
-        return [("⬜", os.path.relpath(d, ROOT),
+        return [("⬜", plat.rel(d, ROOT),
                  "NOT MEASURED · nothing is installed here yet (no "
                  "mente.config.yml) · git cannot carry a 700, so bin/init sets "
                  "it — the mode of a clone says nothing about the install")]
-    rel = os.path.relpath(d, ROOT)
-    try:
-        mode = stat.S_IMODE(os.stat(d).st_mode)
-    except OSError as e:
-        return [("CFG-SEC-004", rel,
-                 "cannot read the folder's mode (%s) · whether it is private "
-                 "is unknown" % e.__class__.__name__)]
+    rel = plat.rel(d, ROOT)
+    # 🔴 A PLATFORM WHERE chmod DECIDES NOTHING MUST SAY SO, not report a
+    # number. Measured on Windows 2026-09-02: bin/init printed
+    # `secrets/ 777 → 700` and the mode never changed — os.chmod on an NTFS
+    # directory is accepted and does nothing. Then this check read 777 and
+    # called it a violation.
+    # ⛔ BOTH answers were wrong, and in opposite directions: the installer gave
+    # a false assurance about a credential store, and this gave a false alarm
+    # that gets a validator switched off. ⭐ The honest answer is ⬜ — the mode
+    # there is not a measurement of anything.
+    state, detail = plat.privacy(d)
+    if state == "unknown":
+        return [("⬜", rel,
+                 "NOT MEASURED · %s · ⚠️ whoever installs here must confirm by "
+                 "other means that this folder is not shared" % detail)]
     # ⭐ The test is not equality but EXPOSURE: any bit granting group or other
     # is a failure, and a stricter mode than 700 is fine. Demanding exactly 700
     # would report a hardened installation as broken.
-    if mode & 0o077:
+    if state == "exposed":
         out.append(("CFG-SEC-004", rel,
-                    "the folder is %o · anyone on this machine can enter it · "
-                    "it must be 700, and a credential store is not a place to "
-                    "discover this after the fact" % mode))
+                    "%s · it must be 700, and a credential store is not a "
+                    "place to discover this after the fact" % detail))
     for name in sorted(os.listdir(d)):
         # ⛔ README.md is the one file in here that TRAVELS, and git stores only
         # the executable bit — so it arrives 644 in every clone, always. Flagging
@@ -331,7 +339,7 @@ def main():
     findings = secrets_permissions()
     denies = {}
     for p in configs:
-        rel = os.path.relpath(p, ROOT)
+        rel = plat.rel(p, ROOT)
         out = check(p, rel, targets)
         if isinstance(out, list):
             findings += out

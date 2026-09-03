@@ -45,6 +45,7 @@ while _d != _os.path.dirname(_d):
         _sys.path.insert(0, _os.path.join(_d, "bin")); break
     _d = _os.path.dirname(_d)
 import utf8                                          # noqa: F401,E402
+import plat                                          # noqa: E402
 import os
 import subprocess
 import sys
@@ -146,7 +147,7 @@ def main():
     if ok:
         print("✅ handoff gate · bounded by %s\n"
               "   ⚠️ Check the objective matches THIS task — a stale manifest is "
-              "a scope for different work." % os.path.relpath(ok[0], MENTE),
+              "a scope for different work." % plat.rel(ok[0], MENTE),
               file=sys.stderr)
         return 0
 
