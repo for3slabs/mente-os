@@ -202,6 +202,15 @@ def wire_import(dry):
         with open(target, "a", encoding="utf-8") as fh:
             if current:
                 fh.write("\n")
+            # ⭐ THE LINE SAYS WHERE IT CAME FROM AND HOW TO UNDO IT. 🔴 Measured
+            # 2026-09-02: someone deleted the Mente/ folder, started again, and
+            # their assistant behaved as if a half-finished install were still
+            # there — because this line survived, pointing at a file that was
+            # gone. ⛔ A bare `@Mente/...` explains nothing to whoever finds it,
+            # and an unexplained leftover reads as memory the machine should
+            # not have.
+            fh.write("<!-- Mente OS · added by Mente/bin/init. Safe to delete "
+                     "these two lines if you remove the Mente/ folder. -->\n")
             fh.write("%s\n" % IMPORT_LINE)
     except OSError as e:
         return "⚠️ could not write CLAUDE.md (%s)" % e.__class__.__name__
