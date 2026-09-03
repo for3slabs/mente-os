@@ -35,7 +35,7 @@ That is the whole list. A dependency you have to install is a system that does n
 ## 2 · Install
 
 ```bash
-git clone <this-repo> Mente
+git clone <this-repo>          # ⬜ any folder name — init derives its paths
 cd Mente
 $EDITOR mente.config.yml    # 1 · put your name in `owner.name` — it is asked, never guessed
 bin/init                    # 2 · ⭐ FIRST. Generates CLAUDE.md + PROJECT-RULES.md + WORKSPACE.md

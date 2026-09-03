@@ -35,9 +35,13 @@ the author works, that is a defect in this file.
 ### ① Clone
 
 ```bash
-git clone <repo-url> my-mente
-cd my-mente
+git clone <repo-url>
+cd <the folder it made>
 ```
+
+⬜ **The folder name is yours.** ⛔ `bin/init` derives every path from where it sits, so it works
+under any name — ⚠️ this file said `my-mente` and `README.md` said `Mente`, which read as a
+requirement and is not one.
 
 ### ② Install — ⚠️ in a REAL terminal
 
