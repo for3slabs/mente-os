@@ -15,6 +15,10 @@ Not a command. The `.py` suffix says so (bin/README).
 """
 import os
 import re
+# ⭐ plat, for a path this returns to a CALLER that prints or compares it.
+# ⚠️ Safe as a bare import: every importer of this helper has already put
+# bin/ on sys.path — it is how they reach this file at all.
+import plat
 from datetime import date
 
 # ⭐ An id becomes a folder name AND is cited from other files, so it is
@@ -61,7 +65,7 @@ def used_ids(root, filename):
             continue
         m = re.search(r"^id:\s*(\S+)", text, re.M)
         if m:
-            out[m.group(1).strip("`* ")] = os.path.relpath(dp, os.path.dirname(root))
+            out[m.group(1).strip("`* ")] = plat.rel(dp, os.path.dirname(root))
     return out
 
 

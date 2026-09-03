@@ -26,6 +26,7 @@ while _d != _os.path.dirname(_d):
         _sys.path.insert(0, _os.path.join(_d, "bin")); break
     _d = _os.path.dirname(_d)
 import utf8                                          # noqa: F401,E402
+import plat                                          # noqa: E402
 import re
 import sys
 
@@ -35,7 +36,7 @@ from findings import report                                    # noqa: E402
 
 CATALOGUE = os.path.join(ROOT, "memory", "principles",
                          "imported-patterns.md")
-REL = os.path.relpath(CATALOGUE, ROOT)
+REL = plat.rel(CATALOGUE, ROOT)
 ENTRY = re.compile(r"^### (FP-[A-Z]+-\d+)[^\n]*\n(.*?)(?=^### |\Z)", re.M | re.S)
 # ⭐ The fields are read FROM the contract table, never listed here: a copy in
 # the code and a table in the document are two declarations that drift, and the

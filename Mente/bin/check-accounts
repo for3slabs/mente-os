@@ -24,6 +24,7 @@ while _d != _os.path.dirname(_d):
         _sys.path.insert(0, _os.path.join(_d, "bin")); break
     _d = _os.path.dirname(_d)
 import utf8                                          # noqa: F401,E402
+import plat                                          # noqa: E402
 import re
 import sys
 
@@ -207,7 +208,7 @@ def main():
         # ⬜ Without the template the role check cannot run, and saying so is the
         # difference between "every role is fine" and "roles were not checked".
         print("⬜ NOT MEASURED · %s is absent · roles were not checked"
-              % os.path.relpath(TEMPLATE, ROOT))
+              % plat.rel(TEMPLATE, ROOT))
 
     findings = []
     for n, f in data:

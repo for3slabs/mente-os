@@ -29,6 +29,7 @@ while _d != _os.path.dirname(_d):
         _sys.path.insert(0, _os.path.join(_d, "bin")); break
     _d = _os.path.dirname(_d)
 import utf8                                          # noqa: F401,E402
+import plat                                          # noqa: E402
 import re
 import subprocess
 import sys
@@ -158,7 +159,7 @@ def enforcement():
                 # unreadable document could hold twenty rules, and swallowing it
                 # would drop the total silently — ⚠️ the exact defect this
                 # metric exists to catch, committed by the metric itself.
-                skipped.append(os.path.relpath(q, ROOT))
+                skipped.append(plat.rel(q, ROOT))
                 continue
             for _, mark in _RULE_ROW.findall(text):
                 lv[mark] = lv.get(mark, 0) + 1
@@ -192,7 +193,7 @@ def unenforceable():
                 # be read is one this count did not see, and an undercount here
                 # makes the exclusion look smaller than it is — the opposite of
                 # what this metric exists to disclose.
-                unread.append(os.path.relpath(os.path.join(dp, f), ROOT))
+                unread.append(plat.rel(os.path.join(dp, f), ROOT))
                 continue
             m = re.search(r"\*\*Type:\*\*\s*([a-z-]+)", t)
             if not m or m.group(1) not in ("contract", "rule"):
@@ -288,7 +289,7 @@ def closest_to_ceiling():
                 # into the same counter enforcement() already reports as
                 # `rules.documents_unread` — one document that could not be
                 # read is one document neither measurement saw.
-                unread.append(os.path.relpath(os.path.join(dp, f), ROOT))
+                unread.append(plat.rel(os.path.join(dp, f), ROOT))
                 continue
             m = re.search(r"^\*\*Status:.*?\*\*Type:\*\*\s*([a-z-]+)", text,
                           re.M)
@@ -297,7 +298,7 @@ def closest_to_ceiling():
                 continue
             used = len(text.splitlines())
             if worst is None or used / cap > worst[1] / worst[2]:
-                worst = (os.path.relpath(os.path.join(dp, f), ROOT), used, cap)
+                worst = (plat.rel(os.path.join(dp, f), ROOT), used, cap)
     return worst, unread
 
 
@@ -490,7 +491,7 @@ def main():
             current = open(OUT, encoding="utf-8").read()
         except OSError:
             print("🟡 %s does not exist · run bin/generate-metrics"
-                  % os.path.relpath(OUT, ROOT))
+                  % plat.rel(OUT, ROOT))
             return 1
         # ⚠️ The date line changes every day and is not a stale measurement, so
         # it is excluded from the comparison. ⛔ Including it would report every
@@ -499,9 +500,9 @@ def main():
         strip = lambda t: re.sub(r"\*\*Updated:\*\* \d{4}-\d{2}-\d{2}", "", t)
         if strip(current) != strip(body):
             print("🟡 %s is stale · the tree changed since it was written"
-                  % os.path.relpath(OUT, ROOT))
+                  % plat.rel(OUT, ROOT))
             return 1
-        print("✅ %s is current" % os.path.relpath(OUT, ROOT))
+        print("✅ %s is current" % plat.rel(OUT, ROOT))
         return 0
 
     try:
@@ -512,7 +513,7 @@ def main():
         return 2
     n = body.count("\n| `")
     gaps = body.count("NOT MEASURED")
-    print("🤖 %s · %d metric(s)%s" % (os.path.relpath(OUT, ROOT), n,
+    print("🤖 %s · %d metric(s)%s" % (plat.rel(OUT, ROOT), n,
                                       " · ⬜ %d not measured" % gaps if gaps else ""))
     return 0
 

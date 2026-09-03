@@ -49,6 +49,7 @@ from datetime import date
 MENTE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.join(MENTE, "bin"))
 import tsvread                                                 # noqa: E402
+import plat                                                    # noqa: E402
 REPO = os.path.dirname(MENTE)
 TEMPLATES = os.path.join(MENTE, "templates")
 TABLE = os.path.join(MENTE, "pieces.tsv")
@@ -282,6 +283,17 @@ def harden(dry):
     d = os.path.join(MENTE, "secrets")
     if not os.path.isdir(d):
         return None
+
+    # 🔴 NEVER ANNOUNCE A PROTECTION THAT WAS NOT APPLIED. Measured on Windows
+    # 2026-09-02: this printed `secrets/ 777 → 700` and the folder stayed open
+    # to every account on the machine — os.chmod on an NTFS directory is
+    # accepted and does nothing. ⛔ The owner was told their credential store
+    # was private. A false assurance is worse than none: it ends the question.
+    if not plat.modes_are_real():
+        return ("⬜ secrets/ · NOT MEASURED · this platform does not enforce "
+                "file modes · ⚠️ keep credentials out of a shared or synced "
+                "folder — the engine cannot make this one private for you")
+
     mode = stat.S_IMODE(os.stat(d).st_mode)
     if not mode & 0o077:
         return None
@@ -291,7 +303,16 @@ def harden(dry):
         os.chmod(d, mode & 0o700)
     except OSError as e:
         return "⚠️ could not tighten secrets/ (%s)" % e.__class__.__name__
-    return "secrets/ %o → 700" % mode
+
+    # ⭐ SAY WHAT IS TRUE AFTER, NOT WHAT WAS ASKED FOR. Re-reading the mode is
+    # the difference between reporting an action and reporting a result — and
+    # the Windows failure was exactly a call that succeeded and changed nothing.
+    after = stat.S_IMODE(os.stat(d).st_mode)
+    if after & 0o077:
+        return ("🔴 secrets/ is still %o · the change was accepted and did NOT "
+                "take effect · ⚠️ do not keep credentials here until it does"
+                % after)
+    return "secrets/ %o → %o" % (mode, after)
 
 
 def main():
@@ -327,7 +348,7 @@ def main():
 
     wrote, kept = [], []
     for src, dest in items:
-        rel = os.path.relpath(dest, MENTE)
+        rel = plat.rel(dest, MENTE)
         if os.path.exists(dest) and not force:
             kept.append(rel)
             continue

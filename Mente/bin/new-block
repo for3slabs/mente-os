@@ -31,6 +31,7 @@ while _d != _os.path.dirname(_d):
         _sys.path.insert(0, _os.path.join(_d, "bin")); break
     _d = _os.path.dirname(_d)
 import utf8                                          # noqa: F401,E402
+import plat                                          # noqa: E402
 import re
 import sys
 from datetime import date
@@ -138,9 +139,9 @@ def register(bid, intent, indexes):
         with open(target, "a", encoding="utf-8") as fh:
             fh.write(line)
     except OSError as e:
-        return "⚠️ could not write %s (%s)" % (os.path.relpath(target, MENTE),
+        return "⚠️ could not write %s (%s)" % (plat.rel(target, MENTE),
                                                e.__class__.__name__)
-    return "listed in %s" % os.path.relpath(target, MENTE)
+    return "listed in %s" % plat.rel(target, MENTE)
 
 
 def main():
@@ -201,7 +202,7 @@ def main():
     dest = os.path.join(dest_dir, "BLOCK.md")
     if os.path.exists(dest):
         die("%s already exists · refusing to overwrite an open block"
-            % os.path.relpath(dest, MENTE))
+            % plat.rel(dest, MENTE))
 
     today = date.today().isoformat()
     # ⭐ The intent is one sentence by contract (BLK-IDN-003), and unstated it
@@ -227,13 +228,13 @@ def main():
         os.makedirs(dest_dir, exist_ok=True)
         open(dest, "w", encoding="utf-8").write(body)
     except OSError as e:
-        die("could not write %s · %s" % (os.path.relpath(dest, MENTE),
+        die("could not write %s · %s" % (plat.rel(dest, MENTE),
                                          e.__class__.__name__), 2)
 
     listed = register(bid, intent, index_paths())
 
     print("📦 %s\n   · %s\n   · %s"
-          % (os.path.relpath(dest, MENTE), listed,
+          % (plat.rel(dest, MENTE), listed,
              "§A-D written · E-K are added while the work happens"))
     print("\n👉 fill the ⬜ in §B before starting: an IN with no OUT is a wish, "
           "not a boundary.\n   Then: bin/check-block")
