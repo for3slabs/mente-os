@@ -8,6 +8,13 @@ is BEHAVIOUR — silent when healthy, loud when not, and never blocking.
 is removed within a week, and then the engine has neither the hook nor its rule.
 """
 import os, subprocess, sys, shutil
+import os as _os, sys as _sys
+_d = _os.path.dirname(_os.path.abspath(__file__))
+while _d != _os.path.dirname(_d):
+    if _os.path.exists(_os.path.join(_d, "bin", "utf8.py")):
+        _sys.path.insert(0, _os.path.join(_d, "bin")); break
+    _d = _os.path.dirname(_d)
+import utf8                                          # noqa: F401,E402
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from harness import ROOT, MARK                 # noqa: E402

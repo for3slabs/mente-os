@@ -27,6 +27,13 @@ Usage: check-code-patterns [<dir>...] [--quiet]
 Exit: 0 always — ⭐ findings are questions, and a question is not a failure
 """
 import os
+import os as _os, sys as _sys
+_d = _os.path.dirname(_os.path.abspath(__file__))
+while _d != _os.path.dirname(_d):
+    if _os.path.exists(_os.path.join(_d, "bin", "utf8.py")):
+        _sys.path.insert(0, _os.path.join(_d, "bin")); break
+    _d = _os.path.dirname(_d)
+import utf8                                          # noqa: F401,E402
 import re
 import sys
 

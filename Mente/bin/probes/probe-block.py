@@ -6,6 +6,13 @@ written in ANOTHER shape. A check proven only on fixtures its own author
 wrote has been proven on one shape (rule-checks-must-measure.md §4-D).
 """
 import os, re, sys, glob, shutil
+import os as _os, sys as _sys
+_d = _os.path.dirname(_os.path.abspath(__file__))
+while _d != _os.path.dirname(_d):
+    if _os.path.exists(_os.path.join(_d, "bin", "utf8.py")):
+        _sys.path.insert(0, _os.path.join(_d, "bin")); break
+    _d = _os.path.dirname(_d)
+import utf8                                          # noqa: F401,E402
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from harness import Probe, ROOT, MARK
 from fixtures import block, BLOCKS

@@ -6,6 +6,13 @@ answering. ⛔ When that happens the editor receives standards that do not apply
 and the correct warning never arrives — which is worse than no warning.
 """
 import os, sys, json, shutil, subprocess
+import os as _os, sys as _sys
+_d = _os.path.dirname(_os.path.abspath(__file__))
+while _d != _os.path.dirname(_d):
+    if _os.path.exists(_os.path.join(_d, "bin", "utf8.py")):
+        _sys.path.insert(0, _os.path.join(_d, "bin")); break
+    _d = _os.path.dirname(_d)
+import utf8                                          # noqa: F401,E402
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from harness import ROOT, MARK                 # noqa: E402

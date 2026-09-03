@@ -23,6 +23,13 @@ reads exactly like "the section is empty". ⭐ The criterion is
 than restated here, because a criterion repeated is a criterion that diverges.
 """
 import re
+import os as _os, sys as _sys
+_d = _os.path.dirname(_os.path.abspath(__file__))
+while _d != _os.path.dirname(_d):
+    if _os.path.exists(_os.path.join(_d, "bin", "utf8.py")):
+        _sys.path.insert(0, _os.path.join(_d, "bin")); break
+    _d = _os.path.dirname(_d)
+import utf8                                          # noqa: F401,E402
 
 NAMES = {"A": "identity", "B": "scope", "C": "connections",
          "D": "required standards", "E": "state", "F": "sub-?blocks",
