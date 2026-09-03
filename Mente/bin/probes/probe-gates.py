@@ -21,6 +21,7 @@ while _d != _os.path.dirname(_d):
         _sys.path.insert(0, _os.path.join(_d, "bin")); break
     _d = _os.path.dirname(_d)
 import utf8                                          # noqa: F401,E402
+import plat                                          # noqa: E402
 from datetime import date, timedelta
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -57,7 +58,7 @@ def session(days_ago):
 
 
 def wipe():
-    shutil.rmtree(os.path.join(TREE, ".beats"), ignore_errors=True)
+    plat.rmtree(os.path.join(TREE, ".beats"))
 
 
 print("═══ SONDA · _beat + check-gates ═══\n")
@@ -178,7 +179,7 @@ r = check()
 case("⑬ 🔴 an unreadable stamp = never fired, not a ✅",
      "never fired" in r.stdout and "✅" not in r.stdout)
 
-shutil.rmtree(WORK, ignore_errors=True)
+plat.rmtree(WORK)
 good = sum(1 for _, ok in results if ok)
 print("\n  ➜ %d of %d correct" % (good, len(results)))
 for l, ok in results:

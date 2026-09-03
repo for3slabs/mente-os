@@ -52,8 +52,8 @@ results = []
 
 
 def clean():
-    shutil.rmtree(BDIR, ignore_errors=True)
-    shutil.rmtree(SCOPE, ignore_errors=True)
+    plat.rmtree(BDIR)
+    plat.rmtree(SCOPE)
 
 
 def plant(files, btype="code", scope=REL):
@@ -149,7 +149,7 @@ try:
          {k: v for k, v in CLEAN.items() if not k.startswith("test_")},
          "MVP", "test files")
 finally:
-    shutil.rmtree(OUTSIDE, ignore_errors=True)
+    plat.rmtree(OUTSIDE)
 
 print()
 case("⑥ docs · a broken link",
@@ -271,7 +271,7 @@ if real:
                 os.path.join(src_repo, ".git")):
             src_repo = os.path.dirname(src_repo)
         d = os.path.join(ROOT, "work", "blocks", "active", MARK + "-x")
-        shutil.rmtree(d, ignore_errors=True)
+        plat.rmtree(d)
         os.makedirs(d, exist_ok=True)
         shutil.copy(q, os.path.join(d, "BLOCK.md"))
         r = subprocess.run([sys.executable, "bin/grade-block", MARK + "-x",
@@ -286,7 +286,7 @@ if real:
         except Exception:
             print("  %-30s ⛔ %s" % (name[:30],
                                     (r.stdout or r.stderr).strip().splitlines()[0][:60]))
-        shutil.rmtree(d, ignore_errors=True)
+        plat.rmtree(d)
         shown += 1
         # ⛔ No cap. Capping at four was the short-reach family: the blocks that
         # are alphabetically last are not the least interesting, and a

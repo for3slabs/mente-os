@@ -78,7 +78,7 @@ class Probe:
 
     def clean(self):
         for p in self.made:
-            shutil.rmtree(p, ignore_errors=True) if os.path.isdir(p) else (
+            plat.rmtree(p) if os.path.isdir(p) else (
                 os.path.exists(p) and os.remove(p))
         self.made = []
 

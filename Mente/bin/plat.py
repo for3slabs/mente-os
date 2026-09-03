@@ -138,3 +138,112 @@ def privacy(path):
     if mode & 0o077:
         return "exposed", "the folder is %o · anyone on this machine can enter it" % mode
     return "private", "the folder is %o" % mode
+
+
+# ── invoking this engine's own scripts, on any platform ──────────────────
+# 🔴 THE FAILURE THAT MADE THIS NECESSARY. An external audit installed the
+# engine on Windows 2026-09-02 and found the two most important gates DEAD:
+#
+#   · `gate-critical` ran `subprocess.run([".../bin/check-block", "--quiet"])`
+#     — a Python script with a `#!/usr/bin/env python3` line and no `.py`.
+#     ⛔ CreateProcess does not read shebangs, so it raised FileNotFoundError,
+#     the `except Exception: return 0` swallowed it, and EVERY insufficient
+#     close went straight through. ⚠️ The gate reported nothing: it looked
+#     wired in `.claude/settings.json` and enforced nothing at all.
+#   · `gate-secrets` called `bin/secrets-lease` the same way, so a live
+#     permission never registered and no access was ever logged.
+#
+# ⭐ Both failures are ONE mistake: trusting the operating system to know that
+# a file is Python. Only the shebang says so, and only POSIX reads it.
+# ⚠️ `sys.executable` is the interpreter ALREADY RUNNING — the same one on
+# Windows, Linux and macOS, and the same one in a venv. It never guesses.
+#
+# ⛔ Why this is a function and not "remember to pass sys.executable": four
+# call sites forgot, and each one failed silently in the direction that lets
+# work through. That is the same lesson as `rel()` above.
+
+def script(path, *args):
+    """The argv that runs one of this engine's own scripts, on any platform.
+
+    ⭐ Python is invoked by the interpreter that is already running; a `.sh`
+    goes through `bash`, which Git for Windows provides and which every POSIX
+    system has. ⚠️ Anything else is returned untouched — a real binary knows
+    how to start itself.
+    """
+    low = path.lower()
+    if low.endswith(".sh"):
+        return ["bash", path] + list(args)
+    if low.endswith((".exe", ".bat", ".cmd", ".com")):
+        return [path] + list(args)
+    if low.endswith(".py") or _is_python_shebang(path):
+        return [sys.executable, path] + list(args)
+    return [path] + list(args)
+
+
+def _is_python_shebang(path):
+    """⭐ Does the file itself say it is Python? ⛔ The extension cannot answer:
+    every command in `bin/` is extensionless on purpose."""
+    try:
+        with open(path, "rb") as fh:
+            first = fh.readline(120)
+    except OSError:
+        # ⬜ CHK-CAU-003 · unreadable is not "not Python". The caller gets the
+        # path unchanged and the OS reports the real error, instead of this
+        # deciding silently on its behalf.
+        return False
+    return first.startswith(b"#!") and b"python" in first.lower()
+
+
+def shell(command):
+    """The argv that runs a SHELL COMMAND the owner wrote, on any platform.
+
+    🔴 `subprocess.run(cmd, shell=True)` runs `cmd.exe /c` on Windows and
+    `/bin/sh -c` everywhere else — ⛔ two different languages for one string.
+    Measured 2026-09-02: `watch-external` declared the convention
+    `<command>; exit 1` to mean *something changed*; under `cmd.exe` that
+    returned 0, so the watcher reported "nothing new" forever and the person
+    was never told their external state had moved.
+
+    ⭐ The owner writes ONE shell dialect — POSIX — and it runs the same on
+    all three platforms, because Git for Windows ships bash.
+    """
+    return ["bash", "-c", command]
+
+
+def rmtree(path):
+    """Delete a tree on any platform — ⭐ including one git has written into.
+
+    🔴 THE FAILURE THAT MADE THIS NECESSARY. Measured 2026-09-02: git writes
+    its own objects under `.git/objects/**` with mode `0o444`. On POSIX the
+    DIRECTORY's permission decides, so they delete anyway; ⛔ on Windows a
+    read-only file cannot be removed at all, and `shutil.rmtree(...,
+    ignore_errors=True)` silently gave up — every probe run left a whole
+    temporary git repository behind in `%TEMP%`, accumulating forever.
+
+    ⚠️ `ignore_errors=True` is what made it invisible: the failure was
+    swallowed by the very flag that was supposed to make cleanup harmless.
+    ⭐ Here the read-only bit is cleared and the delete retried, so cleanup
+    either succeeds or the caller finds out.
+
+    Returns True when nothing is left, False when something survived — ⛔ never
+    silence, because a probe reports its own residue.
+    """
+    import shutil
+
+    def _retry(func, target, _exc):
+        # ⭐ The documented `onerror` contract: clear what blocks the delete and
+        # call the same operation again. ⛔ A bare `pass` here is the silent
+        # give-up this function exists to replace.
+        try:
+            os.chmod(target, stat.S_IWRITE | stat.S_IREAD)
+            func(target)
+        except OSError:
+            pass          # ⬜ said out loud by the return value below
+
+    if not os.path.exists(path):
+        return True
+    if sys.version_info >= (3, 12):
+        shutil.rmtree(path, onexc=lambda f, t, e: _retry(f, t, e))
+    else:
+        shutil.rmtree(path, onerror=_retry)
+    return not os.path.exists(path)

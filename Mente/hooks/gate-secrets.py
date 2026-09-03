@@ -40,6 +40,7 @@ while _d != _os.path.dirname(_d):
         _sys.path.insert(0, _os.path.join(_d, "bin")); break
     _d = _os.path.dirname(_d)
 import utf8                                          # noqa: F401,E402
+import plat                                          # noqa: E402
 import os
 import re
 import subprocess
@@ -199,7 +200,10 @@ def targets_secrets(ti):
 
 def note(op, target, reason):
     try:
-        subprocess.run([LEASE, "log", op, target, reason],
+        # 🔴 plat.script: a bare path never started on Windows, so NO access
+        # was ever logged there — the log file was not even created, and the
+        # permission-hardening inside secrets-lease never ran either.
+        subprocess.run(plat.script(LEASE, "log", op, target, reason),
                        capture_output=True, timeout=10)
     except (OSError, subprocess.SubprocessError):
         pass            # ⛔ the log never blocks the work
@@ -207,7 +211,9 @@ def note(op, target, reason):
 
 def permitted():
     try:
-        return subprocess.run([LEASE, "check"], capture_output=True,
+        # 🔴 Same defect, and here it failed CLOSED: a live session permission
+        # never registered on Windows, so every read of secrets/ asked again.
+        return subprocess.run(plat.script(LEASE, "check"), capture_output=True,
                               timeout=10).returncode == 0
     except (OSError, subprocess.SubprocessError):
         # 🔴 FAIL CLOSED. If the grantor cannot answer, permission is NOT given.

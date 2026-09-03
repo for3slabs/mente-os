@@ -26,6 +26,7 @@ while _d != _os.path.dirname(_d):
         _sys.path.insert(0, _os.path.join(_d, "bin")); break
     _d = _os.path.dirname(_d)
 import utf8                                          # noqa: F401,E402
+import plat                                          # noqa: E402
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from harness import ROOT                       # noqa: E402
@@ -131,7 +132,7 @@ case("⑩ ⛔ it does not index `cache/` — runtime state, not documentation",
      "cache/" not in read("INDEX.md"))
 
 # ── ③ ⬜ A GAP IS A GAP, NEVER A ZERO ────────────────────────────────────────
-shutil.rmtree(os.path.join(TREE, "work", "blocks"), ignore_errors=True)
+plat.rmtree(os.path.join(TREE, "work", "blocks"))
 run("generate-index")
 case("⑪ ⬜ no blocks → it SAYS so, not an empty table",
      "NOT MEASURED" in read("STATES.md"))
@@ -144,7 +145,7 @@ case("⑫ ⬜ no decisions → it SAYS so, not a silent 0",
      "NOT MEASURED" in read("DECISIONS.md"))
 shutil.move(os.path.join(keep, "decisions"),
             os.path.join(TREE, "rules", "decisions"))
-shutil.rmtree(keep, ignore_errors=True)
+plat.rmtree(keep)
 
 # ⭐ an unreadable document still EXISTS — omitting it makes the index short
 bad_f = os.path.join(TREE, "rules", "zzprobe-bad.md")
@@ -319,7 +320,7 @@ case("㉖ ⭐ the battery's DURATION is recorded, per probe",
      "20 s over 40 probes")
 
 
-shutil.rmtree(WORK, ignore_errors=True)
+plat.rmtree(WORK)
 good = sum(1 for _, ok in results if ok)
 print("\n  ➜ %d of %d correct" % (good, len(results)))
 for l, ok in results:
