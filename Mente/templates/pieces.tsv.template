@@ -222,9 +222,11 @@ probe-gate-accounts	bin/probes/probe-gate-accounts.py	engine	executable	proves b
 probe-structure	bin/probes/probe-structure.py	engine	executable	proves a stale row is told from a legitimate absence — most absences are correct
 probe-health	bin/probes/probe-health.py	engine	executable	proves a green is never printed over a check that could not run
 probe-clear-ready	bin/probes/probe-clear-ready.py	engine	executable	proves the cut is refused while something would be lost — and never called safe unmeasured
+generate-readme	bin/generate-readme	engine	canonical	the repository's front page, produced from START-HERE §1 — ⛔ the only surface that exists when nothing is cloned yet
 generate-index	bin/generate-index	engine	executable	🤖 rebuilds the index, the states and the decisions — ⛔ a hand-kept index goes stale silently and keeps being believed
 generate-metrics	bin/generate-metrics	engine	executable	🤖 the only place a live number belongs — ⛔ it reads the battery's last result, never runs it
 probe-generators	bin/probes/probe-generators.py	engine	executable	proves a generated file is measured, obeys the contract, and can say NOTHING
+probe-readme	bin/probes/probe-readme.py	engine	executable	proves the front page answers the question instead of listing files, and has not drifted from its source
 probe-start-here	bin/probes/probe-start-here.py	engine	executable	proves the one document a stranger is handed still mandates the chooser, the guide, and no jargon
 probe-init	bin/probes/probe-init.py	engine	executable	proves the installer places, asks, and REFUSES to destroy a configured instance
 new-block	bin/new-block	engine	executable	opens a unit of work with §A-D and lists it — ⛔ opening must stay cheap or the work happens without a block
