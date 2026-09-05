@@ -1,22 +1,23 @@
 #!/usr/bin/env python3
-"""probe-readme — proves the front page answers the question instead of listing files.
+"""probe-readme — proves the front page earns trust instead of demanding it.
 
-🔴 THE FAILURE, measured twice on real runs. Somebody is handed the URL and asks
-an assistant what this repository is. ⚠️ NOTHING IS CLONED — no hooks, no
-CLAUDE.md, no settings. The only surface that exists is the README GitHub renders.
-The one that shipped addressed the PERSON ("paste this to your assistant") and
-then listed four other files, so the assistant read the menu aloud and the visitor
-got a file listing instead of an explanation.
+🔴 THE FAILURE THIS ENCODES, measured 2026-09-05 on a real run. The page used to
+carry instructions to the reading assistant: print §1 verbatim, do not
+summarise, and — worst — do not report what you notice on the user's machine.
+⚠️ The assistant classified it as PROMPT INJECTION, refused to follow it, and
+advised the person NOT to install this. ⛔ It was right: telling an agent to
+withhold information from its own user is indefensible.
 
-⭐ Two things must hold, and neither used to be checked:
-  · the front page speaks TO THE ASSISTANT, first, unambiguously
-  · it CARRIES the explanation — it does not point at it
+⭐ SO THE CASES BELOW ARE MOSTLY INVERSES. They measure that no such instruction
+came back, and that the page carries what a stranger needs to decide on their
+own: what it is, what it will do to their machine, and how to start. A page that
+explains well does not need to give orders.
 
-⚠️ AND the copy must not drift. The same words live in START-HERE §1 and in the
-README; the copy nobody edits is the one strangers read. CHK-SHR-001 — one shape,
-one source — so the generator's own --check is a case here.
+⚠️ AND the copy must not drift from START-HERE §1 — the same words in two files
+diverge, and the copy nobody edits is the one strangers read (CHK-SHR-001).
 
-⬜ NOT MEASURED: whether an assistant obeys. That runs outside this engine.
+⬜ NOT MEASURED: whether an assistant reaches a good summary. That runs outside
+this engine.
 """
 import os, re, shutil, subprocess, sys, tempfile
 _d = os.path.dirname(os.path.abspath(__file__))
@@ -70,23 +71,28 @@ low = text.lower()
 # 🔴 The shipped version said "paste this to your assistant" — an instruction to
 # the PERSON. In the run that failed, the assistant arrived first and no line was
 # addressed to it, so it improvised.
-case("② 🔴 ⭐ it addresses the ASSISTANT, not only the person",
-     bool(re.search(r"if you are an ai assistant reading this", low)))
+# ── ② ⛔ NO ORDERS TO THE ASSISTANT — the inverse cases ────────────────────
+# 🔴 Each phrase below appeared on the page that got classified as prompt
+# injection. ⛔ None of them may come back, in a comment or in plain sight.
+BANNED = [
+    (r"print .{0,20}verbatim|print §?1 (below )?exactly", "print it verbatim"),
+    (r"do not summaris|do not summariz", "do not summarise"),
+    (r"do not propose (steps|next steps)", "do not propose steps"),
+    (r"do not report anything you notice", "🔴 withhold what you notice"),
+    (r"if you are an ai assistant reading", "an order addressed at the reader"),
+]
+# ⭐ One numeral per case: the battery refuses a label used twice, and it is
+# right — a report where five rows share a name cannot be read.
+for _i, (pat, what) in enumerate(BANNED, start=1):
+    hit = re.search(pat, low)
+    case("②.%d ⛔ no order to the assistant: %s" % (_i, what), not hit,
+         "" if not hit else "🔴 " + hit.group(0)[:30])
 
-# 🔴 THE CASE THAT WOULD HAVE CAUGHT THE REAL FAILURE. Measured 2026-09-05 on
-# Windows: the assistant fetched the rendered PAGE, not the file — and an HTML
-# comment does not survive GitHub's renderer, so the order never arrived.
-# ⛔ The instruction must live in VISIBLE markdown, outside any comment.
-_visible = re.sub(r"<!--.*?-->", "", text, flags=re.S).lower()
-case("②b 🔴 ⭐ the order survives GitHub's renderer (NOT in an HTML comment)",
-     "if you are an ai assistant reading this" in _visible)
-case("②c ⭐ and it is near the top, before anything it might skim",
-     _visible.find("if you are an ai assistant reading this") < 400)
-
-# ⛔ AND IT FORBIDS THE DETOUR. The same run reported an unrelated finding on the
-# person's machine, investigated it, and never installed anything.
-case("②d 🔴 ⛔ it forbids reporting what it notices on their machine",
-     bool(re.search(r"do not report[\s\S]{0,90}machine", _visible)))
+# ⭐ THE ONE THAT MATTERS MOST, kept separate because it is not a style choice:
+# a page telling an agent to hide something from its user is indefensible.
+case("②z 🔴 ⭐ nothing tells the assistant to withhold from its user",
+     not re.search(r"(do not|don't|never) (report|mention|tell)[\s\S]{0,60}"
+                   r"(machine|notice|found)", low))
 
 # ── ③ IT CARRIES THE ANSWER ────────────────────────────────────────────────
 # ⭐ An assistant that must open a second file may summarise instead. One that
@@ -98,24 +104,34 @@ for needle, what in ((r"what it is:", "what it is"),
                      (r"close the session", "the habit the system rests on")):
     case("③· it CARRIES %s" % what, bool(re.search(needle, low)))
 
-# ── ④ IT DOES NOT HAND THEM A MENU ─────────────────────────────────────────
-# 🔴 THE MEASURED CAUSE. A menu invites choosing; the assistant chose to read the
-# menu out. ⛔ These names must not appear on the front page at all.
-menu = [n for n in ("QUICKSTART.md", "CAPABILITIES.md", "CHANGELOG.md",
-                    "bin/init", "bin/probes/run-all.py") if n in text]
-case("④ 🔴 ⭐ no file menu for the assistant to read out instead",
-     not menu, ", ".join(menu) or "none")
+# ── ④ IT CARRIES WHAT A STRANGER NEEDS TO DECIDE ──────────────────────────
+# ⭐ The page no longer gives orders, so it has to EARN the decision instead.
+# 🔴 A stranger who cannot tell what this will do to their machine should not
+# install it — and the run that refused this repo named exactly that: git hooks
+# that intercept commits, and a clone that lands in their own folder.
+for pat, what in ((r"what it does to your machine", "what it does to their machine"),
+                  (r"git hook", "that it installs git hooks"),
+                  (r"sends nothing|no network calls", "that it sends nothing"),
+                  (r"installs nothing|no packages", "that it installs nothing"),
+                  (r"remove them by deleting", "how to remove what it installed")):
+    case("④· it states %s" % what, bool(re.search(pat, low)))
 
-# ── ⑤ THE CHOOSER IS ORDERED HERE TOO ──────────────────────────────────────
-# ⚠️ With only a URL there is no START-HERE in context, so the chooser must be
-# mandated on this page or it never happens.
-case("⑤ ⭐ it mandates the chooser by name, on this page",
-     "askuserquestion" in low)
-# 🔴 Measured: plain `git clone <url>` made a `mente-os/` folder nobody asked for.
-case("⑤c 🔴 ⭐ the clone command clones INTO the folder, no extra wrapper",
+# ── ⑤ AND HOW TO START ─────────────────────────────────────────────────────
+# ⚠️ The trailing dot is not cosmetic: plain `git clone <url>` makes a folder
+# nobody asked for. ⭐ But it must land in a folder they CREATE for it — cloning
+# into a project folder is what read as invasive on a real run.
+case("⑤ ⭐ the clone command clones INTO the folder, no extra wrapper",
      bool(re.search(r"git clone \S+\.git \.", text)))
-case("⑤b ⛔ three options, and it says to stop and wait",
-     low.count("| option |") >= 1 and bool(re.search(r"stop there and wait", low)))
+case("⑤b 🔴 ⭐ and into a folder made for it, not into their own project",
+     bool(re.search(r"mkdir \S+ && cd", text)))
+
+# ⭐ Pointers are fine now — an assistant reading a page with no orders needs to
+# know where the detail lives. ⛔ What is forbidden is a page that is ONLY a
+# list, which is what the very first version was.
+_expl = low.find("the 30-second version")
+_ptr = low.find("where to look next")
+case("⑤c ⭐ the explanation comes BEFORE the pointers",
+     _expl != -1 and _ptr != -1 and _expl < _ptr)
 
 # ── ⑥ IT DOES NOT DRIFT FROM ITS SOURCE ────────────────────────────────────
 # ⭐ CHK-SHR-001. The generator answers this better than any comparison written
@@ -146,8 +162,12 @@ LIVE = os.path.join(os.path.dirname(ROOT), "README.md")
 if os.path.isfile(LIVE):
     live = open(LIVE, encoding="utf-8").read()
     vis = re.sub(r"<!--.*?-->", "", live, flags=re.S).lower()
-    case("⑦ 🔴 ⭐ the PUBLISHED page carries the order in visible markdown",
-         "if you are an ai assistant reading this" in vis)
+    # 🔴 THE INVERSE, and it is the case that would have caught the real
+    # failure: the PUBLISHED page must carry no order at all — not in visible
+    # markdown, and not in a comment either.
+    case("⑦ 🔴 ⭐ the PUBLISHED page gives the assistant NO orders",
+         not re.search(r"if you are an ai assistant reading|do not summaris|"
+                       r"do not report anything you notice", live.lower()))
     case("⑦b 🔴 ⭐ and its clone command clones INTO the folder",
          bool(re.search(r"git clone \S+\.git \.", live)))
     case("⑦c ⛔ the published page is byte-for-byte what the generator makes",
@@ -159,9 +179,7 @@ else:
 
 plat.rmtree(WORK)
 
-print("\n  ⬜ NOT MEASURED · whether an assistant OBEYS this page · that runs "
-      "outside\n     this engine · these cases prove the instruction is present "
-      "and complete")
+print("\n  ⬜ NOT MEASURED · whether an assistant reaches a good summary · that\n     runs outside this engine · these cases prove the page gives no orders and\n     carries what a stranger needs to decide")
 
 good = sum(1 for _, ok in results if ok)
 print("\n  ➜ %d of %d correct" % (good, len(results)))
