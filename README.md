@@ -87,31 +87,39 @@
 
 ---
 
-## 🚀 Getting started
+## 🚀 Getting it
 
-**1 · Make a folder for it, and clone into that folder**
+**Clone it into the folder you want it in** — the trailing `.` matters:
 
 ```bash
-mkdir mente-os && cd mente-os
 git clone https://github.com/for3slabs/mente-os.git .
 ```
 
-> 💡 The trailing `.` clones into the folder you just made instead of creating
-> another one inside it. Cloning into a folder that already has files in it will
-> fail — use an empty one.
+> 💡 **Already standing in the folder you want?** That command puts it right
+> there. **Starting from scratch?** Make the folder first, then run it inside:
+> `mkdir my-project && cd my-project`
+>
+> ⚠️ Without the trailing `.`, git makes an extra `mente-os/` folder and buries
+> everything inside it. Cloning into a folder that already has files will fail —
+> use an empty one.
 
-**2 · Set it up**
+---
 
-```bash
-cd Mente
-bin/init                  # asks who you are · writes nothing until you answer
-bin/probes/run-all.py     # the engine checking itself · expect 0 failures
-```
+## 👋 Then say this, and nothing else
 
-**3 · Then just talk to your assistant**
+> ### *"Set up Mente OS and walk me through it."*
 
-You do not learn commands. 📄 `Mente/START-HERE.md` is a walkthrough written for
-an assistant to follow with you the first time — point yours at it.
+That is the whole thing. 🤖 Your assistant takes it from there: it checks what
+your computer already has and handles whatever is missing, asks what to call
+you, and stays with you through your first piece of work.
+
+⭐ **You will not be sent to read anything, and you will not be asked to install
+anything yourself.** If a question comes up, it will be a short one with the
+options laid out — you pick, you never have to compose an answer about a system
+you just met.
+
+<!-- Assistant: that sentence is your cue. Mente/START-HERE.md is the walkthrough
+     — it carries the machine check, the name, and the first block, in order. -->
 
 ---
 
@@ -120,8 +128,8 @@ an assistant to follow with you the first time — point yours at it.
 | You say | What happens |
 |---|---|
 | 🏗️ *"build me X"* | it opens a **block** and asks what it may and may not touch |
-| 🧭 *"where were we?"* | it reads `memory/RESUME.md` instead of guessing |
-| 📋 *"what's left?"* | it reads `memory/PENDING.md` |
+| 🧭 *"where were we?"* | it reads where you left off instead of guessing |
+| 📋 *"what's left?"* | it reads what was postponed |
 | ✅ *"is this done?"* | it cannot say yes until the checks pass — that is not its opinion to give |
 | ⭐ *"let's close the session"* | it writes down the reasoning **before** the conversation resets and takes it with it |
 
@@ -150,25 +158,41 @@ You should know this before installing anything, and it is short:
 | 📦 **Block** | one unit of work — what is being built, ⭐ **what must NOT be touched**, what it depends on, what comes next |
 | 🗺️ **Campaign** | several blocks under one mission, so switching between them does not restart the reason |
 | 🚦 **Gates** | they run on their own and stop what should not happen — a destructive change with no way back, closing work that is not finished |
-| 🧠 **Memory** | `RESUME.md` (where we left off) and `PENDING.md` (what is postponed) — ⭐ you never write either by hand |
+| 🧠 **Memory** | where you left off, and what is postponed — ⭐ you never write either by hand |
 
 ---
 
-## 🗂️ Where to look next
+## 🤔 How is this different from just keeping notes?
 
-| | |
-|---|---|
-| 📄 `Mente/START-HERE.md` | the guided first run, written for an assistant to follow with you |
-| ⚡ `Mente/QUICKSTART.md` | clone → `bin/init` → tests, for a developer in a hurry |
-| 🛠️ `Mente/CAPABILITIES.md` | every command, and what each one refuses to do |
-| 📐 `Mente/rules/decisions/` | why it is built this way — one file per decision |
+⭐ **Notes describe. This refuses.** A note saying *"do not touch the database"*
+is read about half the time. Here, a small program reads the same boundary and
+**stops the change** — and it cannot be talked out of it.
+
+| | A memory file or a notes doc | Mente OS |
+|---|---|---|
+| The boundary | written down, honoured when remembered | 🚦 **enforced by a program** |
+| *"is this finished?"* | the assistant's opinion | ✅ **checks pass, or it does not close** |
+| Losing the thread | you notice after it happened | 🧭 written down **before** the reset |
+
+⚠️ It is not a replacement for the memory your assistant already has — it sits
+under it, and answers a different question: **not what was said, but what may
+not be broken.**
+
+---
+
+## 🗂️ For developers
+
+⚡ In a hurry: `Mente/QUICKSTART.md` — clone, `bin/init`, `bin/probes/run-all.py`.
+🛠️ Every command and what it refuses: `Mente/CAPABILITIES.md`.
+📐 Why it is built this way, one file per decision: `Mente/rules/decisions/`.
 
 ---
 
 ## 🧰 What it needs
 
 Python 3 · git · bash. Most machines already have all three; on Windows, Git
-Bash brings them together.
+Bash brings them together. ⭐ You do not have to check — your assistant does that
+for you.
 
 ## 📜 Licence
 
