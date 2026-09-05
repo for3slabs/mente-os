@@ -232,6 +232,44 @@ case("⑲ ⚠️ a foreign hook is NOT replaced, and it says so",
      "points elsewhere" in r.stdout and
      open(theirs).read().startswith("#!/bin/sh"))
 
+# ── ㉒ THE REGISTRY IS DECLARED, NOT ONLY WIRED ─────────────────────────────
+# 🔴 Measured 2026-09-05 on a fresh clone: ③b wrote `.claude/settings.json` and
+# the gates ran, but `hooks.registry` stayed null — so `check-health` reported
+# the wiring as ⬜ NOT MEASURED forever. ⭐ The guard that watches the guards
+# was blind on every new installation, and it looked exactly like "fine".
+repoR, treeR = fresh()
+r = run(treeR, "--owner", OWNER)
+_cfg = open(os.path.join(treeR, "mente.config.yml"), encoding="utf-8").read()
+case("㉒ ⭐ init DECLARES where it wired the gates",
+     "registry: null" not in _cfg and ".claude/settings.json" in _cfg
+     and "hooks.registry" in r.stdout)
+
+# ⛔ The declaration must be RELATIVE to the repository, which is where
+# check-health resolves it from. An absolute path is this machine's.
+_line = _cfg.split("registry:")[1].split("\n")[0].strip().strip('"')
+case("㉒b ⛔ the declared path is relative, not this machine's",
+     not os.path.isabs(_line) and treeR not in _cfg, _line)
+
+# ⭐ THE CASE THAT MATTERS: not that a key changed, but that the check which was
+# blind can now SEE. A probe that only reads the config would pass against a
+# path pointing nowhere — which is the bug this replaced.
+_h = subprocess.run([sys.executable, os.path.join(treeR, "bin", "check-health")],
+                    cwd=treeR, capture_output=True, text=True, timeout=60)
+case("㉒c 🔴 ⭐ check-health now MEASURES the hook wiring on a fresh install",
+     "no registry declared" not in _h.stdout
+     and "declared registry does not exist" not in _h.stdout,
+     "0 of 2" if "0 of 2" in _h.stdout else "measured")
+
+# ⛔ AND IT NEVER OVERWRITES AN ANSWER A PERSON GAVE. Their host, their path.
+repoS, treeS = fresh()
+_c = os.path.join(treeS, "mente.config.yml")
+shutil.copy(os.path.join(treeS, "templates", "mente.config.yml.template"), _c)
+_t = open(_c, encoding="utf-8").read().replace("registry: null", 'registry: "mine.json"')
+open(_c, "w", encoding="utf-8").write(_t)
+run(treeS, "--owner", OWNER)
+case("㉒d ⛔ an answer the owner already gave is NOT overwritten",
+     'registry: "mine.json"' in open(_c, encoding="utf-8").read())
+
 # ── ⑦ --dry-run WRITES NOTHING ──────────────────────────────────────────────
 repo5, tree5 = fresh()
 r = run(tree5, "--dry-run", "--owner", OWNER)

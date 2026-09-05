@@ -209,6 +209,7 @@ generate-index	bin/generate-index	engine	executable	🤖 rebuilds the index, the
 generate-metrics	bin/generate-metrics	engine	executable	🤖 the only place a live number belongs — ⛔ it reads the battery's last result, never runs it
 probe-generators	bin/probes/probe-generators.py	engine	executable	proves a generated file is measured, obeys the contract, and can say NOTHING
 probe-readme	bin/probes/probe-readme.py	engine	executable	proves the front page answers the question instead of listing files, and has not drifted from its source
+probe-start-here	bin/probes/probe-start-here.py	engine	executable	proves the one document a stranger is handed still mandates the chooser, the guide, and no jargon
 probe-init	bin/probes/probe-init.py	engine	executable	proves the installer places, asks, and REFUSES to destroy a configured instance
 new-block	bin/new-block	engine	executable	opens a unit of work with §A-D and lists it — ⛔ opening must stay cheap or the work happens without a block
 tpl-block	templates/BLOCK.md.template	engine	canonical	the shape a block has — ⭐ mirrors contract-block §5, never a copy inside the scaffolder
