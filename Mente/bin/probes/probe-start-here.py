@@ -84,6 +84,23 @@ for name, label in (("RESUME", "the cold-start brief"),
                     ("PENDING", "the open items")):
     case("④· it points at %s (%s)" % (name, label), name in text)
 
+# ── ④b THE DETOUR, AND WHO IS ASKED TO DECIDE ──────────────────────────────
+# 🔴 Measured 2026-09-05 on a real Windows run. The assistant noticed an
+# unrelated misconfigured repository, reported it, investigated it across four
+# commands and asked the person what to do. ⚠️ The install never happened, and
+# they answered: "what is that and why are you asking ME? I'm new."
+case("④b 🔴 ⛔ an unrelated finding is NOT raised during the first run",
+     bool(re.search(r"not part of this|not yours to raise", low)))
+case("④c ⛔ and it is never INVESTIGATED",
+     bool(re.search(r"never investigate", low)))
+case("④d 🔴 ⭐ a newcomer is not handed a technical decision",
+     bool(re.search(r"ask them to decide something technical", low)))
+
+# ⭐ AND THE CLONE ITSELF. Plain `git clone <url>` makes a folder nobody asked
+# for; the trailing dot is what keeps their own folder theirs.
+case("④e 🔴 ⭐ the clone lands in the folder they are in, no extra wrapper",
+     bool(re.search(r"git clone \S+\.git \.", text)))
+
 # ── ⑤ IT CHECKS THE MACHINE INSTEAD OF INSTRUCTING ─────────────────────────
 # ⛔ A person asking "what is this?" is not asking to become a sysadmin.
 case("⑤ ⛔ it forbids telling them to install things",
