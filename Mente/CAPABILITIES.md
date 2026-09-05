@@ -98,6 +98,7 @@ answers exactly one question. None of them decides anything: they check what is 
 | `bin/new-block <id> --type <t>` | a new block with its §A-D opening contract, and its row in the index | ⭐ refuses a used id, an undeclared type or lane · ⛔ opening costs four sections on purpose |
 | `bin/new-campaign <id> --blocks <ids>` | a campaign with its 3 opening sections, holding blocks that EXIST | ⛔ refuses one with no blocks — that is a title, not a campaign |
 | `bin/generate-index` | 🤖 `docs/INDEX.md` · `docs/STATES.md` · `docs/DECISIONS.md` | regenerated, never hand-edited · `--check` reports staleness without writing |
+| `bin/generate-readme` | 🤖 the repository's `README.md` | ⭐ the front page, produced from `START-HERE.md` §1 — ⛔ **the only surface that exists when nothing is cloned yet** · `--check` reports drift without writing |
 | `bin/generate-metrics` | 🤖 `docs/METRICS.md` | ⭐ **the only place a live number belongs** · ⛔ it READS the battery's last result, never runs it |
 | `bin/secrets-lease` | the read permission for `secrets/`, and its access log | ⭐ tied to the context load, never to a clock · it hardens the folder before granting |
 
