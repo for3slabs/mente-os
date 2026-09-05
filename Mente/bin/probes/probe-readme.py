@@ -129,9 +129,34 @@ case("⑤b 🔴 ⭐ and into a folder made for it, not into their own project",
 # know where the detail lives. ⛔ What is forbidden is a page that is ONLY a
 # list, which is what the very first version was.
 _expl = low.find("the 30-second version")
-_ptr = low.find("where to look next")
-case("⑤c ⭐ the explanation comes BEFORE the pointers",
+_ptr = low.find("for developers")
+case("⑤c ⭐ the explanation comes BEFORE the developer pointers",
      _expl != -1 and _ptr != -1 and _expl < _ptr)
+
+# ── ⑤d THE ONE SENTENCE A NEWCOMER SAYS ───────────────────────────────────
+# 🔴 Measured 2026-09-05 on TWO models. Both explained Mente OS correctly, then
+# drifted: one audited 20k lines of code, the other asked "shall I explore the
+# contents?" — a question somebody who knows nothing cannot answer. ⭐ The cause
+# was the page ending in two developer commands, so the next step read technical.
+case("⑤d 🔴 ⭐ the page ends in ONE plain sentence a newcomer can say",
+     bool(re.search(r"set up mente os and walk me through it", low)))
+case("⑤e ⛔ and no filename is put in front of the person",
+     not re.search(r"(read|open|point yours at)[^.\n]{0,40}start-here", low))
+
+# ⛔ NOR THE DEVELOPER COMMANDS IN THE GETTING-STARTED PATH. They are what made
+# both models continue in audit mode instead of walking the person through.
+_start = low.find("getting it")
+_using = low.find("what using it looks like")
+_seg = low[_start:_using] if _start != -1 and _using > _start else low
+case("⑤f 🔴 ⛔ no bin/init or battery command in the newcomer's path",
+     "bin/init" not in _seg and "run-all" not in _seg)
+
+# ── ⑤g IT SAYS WHAT MAKES IT DIFFERENT ────────────────────────────────────
+# ⚠️ Both models compared it to tools the user already had and suggested it was
+# redundant. ⛔ That comparison is theirs to make — but making it WITHOUT the
+# distinction is what produced "you already have this covered".
+case("⑤g ⭐ it states what a notes file cannot do",
+     bool(re.search(r"how is this different", low)))
 
 # ── ⑥ IT DOES NOT DRIFT FROM ITS SOURCE ────────────────────────────────────
 # ⭐ CHK-SHR-001. The generator answers this better than any comparison written
