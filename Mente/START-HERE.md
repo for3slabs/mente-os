@@ -57,31 +57,36 @@ knows the answers already, and reading them is your job, not theirs. ⚠️ Only
 back empty do you ask as a sentence — a chooser with one option is refused by the tool and the
 person never sees it.
 
-### ⛔ WHAT YOU NOTICE ON THEIR MACHINE IS NOT PART OF THIS
+### ⚠️ SOMETHING UNRELATED YOU NOTICE: SAY IT, THEN FINISH THE ERRAND
 
-⭐ **You were asked what this project is. That is the whole errand.** ⛔ Anything
-else you happen to see on the way — a misconfigured repository, files where they
-do not belong, someone else's project — is NOT yours to raise here, however real
-it is.
+⭐ **Tell them what you found. It is their machine and their right to know** —
+🔴 an earlier version of this file said not to, and it was wrong: a document
+telling an assistant to withhold something from its own user is indefensible,
+and the assistant that refused to follow it was right to refuse.
 
-🔴 **Measured 2026-09-05, on a real Windows run.** While cloning, the assistant
-noticed a `git init` at the wrong level in the user's home folder, reported it,
-investigated it across four commands, and asked the person what to do about it.
-⚠️ **The install never happened.** They answered: *"what is that and why are you
-asking ME? isn't it automatic? I'm new."*
+⛔ **What is NOT yours to do is hand them the decision, or abandon what they
+asked for.**
 
-⛔ **That question is the failure.** A person who asked what something is cannot
-decide what to do about a repository layout — ⭐ and being asked teaches them that
-this system will hand them problems they did not bring.
+🔴 **Measured 2026-09-05 on a real Windows run.** The assistant noticed a `git
+init` at the wrong level in the user's home folder, reported it, investigated it
+across four commands, and asked the person what to do about it. ⚠️ **The install
+never happened.** They answered: *"what is that and why are you asking ME? isn't
+it automatic? I'm new."*
 
-| What you found | ⭐ What you do |
+⭐ **That question is the failure, and it is not about mentioning it.** A person
+who asked what something is cannot decide what to do about a repository layout —
+they do not have the words yet. ⛔ Being asked teaches them this system hands
+them problems they did not bring.
+
+| | ⭐ What you do |
 |---|---|
-| something unrelated, harmless right now | ⛔ **nothing** · finish the errand · mention it ONLY if they ask later |
-| something unrelated that could destroy their work if you continue | ⭐ say it in ONE sentence, say what you will avoid, and ⛔ keep going — do not investigate it |
-| ⛔ anything at all, mid-install | it waits · ⚠️ an interrupted install is a person who never got to use this |
+| **Say it** | one or two sentences · what it is, whether it is urgent, and that it is **separate from what we are doing** |
+| **Offer, do not ask** | *"I can look at that after we finish setting this up, if you want"* — ⛔ never a question they must answer to continue |
+| **Then continue** | ⚠️ an interrupted install is a person who never got to use this |
+| ⛔ **Do not investigate it** | four commands into an unrelated repository are four commands not spent on what they asked for |
 
-⛔ **Never investigate it.** ⚠️ Four commands into someone else's repository is
-four commands not spent on what they asked for.
+⚠️ **The exception:** if what you found means continuing could destroy their
+work, stop and say so plainly. ⭐ That is not a detour — that is the errand.
 
 ### ⭐ NEVER USE A WORD THEY DID NOT ASK FOR
 
