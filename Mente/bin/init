@@ -272,6 +272,47 @@ def wire_gates(dry):
     return "wired into .claude/settings.json"
 
 
+def declare_registry(dry, wired):
+    """③c Record, in the instance config, WHERE the gates were wired.
+
+    🔴 THE GAP THIS CLOSES, measured 2026-09-05 on a fresh clone: ③b writes
+    `.claude/settings.json` and the gates run — but `hooks.registry` stayed
+    `null`, so `bin/check-health` reported the hook wiring as
+    ⬜ NOT MEASURED on every new installation. The engine knew the path it had
+    just written to and did not say so, which leaves the one guard that watches
+    the guards permanently blind on a tree nobody has hand-edited.
+
+    ⛔ Declared only when ③b ACTUALLY wired the file. If their own settings
+    were left untouched, this engine did not put the gates there and must not
+    claim a registry it did not create — a wrong path here is worse than null,
+    because null reports NOT MEASURED while a wrong path reports a red.
+    """
+    cfg = os.path.join(MENTE, "mente.config.yml")
+    if not wired.startswith("wired") and not wired.startswith("would wire"):
+        return None                     # ⬜ their file stands · nothing to declare
+    if not os.path.isfile(cfg):
+        return None
+    # ⭐ Relative to the REPOSITORY, not to Mente/ — that is where
+    # `bin/check-health` resolves it from (`dirname(ROOT)`). ⛔ Not absolute:
+    # an absolute path is this machine's, and the config is the instance's.
+    rel = plat.rel(os.path.join(REPO, ".claude", "settings.json"), REPO)
+    if dry:
+        return "would declare hooks.registry"
+    try:
+        text = open(cfg, encoding="utf-8").read()
+        # ⭐ Only the null default is replaced. An owner who already pointed this
+        # somewhere is answering for their own host, and ⛔ this step never
+        # overwrites an answer a person gave.
+        pat = r"(?m)^(hooks:\n(?:[ \t]*#.*\n)*[ \t]*registry:)[ \t]*null[ \t]*$"
+        new = re.sub(pat, lambda m: m.group(1) + ' "%s"' % rel, text, count=1)
+        if new == text:
+            return None
+        open(cfg, "w", encoding="utf-8").write(new)
+    except OSError as e:
+        return "⚠️ could not declare hooks.registry (%s)" % e.__class__.__name__
+    return "hooks.registry → %s" % rel
+
+
 def wire_hook(dry, name="pre-push"):
     """④ Link the layer that cannot be walked around.
 
@@ -420,6 +461,8 @@ def main():
     # installed, which is the failure this whole step exists for.
     hooked = wire_hook(dry)
     hooked_commit = wire_hook(dry, "pre-commit")
+    # ⭐ After ③b, because it records where ③b actually wrote.
+    declared = declare_registry(dry, gated)
     tightened = harden(dry)
 
     head = "🔎 dry run — nothing was written\n" if dry else ""
@@ -438,6 +481,8 @@ def main():
     print("   · gates (Claude Code): %s" % gated)
     print("   · layer 2 hook (pre-push):  %s" % hooked)
     print("   · base-branch hook (pre-commit): %s" % hooked_commit)
+    if declared:
+        print("   · %s" % declared)
     if tightened:
         print("   · %s" % tightened)
     if not dry:
