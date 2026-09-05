@@ -71,9 +71,22 @@ low = text.lower()
 # the PERSON. In the run that failed, the assistant arrived first and no line was
 # addressed to it, so it improvised.
 case("② 🔴 ⭐ it addresses the ASSISTANT, not only the person",
-     bool(re.search(r"to the assistant reading this", low)))
-case("②b ⭐ and the instruction comes FIRST, before anything it might skim",
-     low.lstrip().startswith("<!--") and "to the assistant reading this" in low[:600])
+     bool(re.search(r"if you are an ai assistant reading this", low)))
+
+# 🔴 THE CASE THAT WOULD HAVE CAUGHT THE REAL FAILURE. Measured 2026-09-05 on
+# Windows: the assistant fetched the rendered PAGE, not the file — and an HTML
+# comment does not survive GitHub's renderer, so the order never arrived.
+# ⛔ The instruction must live in VISIBLE markdown, outside any comment.
+_visible = re.sub(r"<!--.*?-->", "", text, flags=re.S).lower()
+case("②b 🔴 ⭐ the order survives GitHub's renderer (NOT in an HTML comment)",
+     "if you are an ai assistant reading this" in _visible)
+case("②c ⭐ and it is near the top, before anything it might skim",
+     _visible.find("if you are an ai assistant reading this") < 400)
+
+# ⛔ AND IT FORBIDS THE DETOUR. The same run reported an unrelated finding on the
+# person's machine, investigated it, and never installed anything.
+case("②d 🔴 ⛔ it forbids reporting what it notices on their machine",
+     bool(re.search(r"do not report[\s\S]{0,90}machine", _visible)))
 
 # ── ③ IT CARRIES THE ANSWER ────────────────────────────────────────────────
 # ⭐ An assistant that must open a second file may summarise instead. One that
@@ -98,6 +111,9 @@ case("④ 🔴 ⭐ no file menu for the assistant to read out instead",
 # mandated on this page or it never happens.
 case("⑤ ⭐ it mandates the chooser by name, on this page",
      "askuserquestion" in low)
+# 🔴 Measured: plain `git clone <url>` made a `mente-os/` folder nobody asked for.
+case("⑤c 🔴 ⭐ the clone command clones INTO the folder, no extra wrapper",
+     bool(re.search(r"git clone \S+\.git \.", text)))
 case("⑤b ⛔ three options, and it says to stop and wait",
      low.count("| option |") >= 1 and bool(re.search(r"stop there and wait", low)))
 
@@ -118,7 +134,31 @@ subprocess.run([sys.executable, GEN, "--check"], cwd=TREE,
 case("⑥c ⛔ --check writes NOTHING (a checker that repairs measures nothing)",
      open(PATH, encoding="utf-8").read() == before)
 
+# ── ⑦ THE PAGE THE WORLD ACTUALLY READS ────────────────────────────────────
+# 🔴 THE GAP THIS CLOSES, found by sabotaging my own probe: every case above
+# measures a page this probe GENERATED in its own tree, so hand-edits to the
+# published README — the only file a stranger ever sees — went undetected.
+# ⭐ A probe that only measures what it produced measures the producer, not the
+# product. ⛔ Both are needed: the generator can be right while the shipped file
+# has been edited by hand and never regenerated.
+_generated = open(PATH, encoding="utf-8").read()
+LIVE = os.path.join(os.path.dirname(ROOT), "README.md")
+if os.path.isfile(LIVE):
+    live = open(LIVE, encoding="utf-8").read()
+    vis = re.sub(r"<!--.*?-->", "", live, flags=re.S).lower()
+    case("⑦ 🔴 ⭐ the PUBLISHED page carries the order in visible markdown",
+         "if you are an ai assistant reading this" in vis)
+    case("⑦b 🔴 ⭐ and its clone command clones INTO the folder",
+         bool(re.search(r"git clone \S+\.git \.", live)))
+    case("⑦c ⛔ the published page is byte-for-byte what the generator makes",
+         live == _generated)
+else:
+    # ⬜ CHK-CAU-003 · said out loud, never swallowed.
+    print("  ⬜ the published README is not beside this tree · NOT MEASURED "
+          "(expected under run-all's isolated copy)")
+
 plat.rmtree(WORK)
+
 print("\n  ⬜ NOT MEASURED · whether an assistant OBEYS this page · that runs "
       "outside\n     this engine · these cases prove the instruction is present "
       "and complete")

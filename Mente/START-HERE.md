@@ -57,6 +57,32 @@ knows the answers already, and reading them is your job, not theirs. ⚠️ Only
 back empty do you ask as a sentence — a chooser with one option is refused by the tool and the
 person never sees it.
 
+### ⛔ WHAT YOU NOTICE ON THEIR MACHINE IS NOT PART OF THIS
+
+⭐ **You were asked what this project is. That is the whole errand.** ⛔ Anything
+else you happen to see on the way — a misconfigured repository, files where they
+do not belong, someone else's project — is NOT yours to raise here, however real
+it is.
+
+🔴 **Measured 2026-09-05, on a real Windows run.** While cloning, the assistant
+noticed a `git init` at the wrong level in the user's home folder, reported it,
+investigated it across four commands, and asked the person what to do about it.
+⚠️ **The install never happened.** They answered: *"what is that and why are you
+asking ME? isn't it automatic? I'm new."*
+
+⛔ **That question is the failure.** A person who asked what something is cannot
+decide what to do about a repository layout — ⭐ and being asked teaches them that
+this system will hand them problems they did not bring.
+
+| What you found | ⭐ What you do |
+|---|---|
+| something unrelated, harmless right now | ⛔ **nothing** · finish the errand · mention it ONLY if they ask later |
+| something unrelated that could destroy their work if you continue | ⭐ say it in ONE sentence, say what you will avoid, and ⛔ keep going — do not investigate it |
+| ⛔ anything at all, mid-install | it waits · ⚠️ an interrupted install is a person who never got to use this |
+
+⛔ **Never investigate it.** ⚠️ Four commands into someone else's repository is
+four commands not spent on what they asked for.
+
 ### ⭐ NEVER USE A WORD THEY DID NOT ASK FOR
 
 ⛔ `commit` · `branch` · `merge` · `repo` · `hook` · `validator` · `probe` · `placeholder`.
@@ -219,6 +245,18 @@ python3 --version ; git --version ; bash --version | head -1
 ⭐ **They already said yes in §2.** ⛔ Asking again — *"shall I install it now?"* — makes them
 approve the same thing twice, and the second approval carries no new information.
 
+⭐ **If it is not cloned yet, clone it INTO THE FOLDER THEY ARE IN** — ⛔ never
+into a subfolder of its own. 🔴 Measured on a real run: plain `git clone <url>`
+made a `mente-os/` folder and put everything inside it, so the person got a folder
+they never asked for wrapping the one they made.
+
+```bash
+git clone https://github.com/for3slabs/mente-os.git .
+```
+
+⚠️ **If git refuses because the folder is not empty**, clone into a new empty one
+and tell them where it went. ⛔ Never delete anything to make room.
+
 ```bash
 cd Mente
 bin/init --owner "<their name>"
@@ -352,6 +390,8 @@ the whole point of the system being on disk instead of in their head.
 | read the validator's findings aloud | ⭐ one sentence about what it means for them |
 | ⭐ skip the session close | 🔴 §1 and §5b both carry it — it is the habit the whole system rests on |
 | read `Mente/README.md` and work from it | ⚠️ that file is for a developer · ⛔ THIS file is the script |
+| ⭐ report what you notice on their machine | ⛔ you were asked what this project is · 🔴 measured: it cost the whole install |
+| ⭐ ask them to decide something technical | ⛔ they are new · that is what they came here to avoid |
 | invent steps | ⛔ if it is not written here, say you do not know |
 
 ---
@@ -365,6 +405,7 @@ the whole point of the system being on disk instead of in their head.
 | ⛔ dropping the session close from §1 or §5b | **nobody** — ⭐ it is the one habit whose cost is invisible until the reasoning is already gone |
 | ⛔ asking a choice as prose instead of a chooser | **nobody** — ⚠️ a person who does not know the system cannot compose an answer about it |
 | ⛔ saying `commit` before §4b's explanation | **nobody** — 🔴 measured: it produced *"I do not understand why I should commit"* |
+| ⛔ raising an unrelated finding during the first run | **nobody** — 🔴 measured: it produced *"why are you asking ME? I'm new"* and the install never happened |
 
 ---
 
