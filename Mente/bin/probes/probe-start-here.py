@@ -89,10 +89,17 @@ for name, label in (("RESUME", "the cold-start brief"),
 # unrelated misconfigured repository, reported it, investigated it across four
 # commands and asked the person what to do. ⚠️ The install never happened, and
 # they answered: "what is that and why are you asking ME? I'm new."
-case("④b 🔴 ⛔ an unrelated finding is NOT raised during the first run",
-     bool(re.search(r"not part of this|not yours to raise", low)))
-case("④c ⛔ and it is never INVESTIGATED",
-     bool(re.search(r"never investigate", low)))
+# ⭐ INVERTED 2026-09-05. This used to require the opposite — "do not raise it" —
+# and a real run refused the whole repository over exactly that line. ⛔ A
+# document telling an assistant to withhold something from its own user is
+# indefensible; the failure was never the mention, it was abandoning the errand
+# and handing a newcomer a decision they have no words for.
+case("④b 🔴 ⭐ an unrelated finding IS told to them — never withheld",
+     bool(re.search(r"tell them what you found", low))
+     and not re.search(r"not yours to raise|do not report anything you notice", low))
+case("④c ⛔ but it is offered, not asked — and never investigated",
+     bool(re.search(r"offer, do not ask", low))
+     and bool(re.search(r"do not investigate", low)))
 case("④d 🔴 ⭐ a newcomer is not handed a technical decision",
      bool(re.search(r"ask them to decide something technical", low)))
 
