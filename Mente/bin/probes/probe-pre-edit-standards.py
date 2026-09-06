@@ -176,6 +176,19 @@ case("⑫ ⬜ a line with no scope applies to BOTH edits",
      and "contract-block" in run("work/%s-owner-src/a.py" % MARK).stderr,
      "unscoped = always")
 
+# ── ⑬ THE SEPARATOR · the bug that made this hook silent on Windows ────────
+# 🔴 Measured 2026-09-05 on a real Windows run. The tool hands over
+# `work\\block-src\\a.py` while every declared scope is written with `/`, so
+# splitting on `/` produced ONE segment and matched nothing. ⛔ No block
+# recognised its own files, the standards were never injected, and the hook said
+# nothing — indistinguishable from "this edit is outside every scope".
+# ⚠️ A guard that goes quiet is the failure this engine keeps finding.
+r = run(("work/%s-owner-src/a.py" % MARK).replace("/", "\\"))
+case("⑬ 🔴 ⭐ a Windows-style path is recognised by the block that owns it",
+     "contract-block" in r.stderr,
+     "backslashes resolved" if "contract-block" in r.stderr
+     else "🔴 the hook went silent")
+
 clean()
 good = sum(1 for _, ok in results if ok)
 print("\n  ➜ %d of %d correct" % (good, len(results)))

@@ -183,16 +183,35 @@ case("⑯ ⚠️ a second run does not duplicate the import",
      open(user, encoding="utf-8").read().count("@Mente/CLAUDE-MENTE-OS.md") == 1)
 
 # ── ⑥ IT WIRES WHAT GIT CANNOT CARRY ────────────────────────────────────────
-# 🔴 A hook file that is not linked NEVER RUNS and looks installed.
-case("⑰ 🔴 layer 2 is LINKED (git cannot carry it)",
-     os.path.islink(os.path.join(repo, ".git", "hooks", "pre-push")))
+# 🔴 A hook file that is not WIRED never runs and looks installed.
+#
+# ⚠️ WIRED, NOT «SYMLINKED», AND THE DIFFERENCE COST TWO FALSE REDS. 🔴 Measured
+# 2026-09-05 on a real Windows run: `os.symlink` needs a privilege a normal
+# account does not have, so `bin/init` writes a small launcher instead — the
+# hook RUNS. This probe asked `os.path.islink` and reported it dead. ⛔ It was
+# measuring the mechanism, not the outcome, and the outcome was fine.
+def wired(name):
+    """The hook runs: a link, or the launcher init writes where links are denied."""
+    p = os.path.join(repo, ".git", "hooks", name)
+    if os.path.islink(p):
+        return True, "symlink"
+    if os.path.isfile(p):
+        body = open(p, encoding="utf-8", errors="replace").read()
+        # ⭐ It must actually reach the shipped hook — a file that exists and
+        # invokes nothing is the very failure this case exists for.
+        return ("hooks/%s.sh" % name) in body.replace("\\", "/"), "launcher"
+    return False, "absent"
+
+
+_ok, _how = wired("pre-push")
+case("⑰ 🔴 layer 2 is WIRED (git cannot carry it)", _ok, _how)
 
 # ⛔ BOTH git hooks, not one. pre-commit.sh shipped implementing SHP-LCK-001 —
 # the rule refusing a commit on the base branch — and init linked only pre-push:
-# ⚠️ a hook file that is not linked never runs and looks installed, which is the
+# ⚠️ a hook file that is not wired never runs and looks installed, which is the
 # exact failure this whole step exists for.
-case("⑰b 🔴 the base-branch hook is LINKED too",
-     os.path.islink(os.path.join(repo, ".git", "hooks", "pre-commit")))
+_ok2, _how2 = wired("pre-commit")
+case("⑰b 🔴 the base-branch hook is WIRED too", _ok2, _how2)
 # ── 🔴 WHAT AN INSTALLATION ACTUALLY GETS ──────────────────────────────────
 # ⛔ Every probe until here measured the TEMPLATE. An install has substituted
 # values, generated files and a config the template never has — ⚠️ and
@@ -218,8 +237,26 @@ for _c in sorted(glob.glob(os.path.join(_treeC, "bin", "check-*"))):
 case("⑰c 🔴 ⭐ the INSTALLED tree passes its own validators",
      not _dirty, ", ".join(_dirty)[:44] or "24 of 24 clean")
 
-case("⑱ ⭐ and `secrets/` ends at 700",
-     not (os.stat(os.path.join(tree, "secrets")).st_mode & 0o077))
+# ⬜ ASK THE PLATFORM. 🔴 Measured on Windows: chmod is accepted and changes
+# nothing, so this case reported a red about a folder the installer could not
+# have hardened — and `bin/init` already says so honestly in its own output.
+# ⛔ Judging a platform's answer as the engine's failure is a red that teaches
+# the reader to stop reading.
+if plat.modes_are_real():
+    case("⑱ ⭐ and `secrets/` ends at 700",
+         not (os.stat(os.path.join(tree, "secrets")).st_mode & 0o077))
+else:
+    # ⭐ The mode cannot be measured, but the HONESTY can: init must not claim
+    # a protection it did not apply.
+    # ⭐ The mode cannot be measured, so the case that CAN be is the installer's
+    # honesty: `harden` must route through plat.modes_are_real() and answer
+    # ⬜ NOT MEASURED, never a bare "700". ⛔ Read from source, because the
+    # message only appears on the platform that cannot be staged here.
+    _src = open(os.path.join(tree, "bin", "init"), encoding="utf-8").read()
+    _h = _src[_src.index("def harden("):]
+    case("⑱ ⬜ modes not enforced here · init reports ⬜, it does not claim 700",
+         "modes_are_real()" in _h and "NOT MEASURED" in _h,
+         "harden() asks the platform first")
 
 # ⚠️ an existing hook pointing elsewhere is LEFT ALONE — it is not ours to
 # replace, and silently taking it over would disable whatever it did

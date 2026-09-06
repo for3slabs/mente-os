@@ -185,9 +185,17 @@ def check(path, rel, targets):
                         "said yes" % (n, tool)))
 
     # CFG-ONE-001 · a grant contained by another grants nothing new
+    #
+    # 🔴 SEPARATORS NORMALISED FIRST. Measured 2026-09-05 on Windows: the paths
+    # arrive with `\`, the comparison appended `/`, and a directory plainly
+    # inside another was never detected — ⛔ the duplicate grant stayed, and the
+    # check reported clean.
+    def _n(x):
+        return str(x).replace("\\", "/")
+
     for a in dirs:
         for b in dirs:
-            if a != b and str(b).startswith(str(a).rstrip("/") + "/"):
+            if a != b and _n(b).startswith(_n(a).rstrip("/") + "/"):
                 bad.append(("CFG-ONE-001", rel,
                             "%r is already contained by %r · it authorizes "
                             "nothing new" % (b, a)))

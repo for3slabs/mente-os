@@ -79,6 +79,14 @@ p.case("⑥ ONE · a path already contained by another",
        lambda: put(lambda c: c["permissions"]["additionalDirectories"].extend(
            [ROOT, os.path.join(ROOT, "docs")])), "CFG-ONE-001")
 
+# 🔴 THE SEPARATOR, measured on Windows: paths arrive with `\` and the check
+# appended `/`, so a directory plainly inside another was never detected — the
+# duplicate grant survived and the check reported clean.
+p.case("⑥c 🔴 ONE · containment is seen with Windows separators too",
+       lambda: put(lambda c: c["permissions"]["additionalDirectories"].extend(
+           [ROOT.replace("/", "\\"),
+            os.path.join(ROOT, "docs").replace("/", "\\")])), "CFG-ONE-001")
+
 p.case("⑦ PRT · an absolute path into somebody's home",
        lambda: put(lambda c: c["permissions"]["additionalDirectories"].append(
            "/home/someone/projects/thing")), "CFG-PRT-001")

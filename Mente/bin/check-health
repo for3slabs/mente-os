@@ -132,6 +132,13 @@ def hooks_wired(cfg):
     # they will never appear in a host's settings file — ⛔ reporting them as
     # unregistered was a true statement about the wrong registry, and it teaches
     # the reader to ignore the finding.
+    #
+    # ⚠️ AND A LINK IS NOT THE ONLY WAY IT IS REGISTERED. 🔴 Measured 2026-09-05
+    # on Windows: `os.symlink` needs a privilege a normal account lacks, so
+    # `bin/init` writes a small launcher that invokes the shipped hook. The hook
+    # RUNS. This check counted symlinks only and called both hooks absent —
+    # ⛔ a red on a machine where nothing was wrong, which is how a real red
+    # stops being read.
     githooks = os.path.join(os.path.dirname(ROOT), ".git", "hooks")
     linked = set()
     if os.path.isdir(githooks):
@@ -139,6 +146,23 @@ def hooks_wired(cfg):
             q = os.path.join(githooks, n)
             if os.path.islink(q):
                 linked.add(os.path.basename(os.readlink(q)))
+                continue
+            # ⭐ A launcher counts only if it actually reaches a shipped hook —
+            # a file that exists and invokes nothing is the failure itself.
+            if os.path.isfile(q):
+                try:
+                    body = open(q, encoding="utf-8", errors="replace").read()
+                except OSError as e:
+                    # ⬜ CHK-CAU-003 · said out loud. An unreadable file is not
+                    # a wired hook and not an absent one — it is unknown, and
+                    # swallowing it would let a real gap report green.
+                    gap("hook wiring · ⬜ .git/hooks/%s unreadable (%s) · "
+                        "whether it wires a hook was NOT checked"
+                        % (n, e.__class__.__name__))
+                    continue
+                for h in names:
+                    if ("hooks/" + h) in body.replace("\\", "/"):
+                        linked.add(h)
 
     absent = [n for n in names if n not in text and n not in linked]
     if absent:

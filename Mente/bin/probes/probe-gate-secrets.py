@@ -161,15 +161,28 @@ case("📓 the log recorded the accesses",
          recorded.count("\n| 2") + recorded.count("\n| 20") if recorded else 0))
 case("⛔ the log contains NO value",
      bool(recorded) and "Tr0ub4dor" not in recorded and "ghp_" not in recorded)
-case("🔐 the log is born 600, not 644",
-     os.path.exists(LOG) and oct(os.stat(LOG).st_mode)[-3:] == "600",
-     oct(os.stat(LOG).st_mode)[-3:] if os.path.exists(LOG) else "—")
+# ⬜ ASK THE PLATFORM BEFORE JUDGING IT. 🔴 Measured 2026-09-05 on a real
+# Windows run: this probe compared st_mode directly and reported FIVE reds on a
+# machine where `chmod` changes nothing — the engine's own plat.py documents
+# that, and its probes were not asking. ⛔ A red where nothing is broken gets the
+# battery switched off, which costs exactly as much as a false green.
+if not plat.modes_are_real():
+    print("  ⬜ file modes · NOT MEASURED · this platform (%s) does not enforce\n"
+          "     them · chmod is accepted and changes nothing · 5 case(s) skipped"
+          % sys.platform)
+else:
+    case("🔐 the log is born 600, not 644",
+         os.path.exists(LOG) and oct(os.stat(LOG).st_mode)[-3:] == "600",
+         oct(os.stat(LOG).st_mode)[-3:] if os.path.exists(LOG) else "—")
 
 # ── E-39 · THE GRANTOR HARDENS THE FOLDER IT GUARDS ────────────────────────
 # ⭐ Git cannot carry a 700, so every clone arrives world-readable. ⛔ A report
 # is not a repair: check-config names it, and the folder stays open until
 # somebody reads the finding. The grantor closes it before issuing, because a
 # permission granted over a world-readable folder grants nothing.
+#
+# ⬜ ALL OF IT IS GUARDED BY THE SAME QUESTION. Where chmod decides nothing,
+# these four cases measure the platform, not the grantor.
 import stat as _stat
 SDIR = os.path.join(TREE, "secrets")
 
@@ -178,42 +191,59 @@ def mode_of(p):
     return oct(_stat.S_IMODE(os.stat(p).st_mode))[-3:]
 
 
-os.chmod(SDIR, 0o755)
-lease("open")
-case("🔐 E-39 · a 755 is closed to 700 when granting", mode_of(SDIR) == "700",
-     mode_of(SDIR))
+if plat.modes_are_real():
+    os.chmod(SDIR, 0o755)
+    lease("open")
+    case("🔐 E-39 · a 755 is closed to 700 when granting",
+         mode_of(SDIR) == "700", mode_of(SDIR))
 
-# ⚠️ AND IT ONLY TIGHTENS. An owner who hardened further made a decision this
-# grantor knows nothing about — resetting it to 700 would silently undo it.
-os.chmod(SDIR, 0o500)
-lease("open")
-case("⚠️ a 500 (stricter) is NOT loosened to 700", mode_of(SDIR) == "500",
-     mode_of(SDIR))
-os.chmod(SDIR, 0o700)
+    # ⚠️ AND IT ONLY TIGHTENS. An owner who hardened further made a decision
+    # this grantor knows nothing about — resetting it to 700 would undo it.
+    os.chmod(SDIR, 0o500)
+    lease("open")
+    case("⚠️ a 500 (stricter) is NOT loosened to 700", mode_of(SDIR) == "500",
+         mode_of(SDIR))
+    os.chmod(SDIR, 0o700)
 
-# ⛔ a real file left readable is closed too — that is where a credential lives
-kf = os.path.join(SDIR, "key-note.md")
-open(kf, "w").write("where the key lives")
-os.chmod(kf, 0o644)
-lease("open")
-case("🔐 a 644 file inside is closed to 600", mode_of(kf) == "600",
-     mode_of(kf))
-os.remove(kf)
+    # ⛔ a real file left readable is closed too — that is where a credential lives
+    kf = os.path.join(SDIR, "key-note.md")
+    open(kf, "w").write("where the key lives")
+    os.chmod(kf, 0o644)
+    lease("open")
+    case("🔐 a 644 file inside is closed to 600", mode_of(kf) == "600",
+         mode_of(kf))
+    os.remove(kf)
 
-# ⛔ but README.md is left alone: it ships in git, which cannot carry a 600, so
-# tightening it is undone by the next pull — and a fix that does not survive is
-# noise. check-config exempts it for the same reason.
-case("⛔ README.md is left alone (git cannot carry 600)",
-     mode_of(os.path.join(SDIR, "README.md")) != "600")
+    # ⛔ but README.md is left alone: it ships in git, which cannot carry a 600,
+    # so tightening it is undone by the next pull — and a fix that does not
+    # survive is noise. check-config exempts it for the same reason.
+    case("⛔ README.md is left alone (git cannot carry 600)",
+         mode_of(os.path.join(SDIR, "README.md")) != "600")
 
 # ── FAIL CLOSED · the case that decides whether this is real ────────────────
-# 🔴 If the grantor cannot answer, permission must NOT be granted. A grant issued
-# because a check broke is the exact failure the gate exists to prevent.
-os.chmod(LEASE, 0o000)
-r = run(tool="Read", file_path=os.path.join(TREE, "secrets", "server.md"))
-case("🔴 a broken grantor → ask, NEVER allow", decision(r) == "ask",
-     str(decision(r)))
-os.chmod(LEASE, 0o755)
+# 🔴 If the grantor cannot answer, permission must NOT be granted. A grant
+# issued because a check broke is the exact failure the gate exists to prevent.
+#
+# ⚠️ THE SCENARIO IS BUILT WITH chmod, SO IT CANNOT BE BUILT EVERYWHERE.
+# 🔴 Measured on Windows: `chmod 0o000` left the lease perfectly readable, the
+# permission stayed valid, and the gate answered `allow` — correctly. The probe
+# reported a gate failing OPEN when nothing had failed at all. ⛔ Reporting a
+# security red that is really an unbuildable scenario is how a real one gets
+# ignored later.
+if plat.modes_are_real():
+    os.chmod(LEASE, 0o000)
+    r = run(tool="Read", file_path=os.path.join(TREE, "secrets", "server.md"))
+    case("🔴 a broken grantor → ask, NEVER allow", decision(r) == "ask",
+         str(decision(r)))
+    os.chmod(LEASE, 0o755)
+else:
+    # ⭐ The scenario is unavailable, but the RULE is still checkable: no path
+    # through the gate may end in a bare allow without a live permission.
+    _src = open(os.path.join(ROOT, "hooks", "gate-secrets.py"),
+                encoding="utf-8").read()
+    case("⬜ fail-closed NOT reproducible here · the gate still ends in `ask`",
+         _src.rstrip().rsplit("return verdict(", 1)[1].lstrip().startswith('"ask"'),
+         "read from source · chmod cannot stage it on %s" % sys.platform)
 
 # ── ROBUSTNESS · a hook that crashes protects nothing ──────────────────────
 bad = []
