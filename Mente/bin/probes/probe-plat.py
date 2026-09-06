@@ -93,7 +93,10 @@ finally:
 # ⭐ THE INVARIANT BEHIND ③④, checked over the whole tree: the shebang and the
 # bit must agree everywhere. ⛔ If they ever diverge, the Windows answer stops
 # being the POSIX answer and both cases above go green while lying.
-if plat.executable_bit_is_real():
+# ⚠️ ASKED ABOUT THE TREE, not the OS. 🔴 Measured 2026-09-05 over /mnt/c: the
+# pathless call answered "posix, the bit is real", and NTFS marks every file
+# executable — so seven helpers looked like commands that lost their shebang.
+if plat.executable_bit_is_real(MENTE):
     dis = []
     for d in ("bin", "hooks", os.path.join("bin", "probes")):
         full = os.path.join(MENTE, d)

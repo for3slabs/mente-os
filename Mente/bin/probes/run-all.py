@@ -78,6 +78,24 @@ SERIAL = os.environ.get("MENTE_PROBES_SERIAL") == "1"
 _IGNORE = shutil.ignore_patterns(".git", "__pycache__", "cache", "*.pyc")
 
 
+def _fix_modes(tree):
+    """Restore the shebang's verdict after crossing filesystems.
+
+    ⭐ The file says what it is: `#!` means a command, its absence a helper.
+    That travels; the mode bit does not."""
+    for d, _sub, fs in os.walk(tree):
+        for f in fs:
+            p = os.path.join(d, f)
+            try:
+                want = open(p, "rb").read(2) == b"#!"
+                m = os.stat(p).st_mode
+                os.chmod(p, (m | 0o111) if want else (m & ~0o111))
+            except OSError:
+                # ⬜ Unreadable here is not a failure of the tree — the probe
+                # that needs the file will say so itself.
+                continue
+
+
 def run_probe(q):
     """Run one probe. In isolated mode it gets a private copy of the tree, so
     what it edits cannot reach any other probe — ⛔ and cannot reach the real
@@ -90,6 +108,14 @@ def run_probe(q):
     try:
         tree = os.path.join(d, os.path.basename(ROOT))
         shutil.copytree(ROOT, tree, ignore=_IGNORE)
+        # ⚠️ A COPY MUST NOT INHERIT A BIT ITS ORIGIN NEVER MEANT. 🔴 Measured
+        # 2026-09-05: the tree lived on NTFS, where every file reads as
+        # executable and the bit decides nothing. Copying it into a native
+        # filesystem — where the bit DOES decide — turned seven helpers into
+        # commands, and four probes reported real-looking failures that existed
+        # only inside the copy. ⛔ The verdict came from the move, not the tree.
+        if not plat.executable_bit_is_real(ROOT):
+            _fix_modes(tree)
         return name, subprocess.run(
             [sys.executable, os.path.join(tree, "bin", "probes", name + ".py")],
             cwd=tree, capture_output=True, text=True,
