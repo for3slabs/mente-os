@@ -7,23 +7,16 @@
 # ⛔ ALL THREE GATES WERE DEAD — and `git` read the failing hook as exit 0, so a
 # commit that should have been refused went through. ⚠️ A gate that dies quietly
 # is worse than no gate: the person believes they are protected.
+
+# ⭐ NOTHING IS CONVERTED. Not the scripts, not the documents, not the
+# templates. What is committed is what lands on disk, on every platform.
 #
-# ⭐ A shell script is not text to be adapted to the platform: it is a program
-# whose interpreter rejects the carriage return. Same for Python, which git
-# would also convert.
-
-# Everything the engine executes keeps LF, on every platform.
-*.sh        text eol=lf
-*.py        text eol=lf
-
-# ⚠️ The commands in bin/ carry no extension and git cannot infer them.
-bin/*       text eol=lf
-hooks/*     text eol=lf
-Mente/bin/*     text eol=lf
-Mente/hooks/*   text eol=lf
-
-# Documents may follow the platform; nothing executes them.
-*.md        text
-*.tsv       text
-*.yml       text
-*.json      text
+# 🔴 MEASURED THE SAME DAY, and it is why this is one line instead of a list:
+# marking documents as `text` told git to convert THEM — so a freshly cloned
+# tree on Windows reported 19 files as modified that nobody had touched, and
+# `check-clear-ready` refused the cut over changes that did not exist. ⛔ A repo
+# that is dirty the moment it is cloned teaches people to ignore that warning.
+#
+# ⚠️ The engine reads every file with an explicit encoding and splits on "\n",
+# so a document with CRLF costs nothing. A script with CRLF costs everything.
+* -text
