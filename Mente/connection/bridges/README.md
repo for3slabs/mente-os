@@ -83,7 +83,7 @@ the harness  actually refuses to read them                    🔒 the lock
 documents a limit that does not exist — and it reads exactly like one that does.
 
 ⭐ **The measured reason this matters:** a rule enforced by code is followed every time; a rule
-that lives only in a document is followed roughly half the time. A gate that existed only as an
+that lives only in a document is followed only when somebody remembers. A gate that existed only as an
 agreement is precisely the kind that gets crossed repeatedly in a single session, each time for a
 reason that seemed good in the moment.
 
