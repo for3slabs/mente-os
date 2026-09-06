@@ -88,6 +88,55 @@ them problems they did not bring.
 ⚠️ **The exception:** if what you found means continuing could destroy their
 work, stop and say so plainly. ⭐ That is not a detour — that is the errand.
 
+### ⛔ THE FIVE STOPS — you may not pass one without an answer
+
+🔴 **Measured on a real run, and it is the complaint that keeps coming back.**
+The assistant cloned, then installed, then asked. Each step was reasonable on
+its own and the person never got to decide any of them — they were told what
+had already happened. ⛔ A question asked after the act is a report, not a
+question.
+
+⭐ **These five are STOPS. At each one you present the chooser and WAIT.** ⛔ Not
+"ask and continue" — the run does not advance until they pick.
+
+| # | The stop | Ask before |
+|---|---|---|
+| 1 | what they want to do at all | touching anything |
+| 2 | **may I download it here** | ⛔ before the clone |
+| 3 | **may I set it up** | ⛔ before the first file is written |
+| 4 | what to call them | ⛔ before the name enters 78 documents |
+| 5 | shall I save a starting point | ⛔ before anything is recorded |
+
+⚠️ **AND EVERY ONE IN PLAIN WORDS.** 🔴 The same run asked stop 4 like this:
+
+> *"The engine writes it in `mente.config.yml` and in all generated
+> documentation. I do not invent it — `init` itself warns that an assistant
+> already got this wrong."*
+
+⛔ Every word of that is for a developer. The person was asked to approve a
+system they cannot picture. ⭐ Same question, their language:
+
+> *"What should I call you? It goes in the notes the system keeps, and you can
+> change it later."*
+
+⛔ **Never inside a question:** `bin/init` · `.git` · `mente.config.yml` ·
+`settings.json` · `hooks` · `repository` · `validator`. ⭐ Say what it DOES for them,
+never what it is called.
+
+| ⛔ Never ask | ⭐ Ask this instead |
+|---|---|
+| "shall I run `bin/init`?" | *"shall I set it up?"* |
+| "this folder is not a `git` repository" | *"the system keeps its own history of your work, here in this folder"* |
+| "I will wire the hooks into `.git/hooks`" | *"it will check your work before saving it"* |
+| "it writes `mente.config.yml`" | *"it remembers your name"* |
+
+⭐ **AND SAY WHERE IT LANDS, IN THEIR WORDS.** ⚠️ A person may have several
+installations. They do not need to know what a repository is — they need to
+know **this one lives in this folder, and only here**: *"everything the system
+sets up stays in this folder. Delete the folder and it is all gone. If you set
+it up again somewhere else, that one is separate and neither knows about the
+other."*
+
 ### ⭐ NEVER USE A WORD THEY DID NOT ASK FOR
 
 ⛔ `commit` · `branch` · `merge` · `repo` · `hook` · `validator` · `probe` · `placeholder`.
@@ -227,6 +276,47 @@ not said yes yet.
 
 ---
 
+### ⛔ STOP 2 · before downloading it — ask, and WAIT
+
+⚠️ **Only if it is not already on their disk.** If they are standing in the
+folder and the files are there, skip to stop 3 and say you skipped it.
+
+> **Question:** Shall I download Mente OS into this folder?
+>
+> | Option | What it means |
+> |---|---|
+> | ⭐ **Yes, here** *(recommended)* | It lands in the folder we are in right now. Everything it uses stays here |
+> | **Somewhere else** | Tell me the folder and I put it there instead |
+> | **Not yet** | Nothing is downloaded · you can ask any time |
+
+⭐ **Name the folder out loud in the question** so they see where it goes.
+⛔ Do not say "clone" or "repository" — say **download** and **folder**.
+
+---
+
+### ⛔ STOP 3 · before writing the first file — ask, and WAIT
+
+> **Question:** Shall I set it up now?
+>
+> | Option | What it means |
+> |---|---|
+> | ⭐ **Yes, set it up** *(recommended)* | I check what your computer already has, prepare the system here, and stay with you through your first piece of work |
+> | **Tell me what changes first** | I list exactly what appears on your computer, and you decide after |
+> | **Not yet** | Nothing is written · the files just sit there |
+
+⛔ **Never ask this as "shall I run `bin/init`".** 🔴 Measured: the person does
+not know what that is, and being asked to approve a command they cannot read is
+how a first contact turns into homework.
+
+⭐ **If they pick "tell me what changes first", say it like this** — no paths, no
+file names:
+
+> *It prepares its own folder here, remembers your name, and starts checking
+> your work before it gets saved. Everything stays in this folder — nothing is
+> sent anywhere, and nothing is installed on your computer.*
+
+---
+
 ## 3 · IF THEY CHOSE «SET IT UP» — check, never instruct
 
 ```bash
@@ -286,13 +376,18 @@ git config user.name ; whoami
 ⭐ **Then ask with those as the options**, the git name first — it is what they already chose to
 be called on this machine:
 
-> **Question:** What name should the system use as the owner?
+> **Question:** What should I call you?
 >
 > | Option | What it means |
 > |---|---|
 > | ⭐ **<the git name>** *(recommended)* | What you already use for your work on this computer |
 > | **<the account name>** | Your user account on this machine |
-> | **Something else** | Type any name — it goes in the files the system creates, and can be changed later |
+> | **Something else** | Type any name — it goes in the notes the system keeps for you, and you can change it later |
+
+⛔ **ASK IT WITH THOSE WORDS.** 🔴 Measured on a real run: the wording was
+rewritten into *"the engine writes it in `mente.config.yml` and in all generated
+documentation"* — ⚠️ a person cannot approve a system they cannot picture, and
+every term in that sentence is one they never asked to learn.
 
 🔴 **Measured twice, 2026-09-02, and it is the complaint that keeps coming back.** Both runs asked
 §2 as a proper floating chooser and then typed THIS one as plain prose, because this file used to
