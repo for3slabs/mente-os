@@ -1,0 +1,87 @@
+#!/usr/bin/env python3
+"""off — pause every check, without removing anything.
+
+🔴 THE FAILURE THAT SHAPES THIS FILE, measured 2026-09-06. A person asked how
+to switch the system off and there was no answer: the only way to stop the
+gates was to delete files the engine had installed, which is not "off" — it is
+a broken installation that still looks configured.
+
+⭐ WHAT IT DOES: writes one marker file. ⛔ Nothing else. No file is deleted, no
+work is touched, and `bin/on` undoes it exactly.
+
+⚠️ THE SWITCH IS ONLY REAL BECAUSE THE GATES READ IT. Each hook checks the same
+marker as its first act — ⛔ a switch announced here and honoured nowhere is a
+label, and the owner would believe the system was off while it kept running.
+Verified by `probe-onoff`, which runs the real hooks with the marker in place.
+
+Usage:
+  bin/off
+Exit: 0 paused (or already paused)
+"""
+import os as _os, sys as _sys
+_d = _os.path.dirname(_os.path.abspath(__file__))
+while _d != _os.path.dirname(_d):
+    if _os.path.exists(_os.path.join(_d, "bin", "utf8.py")):
+        _sys.path.insert(0, _os.path.join(_d, "bin")); break
+    _d = _os.path.dirname(_d)
+import utf8                                          # noqa: F401,E402
+import os
+import sys
+from datetime import date
+
+MENTE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+OFF = os.path.join(MENTE, ".off")
+
+# ⭐ CHK-SHR-001 · ONE reader for "is this set up". ⛔ Three copies of the same
+# literal drift, and these three commands MUST agree: `off` refusing where `on`
+# accepts leaves a marker neither can remove — measured while building them.
+# ⚠️ CHK-TRV-001 · the file it looks for is an INSTANCE file that never reaches
+# a clone. ⭐ That absence is the answer here, not a gap: "not set up yet" is a
+# real verdict, said out loud, and every caller prints it rather than passing.
+INSTANCE_MARK = "mente.config.yml"
+
+
+def is_set_up():
+    """True once an installation exists in THIS folder."""
+    return os.path.isfile(os.path.join(MENTE, INSTANCE_MARK))
+
+
+
+def main():
+    # 🔴 REFUSED WHERE THERE IS NOTHING TO PAUSE. Measured while building this:
+    # `off` wrote its marker into a clone that was never set up, and `on` then
+    # refused to remove it — ⛔ a state neither command could leave. The two
+    # must agree on what "set up" means, or the pair produces a trap.
+    if not is_set_up():
+        print("⬜ Mente OS is not set up in this folder, so there is nothing "
+              "to pause.")
+        return 1
+    if os.path.exists(OFF):
+        print("⏸️  Mente OS was already paused here.")
+        print("\n👉 Say \"turn Mente OS back on\" when you want it running.")
+        return 0
+    try:
+        with open(OFF, "w", encoding="utf-8") as fh:
+            fh.write("paused %s\n" % date.today().isoformat())
+    except OSError as e:
+        print("🔴 could not pause (%s)" % e.__class__.__name__, file=sys.stderr)
+        return 2
+    print("⏸️  Mente OS is now PAUSED in this folder.")
+    print("   Nothing was deleted. Your files, your work and your notes are "
+          "exactly as they were.")
+    print("   The checks simply do not run until you switch it back on.")
+    print("\n👉 Say \"turn Mente OS back on\" to your assistant.")
+    return 0
+
+
+if __name__ == "__main__":
+    # ⭐ CHK-CAU-002 · a crash is a VERDICT, not a stack trace. ⛔ An owner who
+    # runs this and gets a Python traceback learns nothing they can act on,
+    # and the exit code is the interpreter's, not this command's.
+    try:
+        sys.exit(main())
+    except Exception as e:                                # noqa: BLE001
+        print("🔴 %s could not finish · %s: %s"
+              % (os.path.basename(__file__), type(e).__name__, e),
+              file=sys.stderr)
+        sys.exit(2)

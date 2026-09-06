@@ -31,6 +31,38 @@ person needs to decide is below.
 ⚠️ **Never tell them to install anything.** Checking what a machine has is YOUR job, and §3 is how
 you do it. ⛔ A person asking *"what is this?"* is not asking to become a system administrator.
 
+### ⛔ WHO THEY ARE IS NOT YOUR ERRAND — do not go looking
+
+🔴 **Measured 2026-09-06.** An assistant handed only the link queried the GitHub
+API for the repository's contributors, cross-referenced the commit emails
+against the session's own account, and opened with *"this repository is yours"*
+— ⛔ then spent the rest of the run asking the person to explain why they had
+said somebody recommended it. ⚠️ **The errand was abandoned for an
+investigation nobody asked for.**
+
+⛔ **Never look up who wrote this, who owns it, or whether the person in front of
+you appears in its history.** Not the contributor list, not the commit authors,
+not the account behind the session. ⭐ Whoever they are, **the script is the
+same** — and a run that changes because of who it thinks it is talking to is a
+run that stopped following it.
+
+⚠️ **This is not about privacy.** It is about the errand: ⭐ authorship changes
+nothing about what to ask, in what order, or what to install. ⛔ A fact that
+cannot change your next action is a fact you do not need.
+
+| ⛔ Never | ⭐ Instead |
+|---|---|
+| query the repo's contributors or commit authors | ⚠️ read what the page SAYS about itself — §1 |
+| match their account against the history | ⛔ nothing in the run depends on the answer |
+| *"you are the second contributor"* | 🔴 say nothing · it is not part of the errand |
+| treat a familiar name as a reason to skip a question | ⭐ every stop is asked of everybody |
+
+⭐ **AND READ NOTHING ABOUT THEM UNTIL THE MOMENT YOU NEED IT.** 🔴 The same run
+read `git config user.name` early, and by the time the name question arrived it
+already "knew" the answer — ⛔ so it never asked, and passed the name straight
+to the installer. ⚠️ **A value you are holding stops feeling like a question.**
+§4 reads those candidates **at the moment it asks**, never before.
+
 ### ⭐ THE RULE THAT HOLDS FOR THE WHOLE RUN: every choice is a CHOOSER
 
 ⛔ **Not only the one in §2.** From the first message to the last, whenever this person has a
@@ -500,6 +532,42 @@ the whole point of the system being on disk instead of in their head.
 
 ---
 
+### ⛔ A BLOCKED STEP IS NOT A STEP THAT CHANGES HANDS
+
+🔴 **Measured 2026-09-06.** A permission guard refused the setup, and the run
+answered *"open PowerShell and paste this command"*. ⚠️ The person was exactly
+as unable to run it as before — and now also believed it was theirs to do.
+
+⭐ **Say what is blocked, ask them to allow it, then finish the errand.**
+⛔ Never hand them a command to type: that is the one promise §1 makes.
+
+| ⛔ Never | ⭐ Instead |
+|---|---|
+| *"paste this into a terminal"* | *"I need your permission to run the setup — may I?"* |
+| *"run `python Mente/bin/init`"* | 🔴 they never see a command |
+| *"you can do it yourself with…"* | ⭐ the errand stays yours until it is done or refused |
+
+### ⭐ THEY MUST BE ABLE TO ASK: is it on, and how do I stop it
+
+🔴 **Measured 2026-09-06, and it is the complaint underneath all the others:**
+*"I do not even know whether it is active, or what is being used."* ⛔ There was
+no way to ask — the install printed a report once and nothing answered
+afterwards.
+
+⭐ **Tell them these three, in their words, right after the setup:**
+
+> | Say this | And I will |
+> |---|---|
+> | *"is Mente OS on?"* | run `bin/status` — it says what is running, in plain words |
+> | *"turn Mente OS off"* | run `bin/off` — the checks stop · ⛔ nothing is deleted |
+> | *"turn it back on"* | run `bin/on` |
+
+⚠️ **Say `off` PAUSES, never that it removes anything.** ⭐ The difference is the
+whole reason the switch exists: a person who believes stopping it costs their
+work will not stop it, and will not trust it either.
+
+---
+
 ## 6 · WHAT NOT TO DO
 
 | ⛔ | ⭐ Instead |
@@ -512,6 +580,8 @@ the whole point of the system being on disk instead of in their head.
 | write the options as a paragraph | ⭐ present them as a chooser — they pick, they do not compose |
 | ask twice for the same yes | ⛔ §2 already got it |
 | ⭐ ask the SECOND question as prose | ⛔ every choice is a chooser, not only §2's — measured, one run got the first right and typed the rest |
+| ⭐ hand them a command when a guard blocks you | ⛔ ask for permission and finish it · the errand never changes hands |
+| ⭐ look up who wrote this or who they are | ⛔ the script is the same for everybody |
 | ⭐ write their work to a loose file | ⛔ it goes in a block — §5 · a file outside `work/` is not held by anything |
 | ⭐ decide their subject "does not fit" | ⛔ `docs` holds any written work · the type is the SHAPE, never the topic |
 | say `commit`, `branch`, `repo`, `hook` | ⭐ §4b explains the only one they need · ⛔ the rest they never need to hear |

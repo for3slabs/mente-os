@@ -1,0 +1,72 @@
+#!/usr/bin/env python3
+"""on — resume the checks after a pause.
+
+⭐ The exact inverse of `bin/off`: it removes the one marker that file writes,
+and nothing else. ⛔ It never installs, never repairs and never writes a
+document — an installation that was never set up is not something this can
+switch on, and it says so instead of pretending.
+
+Usage:
+  bin/on
+Exit: 0 running (or already running) · 1 not set up here
+"""
+import os as _os, sys as _sys
+_d = _os.path.dirname(_os.path.abspath(__file__))
+while _d != _os.path.dirname(_d):
+    if _os.path.exists(_os.path.join(_d, "bin", "utf8.py")):
+        _sys.path.insert(0, _os.path.join(_d, "bin")); break
+    _d = _os.path.dirname(_d)
+import utf8                                          # noqa: F401,E402
+import os
+import sys
+
+MENTE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+OFF = os.path.join(MENTE, ".off")
+
+# ⭐ CHK-SHR-001 · ONE reader for "is this set up". ⛔ Three copies of the same
+# literal drift, and these three commands MUST agree: `off` refusing where `on`
+# accepts leaves a marker neither can remove — measured while building them.
+# ⚠️ CHK-TRV-001 · the file it looks for is an INSTANCE file that never reaches
+# a clone. ⭐ That absence is the answer here, not a gap: "not set up yet" is a
+# real verdict, said out loud, and every caller prints it rather than passing.
+INSTANCE_MARK = "mente.config.yml"
+
+
+def is_set_up():
+    """True once an installation exists in THIS folder."""
+    return os.path.isfile(os.path.join(MENTE, INSTANCE_MARK))
+
+
+
+def main():
+    installed = is_set_up()
+    if not installed:
+        print("⬜ Mente OS is not set up in this folder, so there is nothing "
+              "to switch on.")
+        print("\n👉 Ask your assistant to set it up — you never type a command.")
+        return 1
+    if not os.path.exists(OFF):
+        print("🟢 Mente OS was already running here.")
+        return 0
+    try:
+        os.remove(OFF)
+    except OSError as e:
+        print("🔴 could not resume (%s)" % e.__class__.__name__,
+              file=sys.stderr)
+        return 2
+    print("🟢 Mente OS is running again in this folder.")
+    print("   The checks are back on. Nothing changed while it was paused.")
+    return 0
+
+
+if __name__ == "__main__":
+    # ⭐ CHK-CAU-002 · a crash is a VERDICT, not a stack trace. ⛔ An owner who
+    # runs this and gets a Python traceback learns nothing they can act on,
+    # and the exit code is the interpreter's, not this command's.
+    try:
+        sys.exit(main())
+    except Exception as e:                                # noqa: BLE001
+        print("🔴 %s could not finish · %s: %s"
+              % (os.path.basename(__file__), type(e).__name__, e),
+              file=sys.stderr)
+        sys.exit(2)

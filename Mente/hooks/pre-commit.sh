@@ -11,6 +11,16 @@
 # Install:  ln -sf ../../Mente/hooks/pre-commit.sh .git/hooks/pre-commit
 set -u
 
+# ── ⏸️ THE PAUSE SWITCH · read where the hook LIVES ─────────────────────────
+# 🔴 Measured 2026-09-06: the owner had no way to stop the system, and no way
+# to tell whether it was running. ⛔ A switch the gates do not read is a label.
+# ⚠️ Resolved from THIS FILE's own path, never from the tool: git answers with
+# the OUTERMOST repository, and a `git init` above this folder would send the
+# lookup somewhere else entirely — measured on a real Windows machine.
+_SELF="$(readlink -f "${BASH_SOURCE[0]}" 2>/dev/null || echo "${BASH_SOURCE[0]}")"
+_MENTE="$(cd "$(dirname "$_SELF")/.." 2>/dev/null && pwd)"
+[ -n "${_MENTE:-}" ] && [ -f "$_MENTE/.off" ] && exit 0
+
 # ⬜ The base branch is the installation's to name. The engine fixes that there
 #    IS one, never what it is called.
 BASE="${MENTE_BASE_BRANCH:-}"
