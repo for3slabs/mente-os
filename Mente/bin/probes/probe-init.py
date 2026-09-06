@@ -353,10 +353,17 @@ elif True:
          os.path.isfile(_ga), "present" if os.path.isfile(_ga) else "🔴 absent")
 if os.path.isfile(_ga):
     _t = open(_ga, encoding="utf-8").read()
-    case("㉔b ⛔ and it pins LF on shell scripts and python",
-         "*.sh" in _t and "eol=lf" in _t and "*.py" in _t)
-    case("㉔c ⛔ and on bin/ and hooks/, which carry no extension",
-         "bin/*" in _t and "hooks/*" in _t)
+    # ⭐ ONE RULE, NOT A LIST. 🔴 Measured 2026-09-05: pinning LF on the
+    # executables and marking documents as `text` told git to convert THOSE —
+    # a freshly cloned tree on Windows reported 19 files modified that nobody
+    # had touched, and check-clear-ready refused the cut over changes that did
+    # not exist. ⛔ A repo dirty the moment it is cloned teaches people to
+    # ignore that warning.
+    case("㉔b 🔴 ⭐ git converts NOTHING — what is committed is what lands",
+         "* -text" in _t)
+    case("㉔c ⛔ and no rule re-enables conversion for a subset",
+         not any(l.strip().endswith(" text") or " text " in l
+                 for l in _t.split("\n") if not l.strip().startswith("#")))
 
 # ⛔ AND NO EXECUTABLE MAY SHIP WITH A CARRIAGE RETURN IN THE SHIPPED TREE.
 _crlf = []
