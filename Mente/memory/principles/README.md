@@ -108,7 +108,7 @@ remembers. Each owner lists the events at which it evaluates.
 > wrong"* and *"nobody has decided yet"* are opposite problems and need opposite responses.
 
 **③ WHO VERIFIES each criterion — or that nothing does.** ⚠️ A criterion no script checks is
-followed about half the time. **Knowing which half is which is the point of saying so.**
+followed only when somebody remembers. **Knowing which half is which is the point of saying so.**
 
 **④ WHO GOVERNS the file itself.** ⭐ An owner that writes its own acceptance criteria is a
 circular authority: *"acceptable"* converges on *"whatever it already does"*. ⛔ **No owner file

@@ -130,7 +130,7 @@ engine, and each names what verifies it.
 | a claim with no evidence | `owner-0-voice.md` | ⛔ **nothing yet** |
 
 ⚠️ **The three rows with no verifier are honest, not pending work.** A criterion that no script
-checks is followed roughly half the time — knowing which half is which is the point of the column.
+checks is followed only when somebody remembers — knowing which half is which is the point of the column.
 
 ### 5b · ⬜ YOURS — what this installation also rejects
 

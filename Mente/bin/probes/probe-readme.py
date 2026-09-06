@@ -187,6 +187,29 @@ case("⑤j 🔴 ⭐ no unsourced statistic on the page",
 case("⑤k ⭐ and the claim it replaced carries its real measurement",
      bool(re.search(r"0 (times out of|of) 15", low)))
 
+# ⚠️ AND THE SWEEP MUST BE WHOLE. 🔴 My first pass fixed the page and left the
+# same unsourced claim in six other files, in different words — the front page
+# read clean while the engine still asserted it. ⭐ One phrasing removed from one
+# file is not a claim retracted.
+_stale = []
+for _root, _dirs, _files in os.walk(ROOT):
+    _dirs[:] = [d for d in _dirs if d not in (".git", "__pycache__", "cache")]
+    for _f in _files:
+        if not _f.endswith((".md", ".py", ".sh", ".template")):
+            continue
+        _fp = os.path.join(_root, _f)
+        if os.path.basename(_fp) == "probe-readme.py":
+            continue          # ⬜ this file names the figure in order to ban it
+        try:
+            _t = open(_fp, encoding="utf-8", errors="replace").read()
+        except OSError:
+            continue
+        if re.search(r"40\s*-\s*60\s*%|followed (about|roughly) half the time",
+                     _t):
+            _stale.append(os.path.relpath(_fp, ROOT))
+case("⑤l 🔴 ⭐ the unsourced figure is gone from the WHOLE engine, not just here",
+     not _stale, ", ".join(_stale)[:44] or "0 file(s)")
+
 # ── ⑥ IT DOES NOT DRIFT FROM ITS SOURCE ────────────────────────────────────
 # ⭐ CHK-SHR-001. The generator answers this better than any comparison written
 # here would — and running it is what proves the generator itself still works.
