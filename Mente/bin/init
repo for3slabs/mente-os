@@ -282,6 +282,63 @@ def wire_gates(dry):
     return "wired into .claude/settings.json"
 
 
+def install_skills(dry):
+    """③c Place the assistant skills this engine ships — ⛔ only where there is none.
+
+    🔴 THE FAILURE THAT MADE THIS A STEP, and it is the same one `.claude/
+    settings.json` already taught: the skill used to SHIP ACTIVE inside the
+    repository. A `git clone` alone loaded it into somebody's assistant, before
+    `bin/init`, before they had agreed to anything.
+
+    ⚠️ AND IT BROKE ISOLATION, which is worse. Measured 2026-09-06: the owner
+    keeps several installations, and every clone carried the same skill — so N
+    installations meant N copies of one skill all writing into the SAME shared
+    folder. ⛔ Deleting an installation did not remove what its skill had
+    written outside it. An engine that promises "delete the folder and it is
+    gone" cannot ship a file that outlives the folder.
+
+    ⭐ Same doctrine as the router and the gates: written only at install, ⛔
+    never over a file that already exists. A skill of theirs with the same name
+    is theirs, and this step says so rather than replacing it.
+    """
+    src_root = os.path.join(TEMPLATES, "skills")
+    if not os.path.isdir(src_root):
+        return None
+    placed, kept = [], []
+    for name in sorted(os.listdir(src_root)):
+        src = os.path.join(src_root, name, "SKILL.md.template")
+        if not os.path.isfile(src):
+            # ⬜ CHK-CAU-003 · said out loud. A folder under templates/skills/
+            # with no SKILL.md.template is a skill that will never be installed,
+            # and skipping it in silence is how it stays missing.
+            kept.append("⬜ %s has no SKILL.md.template · NOT installed" % name)
+            continue
+        dest = os.path.join(REPO, ".claude", "skills", name, "SKILL.md")
+        if os.path.exists(dest):
+            kept.append(name)
+            continue
+        if dry:
+            placed.append(name)
+            continue
+        try:
+            os.makedirs(os.path.dirname(dest), exist_ok=True)
+            open(dest, "w", encoding="utf-8").write(
+                open(src, encoding="utf-8").read())
+            placed.append(name)
+        except OSError as e:
+            return "⚠️ could not install skills (%s)" % e.__class__.__name__
+    if not placed and not kept:
+        return None
+    out = []
+    if placed:
+        out.append("%s %s" % ("would install" if dry else "installed",
+                              ", ".join(placed)))
+    if kept:
+        # ⬜ Their file stands. Not a pass and not a failure.
+        out.append("⬜ %s already there · left untouched" % ", ".join(kept))
+    return "skills (Claude Code): " + " · ".join(out)
+
+
 def declare_registry(dry, wired):
     """③c Record, in the instance config, WHERE the gates were wired.
 
@@ -537,6 +594,8 @@ def main():
     # installed, which is the failure this whole step exists for.
     hooked = wire_hook(dry)
     hooked_commit = wire_hook(dry, "pre-commit")
+    # ⭐ After ③b: same doctrine, same place — the repository's own .claude/.
+    skilled = install_skills(dry)
     # ⭐ After ③b, because it records where ③b actually wrote.
     declared = declare_registry(dry, gated)
     tightened = harden(dry)
@@ -557,6 +616,8 @@ def main():
     print("   · gates (Claude Code): %s" % gated)
     print("   · layer 2 hook (pre-push):  %s" % hooked)
     print("   · base-branch hook (pre-commit): %s" % hooked_commit)
+    if skilled:
+        print("   · %s" % skilled)
     if declared:
         print("   · %s" % declared)
     if tightened:
