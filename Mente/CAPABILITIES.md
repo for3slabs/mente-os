@@ -100,6 +100,9 @@ answers exactly one question. None of them decides anything: they check what is 
 | `bin/generate-index` | 🤖 `docs/INDEX.md` · `docs/STATES.md` · `docs/DECISIONS.md` | regenerated, never hand-edited · `--check` reports staleness without writing |
 | `bin/generate-readme` | 🤖 the repository's `README.md` | ⭐ the front page, produced from `START-HERE.md` §1 — ⛔ **the only surface that exists when nothing is cloned yet** · `--check` reports drift without writing |
 | `bin/generate-metrics` | 🤖 `docs/METRICS.md` | ⭐ **the only place a live number belongs** · ⛔ it READS the battery's last result, never runs it |
+| `bin/status` | ⭐ **nothing** — it only reads | 🔴 the question the owner had no way to ask: *is this on, and what is running* · it names no file and no flag, because the complaint was that the words meant nothing |
+| `bin/off` | one marker file, `Mente/.off` | ⭐ **pauses, never removes** · every gate reads that marker as its first act · ⛔ a switch the gates ignore is a lie about the owner's own machine — `probe-onoff` runs the real hooks to prove it |
+| `bin/on` | ⭐ nothing — it deletes that one marker | ⛔ it never installs and never repairs · on a folder that was never set up it says so and stops |
 | `bin/secrets-lease` | the read permission for `secrets/`, and its access log | ⭐ tied to the context load, never to a clock · it hardens the folder before granting |
 
 > ⚠️ ⬜ **`bin/check-all` is planned as the single entry point; today the battery is

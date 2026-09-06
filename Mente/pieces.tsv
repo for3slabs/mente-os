@@ -46,6 +46,9 @@ val-estructura	bin/check-structure	engine	canonical	the tree is the one this tab
 val-suficiencia	bin/check-sufficiency	engine	canonical	a block can be resumed from disk alone
 val-clear	bin/check-clear-ready	engine	canonical	refuses a reset if anything would be lost
 installer	bin/init	engine	canonical	generates the instance files from templates/
+status	bin/status	engine	executable	answers 'is it on' in the owner's words — 🔴 there was no way to ask
+pause	bin/off	engine	executable	pauses every gate by writing one marker · deletes nothing
+resume	bin/on	engine	executable	removes that marker · the exact inverse of bin/off
 # ── engine · the gates + hooks ──
 pre-commit	hooks/pre-commit.sh	engine	canonical	blocks a commit that violates the block's contract
 session-start	hooks/session-start.sh	engine	canonical	runs every validator at session start — ⭐ silent unless something is wrong

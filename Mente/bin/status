@@ -1,0 +1,180 @@
+#!/usr/bin/env python3
+"""status — is this installation ON, and what is switched on inside it.
+
+🔴 THE FAILURE THAT SHAPES THIS FILE, measured 2026-09-06. A person finished a
+full run and asked: *"is it active? I do not even know what is being used."*
+⛔ There was no way to ask. `bin/init` prints a report ONCE, at install, and
+after that the only way to know was to read four files in three formats and
+know what each meant. ⚠️ A system whose state can only be inferred is a system
+the owner cannot trust — and the first thing anybody does with a tool they
+cannot verify is stop relying on it.
+
+⭐ WHAT THIS IS NOT. It is not a validator: it never says right or wrong, and it
+has no findings. ⛔ `check-health` answers "is anything broken"; this answers
+"is anything RUNNING" — a different question, and conflating them is what left
+the second one unanswerable.
+
+⭐ IT SPEAKS TO THE OWNER, NOT TO A DEVELOPER. Every line says what the piece
+does for them, never the file that implements it — ⚠️ the whole complaint was
+that the words meant nothing to the person reading them.
+
+Usage:
+  bin/status [--quiet]
+Exit: 0 installed · 1 not installed yet
+"""
+import os as _os, sys as _sys
+_d = _os.path.dirname(_os.path.abspath(__file__))
+while _d != _os.path.dirname(_d):
+    if _os.path.exists(_os.path.join(_d, "bin", "utf8.py")):
+        _sys.path.insert(0, _os.path.join(_d, "bin")); break
+    _d = _os.path.dirname(_d)
+import utf8                                          # noqa: F401,E402
+import json
+import os
+import sys
+
+MENTE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+REPO = os.path.dirname(MENTE)
+OFF = os.path.join(MENTE, ".off")
+
+# ⭐ CHK-SHR-001 · ONE reader for "is this set up". ⛔ Three copies of the same
+# literal drift, and these three commands MUST agree: `off` refusing where `on`
+# accepts leaves a marker neither can remove — measured while building them.
+# ⚠️ CHK-TRV-001 · the file it looks for is an INSTANCE file that never reaches
+# a clone. ⭐ That absence is the answer here, not a gap: "not set up yet" is a
+# real verdict, said out loud, and every caller prints it rather than passing.
+INSTANCE_MARK = "mente.config.yml"
+
+
+def is_set_up():
+    """True once an installation exists in THIS folder."""
+    return os.path.isfile(os.path.join(MENTE, INSTANCE_MARK))
+
+
+
+def _on(path):
+    return os.path.exists(path)
+
+
+def _skills():
+    """Installed skills, and the folders that look like one but are not.
+
+    ⛔ CHK-CAU-003 · a folder with no SKILL.md is SKIPPED, and the skip is
+    said out loud. ⚠️ Swallowed, a half-installed skill reads exactly like a
+    skill that was never installed — and the owner is told the count is fine.
+    """
+    d = os.path.join(REPO, ".claude", "skills")
+    if not os.path.isdir(d):
+        return [], []
+    live, broken = [], []
+    for n in sorted(os.listdir(d)):
+        # ⛔ CHK-CAU-003 · a loose file among the skills is not a skill, and
+        # it is not nothing either: it goes to `broken` so the line is printed.
+        if os.path.isfile(os.path.join(d, n, "SKILL.md")):
+            live.append(n)
+        else:
+            broken.append(n)
+    return live, broken
+
+
+def _gates():
+    """⬜ Whether the assistant's gates are wired. NOT MEASURED when the file
+    cannot be read — ⛔ CHK-CAU-003: a silent zero reads exactly like a real
+    zero, and the owner cannot tell the two apart."""
+    p = os.path.join(REPO, ".claude", "settings.json")
+    if not os.path.isfile(p):
+        return 0, "none"
+    try:
+        h = json.load(open(p, encoding="utf-8")).get("hooks", {})
+    except (ValueError, OSError):
+        return None, "unreadable"
+    return sum(len(v) for v in h.values() if isinstance(v, list)), "read"
+
+
+def _blocks():
+    d = os.path.join(MENTE, "work", "blocks", "active")
+    if not os.path.isdir(d):
+        return 0
+    return len([n for n in os.listdir(d)
+                if os.path.isfile(os.path.join(d, n, "BLOCK.md"))])
+
+
+def main():
+    quiet = "--quiet" in sys.argv
+    installed = is_set_up()
+    paused = _on(OFF)
+
+    if not installed:
+        if not quiet:
+            print("⬜ Mente OS is NOT set up in this folder yet.")
+            print("   Nothing of yours is being watched, and nothing has been "
+                  "written.")
+            print("\n👉 To set it up, ask your assistant to — you never have to "
+                  "type a command.")
+        return 1
+
+    if quiet:
+        return 0
+
+    if paused:
+        print("⏸️  Mente OS is SET UP here, but PAUSED.")
+        print("   Your files and your work are untouched — the checks simply "
+              "do not run.")
+        print("\n👉 Say \"turn Mente OS back on\" to your assistant.")
+        return 0
+
+    print("🟢 Mente OS is ON in this folder.")
+    print("   %s" % REPO)
+    print("\nWhat that means right now:")
+
+    g, how = _gates()
+    if how == "unreadable":
+        print("   ⬜ checks before a change · NOT MEASURED · the settings file "
+              "could not be read")
+    elif g:
+        print("   ✅ %d check(s) run on their own before your work changes" % g)
+    else:
+        print("   ⬜ no automatic checks are wired")
+
+    hooks = os.path.join(REPO, ".git", "hooks")
+    wired = [n for n in ("pre-commit", "pre-push")
+             if os.path.exists(os.path.join(hooks, n))]
+    if wired:
+        print("   ✅ your work is reviewed before it is saved")
+    else:
+        print("   ⬜ nothing reviews your work before it is saved")
+
+    sk, broken = _skills()
+    if sk:
+        print("   ✅ %d assistant skill(s) installed: %s"
+              % (len(sk), ", ".join(sk)))
+    for n in broken:
+        print("   ⬜ %s · NOT MEASURED · that folder has no skill file in it"
+              % n)
+
+    n = _blocks()
+    print("   📦 %d piece(s) of work open" % n if n
+          else "   ⬜ no piece of work open yet — ask for one when you need it")
+
+    # ⭐ SAID EVERY TIME, not once at install. 🔴 The promise that deleting the
+    # folder removes everything was never repeated after the install report,
+    # and the person could not tell whether the system had reached the rest of
+    # their machine.
+    print("\n⭐ All of this lives in this folder. Delete it and it is gone.")
+    print("   Another folder with Mente OS is separate — neither knows the "
+          "other exists.")
+    print("\n👉 To pause it, say \"turn Mente OS off\".")
+    return 0
+
+
+if __name__ == "__main__":
+    # ⭐ CHK-CAU-002 · a crash is a VERDICT, not a stack trace. ⛔ An owner who
+    # runs this and gets a Python traceback learns nothing they can act on,
+    # and the exit code is the interpreter's, not this command's.
+    try:
+        sys.exit(main())
+    except Exception as e:                                # noqa: BLE001
+        print("🔴 %s could not finish · %s: %s"
+              % (os.path.basename(__file__), type(e).__name__, e),
+              file=sys.stderr)
+        sys.exit(2)

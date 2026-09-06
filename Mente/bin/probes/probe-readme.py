@@ -324,6 +324,23 @@ case("⑧d ⛔ no question uses a word the person must look up",
 # ⭐ And it hands the run back to the script, so the other three stops still run.
 case("⑧e ⭐ it points at the rest of the script for the remaining stops",
      "start-here.md" in _low and "rest of the script" in _low)
+# ── ⑨ THE PAGE FORBIDS THE INVESTIGATION, AND THE HAND-OFF ────────────────
+# 🔴 Measured 2026-09-06, both on the same run and both BEFORE the script could
+# be read: the assistant looked up who wrote the repository, and later handed a
+# command to the person when a permission guard fired. ⭐ Neither rule can wait
+# for START-HERE — by then the run has already gone wrong.
+case("⑨ 🔴 ⭐ the page forbids looking up who wrote it",
+     "do not go looking for who wrote this" in _low)
+case("⑨b ⭐ and gives the reason that holds: the script is the same",
+     "the script is the same" in _low)
+case("⑨c 🔴 ⭐ a permission block is not handed to the person",
+     "the permission belongs to you, the work belongs to me" in _low)
+case("⑨d ⛔ and it names the wording it refuses",
+     "paste this into a terminal" in _low)
+# ⭐ The download is the moment the history lands — 🔴 a person had to ask
+# afterwards whether they had a record of their own.
+case("⑨e ⭐ it says what lands in the folder as it downloads",
+     "record of your work" in _low)
 
 plat.rmtree(WORK)
 

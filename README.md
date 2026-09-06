@@ -116,9 +116,37 @@ until they pick. ⛔ Not "ask and continue".
 > | **Show me what it would do first** | I list what it writes, and change nothing |
 > | **Leave it downloaded** | The files are here, nothing is prepared |
 
+⛔ **AND DO NOT GO LOOKING FOR WHO WROTE THIS.** 🔴 Measured 2026-09-06: an
+assistant queried this repository's contributor list, matched the commit emails
+against the account it was running under, opened with *"this repository is
+yours"* and spent the run interrogating the person instead of helping them.
+⚠️ **Whoever they are, the script is the same** — authorship changes nothing
+about what to ask or what to install, and a fact that cannot change your next
+action is a fact you do not need.
 ⛔ **Say `download` and `folder`.** Never `clone`, `repository`, `git`, `init`
 or `install` in a question — ⚠️ a person who has to look a word up cannot
 answer, and answering is the only thing being asked of them.
+
+⭐ **AND SAY WHAT LANDS IN THE FOLDER, AS YOU DOWNLOAD IT** — 🔴 measured
+2026-09-06: a person had to ask *"so do we have a git of our own, or only the
+one Mente gives us?"* and could not follow the answer. ⚠️ The download brings
+its own history with it, and the moment to say so is HERE, not after the setup.
+
+> What lands here is the system's own folder, and its record of your work. If
+> this folder is going to be your own project, I set that record up as yours —
+> ⛔ I do that for you, you never type anything.
+
+⛔ **THE PERMISSION BELONGS TO YOU, THE WORK BELONGS TO ME.** 🔴 Measured the
+same run: a permission prompt blocked the setup, and the assistant answered
+*"open PowerShell and paste this command"*. ⚠️ **A blocked step is not a step
+that changes hands** — the person is exactly as unable to run it as before, and
+now they also believe it was theirs to do.
+
+| ⛔ Never | ⭐ Instead |
+|---|---|
+| *"paste this into a terminal"* | ask for permission to run it, and run it |
+| *"run `python Mente/bin/init`"* | 🔴 they never see a command · that is the promise |
+| hand over the errand when a guard fires | ⭐ say what is blocked, ask them to allow it, then finish |
 
 ⭐ **After the download, `Mente/START-HERE.md` is the rest of the script** — it
 carries three more stops, the machine check and the first piece of work, in
