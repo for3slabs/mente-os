@@ -241,7 +241,7 @@ def secrets_permissions():
     """CFG-SEC-004 · the real modes of the secrets folder, never the documented ones.
 
     ⭐ A permission written in a README and never applied is exactly the class of
-    rule this system says gets followed 40-60% of the time — ⛔ and this is not a
+    rule this system says only gets followed when remembered — ⛔ and this is not a
     folder where those odds are acceptable. Measured here: the folder shipped
     `755`, world-readable, while its own README promised `700` and claimed the
     battery checked it.

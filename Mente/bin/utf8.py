@@ -12,7 +12,7 @@ the locale encoding, not the child's. ⛔ The user had to discover
 two environment variables nobody documented is a system that does not run.
 
 ⭐ THE ENGINE'S OWN RULE APPLIES TO ITSELF: a rule that lives in a document is
-followed 40-60% of the time. "Remember to pass encoding= on every subprocess
+followed only when remembered. "Remember to pass encoding= on every subprocess
 call" is such a rule, and there are 84 of those calls. ⛔ So it is not a rule —
 it is this import.
 

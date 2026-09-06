@@ -75,7 +75,7 @@ decision has a recorded ADR, link it.
 ## 5 · WHAT "HEALTHY" LOOKS LIKE — how you know the architecture still holds
 
 ⬜ **Which command, test or signal confirms the above is still true.** Consistent with the
-system's own law: architecture that lives only in this document is followed 40-60%; architecture
+system's own law: architecture that lives only in this document is followed when remembered; architecture
 a script verifies, 100%. Point here at whatever measures it.
 
 - ⬜ …
