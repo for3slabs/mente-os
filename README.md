@@ -90,15 +90,21 @@
 
 ## 🚀 Getting it
 
-**Clone it into the folder you want it in** — the trailing `.` matters:
+**Make a folder for the project this will look after, and clone inside it** — the trailing `.` matters:
 
 ```bash
 git clone https://github.com/for3slabs/mente-os.git .
 ```
 
-> 💡 **Already standing in the folder you want?** That command puts it right
-> there. **Starting from scratch?** Make the folder first, then run it inside:
-> `mkdir my-project && cd my-project`
+> 💡 **Where?** In a folder for the work you want it to look after — ⛔ not your
+> home directory, not the desktop, not a folder that syncs to a cloud drive.
+> ⭐ Mente OS wraps ONE project: it lives beside your code, not above it. No
+> project yet? Make an empty folder to try it in: `mkdir mente-test && cd mente-test`
+>
+> 🔴 **Measured on two real runs:** this page used to say only "the folder you
+> want". Both assistants had to invent a destination, both invented a different
+> one, and both ended up defending the choice to a confused owner.
+> ⛔ An instruction that leaves the decision open is not an instruction.
 >
 > ⚠️ Without the trailing `.`, git makes an extra `mente-os/` folder and buries
 > everything inside it. Cloning into a folder that already has files will fail —
@@ -146,10 +152,32 @@ You should know this before installing anything, and it is short:
 | | |
 |---|---|
 | 📝 **Writes files** | inside its own folder · plus **one line** appended to your `CLAUDE.md`, if you have one |
+| 🧠 **One thing lands outside** | ⚠️ the clone brings a **skill** for Claude Code (`.claude/skills/`). It loads the moment the folder exists — before you install anything — and at session close it **reads your transcripts** to measure the session and **writes notes into your assistant's own memory folder**, which is shared across your projects. ⛔ Nothing leaves the machine · delete that folder and it is gone |
 | 🪝 **Installs git hooks** | `pre-commit` and `pre-push`, **in this repository only** · they refuse a commit that breaks the rules you set · remove them by deleting the two links in `.git/hooks/` |
 | 🔒 **Sends nothing** | no network calls, no telemetry, no account · everything stays on your disk |
 | 📦 **Installs nothing** | no packages, no dependencies |
 
+---
+
+## 🔎 Before you trust it — what a reviewer will find anyway
+
+⭐ **Said here so nobody has to discover it:**
+
+| | |
+|---|---|
+| 📅 **Age** | days old, not years. Moving fast |
+| ⭐ **Adoption** | no stars, no forks, no outside users yet — you would be among the first |
+| 👤 **Authors** | one. There is no team behind this |
+| 🔍 **Audited by** | nobody external. ⭐ Read it yourself: no network calls, no telemetry, and every command is listed in `Mente/CAPABILITIES.md` with what it refuses to do |
+
+⚠️ **What that means in practice:** the engine checks itself on every change —
+⭐ hundreds of checks, and each one has been seen to FAIL on purpose against
+broken code, because a test that cannot fail measures nothing. But it has never
+been run by a stranger on a machine nobody anticipated. ⛔ That gap is real and
+no amount of testing closes it.
+
+🔴 **So: try it on a project you can afford to break.** Not on the one that
+matters, not yet.
 ---
 
 ## 🧩 The four pieces

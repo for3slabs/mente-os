@@ -116,6 +116,47 @@ for pat, what in ((r"what it does to your machine", "what it does to their machi
                   (r"remove them by deleting", "how to remove what it installed")):
     case("④· it states %s" % what, bool(re.search(pat, low)))
 
+# ── ④z THE PAGE MAY NOT PROMISE WHAT THE CLONE BREAKS ──────────────────────
+# 🔴 Measured 2026-09-06 on two independent runs. The page said it "writes files
+# inside its own folder", and the clone carries a Claude Code skill that loads
+# the moment the folder exists — before any install — reads the person's
+# transcripts, and writes notes into the assistant's shared memory folder.
+# ⛔ BOTH ASSISTANTS FOUND IT BY READING, and told the owner the page was not
+# telling the truth. ⭐ A false claim on the front page destroys the credit the
+# honest ones earned: the same reviewers had just audited the code and called it
+# clean, then hit this and started warning against installing.
+_skill = os.path.join(os.path.dirname(ROOT), ".claude", "skills")
+if os.path.isdir(_skill):
+    case("④z 🔴 ⭐ the page discloses the skill that ships with the clone",
+         "skill" in low and bool(re.search(r"\.claude/skills", low)))
+    case("④z2 ⛔ and says it loads before anything is installed",
+         bool(re.search(r"loads the moment|before you install", low)))
+    case("④z3 🔴 ⭐ and that it reads transcripts and writes outside the project",
+         "transcript" in low and bool(re.search(r"memory folder|outside", low)))
+else:
+    # ⬜ CHK-CAU-003 · said out loud, never a silent pass.
+    print("  ⬜ no .claude/skills beside this tree · disclosure NOT MEASURED")
+
+# ── ④y THE PAGE ADMITS WHAT A REVIEWER FINDS ANYWAY ────────────────────────
+# 🔴 Measured 2026-09-06 on two independent runs. Both assistants audited the
+# code, called it clean — and then warned the owner against installing, citing
+# the age, the zero stars and the single author. ⛔ Public facts the page had
+# not mentioned, so they landed as an uncomfortable discovery instead of a
+# known one. ⭐ Saying it first is what keeps the credit the audit earned.
+case("④y 🔴 ⭐ the page states the age, the adoption and the single author",
+     bool(re.search(r"before you trust it", low))
+     and "adoption" in low and "author" in low)
+case("④y2 ⛔ and tells them to try it where breaking is affordable",
+     bool(re.search(r"afford to break", low)))
+
+# ── ④x THE DESTINATION IS NAMED, NOT LEFT OPEN ─────────────────────────────
+# 🔴 Same two runs: the page said only "the folder you want". Both assistants
+# invented a destination, invented DIFFERENT ones, and both had to defend the
+# choice to a confused owner. ⛔ An instruction that leaves the decision open
+# is not an instruction.
+case("④x 🔴 ⭐ it says WHERE to clone, and where not to",
+     bool(re.search(r"not your\s*\n?>?\s*home directory|not the desktop", low))
+     and "syncs to a cloud drive" in low)
 # ── ⑤ AND HOW TO START ─────────────────────────────────────────────────────
 # ⚠️ The trailing dot is not cosmetic: plain `git clone <url>` makes a folder
 # nobody asked for. ⭐ But it must land in a folder they CREATE for it — cloning
