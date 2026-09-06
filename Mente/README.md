@@ -30,7 +30,8 @@ verdict that answers *is this a product or an MVP?* ⭐ The counts live in the g
 file, never in prose — a number written here is correct exactly once.
 
 > **The law it is built on, measured:** a rule enforced by code complies 100%; a rule that lives
-> only in a document complies 40-60%. **So the doctrine is a document and the verification is a
+> only in a document complies when somebody remembers. **So the doctrine is a document and the
+> verification is a
 > script.**
 
 ---

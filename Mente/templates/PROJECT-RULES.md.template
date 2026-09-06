@@ -56,7 +56,8 @@ owner's only, and become a **new rule at the parent's level** with its own ADR.
 | §6 reading · §7 F-method | conduct — not mechanically verifiable by design | 📖 **discipline** |
 
 ⭐ **Why the distinction matters:** this project's own measured law is that a rule in code is
-obeyed 100% and a rule in a document 40-60%. **The 📖 rows are the 40-60%.** They are not weaker
+obeyed every time and a rule in a document only when remembered. **The 📖 rows are that gap.**
+They are not weaker
 rules — they are rules whose compliance nobody can prove, and that is worth knowing before
 trusting them.
 

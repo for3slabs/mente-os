@@ -35,7 +35,8 @@ action.
 ## 1 · ⭐ ENFORCEMENT — what is actually checked
 
 ⛔ **Every rule below declares whether anything verifies it.** The system's own measured law: a
-rule in code is followed 100%, a rule in a document 40-60%.
+rule in code is followed every time; a rule in a document is followed when somebody
+remembers it — measured here at 0 of 15 (`rule-shipping.md` §the-day-it-mattered).
 
 | | Means |
 |---|---|

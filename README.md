@@ -17,7 +17,8 @@
 |---|---|
 | 🎯 **The problem** | every time a conversation resets, your assistant forgets what was decided and what must not be touched — then rebuilds it by guessing, and sounds just as confident when it guesses wrong |
 | 💡 **The idea** | the work lives on disk in a shape the assistant has to fill in, and small programs check it |
-| ⚖️ **Why programs** | a rule written in a document is followed about half the time · a rule a program refuses to break is followed every time |
+| ⚖️ **Why programs** | this project wrote a rule down, then counted: it was followed **0 times out of 15** · a rule a program refuses to break has no such gap |
+| 📜 **Licence** | AGPL-3.0 — free to use and change · run it as a service and you publish your changes |
 | 👤 **Who it is for** | anyone working with an AI assistant across more than one sitting — you do not need to be a developer |
 
 ---
@@ -33,8 +34,8 @@
 > sounds equally confident whether it guessed right or wrong.
 >
 > **How it solves it:** the work lives on disk in a shape the assistant must fill in, and small
-> programs check it. A rule written in a document is followed about half the time; a rule a
-> program refuses to break is followed every time.
+> programs check it. This project wrote a rule down and then counted: it was followed **0 times
+> out of 15**. A rule a program refuses to break has no such gap.
 >
 > **The four pieces:**
 >
@@ -165,12 +166,12 @@ You should know this before installing anything, and it is short:
 ## 🤔 How is this different from just keeping notes?
 
 ⭐ **Notes describe. This refuses.** A note saying *"do not touch the database"*
-is read about half the time. Here, a small program reads the same boundary and
+is honoured when somebody remembers. Here, a small program reads the same boundary and
 **stops the change** — and it cannot be talked out of it.
 
 | | A memory file or a notes doc | Mente OS |
 |---|---|---|
-| The boundary | written down, honoured when remembered | 🚦 **enforced by a program** |
+| The boundary | written down · 🔴 **this project measured 0 of 15** | 🚦 **enforced by a program** |
 | *"is this finished?"* | the assistant's opinion | ✅ **checks pass, or it does not close** |
 | Losing the thread | you notice after it happened | 🧭 written down **before** the reset |
 

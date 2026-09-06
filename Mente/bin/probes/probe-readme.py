@@ -158,6 +158,35 @@ case("⑤f 🔴 ⛔ no bin/init or battery command in the newcomer's path",
 case("⑤g ⭐ it states what a notes file cannot do",
      bool(re.search(r"how is this different", low)))
 
+# ── ⑤h THE LICENCE IS REAL, NOT JUST CLAIMED ──────────────────────────────
+# 🔴 Measured 2026-09-05 by an external reviewer, on a first pass: the page said
+# AGPL-3.0 and the repository carried NO LICENSE file. GitHub's API answered
+# `license: null`, which means the default applies — all rights reserved.
+# ⚠️ For over a week nobody who cloned this had permission to use it, and the
+# page told them they did. ⛔ A licence named and not shipped is worse than none.
+_lic = os.path.join(os.path.dirname(ROOT), "LICENSE")
+_notice = os.path.join(os.path.dirname(ROOT), "NOTICE")
+if os.path.isfile(os.path.join(os.path.dirname(ROOT), "README.md")):
+    case("⑤h 🔴 ⭐ the licence it names is actually SHIPPED",
+         os.path.isfile(_lic) and os.path.getsize(_lic) > 30000,
+         "%d bytes" % os.path.getsize(_lic) if os.path.isfile(_lic) else "🔴 no LICENSE")
+    case("⑤i ⛔ and it carries a copyright notice naming the holder",
+         os.path.isfile(_notice) and "Copyright" in
+         open(_notice, encoding="utf-8").read())
+else:
+    print("  ⬜ no repository root beside this tree · licence NOT MEASURED")
+
+# ── ⑤j NO FIGURE WITHOUT ITS SOURCE ───────────────────────────────────────
+# 🔴 The same reviewer caught the second one: "a rule in a document is followed
+# 40-60%" was the engine's central law, repeated 20+ times across both repos,
+# and NOWHERE did it cite a source. ⭐ A page that preaches "do not assert what
+# you did not measure" cannot open with an invented statistic.
+# ⛔ The replacement is what this project actually counted: 0 of 15.
+case("⑤j 🔴 ⭐ no unsourced statistic on the page",
+     not re.search(r"40\s*-\s*60\s*%|about half the time", low))
+case("⑤k ⭐ and the claim it replaced carries its real measurement",
+     bool(re.search(r"0 (times out of|of) 15", low)))
+
 # ── ⑥ IT DOES NOT DRIFT FROM ITS SOURCE ────────────────────────────────────
 # ⭐ CHK-SHR-001. The generator answers this better than any comparison written
 # here would — and running it is what proves the generator itself still works.

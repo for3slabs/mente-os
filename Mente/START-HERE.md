@@ -148,8 +148,8 @@ never hear about a problem it does not have.
 > sounds equally confident whether it guessed right or wrong.
 >
 > **How it solves it:** the work lives on disk in a shape the assistant must fill in, and small
-> programs check it. A rule written in a document is followed about half the time; a rule a
-> program refuses to break is followed every time.
+> programs check it. This project wrote a rule down and then counted: it was followed **0 times
+> out of 15**. A rule a program refuses to break has no such gap.
 >
 > **The four pieces:**
 >

@@ -7,7 +7,7 @@ know what they were sent. ⛔ Everything it mandates was written after a REAL ru
 failed — and until now nothing checked that any of it survived an edit.
 
 ⭐ The law this engine measures itself by: a rule in code holds 100%, a rule that
-lives only in a document holds 40-60%. START-HERE was 100% document. Its shape
+lives only in a document holds when remembered. START-HERE was 100% document. Its shape
 was validated (headings, ceilings, declaration) and its CONTENT was not — so
 deleting the sentence that makes the questions appear as a chooser broke nothing
 that anyone could see.

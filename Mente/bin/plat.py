@@ -26,7 +26,7 @@ prevent, committed by the installer itself.
 ⭐ Why a module and not fifty fixes. ~50 sites build a path with the OS
 separator and three remembered to normalise it. *"Remember to call
 `.replace(os.sep, '/')`"* is a rule in a document, and this system measured what
-those are worth: 40-60%. ⛔ So it is not a rule. It is a function, and the ones
+those are worth: followed when remembered. ⛔ So it is not a rule. It is a function, and the ones
 that must never be guessed are here together.
 """
 import os

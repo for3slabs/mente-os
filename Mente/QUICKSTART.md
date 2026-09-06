@@ -13,7 +13,8 @@ the author works, that is a defect in this file.
 > closed, and that rules hold because a script blocks them — not because someone remembers.
 >
 > **The law that explains everything:** *a rule in code is followed 100%; one that lives only in
-> a document, 40-60%.* That is why doctrine is a document and **verification is a script**.
+> a document, only when somebody remembers.* That is why doctrine is a document and
+> **verification is a script**.
 
 
 ---

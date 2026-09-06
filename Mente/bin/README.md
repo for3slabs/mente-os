@@ -14,7 +14,8 @@ checks what is checkable — the file exists · it has the field · it fits the 
 unique · it is not stale — and reports.
 
 > ⭐ **The law this folder exists to serve:** a rule enforced by code is followed 100%; a rule that
-> lives only in a document is followed 40-60%. **The doctrine is a document. The verification is
+> lives only in a document is followed when remembered. **The doctrine is a document. The
+> verification is
 > a script.** Every file here is one rule that stopped being a suggestion.
 
 ---
