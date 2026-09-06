@@ -14,6 +14,7 @@ while _d != _os.path.dirname(_d):
     _d = _os.path.dirname(_d)
 import utf8                                          # noqa: F401,E402
 import plat                                          # noqa: E402
+import threading
 from concurrent.futures import ThreadPoolExecutor
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -96,6 +97,43 @@ def _fix_modes(tree):
                 continue
 
 
+_TEMPLATE = []
+# ⛔ TWELVE THREADS ENTER AT ONCE. 🔴 Measured: without this lock the "is it
+# built yet" check ran before any of them had finished, so eleven templates were
+# built and ten abandoned in /tmp — 24 MB of residue, which is exactly what this
+# battery refuses in its own probes.
+_TLOCK = threading.Lock()
+
+
+def _template():
+    """The tree, read ONCE, staged where copying is cheap.
+
+    🔴 THE COST THIS REMOVES, measured 2026-09-05. Every probe copied the tree
+    from its source. On a native filesystem that is 0.03 s and nobody notices.
+    On NTFS — read from a POSIX kernel over /mnt/c — it is **1.37 s**, and 41
+    probes spend **56 seconds** re-reading bytes that never changed.
+
+    ⭐ The tree is IDENTICAL for all of them: whatever a probe edits, it edits in
+    its own copy. So the slow disk is read once and the rest clone from local
+    storage. ⛔ The isolation is unchanged — each probe still gets its own tree.
+
+    ⚠️ THE MODE FIX BELONGS HERE, ONCE. A copy must not inherit a bit its origin
+    never meant: on NTFS every file reads as executable and the bit decides
+    nothing, so moving the tree to a filesystem where it DOES decide turned
+    seven helpers into commands. Fixing it on the template fixes every clone.
+    """
+    with _TLOCK:
+        if _TEMPLATE:
+            return _TEMPLATE[0]
+        d = tempfile.mkdtemp(prefix="mente-template-")
+        t = os.path.join(d, os.path.basename(ROOT))
+        shutil.copytree(ROOT, t, ignore=_IGNORE)
+        if not plat.executable_bit_is_real(ROOT):
+            _fix_modes(t)
+        _TEMPLATE.append(t)
+        return t
+
+
 def run_probe(q):
     """Run one probe. In isolated mode it gets a private copy of the tree, so
     what it edits cannot reach any other probe — ⛔ and cannot reach the real
@@ -107,15 +145,12 @@ def run_probe(q):
     d = tempfile.mkdtemp(prefix="mente-probe-")
     try:
         tree = os.path.join(d, os.path.basename(ROOT))
-        shutil.copytree(ROOT, tree, ignore=_IGNORE)
-        # ⚠️ A COPY MUST NOT INHERIT A BIT ITS ORIGIN NEVER MEANT. 🔴 Measured
-        # 2026-09-05: the tree lived on NTFS, where every file reads as
-        # executable and the bit decides nothing. Copying it into a native
-        # filesystem — where the bit DOES decide — turned seven helpers into
-        # commands, and four probes reported real-looking failures that existed
-        # only inside the copy. ⛔ The verdict came from the move, not the tree.
-        if not plat.executable_bit_is_real(ROOT):
-            _fix_modes(tree)
+        # ⭐ Copied from the TEMPLATE, not from the source tree: the source is
+        # read exactly once (see `_template`), and every probe after that clones
+        # a local copy. ⚠️ Measured 2026-09-05 on NTFS — 1.37 s per read there
+        # against 0.026 s from the template, and 41 probes turn that into 56 s
+        # of pure waiting.
+        shutil.copytree(_template(), tree)
         return name, subprocess.run(
             [sys.executable, os.path.join(tree, "bin", "probes", name + ".py")],
             cwd=tree, capture_output=True, text=True,
@@ -249,6 +284,13 @@ hook_probes = [q for q in probes
 # non-zero has findings. Because the contract is uniform this needs no knowledge
 # of what any of them checks — which is what lets a new validator join with no
 # edit here.
+# ⛔ The template is staged work, not a result: it goes before anything is
+# reported. A temporary tree left behind is the "leftovers" this very battery
+# refuses in its probes.
+if _TEMPLATE:
+    plat.rmtree(os.path.dirname(_TEMPLATE[0]))
+    _TEMPLATE.clear()
+
 print("\n  ── the tree right now")
 # ⭐ A validator that needs a SUBJECT is not run over the tree: with none given
 # it prints its usage, and a usage banner is not a finding. ⛔ Reporting it as
