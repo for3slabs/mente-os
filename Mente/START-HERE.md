@@ -102,41 +102,36 @@ this file, the step is not one to raise with them at all.
 
 ---
 
-## 0 · FIRST, LOOK FOR LEFTOVERS FROM AN EARLIER ATTEMPT
+## 0 · ⛔ DO NOT LOOK AROUND — everything lives in this folder
 
-⭐ **Before anything else, run this.** ⛔ Somebody may have tried this before and deleted the
-folder without knowing that two things live OUTSIDE it:
+⭐ **Mente OS is contained.** Everything it writes — the engine, the config, the
+skill, the gate wiring, the git hooks — lands inside the folder it was cloned
+into. ⛔ Delete that folder and it is gone: no registry entry, no file in the
+home directory, nothing left behind.
 
-```bash
-ls CLAUDE.md .git/hooks/pre-push .git/hooks/pre-commit 2>/dev/null
-grep -l "CLAUDE-MENTE-OS" CLAUDE.md 2>/dev/null
-```
+⚠️ **So there is nothing to hunt for, and hunting is itself the failure.**
+🔴 Measured 2026-09-06 on two real runs: this section used to open by telling
+you to go looking for leftovers from an earlier attempt, and it said "two
+things live OUTSIDE this folder". ⛔ That taught the assistant that Mente OS
+leaves traces elsewhere — so it started reporting other folders on the machine,
+and the person ended up distrusting a system that had touched nothing.
 
-🔴 **Measured 2026-09-02, and it frightened the person it happened to:** they deleted the folder,
-started fresh, and the assistant answered as if a half-finished installation were still there —
-because `CLAUDE.md` still carried `@Mente/CLAUDE-MENTE-OS.md`, an import pointing at a file that
-no longer existed. ⚠️ **It was not memory. It was a file on their disk**, and being told
-otherwise is what made it confusing.
+⭐ **A person can have a hundred installations in a hundred folders.** None of
+them sees the others. That is the promise, and inspecting the disk to "check"
+is what breaks it.
 
-⭐ **If anything came back, ASK — do not decide for them:**
+| | |
+|---|---|
+| ⛔ **Do not** | scan the home directory, list other projects, or report what you notice elsewhere |
+| ⛔ **Do not** | read or edit their `CLAUDE.md` looking for old imports |
+| ⭐ **Do** | go straight to §1 |
 
-> **Question:** I found leftovers from an earlier attempt at installing Mente OS — a line in your
-> `CLAUDE.md` pointing at a folder that is gone. What would you like to do?
->
-> | Option | What it means |
-> |---|---|
-> | ⭐ **Clean start** *(recommended)* | I remove the leftover line and install fresh — nothing of yours is touched, only the pointer to what is missing |
-> | **Show me first** | I show you exactly which lines and files are left over, and you decide |
-> | **Leave it, just explain** | I explain what Mente OS is and change nothing |
-
-⛔ **Never delete anything before asking.** ⚠️ `CLAUDE.md` is the USER'S file — the installer only
-ever appends one line to it, and only that line is ours to remove.
-
-⭐ **If nothing came back, say nothing about it** and go straight to §1. A clean machine should
-never hear about a problem it does not have.
+⚠️ **The one exception, and only if THEY raise it:** somebody who used a version
+from before 2026-09-06 may have a stale `@Mente/CLAUDE-MENTE-OS.md` line in a
+`CLAUDE.md` whose folder is gone. ⛔ That is theirs to remove and theirs to
+mention first — you do not go looking for it.
 
 ---
-
 ## 1 · SHOW THIS, VERBATIM
 
 > ## Mente OS
