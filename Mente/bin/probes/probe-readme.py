@@ -204,8 +204,13 @@ for _root, _dirs, _files in os.walk(ROOT):
             _t = open(_fp, encoding="utf-8", errors="replace").read()
         except OSError:
             continue
+        # ⚠️ NEWLINES COLLAPSED FIRST. 🔴 My previous version matched on the raw
+        # text, so the same sentence wrapped across two lines slipped through —
+        # two files kept asserting it and the probe reported the sweep complete.
+        # ⭐ A claim is a sentence, not a line: measure the sentence.
+        _flat = re.sub(r"\s+", " ", _t)
         if re.search(r"40\s*-\s*60\s*%|followed (about|roughly) half the time",
-                     _t):
+                     _flat):
             _stale.append(os.path.relpath(_fp, ROOT))
 case("⑤l 🔴 ⭐ the unsourced figure is gone from the WHOLE engine, not just here",
      not _stale, ", ".join(_stale)[:44] or "0 file(s)")

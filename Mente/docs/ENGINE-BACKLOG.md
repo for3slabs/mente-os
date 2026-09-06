@@ -735,8 +735,8 @@ Every engine document declares a `Type` and no type declares a limit, so the str
 rule in the system is unenforceable by construction.
 
 ⚠️ **And it is worse than a missing number.** Without a declared ceiling, whoever notices a file is
-"long" applies their own threshold — which is the definition of a rule followed about half the
-time. ⭐ **A ceiling nobody can measure is indistinguishable from no ceiling at all.**
+"long" applies their own threshold — which is the definition of a rule followed only when
+somebody remembers. ⭐ **A ceiling nobody can measure is indistinguishable from no ceiling at all.**
 
 ---
 

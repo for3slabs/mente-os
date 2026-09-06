@@ -2,8 +2,8 @@
 """gate-handoff — a specialist that can WRITE does not launch without a declared scope.
 
 Turns rules/contract-handoff.md from an intention into a gate: a rule enforced by
-code is followed; a rule that lives only in a document is followed about half the
-time, and this one is about an agent nobody is watching.
+code is followed; a rule that lives only in a document is followed only when
+somebody remembers, and this one is about an agent nobody is watching.
 
 ⭐ THE LEVEL WAS MEASURED, AND THE MEASUREMENT INVERTED THE DIAGNOSIS. Counting a
 project's real tool calls showed shell and file operations in the thousands and
