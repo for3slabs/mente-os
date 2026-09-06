@@ -73,7 +73,7 @@ def is_command(path):
     """
     if not os.path.isfile(path):
         return False
-    if executable_bit_is_real():
+    if executable_bit_is_real(path):
         return os.access(path, os.X_OK)
     if path.lower().endswith(_WIN_RUNNABLE):
         return True
@@ -87,25 +87,51 @@ def is_command(path):
         return False
 
 
-def executable_bit_is_real():
-    """⭐ Does this filesystem carry the POSIX executable bit at all?
+def _ntfs(path):
+    """⚠️ Is this path on a Windows filesystem, whatever the OS says?
 
-    ⚠️ Answered by the platform, not by a probe of the tree: a Git-Bash clone on
-    NTFS reports modes that look POSIX and are not enforced by anything.
+    🔴 MEASURED 2026-09-05 from WSL over /mnt/c: `os.name` answers "posix", so
+    the engine believed modes were enforced — and `chmod 700` on that folder
+    changed nothing. ⛔ The question was never "which OS am I", it is "does THIS
+    filesystem enforce a mode", and only the path can answer it.
     """
-    return os.name == "posix"
+    try:
+        real = os.path.realpath(path or ".")
+    except OSError:
+        return False
+    low = real.replace("\\", "/").lower()
+    return low.startswith("/mnt/") and len(low) > 6 and low[6] in "/"
 
 
-def modes_are_real():
-    """⭐ Does `chmod` on this platform actually restrict who can read a file?
+def executable_bit_is_real(path=None):
+    """⭐ Does THIS filesystem carry the POSIX executable bit at all?
+
+    ⚠️ A Git-Bash clone on NTFS reports modes that look POSIX and are enforced
+    by nothing. 🔴 And measured 2026-09-05 from WSL over /mnt/c: `os.name` says
+    "posix" while every file reads as executable, so three helpers were reported
+    as undocumented COMMANDS. ⛔ The filesystem decides, not the kernel.
+    """
+    if os.name != "posix":
+        return False
+    return not _ntfs(path) if path else True
+
+
+def modes_are_real(path=None):
+    """⭐ Does `chmod` HERE actually restrict who can read a file?
 
     🔴 On Windows it does not. `os.chmod` accepts the call, returns cleanly, and
     the directory stays open to every account on the machine. ⛔ An installer
     that prints `700` there has told the owner their credentials are private
     when they are not — and a false assurance about a credential store is worse
     than no assurance, because it ends the question.
+
+    ⚠️ `path` matters: a POSIX kernel can be looking at an NTFS mount, and there
+    the mode is decoration. Called without one, it answers for the OS alone —
+    which is the old behaviour and still right for a native tree.
     """
-    return os.name == "posix"
+    if os.name != "posix":
+        return False
+    return not _ntfs(path) if path else True
 
 
 def privacy(path):
@@ -125,7 +151,9 @@ def privacy(path):
     """
     if not os.path.isdir(path):
         return "unknown", "the folder does not exist"
-    if not modes_are_real():
+    # ⚠️ Asked ABOUT THIS PATH: a POSIX kernel over an NTFS mount enforces
+    # nothing, and the folder in question is the one that decides.
+    if not modes_are_real(path):
         return ("unknown",
                 "this platform (%s) does not enforce file modes · chmod is "
                 "accepted and changes nothing, so whether this folder is "
