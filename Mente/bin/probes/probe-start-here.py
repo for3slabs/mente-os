@@ -177,6 +177,36 @@ found = [p for p in (readme, inner)
 case("⑥ 🔴 ⭐ a README points at it (a script nobody reaches never runs)",
      bool(found), "%d of 2 README(s)" % len(found))
 
+# ── ⑩ THE INSTALL IS NOT THE DELIVERY ──────────────────────────────────────
+# 🔴 Measured 2026-09-06. A run installed cleanly, was then asked for real work,
+# and wrote it to a loose file at the top of the folder: no block, `RESUME.md`
+# and `PENDING.md` still the shipped templates. ⛔ Every check was green over an
+# empty `work/` — the engine measured itself and held nothing.
+_low = text.lower()
+case("⑩ 🔴 ⭐ the script says a green install is not the delivery",
+     "the install is not the delivery" in _low)
+case("⑩b ⭐ and names what an empty work/ means",
+     "empty" in _low and "measures the engine" in _low)
+# ⛔ The same run read the four types, decided a personal plan "did not fit a
+# system for software", and opted out. ⭐ The type is the shape of the work, and
+# `docs` holds any written product — there is no subject this engine declines.
+case("⑩c 🔴 ⭐ it says the type is the SHAPE, never the topic",
+     "shape of the work" in _low and "never the topic" in _low)
+case("⑩d ⛔ and §6 refuses a loose file as the answer",
+     "a file outside `work/` is not held by anything" in text)
+
+# ── ⑪ WHERE IT ALL LIVES, SAID OUT LOUD ────────────────────────────────────
+# 🔴 Measured the same run: the history was explained without ever saying it was
+# per-folder, so the person could not tell whether the system had reached the
+# rest of their machine. ⭐ Isolation is the promise; an unstated promise is not
+# one the person can rely on.
+case("⑪ ⭐ it says everything lives in THIS folder",
+     "lives in **this folder**" in text)
+case("⑪b ⭐ and that deleting the folder removes it",
+     "delete the folder and all of it is gone" in _low)
+case("⑪c ⭐ and that a second installation is separate",
+     "neither knows the other exists" in _low)
+
 # ── ⑦ IT IS DECLARED AS AN ENGINE FILE ─────────────────────────────────────
 tsv = os.path.join(ROOT, "pieces.tsv")
 case("⑦ it is declared in the piece table",
