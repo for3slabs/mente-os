@@ -155,7 +155,7 @@ case("⑩ ⭐ --force does replace",
 repo2, tree2 = fresh()
 r = run(tree2, stdin="")          # no terminal, no --owner
 case("⑪ 🔴 no terminal and no --owner → it ABORTS, it does not invent an owner",
-     r.returncode == 2 and "Guessing an owner" in r.stderr,
+     r.returncode == 2 and "come from the person" in r.stderr,
      "exit=%d" % r.returncode)
 case("⑫ ⛔ and it wrote nothing when aborting", not has(tree2, "mente.config.yml"))
 
@@ -333,6 +333,57 @@ r = run(os.path.join(syn, "Mente"), "--dry-run", "--owner", OWNER)
 case("㉓b ⚠️ a SYNCED drive is named, not just cautioned about in general",
      "SYNCED drive" in r.stderr,
      "OneDrive detected" if "SYNCED drive" in r.stderr else "🔴 silent")
+
+# ── ㉔ CRLF · the failure that killed every gate at once ────────────────────
+# 🔴 Measured 2026-09-05 on a real Windows install: git converts line endings on
+# checkout by default, so every shell script arrived with CRLF and bash refused
+# them — `/usr/bin/env: 'bash\r': No such file or directory`. ⛔ ALL THREE GATES
+# WERE DEAD, and git read the failing hook as exit 0: a commit that should have
+# been refused went straight through.
+# ⭐ A shell script is not text to adapt to the platform — it is a program whose
+# interpreter rejects the carriage return.
+# ⬜ The isolated copy has no parent repository, so the file cannot be there.
+# CHK-CAU-003: said out loud, never counted as a pass.
+_ga = os.path.join(os.path.dirname(ROOT), ".gitattributes")
+if not os.path.isfile(_ga) and os.environ.get("MENTE_PROBE_ISOLATED"):
+    print("  ⬜ .gitattributes · NOT MEASURED · no parent repository in the "
+          "isolated copy")
+elif True:
+    case("㉔ 🔴 ⭐ .gitattributes ships, so git cannot convert the executables",
+         os.path.isfile(_ga), "present" if os.path.isfile(_ga) else "🔴 absent")
+if os.path.isfile(_ga):
+    _t = open(_ga, encoding="utf-8").read()
+    case("㉔b ⛔ and it pins LF on shell scripts and python",
+         "*.sh" in _t and "eol=lf" in _t and "*.py" in _t)
+    case("㉔c ⛔ and on bin/ and hooks/, which carry no extension",
+         "bin/*" in _t and "hooks/*" in _t)
+
+# ⛔ AND NO EXECUTABLE MAY SHIP WITH A CARRIAGE RETURN IN THE SHIPPED TREE.
+_crlf = []
+for _d, _sub, _fs in os.walk(ROOT):
+    _sub[:] = [x for x in _sub if x not in (".git", "__pycache__", "cache")]
+    for _f in _fs:
+        if not (_f.endswith((".sh", ".py")) or "/bin/" in _d or "/hooks/" in _d):
+            continue
+        _fp = os.path.join(_d, _f)
+        try:
+            if b"\r\n" in open(_fp, "rb").read(4096):
+                _crlf.append(os.path.relpath(_fp, ROOT))
+        except OSError:
+            pass
+case("㉔d 🔴 ⭐ no executable in the tree carries CRLF",
+     not _crlf, ", ".join(_crlf)[:44] or "0 file(s)")
+
+# ── ㉕ THE REFUSAL MUST NOT TEACH ITS OWN BYPASS ───────────────────────────
+# 🔴 Measured the same day: with no terminal, init refused — and the refusal
+# said "or pass --owner NAME". The assistant read that, invented a name from the
+# folder, and installed. ⛔ A refusal that names its own bypass is a suggestion.
+_r = run(fresh()[1])          # no --owner, no terminal
+_msg = (_r.stdout + _r.stderr).lower()
+case("㉕ 🔴 ⭐ with no terminal it tells the assistant to ASK, not to pass a name",
+     "ask them" in _msg and _r.returncode == 2, "exit=%d" % _r.returncode)
+case("㉕b ⛔ and it names the sources it must NOT derive from",
+     "folder" in _msg and ("git config" in _msg or "account" in _msg))
 
 # ── ⑦ --dry-run WRITES NOTHING ──────────────────────────────────────────────
 repo5, tree5 = fresh()

@@ -1,0 +1,29 @@
+# 🔴 THE FAILURE THIS PREVENTS, measured 2026-09-05 on a real Windows install.
+# Git on Windows converts line endings on checkout by default, so every shell
+# script arrived with CRLF and bash could not read them:
+#
+#     /usr/bin/env: 'bash\r': No such file or directory
+#
+# ⛔ ALL THREE GATES WERE DEAD — and `git` read the failing hook as exit 0, so a
+# commit that should have been refused went through. ⚠️ A gate that dies quietly
+# is worse than no gate: the person believes they are protected.
+#
+# ⭐ A shell script is not text to be adapted to the platform: it is a program
+# whose interpreter rejects the carriage return. Same for Python, which git
+# would also convert.
+
+# Everything the engine executes keeps LF, on every platform.
+*.sh        text eol=lf
+*.py        text eol=lf
+
+# ⚠️ The commands in bin/ carry no extension and git cannot infer them.
+bin/*       text eol=lf
+hooks/*     text eol=lf
+Mente/bin/*     text eol=lf
+Mente/hooks/*   text eol=lf
+
+# Documents may follow the platform; nothing executes them.
+*.md        text
+*.tsv       text
+*.yml       text
+*.json      text

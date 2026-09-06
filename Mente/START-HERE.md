@@ -270,8 +270,19 @@ bin/probes/run-all.py
 
 ### ⭐ THE NAME IS A CHOOSER TOO — find the options before you ask
 
-⚠️ **`bin/init` refuses to guess a name, and so must you.** ⛔ But *"refuses to guess"* is not
-*"ask them to type it"*: **the machine already knows real candidates.** Read them first:
+⚠️ **`bin/init` refuses to guess a name, and so must you.**
+
+🔴 **MEASURED 2026-09-05, and it is the failure this section exists for.** An
+assistant ran `bin/init` without a terminal, hit the refusal, read the hint —
+and **invented the name from the folder it was standing in**. It installed with
+that name in 78 documents and never told the person. They found out later and
+asked: *"wasn't it supposed to ask me my name?"*
+
+⛔ **The folder name is not their name. Neither is the account, nor the git
+config on its own.** ⭐ Those are CANDIDATES to offer — the answer is theirs.
+
+⛔ But *"refuses to guess"* is not *"ask them to type it"*: **the machine already
+knows real candidates.** Read them first:
 
 ```bash
 git config user.name ; whoami
