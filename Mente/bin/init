@@ -387,7 +387,11 @@ def harden(dry):
     # to every account on the machine — os.chmod on an NTFS directory is
     # accepted and does nothing. ⛔ The owner was told their credential store
     # was private. A false assurance is worse than none: it ends the question.
-    if not plat.modes_are_real():
+    # ⚠️ ASKED ABOUT THIS FOLDER, not about the OS. 🔴 Measured 2026-09-05: from
+    # a POSIX kernel over an NTFS mount the pathless call answered "yes, modes
+    # are real", so this went on to chmod and then reported a red the owner
+    # could never clear. ⭐ The folder being hardened is the one that decides.
+    if not plat.modes_are_real(d):
         return ("⬜ secrets/ · NOT MEASURED · this platform does not enforce "
                 "file modes · ⚠️ keep credentials out of a shared or synced "
                 "folder — the engine cannot make this one private for you")
