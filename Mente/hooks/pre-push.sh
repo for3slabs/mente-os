@@ -53,6 +53,11 @@ ROOT="$(cd "$(dirname "$SELF")/../.." && pwd 2>/dev/null)"
 if [ -z "$ROOT" ] || [ ! -d "$ROOT" ]; then
   ROOT="$(git rev-parse --show-toplevel 2>/dev/null)"
 fi
+# ⏸️ THE PAUSE SWITCH · the owner asked for silence, and silence means
+# letting the push through. ⛔ Read from where the hook lives, like ROOT
+# above — measured: the tool answers with the outermost repository.
+[ -f "$ROOT/Mente/.off" ] && exit 0
+
 # ⬜ An explicitly declared registry is used AS DECLARED — ⛔ never quietly
 # replaced by a discovered one. A fallback that overrides a declaration makes
 # the hook verify against a file the operator did not choose, and the operator

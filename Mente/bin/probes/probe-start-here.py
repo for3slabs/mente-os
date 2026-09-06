@@ -207,6 +207,48 @@ case("⑪b ⭐ and that deleting the folder removes it",
 case("⑪c ⭐ and that a second installation is separate",
      "neither knows the other exists" in _low)
 
+# ── ⑫ WHO THEY ARE IS NOT THE ERRAND ───────────────────────────────────────
+# 🔴 Measured 2026-09-06. An assistant handed only the link queried the repo's
+# contributor list, matched the commit emails against its own session account,
+# opened with "this repository is yours" and spent the run interrogating the
+# person. ⛔ The errand was abandoned for an investigation nobody asked for.
+case("⑫ 🔴 ⭐ it forbids looking up who wrote this",
+     "who they are is not your errand" in _low)
+case("⑫b ⛔ and names the contributor list specifically",
+     "contributor" in _low and "commit authors" in _low)
+# ⭐ The reason has to be the ERRAND, not privacy — a privacy argument invites
+# a judgement call about whether this case is sensitive. It never is.
+case("⑫c ⭐ the reason given is that it changes no action",
+     "the script is the same" in _low)
+# 🔴 The second half: a value already in hand stops feeling like a question.
+case("⑫d 🔴 ⭐ it reads the name candidates only at the moment it asks",
+     "until the moment you need it" in _low)
+
+# ── ⑬ A BLOCKED STEP DOES NOT CHANGE HANDS ─────────────────────────────────
+# 🔴 Measured the same run: a permission guard refused the setup and the run
+# answered "open PowerShell and paste this command". ⚠️ The person was exactly
+# as unable as before, and now believed the errand was theirs.
+case("⑬ 🔴 ⭐ a blocked step is not handed to the person",
+     "not a step that changes hands" in _low)
+case("⑬b ⛔ and it refuses to hand over a command to type",
+     "they never see a command" in _low)
+
+# ── ⑭ THEY CAN ASK WHETHER IT IS ON ────────────────────────────────────────
+# 🔴 "I do not even know whether it is active" — the complaint underneath the
+# others. ⭐ Three sentences, in their words, and the commands exist.
+case("⑭ 🔴 ⭐ the script teaches 'is Mente OS on?'",
+     "is mente os on?" in _low)
+case("⑭b ⭐ and how to stop it, and start it again",
+     "turn mente os off" in _low and "turn it back on" in _low)
+# ⛔ The distinction that makes the switch usable at all.
+case("⑭c ⚠️ it says off PAUSES and deletes nothing",
+     "pauses" in _low and "nothing is deleted" in _low)
+# ⭐ And the commands it names are real — a taught sentence that maps to no
+# command is worse than none: the assistant improvises one.
+_bin = os.path.join(ROOT, "bin")
+case("⑭d ⭐ the three commands it names actually ship",
+     all(os.path.isfile(os.path.join(_bin, n)) for n in ("status", "off", "on")))
+
 # ── ⑦ IT IS DECLARED AS AN ENGINE FILE ─────────────────────────────────────
 tsv = os.path.join(ROOT, "pieces.tsv")
 case("⑦ it is declared in the piece table",

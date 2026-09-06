@@ -33,6 +33,14 @@ if [ "${#CHECKS[@]}" -eq 0 ]; then
   done
 fi
 
+# ── ⏸️ THE PAUSE SWITCH · honoured HERE, not announced elsewhere ────────────
+# 🔴 Measured 2026-09-06: the owner could not tell whether the system was
+# running, and had no way to stop it. ⛔ A switch the gates do not read is a
+# label, not a switch — so every gate checks the same file, and `bin/off`
+# only writes it.
+# ⚠️ Silent on purpose: a pause the owner asked for is not a finding.
+[ -f "$MENTE/.off" ] && exit 0
+
 # ── THE HEARTBEAT · written FIRST, before anything can fail ──────────────────
 # ⛔ This hook is silent when all is well — and equally silent if it is dead.
 # ⭐ Healthy silence and dead silence are indistinguishable from the inside, but
