@@ -108,6 +108,36 @@ case("④d 🔴 ⭐ a newcomer is not handed a technical decision",
 case("④e 🔴 ⭐ the clone lands in the folder they are in, no extra wrapper",
      bool(re.search(r"git clone \S+\.git \.", text)))
 
+# ── ⑨ THE FIVE STOPS · asked BEFORE the act, not reported after ────────────
+# 🔴 Measured on a real run: the assistant cloned, then installed, then asked.
+# Each step was reasonable alone and the person decided none of them — they
+# were told what had already happened. ⛔ A question asked after the act is a
+# report, not a question.
+case("⑨ 🔴 ⭐ the script declares the stops as STOPS, not as suggestions",
+     bool(re.search(r"five stops", low))
+     and bool(re.search(r"may not pass one without an answer", low)))
+for _n, _what in (("2", "download"), ("3", "set it up")):
+    case("⑨· stop %s exists (%s)" % (_n, _what),
+         bool(re.search(r"stop " + _n + r" ·", low)))
+
+# ⛔ AND EVERY QUESTION IN THEIR LANGUAGE. 🔴 The same run asked for the name
+# by citing mente.config.yml and "all generated documentation" — a person
+# cannot approve a system they cannot picture.
+_qs = re.findall(r"^> \*\*Question:\*\*.*$", text, re.M)
+_jargon = [q for q in _qs if re.search(
+    r"bin/init|mente\.config|settings\.json|\.git\b|repository|validator|hooks",
+    q, re.I)]
+case("⑨b 🔴 ⭐ no question carries a filename or a command",
+     not _jargon, _jargon[0][:44] if _jargon else "%d question(s) clean" % len(_qs))
+case("⑨c ⛔ and the banned-in-questions list names them",
+     bool(re.search(r"never inside a question", low)))
+
+# ⭐ AND WHERE IT LANDS, IN THEIR WORDS. A person may keep several
+# installations; they do not need the word "repository" to understand that
+# this one lives here and only here.
+case("⑨d ⭐ it says the install stays in this folder, in plain words",
+     bool(re.search(r"stays in this folder", low))
+     and bool(re.search(r"neither knows about the other|that one is separate", low)))
 # ── ⑤ IT CHECKS THE MACHINE INSTEAD OF INSTRUCTING ─────────────────────────
 # ⛔ A person asking "what is this?" is not asking to become a sysadmin.
 case("⑤ ⛔ it forbids telling them to install things",
