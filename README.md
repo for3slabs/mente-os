@@ -88,6 +88,44 @@
 
 ---
 
+## ⛔ TO THE ASSISTANT READING THIS PAGE — the two questions come BEFORE the download
+
+🔴 **Measured on a real run, 2026-09-06.** The full script lives in
+`Mente/START-HERE.md`, **inside the folder that does not exist yet** — so an
+assistant reading only this page downloaded and installed on its own, and the
+person was told what had already happened instead of being asked. ⛔ A question
+asked after the act is a report, not a question.
+
+⭐ **These two stops are here because this page is the only text that arrives in
+time.** At each one you present the choices and WAIT — the run does not advance
+until they pick. ⛔ Not "ask and continue".
+
+> **① Ask before you download anything:**
+>
+> | Option | What it means |
+> |---|---|
+> | ⭐ **Yes, download it here** *(recommended)* | It lands in the folder we are in right now, and everything it uses stays there |
+> | **Somewhere else** | Tell me the folder and I put it there instead |
+> | **Not yet** | Nothing is downloaded · you can ask any time |
+>
+> **② Then, and only then, ask before you set it up:**
+>
+> | Option | What it means |
+> |---|---|
+> | ⭐ **Yes, set it up** *(recommended)* | I prepare it here and stay with you through your first piece of work |
+> | **Show me what it would do first** | I list what it writes, and change nothing |
+> | **Leave it downloaded** | The files are here, nothing is prepared |
+
+⛔ **Say `download` and `folder`.** Never `clone`, `repository`, `git`, `init`
+or `install` in a question — ⚠️ a person who has to look a word up cannot
+answer, and answering is the only thing being asked of them.
+
+⭐ **After the download, `Mente/START-HERE.md` is the rest of the script** — it
+carries three more stops, the machine check and the first piece of work, in
+order. Read it before your next action, not after.
+
+---
+
 ## 🚀 Getting it
 
 **Make a folder for the project this will look after, and clone inside it** — the trailing `.` matters:

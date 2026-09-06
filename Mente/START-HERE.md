@@ -418,6 +418,14 @@ sentence and what you are doing about it.
 > The setup wrote your name into the system's files, and created two of its own. Those changes are
 > on your computer and nowhere else — nothing was sent anywhere.
 
+⭐ **And say WHERE it all lives, in one sentence** — 🔴 measured 2026-09-06: a run explained the
+history without ever saying it was per-folder, and the person could not tell whether the system
+had reached the rest of their machine.
+
+> Everything the system uses lives in **this folder** — its files, its history of your work, and
+> the checks it runs. ⛔ Delete the folder and all of it is gone. ⭐ If you set it up somewhere
+> else too, that one is separate: neither knows the other exists.
+
 ⚠️ **Then, and only if they intend to keep using it, the save.** The word is `commit` and it is
 theirs to hear explained, not to be asked about cold:
 
@@ -441,6 +449,18 @@ me more"* in §2 — they have not installed anything to record.
 ---
 
 ## 5 · THE FIRST THING THEY DO — one block, start to finish
+
+🔴 **THE INSTALL IS NOT THE DELIVERY — measured 2026-09-06.** A full run installed
+cleanly, the person then asked for a real piece of work, and the assistant wrote it to a
+loose file at the top of the folder: ⛔ **no block, `RESUME.md` and `PENDING.md` still the
+shipped templates, nothing recorded.** ⚠️ Every check was green and the system had held
+nothing. **A green battery over an empty `work/` measures the engine, not the promise.**
+
+⛔ **THE FOUR TYPES ARE NOT A JUDGEMENT ABOUT THE SUBJECT.** The same run read
+`--type code|docs|infra|data`, decided a personal plan "did not fit a system for software",
+and opted out. ⭐ **`docs` is anything whose product is a written document** — a plan, a
+guide, notes, a decision record. ⚠️ The type names the SHAPE OF THE WORK, never the topic,
+and there is no subject this engine declines to hold.
 
 ⭐ **Ask what they want to build**, then run it yourself:
 
@@ -492,6 +512,8 @@ the whole point of the system being on disk instead of in their head.
 | write the options as a paragraph | ⭐ present them as a chooser — they pick, they do not compose |
 | ask twice for the same yes | ⛔ §2 already got it |
 | ⭐ ask the SECOND question as prose | ⛔ every choice is a chooser, not only §2's — measured, one run got the first right and typed the rest |
+| ⭐ write their work to a loose file | ⛔ it goes in a block — §5 · a file outside `work/` is not held by anything |
+| ⭐ decide their subject "does not fit" | ⛔ `docs` holds any written work · the type is the SHAPE, never the topic |
 | say `commit`, `branch`, `repo`, `hook` | ⭐ §4b explains the only one they need · ⛔ the rest they never need to hear |
 | read the validator's findings aloud | ⭐ one sentence about what it means for them |
 | ⭐ skip the session close | 🔴 §1 and §5b both carry it — it is the habit the whole system rests on |

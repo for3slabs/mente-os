@@ -300,6 +300,31 @@ else:
     print("  ⬜ the published README is not beside this tree · NOT MEASURED "
           "(expected under run-all's isolated copy)")
 
+# ── ⑧ THE TWO STOPS THAT CANNOT LIVE IN THE SCRIPT ────────────────────────────
+# 🔴 Measured 2026-09-06. `START-HERE.md` carries five stops, and the first two
+# say "ask BEFORE the download" — ⛔ but that file is inside the folder that does
+# not exist yet. An assistant reading only this page downloaded and installed on
+# its own, then reported it. ⭐ This page is the ONLY text that arrives before
+# the disk is touched, so those two questions have to be printed HERE.
+_low = _generated.lower()
+case("⑧ 🔴 ⭐ the page asks before DOWNLOADING, not after",
+     "before the download" in _low or "before you download" in _low)
+case("⑧b ⭐ and before SETTING IT UP too",
+     "before you set it up" in _low or "set it up" in _low)
+# ⛔ Two options is not a chooser the person can refuse — each stop offers three.
+case("⑧c ⭐ each stop offers a way to say no",
+     "not yet" in _low and "somewhere else" in _low)
+# ⚠️ The words a person cannot answer. ⭐ Measured: the run that failed asked
+# with `clone` and `repository` in the question itself.
+_q = re.findall(r"^> \*\*(?:Question|①|②)[^\n]*", _generated, re.M)
+case("⑧d ⛔ no question uses a word the person must look up",
+     not any(w in q.lower() for q in _q
+             for w in ("clone", "repository", "git ", "init", "bin/")),
+     "%d question line(s)" % len(_q))
+# ⭐ And it hands the run back to the script, so the other three stops still run.
+case("⑧e ⭐ it points at the rest of the script for the remaining stops",
+     "start-here.md" in _low and "rest of the script" in _low)
+
 plat.rmtree(WORK)
 
 print("\n  ⬜ NOT MEASURED · whether an assistant reaches a good summary · that\n     runs outside this engine · these cases prove the page gives no orders and\n     carries what a stranger needs to decide")
