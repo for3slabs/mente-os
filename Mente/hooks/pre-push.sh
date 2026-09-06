@@ -37,10 +37,21 @@ REMOTE_URL="${2:-}"
 # resolved symlink as the fallback.
 # ⚠️ Reading the host's tool is bounded by ADR-031: read only, never over the
 # network, and its absence is a gap rather than a failure.
-ROOT="$(git rev-parse --show-toplevel 2>/dev/null)"
-if [ -z "$ROOT" ]; then
-  SELF="$(readlink -f "${BASH_SOURCE[0]}" 2>/dev/null || echo "${BASH_SOURCE[0]}")"
-  ROOT="$(cd "$(dirname "$SELF")/../.." && pwd)"
+#
+# 🔴 THE HOOK'S OWN LOCATION DECIDES, NOT THE TOOL. Measured 2026-09-05 on a
+# real Windows machine: somebody had run `git init` in C:\Users\<user>, so
+# `git rev-parse --show-toplevel` answered with the whole user profile — and
+# this hook went looking for its registry there. ⛔ It is not a rare accident:
+# the outermost repository wins that question, and the person is rarely aware
+# one exists above them.
+# ⭐ Where THIS FILE lives is the one answer nothing outside can move.
+SELF="$(readlink -f "${BASH_SOURCE[0]}" 2>/dev/null || echo "${BASH_SOURCE[0]}")"
+ROOT="$(cd "$(dirname "$SELF")/../.." && pwd 2>/dev/null)"
+# ⬜ Falls back to the tool only when the path cannot be resolved — and says
+# nothing silently: an unresolvable root reaches the registry check below,
+# which reports ⬜ rather than passing.
+if [ -z "$ROOT" ] || [ ! -d "$ROOT" ]; then
+  ROOT="$(git rev-parse --show-toplevel 2>/dev/null)"
 fi
 # ⬜ An explicitly declared registry is used AS DECLARED — ⛔ never quietly
 # replaced by a discovered one. A fallback that overrides a declaration makes

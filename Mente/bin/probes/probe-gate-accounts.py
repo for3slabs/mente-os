@@ -200,6 +200,28 @@ case("⑰ ⛔ 5 invalid payloads → no traceback", not bad, str(bad))
 case("⑱ ⭐ layer 1 leaves its beat for check-gates",
      os.path.exists(os.path.join(TREE, ".beats", "gate-accounts")))
 
+# ── ⑮ THE OUTER REPOSITORY · the machine this was measured on ──────────────
+# 🔴 Measured 2026-09-05 on a real Windows machine: somebody had run `git init`
+# in C:\Users\<user>, so the whole profile was one repository. `git rev-parse
+# --show-toplevel` answers with the OUTERMOST repo containing the directory, so
+# this hook looked for its registry in the user's home and found none.
+# ⛔ Not a rare accident — the person is rarely aware a repo exists above them,
+# and the gate that guards where work is pushed simply stopped guarding.
+# ⭐ The hook's own location is the one answer nothing outside can move.
+_outer = tempfile.mkdtemp(prefix="outer-repo-")
+subprocess.run(["git", "init", "-q", _outer], capture_output=True)
+_inner = os.path.join(_outer, "clone")
+shutil.copytree(os.path.dirname(TREE), _inner)
+_hook = os.path.join(_inner, "Mente", "hooks", "pre-push.sh")
+_r = subprocess.run(["bash", _hook, "origin", "https://host/someone/unknown.git"],
+                    cwd=_inner, capture_output=True, text=True,
+                    env=dict(os.environ, **{k: v for k, v in ENV.items()
+                                            if k != "MENTE_ACCOUNTS"}))
+case("⑮ 🔴 ⭐ an OUTER git repo does not move where the hook reads its registry",
+     "someone/unknown" in (_r.stdout + _r.stderr) or _r.returncode == 1,
+     "exit=%d" % _r.returncode)
+plat.rmtree(_outer)
+
 plat.rmtree(WORK)
 good = sum(1 for _, ok in results if ok)
 print("\n  ➜ %d of %d correct" % (good, len(results)))

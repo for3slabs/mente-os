@@ -61,10 +61,18 @@ def declared_paths(scope):
 
 def owns(scope, target):
     """⛔ Compared by SEGMENTS, never as a substring: `lib/demo` matches inside
-    `other-lib/demo-old/x.ts` and the wrong block answers."""
-    seg = [s for s in target.split("/") if s]
+    `other-lib/demo-old/x.ts` and the wrong block answers.
+
+    🔴 AND THE SEPARATOR IS NORMALISED FIRST. Measured 2026-09-05 on Windows:
+    the tool hands over `work\\block-src\\a.py` while every declared scope is
+    written with `/`, so splitting on `/` produced ONE segment that matched
+    nothing — ⛔ no block recognised its own files and the standards were never
+    injected. The hook stayed silent, which is indistinguishable from "this edit
+    is outside every scope".
+    """
+    seg = [s for s in target.replace("\\", "/").split("/") if s]
     for p in declared_paths(scope):
-        parts = [s for s in p.split("/") if s]
+        parts = [s for s in p.replace("\\", "/").split("/") if s]
         if any(seg[i:i + len(parts)] == parts for i in range(len(seg))):
             return True
     return False

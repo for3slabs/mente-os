@@ -68,9 +68,21 @@ print("═══ CICLO DE VIDA · un bloque de principio a fin ═══\n")
 
 # ── ① OPEN ─────────────────────────────────────────────────────────────────
 tool("init", "--owner", "X")
+# ⚠️ WIRED, NOT «SYMLINKED». 🔴 Measured on Windows: `os.symlink` needs a
+# privilege a normal account lacks, so `bin/init` writes a launcher instead and
+# the hook RUNS. Asking `islink` reported it dead — the mechanism measured, not
+# the outcome.
+def _wired(name):
+    q = os.path.join(REPO, ".git", "hooks", name)
+    if os.path.islink(q):
+        return True
+    return (os.path.isfile(q)
+            and ("hooks/" + name + ".sh") in
+            open(q, encoding="utf-8", errors="replace").read().replace("\\", "/"))
+
+
 case("① init wires BOTH git hooks, not one",
-     os.path.islink(os.path.join(REPO, ".git", "hooks", "pre-commit"))
-     and os.path.islink(os.path.join(REPO, ".git", "hooks", "pre-push")))
+     _wired("pre-commit") and _wired("pre-push"))
 
 tool("new-block", BID, "--type", "code", "--intent", "A block.")
 case("② new-block writes it", os.path.isdir(D))
