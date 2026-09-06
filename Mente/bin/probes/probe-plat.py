@@ -74,7 +74,7 @@ case("② plat.join is idempotent here", plat.join("bin", "check-block"),
 _bit = plat.executable_bit_is_real
 _access = os.access
 try:
-    plat.executable_bit_is_real = lambda: False
+    plat.executable_bit_is_real = lambda *a: False
     os.access = lambda p, m: True        # ⭐ NTFS: everything looks runnable
     helpers = ["blockread.py", "findings.py", "scaffold.py", "tsvread.py",
                "utf8.py", "plat.py"]
@@ -120,7 +120,7 @@ else:
 # alarm that gets the check switched off).
 _modes = plat.modes_are_real
 try:
-    plat.modes_are_real = lambda: False
+    plat.modes_are_real = lambda *a: False
     case("⑥ privacy is ⬜ where chmod decides nothing",
          plat.privacy(os.path.join(MENTE, "secrets"))[0], "unknown")
 finally:
@@ -245,6 +245,30 @@ finally:
 case("⑬ plat.rmtree removes them where NT would refuse", _gone, True)
 if os.path.exists(_d):
     import shutil as _sh; _sh.rmtree(_d, ignore_errors=True)
+
+# ── ⑭ THE FILESYSTEM DECIDES, NOT THE KERNEL ───────────────────────────────
+# 🔴 Measured 2026-09-05 from WSL over /mnt/c: `os.name` answers "posix", so the
+# engine believed modes and the executable bit were enforced. ⛔ chmod 700 there
+# changed nothing (check-config shouted a red nobody could fix) and every file
+# read as executable (three helpers reported as undocumented commands).
+# ⭐ The question was never "which OS am I" — only the path can answer whether a
+# mode means anything.
+_c = [("⑭ a Windows mount is NOT trusted for modes, under a POSIX kernel",
+       plat.modes_are_real("/mnt/c/anything") is False),
+      ("⑭b and a native path still is",
+       plat.modes_are_real("/home/someone") is True),
+      ("⑭c the executable bit answers per path too",
+       plat.executable_bit_is_real("/mnt/c/x") is False
+       and plat.executable_bit_is_real("/home/x") is True),
+      # ⬜ With no path it answers for the OS alone — the old contract, still
+      # right for a native tree and relied on by callers with no path to give.
+      ("⑭d with no path it answers for the OS, as before",
+       plat.modes_are_real() == (os.name == "posix"))]
+for _lbl, _ok in _c:
+    n += 1
+    print("  %-58s %s" % (_lbl, "✅" if _ok else "🔴"))
+    if not _ok:
+        bad.append(_lbl); ok_all = False
 
 print("\n  leftovers: none")
 print("  ➜ %d of %d correct" % (n - len(bad), n))
