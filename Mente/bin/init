@@ -139,10 +139,20 @@ def ask(prompt):
     check downstream would confirm it as correct.
     """
     if not sys.stdin.isatty():
-        die("no terminal — cannot ask for the owner's name.\n"
-            "   Run bin/init directly, or pass --owner NAME.\n"
-            "   ⛔ Guessing an owner is how a personal value becomes an engine "
-            "default.", 2)
+        # 🔴 THE MESSAGE TAUGHT THE WAY AROUND ITSELF. Measured 2026-09-05 on a
+        # real install: an assistant ran this without a terminal, read
+        # "or pass --owner NAME", INVENTED a name from the folder it was sitting
+        # in, and installed. The owner was never asked. ⛔ The guard held and the
+        # hint defeated it — a refusal that names its own bypass is a suggestion.
+        die("no terminal — the owner's name has to come from the person.\n"
+            "   👉 ASK THEM, then run:  bin/init --owner \"<their answer>\"\n"
+            "   ⛔ Do NOT derive it from the folder, the git config, or the "
+            "account name.\n"
+            "   ⭐ This is the one value the engine cannot compute: a name "
+            "nobody chose\n"
+            "      goes into every generated document and every check "
+            "downstream confirms\n"
+            "      it as correct.", 2)
     try:
         answer = input(prompt).strip()
     except (EOFError, KeyboardInterrupt):
