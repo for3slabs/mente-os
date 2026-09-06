@@ -200,7 +200,7 @@ case("⑰ ⛔ 5 invalid payloads → no traceback", not bad, str(bad))
 case("⑱ ⭐ layer 1 leaves its beat for check-gates",
      os.path.exists(os.path.join(TREE, ".beats", "gate-accounts")))
 
-# ── ⑮ THE OUTER REPOSITORY · the machine this was measured on ──────────────
+# ── ⑲ THE OUTER REPOSITORY · the machine this was measured on ──────────────
 # 🔴 Measured 2026-09-05 on a real Windows machine: somebody had run `git init`
 # in C:\Users\<user>, so the whole profile was one repository. `git rev-parse
 # --show-toplevel` answers with the OUTERMOST repo containing the directory, so
@@ -217,7 +217,7 @@ _r = subprocess.run(["bash", _hook, "origin", "https://host/someone/unknown.git"
                     cwd=_inner, capture_output=True, text=True,
                     env=dict(os.environ, **{k: v for k, v in ENV.items()
                                             if k != "MENTE_ACCOUNTS"}))
-case("⑮ 🔴 ⭐ an OUTER git repo does not move where the hook reads its registry",
+case("⑲ 🔴 ⭐ an OUTER git repo does not move where the hook reads its registry",
      "someone/unknown" in (_r.stdout + _r.stderr) or _r.returncode == 1,
      "exit=%d" % _r.returncode)
 plat.rmtree(_outer)
