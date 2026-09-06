@@ -105,7 +105,7 @@ engine never assumes which it is.
 | Form of a rule | Measured compliance |
 |---|---|
 | **Code** (gate, fail-closed permissions) | ✅ **100%** |
-| **Document** (the phase method, pre-reset registration, the index) | 🔴 **fails 40-60%** |
+| **Document** (the phase method, pre-reset registration, the index) | 🔴 **fails when nobody remembers** |
 
 > ## The doctrine is a document. The VERIFICATION is a script.
 > A script decides nothing — it checks what is checkable: the file exists · has the field · fits its

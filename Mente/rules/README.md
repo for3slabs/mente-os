@@ -62,7 +62,7 @@ that turned out wrong is **superseded** by a new ADR, and both stay.
 ## ⭐ THE HONEST PART: most of this folder is NOT enforced
 
 The system's own law says a rule in code is followed 100% and a rule that lives only in a document
-is followed 40-60%. **This folder is where the 40-60% lives.** Pretending otherwise is the danger:
+is followed when somebody remembers. **This folder is where that gap lives.** Pretending otherwise is the danger:
 a document that reads like enforcement, but nothing checks it.
 
 So every document here declares which it is:

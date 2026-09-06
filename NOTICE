@@ -1,0 +1,25 @@
+Mente OS
+Copyright (C) 2026 for3slabs
+
+This program is free software: you can redistribute it and/or modify it under
+the terms of the GNU Affero General Public License as published by the Free
+Software Foundation, either version 3 of the License, or (at your option) any
+later version.
+
+This program is distributed in the hope that it will be useful, but WITHOUT ANY
+WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
+PARTICULAR PURPOSE. See the GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License along
+with this program. If not, see <https://www.gnu.org/licenses/>.
+
+⭐ WHY THIS FILE IS SEPARATE FROM LICENSE. LICENSE carries the AGPL-3.0 text
+verbatim, exactly as published — editing it, even to add a name, produces a
+licence that is no longer the one it claims to be. The copyright notice the
+licence asks for lives here instead.
+
+🔴 WHY BOTH EXIST AT ALL, measured 2026-09-05: the README said AGPL-3.0 and the
+repository carried no LICENSE file. GitHub's API reported `license: null`, which
+means the default applies — all rights reserved. An external reviewer found it
+on a first pass. ⚠️ For over a week, nobody who cloned this had permission to
+use it, and the page told them they did.

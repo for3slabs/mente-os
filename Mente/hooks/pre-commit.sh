@@ -3,7 +3,7 @@
 #
 # ⭐ Why a hook and not a paragraph, measured: a rule of exactly this kind
 #    existed, written and readable, and was followed ZERO out of fifteen times.
-#    ⛔ Declaring a rule is not following it — code 100%, a document 40-60%.
+#    ⛔ Declaring a rule is not following it — code every time, a document when remembered.
 #
 # ⚠️ The escape hatch is deliberate: a gate with no way out gets deleted. It is
 #    loud, and it leaves a trace that has to be justified.

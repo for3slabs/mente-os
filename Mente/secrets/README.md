@@ -57,7 +57,7 @@ rotating it is the fix.
 
 ⭐ **The battery measures the real modes** — it does not take the documentation's word for it.
 A permission that is written down but not applied is exactly the class of rule that gets followed
-40-60% of the time, and this is not a folder where those odds are acceptable.
+only when somebody remembers, and this is not a folder where that is acceptable.
 
 ⛔ **No `!README.md` exception in the ignore rules.** It is tempting to un-ignore one harmless
 file in here so the folder shows up in the repository. Do not: an exception inside a secrets rule

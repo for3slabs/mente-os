@@ -64,7 +64,8 @@ it, not a validator.
 ⭐ **The battery was green the whole time.** Its check verified that a block **DECLARED** the rule.
 
 > ## ⛔ DECLARING A RULE IS NOT FOLLOWING IT.
-> ⭐ **Code is followed 100%; a document 40-60%.** ⚠️ **This one, as a document alone, scored 0.**
+> ⭐ **This is the measurement the whole engine rests on: 0 of 15.** ⚠️ Not an estimate and
+> not a figure from elsewhere — ⛔ what this project counted, on itself, on the day it mattered.
 
 | ID | Rule | Enf | Verify |
 |---|---|---|---|

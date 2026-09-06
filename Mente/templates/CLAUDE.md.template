@@ -99,7 +99,8 @@ stores everything on disk, so `/clear` is safe **when the session is registered*
 | **the whole system** | `Mente/bin/check-all` → the only thing that matters is `failed: 0` · the count lives in the generated metrics file |
 
 ⭐ **This system's measured law:** a rule in code is followed 100%; a rule only in a document is
-followed 40-60%. **That is why doctrine is a document and VERIFICATION is a script.**
+followed when somebody remembers. **That is why doctrine is a document and VERIFICATION is a
+script.**
 
 ---
 
