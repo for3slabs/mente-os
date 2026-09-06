@@ -113,6 +113,30 @@ case("④e 🔴 ⭐ the clone lands in the folder they are in, no extra wrapper"
 case("⑤ ⛔ it forbids telling them to install things",
      bool(re.search(r"never tell them to install", low)))
 
+# ── ⑥ CONTAINMENT · the script must not send it looking around ─────────────
+# 🔴 Measured 2026-09-06 on two real runs. §0 used to open by telling the
+# assistant to hunt for leftovers from an earlier attempt, and it stated that
+# "two things live OUTSIDE this folder". ⛔ That taught it Mente OS leaves
+# traces elsewhere — so it began reporting other folders on the machine, and
+# the owner ended up distrusting a system that had touched nothing.
+# ⭐ It is also no longer true: since the skill became a template, everything
+# the engine writes lands inside the cloned folder. Delete it and it is gone.
+# ⚠️ MEASURES THE IMPERATIVE, NOT THE WORD. The new §0 says "there is nothing to
+# hunt for" — the right sentence, which a keyword search reads as the wrong one.
+# ⛔ What must be absent is the ORDER: a heading that sends it looking, or a
+# command block telling it to inspect the disk before §1.
+_s0 = low[low.find("## 0 ·"):low.find("## 1 ·")] if "## 0 ·" in low else ""
+case("⑧ 🔴 ⭐ §0 does not ORDER the assistant to go looking",
+     "look for leftovers" not in _s0
+     and not re.search(r"before anything else, run this", _s0))
+case("⑧b ⛔ and §0 carries no command block to inspect the disk",
+     "```bash" not in _s0, "no shell in §0" if "```bash" not in _s0 else "🔴 has one")
+case("⑧c 🔴 ⭐ and it states the containment instead",
+     bool(re.search(r"everything lives in this folder|mente os is contained", low)))
+case("⑧d ⛔ it forbids scanning the home directory or other projects",
+     bool(re.search(r"do not.{0,40}scan the home|list other projects", low)))
+case("⑧e ⭐ and says a hundred installations do not see each other",
+     bool(re.search(r"hundred installations", low)))
 # ── ⑥ IT IS REACHABLE ──────────────────────────────────────────────────────
 # ⭐ A perfect script nobody is pointed to is a script nobody runs. The README is
 # what a handed link actually opens.
