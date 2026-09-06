@@ -392,6 +392,38 @@ case("㉕ 🔴 ⭐ with no terminal it tells the assistant to ASK, not to pass a
 case("㉕b ⛔ and it names the sources it must NOT derive from",
      "folder" in _msg and ("git config" in _msg or "account" in _msg))
 
+# ── ㉖ THE SKILL IS A TEMPLATE, NOT A PASSENGER ────────────────────────────
+# 🔴 Measured 2026-09-06. The session-close skill shipped ACTIVE inside the
+# repository, so a `git clone` alone loaded it into somebody's assistant —
+# before init, before anyone agreed. ⛔ And it broke the promise this engine
+# rests on: the owner keeps SEVERAL installations, every clone carried the same
+# skill, and deleting one installation did not remove what its skill had written
+# outside it. An engine that says "delete the folder and it is gone" cannot ship
+# a file that outlives the folder.
+_active = os.path.join(os.path.dirname(ROOT), ".claude", "skills")
+case("㉖ 🔴 ⭐ no skill ships ACTIVE in the clone",
+     not os.path.isdir(_active),
+     "clean" if not os.path.isdir(_active) else "🔴 loads before install")
+case("㉖b ⭐ it ships as a template instead",
+     os.path.isfile(os.path.join(ROOT, "templates", "skills",
+                                 "session-wrap", "SKILL.md.template")))
+
+repoK, treeK = fresh()
+r = run(treeK, "--owner", OWNER)
+_dest = os.path.join(repoK, ".claude", "skills", "session-wrap", "SKILL.md")
+case("㉖c 🔴 ⭐ init places it, and says so",
+     os.path.isfile(_dest) and "skills" in r.stdout)
+
+# ⛔ AND NEVER OVER A SKILL OF THEIRS WITH THE SAME NAME.
+repoL, treeL = fresh()
+_mine = os.path.join(repoL, ".claude", "skills", "session-wrap", "SKILL.md")
+os.makedirs(os.path.dirname(_mine), exist_ok=True)
+open(_mine, "w", encoding="utf-8").write("mine, not yours\n")
+r = run(treeL, "--owner", OWNER)
+case("㉖d ⛔ a skill of theirs is left untouched, and it says so",
+     open(_mine, encoding="utf-8").read() == "mine, not yours\n"
+     and "already there" in r.stdout)
+
 # ── ⑦ --dry-run WRITES NOTHING ──────────────────────────────────────────────
 repo5, tree5 = fresh()
 r = run(tree5, "--dry-run", "--owner", OWNER)
