@@ -307,6 +307,33 @@ run(treeS, "--owner", OWNER)
 case("㉒d ⛔ an answer the owner already gave is NOT overwritten",
      'registry: "mine.json"' in open(_c, encoding="utf-8").read())
 
+# ── ㉓ WHAT IS AROUND THE INSTALL, SAID BEFORE IT WRITES ───────────────────
+# 🔴 BOTH MEASURED ON ONE REAL WINDOWS MACHINE, 2026-09-05. Neither is a fault
+# in the clone and neither can be repaired by the engine — ⛔ which is exactly
+# why they must be SAID, and said BEFORE anything is written.
+repoO = tempfile.mkdtemp(prefix="outer-", dir=WORK)
+subprocess.run(["git", "init", "-q", repoO], capture_output=True)
+_i = os.path.join(repoO, "inner")
+shutil.copytree(ROOT, os.path.join(_i, "Mente"),
+                ignore=shutil.ignore_patterns("__pycache__", ".beats",
+                                              ".test-lock", ".git", "cache"))
+r = run(os.path.join(_i, "Mente"), "--dry-run", "--owner", OWNER)
+case("㉓ 🔴 ⭐ an OUTER git repository is named before anything is written",
+     "OUTER git repository" in r.stderr and "dry run" in r.stdout,
+     "warned first" if "OUTER git repository" in r.stderr else "🔴 silent")
+
+# ⚠️ The engine already said "keep credentials out of a synced folder" — while
+# sitting in one, and saying nothing. A generic caution where a specific one
+# was available is a caution nobody acts on.
+syn = os.path.join(WORK, "OneDrive", "Desktop", "proj")
+shutil.copytree(ROOT, os.path.join(syn, "Mente"),
+                ignore=shutil.ignore_patterns("__pycache__", ".beats",
+                                              ".test-lock", ".git", "cache"))
+r = run(os.path.join(syn, "Mente"), "--dry-run", "--owner", OWNER)
+case("㉓b ⚠️ a SYNCED drive is named, not just cautioned about in general",
+     "SYNCED drive" in r.stderr,
+     "OneDrive detected" if "SYNCED drive" in r.stderr else "🔴 silent")
+
 # ── ⑦ --dry-run WRITES NOTHING ──────────────────────────────────────────────
 repo5, tree5 = fresh()
 r = run(tree5, "--dry-run", "--owner", OWNER)

@@ -403,6 +403,63 @@ def harden(dry):
     return "secrets/ %o → %o" % (mode, after)
 
 
+def surroundings():
+    """⑤ What is AROUND this installation that changes what it means.
+
+    🔴 BOTH MEASURED ON ONE REAL WINDOWS MACHINE, 2026-09-05. Neither is a
+    fault in the clone, and neither can be fixed by the engine — ⛔ which is
+    exactly why they must be SAID. A person who is told can move the folder in
+    ten seconds; a person who is not finds out when it costs something.
+
+    ⚠️ These are warnings, never refusals. Refusing somebody's own filesystem
+    layout is not this installer's call.
+    """
+    out = []
+
+    # ── AN OUTER REPOSITORY ────────────────────────────────────────────────
+    # 🔴 Somebody had run `git init` in C:\Users\<user>, so the whole profile
+    # was one repository. ⛔ Two consequences, and the second is the dangerous
+    # one: the git hooks land in the OUTER .git/hooks and govern every project
+    # under it, and a stray `git add .` there stages the person's entire home.
+    try:
+        r = subprocess.run(("git", "rev-parse", "--show-toplevel"), cwd=REPO,
+                           capture_output=True, text=True, timeout=10)
+        top = r.stdout.strip()
+    except (OSError, subprocess.SubprocessError) as e:
+        # ⬜ CHK-CAU-003 · said out loud. Not knowing is not the same as fine.
+        out.append("⬜ NOT MEASURED · could not ask git where this repository "
+                   "starts (%s) · whether an outer repository governs this "
+                   "folder was NOT checked" % e.__class__.__name__)
+        top = ""
+    if top and os.path.normcase(os.path.realpath(top)) != os.path.normcase(
+            os.path.realpath(REPO)):
+        out.append("🔴 an OUTER git repository governs this folder: %s\n"
+                   "   ⛔ The git hooks would land in ITS .git/hooks and apply "
+                   "to everything under it,\n"
+                   "   not just this install. ⚠️ If that is not deliberate, "
+                   "move this folder outside it\n"
+                   "   — or run `git init` here first so this clone owns its "
+                   "own history." % top)
+
+    # ── A SYNCED FOLDER ────────────────────────────────────────────────────
+    # ⚠️ The engine already says "keep credentials out of a shared or synced
+    # folder". 🔴 On the measured machine it was already IN one and said
+    # nothing — a generic caution where a specific one was available.
+    SYNCED = ("onedrive", "dropbox", "google drive", "googledrive", "icloud",
+              "nextcloud", "pcloud", "sync.com", "box sync", "mega")
+    low = REPO.replace("\\", "/").lower()
+    hit = next((n for n in SYNCED if "/" + n in low or low.startswith(n)), None)
+    if hit:
+        out.append("⚠️  this folder is inside a SYNCED drive (%s)\n"
+                   "   ⛔ Whatever lands in secrets/ is uploaded to that "
+                   "service and shared with every\n"
+                   "   device on the account. ⭐ On a platform that does not "
+                   "enforce file modes, the engine\n"
+                   "   cannot make that folder private for you — "
+                   "keep credentials somewhere else." % hit.title())
+    return out
+
+
 def main():
     force = "--force" in sys.argv
     dry = "--dry-run" in sys.argv
@@ -415,6 +472,11 @@ def main():
         die("no templates/ — this clone has nothing to install from")
     if not os.path.exists(TABLE):
         die("no pieces.tsv — nothing declares where the pieces live")
+
+    # ⭐ SAID BEFORE ANYTHING IS WRITTEN. A warning that arrives after the hooks
+    # are wired is a warning about a decision already taken.
+    for w in surroundings():
+        print("   %s" % w, file=sys.stderr)
 
     items, unresolved = plan()
     if unresolved:
