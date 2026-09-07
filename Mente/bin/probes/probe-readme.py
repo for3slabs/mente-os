@@ -341,6 +341,44 @@ case("⑨d ⛔ and it names the wording it refuses",
 # afterwards whether they had a record of their own.
 case("⑨e ⭐ it says what lands in the folder as it downloads",
      "record of your work" in _low)
+# ── ⑩ THE BIOGRAPHY · pieces, commands, tutorial ───────────────────────────
+# 🔴 Measured 2026-09-06. This page described the system and named not one
+# component and not one command — ⛔ so a person asking "what is this?" got a
+# pitch, and a technical reader had nothing concrete to judge. ⭐ The owner's
+# framing: the page must answer "it is this · it is for this · these are the
+# pieces · these are the commands", in that order, without jargon.
+case("⑩ ⭐ the page names its pieces, with what each one is FOR",
+     "the six pieces" in _low and "how you ask for it" in _low)
+# ⛔ Naming a piece without the sentence that reaches it teaches a vocabulary
+# nobody can use. Every row carries the words the person actually says.
+_rows = re.findall(r"^\| (?:[^|]*\*\*)([A-Z][a-z]+)\*\*[^|]*\|[^|]*\|([^|]*)\|$",
+                   _generated, re.M)
+case("⑩b ⛔ and each piece says how to ask for it",
+     len([r for r in _rows if r[1].strip()]) >= 6,
+     "%d row(s) with a phrase" % len([r for r in _rows if r[1].strip()]))
+
+case("⑩c ⭐ the commands are listed, not promised",
+     "the commands — all of them" in _low)
+# ⭐ THE CASE THAT KEEPS IT HONEST: every command the page names must SHIP.
+# ⛔ A page listing a command that does not exist is the skill failure again,
+# one layer out — measured 2026-09-06, six citations, none resolving.
+_named = set(re.findall(r"`bin/([a-z][\w./-]*)`", _generated))
+_gone = sorted(n for n in _named
+               if not os.path.exists(os.path.join(ROOT, "bin", n)))
+case("⑩d 🔴 ⭐ every command the page names actually ships",
+     not _gone, ", ".join(_gone) or "%d command(s)" % len(_named))
+
+# ⭐ The tutorial: the six stops a first run may not skip. ⛔ It lives HERE
+# because this page is the only text that arrives before the disk is touched.
+case("⑩e ⭐ the tutorial states its six stops",
+     "six stops" in _low and "you answer every one" in _low)
+case("⑩f ⛔ and says the empty-folder case does not ask for a list",
+     "no list to give" in _low)
+# ⚠️ The one sentence whose cost is invisible until too late.
+case("⑩g ⭐ and it teaches the session-close sentence by name",
+     "session-wrap" in _generated and "before the" in _low
+     and "conversation resets" in _low)
+
 
 plat.rmtree(WORK)
 

@@ -77,6 +77,27 @@ SPECIAL = {"CLAUDE.md": None,                       # ⛔ never stamped: see ③
 NOT_INSTALLED = {"handoff.yml", "BLOCK.md", "CAMPAIGN.md"}
 
 
+
+def write(path, body):
+    """Write a generated file with the line endings it was authored with.
+
+    🔴 THE FAILURE, measured 2026-09-06 on a real Windows install. Every file
+    this script generated was written through a plain `open(..., "w")`, and on
+    Windows Python translates each "\n" to "\r\n" — ⛔ so the Claude Code skill
+    landed with CRLF, its YAML frontmatter did not parse, and `/session-wrap`
+    simply did not exist in the person's command menu. ⚠️ The install reported
+    success and the command was gone.
+
+    ⭐ The repository already refuses conversion (`.gitattributes` is `* -text`)
+    for exactly this reason; the installer was the one place still converting.
+    ⛔ `newline=""` is what turns that off — never omit it on a generated file.
+
+    ⚠️ ONE writer, not five. CHK-SHR-001: this bug existed in five separate
+    `open(...)` calls, and fixing four of them would have looked identical.
+    """
+    with open(path, "w", encoding="utf-8", newline="") as fh:
+        fh.write(body)
+
 def die(msg, code=2):
     print("🔴 %s" % msg, file=sys.stderr)
     sys.exit(code)
@@ -197,7 +218,7 @@ def fill_engine(values, dry):
             touched += 1
             if not dry:
                 try:
-                    open(p, "w", encoding="utf-8").write(new)
+                    write(p, new)
                 except OSError:
                     touched -= 1
     return touched
@@ -221,7 +242,11 @@ def wire_import(dry):
     if dry:
         return "would append the import"
     try:
-        with open(target, "a", encoding="utf-8") as fh:
+        # ⚠️ newline="" here too: this appends to the user's OWN CLAUDE.md,
+        # so a translated line ending would show up as a change in THEIR
+        # repository, not ours. ⛔ The one line this engine writes outside
+        # its folder is the last one that should look like a diff.
+        with open(target, "a", encoding="utf-8", newline="") as fh:
             if current:
                 fh.write("\n")
             # ⭐ THE LINE SAYS WHERE IT CAME FROM AND HOW TO UNDO IT. 🔴 Measured
@@ -275,8 +300,7 @@ def wire_gates(dry):
         # exist. json.dumps escapes a Windows path correctly.
         body = body.replace('"python3 ', json.dumps(sys.executable)[:-1] + ' ')
         os.makedirs(os.path.dirname(dest), exist_ok=True)
-        with open(dest, "w", encoding="utf-8") as fh:
-            fh.write(body)
+        write(dest, body)
     except (OSError, ValueError) as e:
         return "⚠️ could not wire the gates (%s)" % e.__class__.__name__
     return "wired into .claude/settings.json"
@@ -322,8 +346,7 @@ def install_skills(dry):
             continue
         try:
             os.makedirs(os.path.dirname(dest), exist_ok=True)
-            open(dest, "w", encoding="utf-8").write(
-                open(src, encoding="utf-8").read())
+            write(dest, open(src, encoding="utf-8").read())
             placed.append(name)
         except OSError as e:
             return "⚠️ could not install skills (%s)" % e.__class__.__name__
@@ -374,7 +397,7 @@ def declare_registry(dry, wired):
         new = re.sub(pat, lambda m: m.group(1) + ' "%s"' % rel, text, count=1)
         if new == text:
             return None
-        open(cfg, "w", encoding="utf-8").write(new)
+        write(cfg, new)
     except OSError as e:
         return "⚠️ could not declare hooks.registry (%s)" % e.__class__.__name__
     return "hooks.registry → %s" % rel
@@ -579,7 +602,7 @@ def main():
         try:
             os.makedirs(os.path.dirname(dest), exist_ok=True)
             body = substitute(open(src, encoding="utf-8").read(), values)
-            open(dest, "w", encoding="utf-8").write(body)
+            write(dest, body)
             shutil.copymode(src, dest)
             wrote.append(rel)
         except OSError as e:

@@ -246,14 +246,74 @@ no amount of testing closes it.
 matters, not yet.
 ---
 
-## 🧩 The four pieces
+## 🧩 The six pieces — what each one is, and how you ask for it
 
-| | |
+⭐ **These six are the whole vocabulary.** ⛔ You do not need any other word to
+use this, and you never type a command: you say the sentence, the assistant runs
+what it means.
+
+| | What it is | Say this |
+|---|---|---|
+| 📦 **Block** | **one task, with its limits written down** — what is being built, ⭐ what must NOT be touched, what it depends on, what comes next | *"let's work on X"* |
+| 🗺️ **Campaign** | several blocks under **one mission**, so moving between them does not restart the reason | *"this is bigger than one task"* |
+| 📋 **Pending** | what is **real but not blocking** — found, written down, not lost | *"what's still pending?"* |
+| 🧭 **Resume** | **where we left off and what is next** — the one file read at the start of every session | *"where were we?"* |
+| 📓 **Log** | **what happened in each session and what it cost** — size, turns, peak context | *(written for you at close)* |
+| 📊 **Metrics** | the **live numbers**, regenerated from a real run — ⛔ never a figure typed by hand | *"how is the system doing?"* |
+
+⚠️ **And one thing that is not a piece but decides everything: the gates.** They
+run on their own and refuse what should not happen — a change outside a block's
+limits, a commit on the base branch, work leaving to a repository nobody
+declared. ⭐ **You never invoke them.** They are the reason a rule here holds and
+a rule in a notes file does not.
+
+---
+
+## ⌨️ The commands — all of them
+
+⭐ **You will rarely type one** — the sentences above are the interface. They are
+listed because a person deciding whether to trust this wants to see the whole
+surface, not a promise about it.
+
+| Command | What it does |
 |---|---|
-| 📦 **Block** | one unit of work — what is being built, ⭐ **what must NOT be touched**, what it depends on, what comes next |
-| 🗺️ **Campaign** | several blocks under one mission, so switching between them does not restart the reason |
-| 🚦 **Gates** | they run on their own and stop what should not happen — a destructive change with no way back, closing work that is not finished |
-| 🧠 **Memory** | where you left off, and what is postponed — ⭐ you never write either by hand |
+| `/session-wrap` | ⭐ **save the reasoning before the conversation resets** — the one habit the system rests on |
+| `bin/status` | is it on, and what is running · ⛔ reads only, writes nothing |
+| `bin/off` · `bin/on` | pause every check · resume · ⚠️ **pausing deletes nothing** |
+| `bin/probes/run-all.py` | run the whole engine against itself — ⭐ what matters is `failed: 0` |
+| `bin/check-health` | is anything wrong right now |
+| `bin/new-block` · `bin/new-campaign` | open a task · open a mission |
+| `bin/grade-block` | is this work finished, ⭐ **measured — never an opinion** |
+| `bin/init` | turn a download into an installation · ⚠️ runs once |
+
+📖 Every command, and **what each one refuses to do**, is in `Mente/CAPABILITIES.md`.
+
+---
+
+## 🎓 The tutorial — six stops, and you answer every one
+
+⭐ **This is the whole first run.** ⛔ Your assistant may not skip a single one,
+and it waits for your answer at each — a question asked after the act is a
+report, not a question.
+
+| # | It asks you | Why it cannot decide for you |
+|---|---|---|
+| 1 | **Shall I download it here?** | ⛔ it is your disk |
+| 2 | **Shall I set it up?** | ⚠️ this is the step that writes the first file |
+| 3 | **What should I call you?** | ⭐ your name goes in what the system writes · it offers what your computer already knows, you pick |
+| 4 | **Shall I save a starting point?** | 📌 a point you can always come back to · ⛔ nothing is published anywhere |
+| 5 | **What are we going to work on?** | 📦 that becomes your first **block** |
+| 6 | **What may I change, and what is off limits?** | ⭐ **the one thing the system exists to get from a person** — an assistant that writes its own limits has written none |
+
+⚠️ **If the folder is empty, question 6 has no list to give** — the assistant
+says so and creates only what that work needs. ⛔ It does not ask you for
+permission over the system you just installed: you own all of it.
+
+⭐ **Then it shows you it is running** (`bin/status`), hands you the sentences
+above, and says the one that costs the most to learn late:
+
+> *"let's close the session"* — **it writes down where you got to, before the
+> conversation resets and takes the reasoning with it.**
 
 ---
 
