@@ -480,6 +480,74 @@ me more"* in §2 — they have not installed anything to record.
 
 ---
 
+## 4c · ⛔ SHOW THEM IT IS ON — the install is invisible until you say what it can do
+
+🔴 **Measured 2026-09-06, and it is the complaint underneath every other one:**
+*"it installs but it does not seem installed — no metrics, no commands, nothing.
+I do not know if it is working or not."* ⚠️ The install printed a report once and
+then the system was indistinguishable from not being there.
+
+⛔ **A person who cannot see the system running does not delegate work to it.**
+They keep doing it themselves, which is the outcome the whole engine exists to
+prevent.
+
+⭐ **So do this immediately after the setup, before anything else:**
+
+```bash
+bin/status
+```
+
+⭐ **Show them its output and read it out loud with them.** It answers, in their
+words, whether it is on and what is running. ⛔ Do not summarise it — the point
+is that they see the system answer for itself.
+
+### ⭐ THEN GIVE THEM THE WHOLE INTERFACE — all of it, once
+
+⛔ **Not later, and not only if a block gets opened.** 🔴 These sentences used to
+live behind the first block, so a run that never opened one taught the person
+nothing — and that run happened.
+
+> | Say this | And I will |
+> |---|---|
+> | ⭐ *"is Mente OS on?"* | run `bin/status` — what is running, in plain words |
+> | *"turn Mente OS off"* / *"turn it back on"* | pause the checks · ⛔ nothing is deleted |
+> | *"where did we leave off?"* | read where we stopped — no guessing, no re-explaining |
+> | *"what's still pending?"* | read what was postponed |
+> | *"build me X"* / *"help me with X"* | open a piece of work and ask what it may touch |
+> | *"is this done?"* | run the checks — ⛔ if they fail it does not close, and I say what is missing |
+> | ⭐ *"let's close the session"* | **write down where we got to, before this conversation resets** |
+
+⚠️ **Say the last one OUT LOUD, not just in the table.** ⛔ It is the only one
+whose cost is invisible until too late: the other six can be asked late and
+still work. A person who never learns it loses the reasoning of every session
+and concludes the system does not work.
+
+⚠️ **Say `off` PAUSES and that nothing is deleted.** ⭐ The difference is the whole
+reason the switch exists: a person who believes stopping it costs their work will
+not stop it, and will not trust it either.
+
+⛔ **Never hand them a command to type — they never see a command.** ⭐ They say the
+sentence, you run what it means: that is the whole point of the system being on disk
+instead of in their head.
+
+---
+
+### ⛔ A BLOCKED STEP IS NOT A STEP THAT CHANGES HANDS
+
+🔴 **Measured 2026-09-06.** A permission guard refused the setup, and the run answered
+*"open PowerShell and paste this command"*. ⚠️ The person was exactly as unable to run it as
+before — and now also believed it was theirs to do.
+
+⭐ **Say what is blocked, ask them to allow it, then finish the errand.**
+
+| ⛔ Never | ⭐ Instead |
+|---|---|
+| *"paste this into a terminal"* | *"I need your permission to run the setup — may I?"* |
+| *"run `python Mente/bin/init`"* | 🔴 they never see a command |
+| *"you can do it yourself with…"* | ⭐ the errand stays yours until it is done or refused |
+
+---
+
 ## 5 · THE FIRST THING THEY DO — one block, start to finish
 
 🔴 **THE INSTALL IS NOT THE DELIVERY — measured 2026-09-06.** A full run installed
@@ -501,70 +569,70 @@ bin/new-block <short-name> --type docs --intent "<one sentence, theirs>"
 ```
 
 ⚠️ **It will not pass yet, and that is the design.** The block has two blanks only a human can
-fill: what it MAY touch, and what it MUST NOT. ⭐ Ask them in plain words — *"which files should
-I be allowed to change for this, and which are off limits?"* — write their answer into §B, and run
-`bin/check-block`.
+fill: what it MAY touch, and what it MUST NOT.
+
+### ⛔ THE BOUNDARY IS ABOUT WHAT WAS ALREADY THERE — never about the engine
+
+🔴 **Measured 2026-09-06.** The question was asked of an owner standing in an empty folder they
+had just installed into, and the options offered included *"do not touch Mente OS or its
+configuration"*. ⛔ **The question and the situation did not match**, and the owner said so: they
+installed it, they own all of it, and being asked for permission over their own tool reads as the
+system not knowing where it is.
+
+⭐ **What the boundary protects is work that EXISTED BEFORE this block** — their code, their
+documents, a database, a live service. ⛔ **Never the engine, and never files this block is about
+to create.** The owner governs the whole folder; the boundary exists so one piece of work does not
+reach into another.
+
+| Situation | ⭐ Ask |
+|---|---|
+| a folder with their existing work in it | *"which of your files may I change for this, and which are off limits?"* |
+| ⭐ **an empty folder, or one holding only the install** | ⛔ **do not ask for a list.** Say: *"there is nothing else here yet, so I will only create the files for this work"* — write that into §B and move on |
+| a second block beside an existing one | *"may I touch what the other piece of work produced?"* |
+
+⚠️ **A question whose only honest answer is "all of it, it is mine" is a question that should not
+have been asked.** ⭐ Look at the folder first: if the boundary is derivable from what is there,
+state it and let them correct you — ⛔ that is not the same as inventing a limit.
+
+### ⭐ AND SAY WHERE THE WORK ITSELF WILL LAND — before writing it
+
+🔴 **Measured the same run.** The material was written to the repository root, the owner caught
+it, and the second attempt put it beside `BLOCK.md` — where `BLK-SHP-001` refused it. ⛔ **Two
+wrong places before the right one, because this script named where the RECORD goes and never
+where the PRODUCT goes.**
+
+| What | Where | Why |
+|---|---|---|
+| ⭐ the record — how the work is going | `work/blocks/active/<id>/BLOCK.md` | ⛔ **one file, alone.** `BLK-SHP-001` refuses a sibling document beside it |
+| ⭐ **the product — what is actually being made** | `Cerebro/<name>/` | it is the only folder about THEIR project rather than the engine |
+| ⛔ never | the repository root | ⚠️ outside `Mente/` nothing governs it — measured, and the owner is the one who noticed |
+
+⭐ **Then declare each produced file in `Mente/pieces.tsv`.** ⚠️ Being inside `Mente/` is not the
+same as being governed: without a declared row, `bin/check-structure` goes silent when the file
+disappears.
+
+⭐ Ask them in plain words — *"which files should I be allowed to change for this, and which are
+off limits?"* — write their answer into §B, and run `bin/check-block`.
 
 ⛔ **Do not fill the boundary yourself.** It is the one thing the system exists to get from a
 person, and an assistant that writes its own limits has written no limit at all.
 
 ---
 
-## 5b · TELL THEM WHAT THEY CAN ASK FOR NEXT
+## 5b · ⭐ REMIND THEM OF ONE SENTENCE — the rest was given in §4c
 
-⭐ **Once one block exists, show them these four sentences** — they are the whole interface:
+⛔ **The interface is NOT taught here.** 🔴 It used to be, opening with *"once one block
+exists"* — so a run that never opened a block taught the person nothing, and that run happened.
+⭐ It moved to **§4c**, right after the setup, where it is reached whatever they choose next.
 
-> | Say this | And I will |
-> |---|---|
-> | *"where did we leave off?"* | read `memory/RESUME.md` — no guessing, no re-explaining |
-> | *"what's still pending?"* | read `memory/PENDING.md` |
-> | *"can we close this?"* | run the checks — ⛔ if they fail, it does not close, and I will say what is missing |
-> | *"start something new"* | open another block, and ask you its boundary again |
-> | ⭐ *"let's close the session"* | **write down where we got to, before this conversation resets and takes the reasoning with it** |
+⭐ **What belongs here is one sentence, said out loud now that there is work to lose:**
 
-⭐ **Say the last one out loud to them, not just in the table.** ⚠️ It is the only one whose cost
-is invisible until it is too late: the other four can be asked late and still work, and that one
-cannot. ⛔ A person who never learns it loses the reasoning of every session and concludes the
-system does not work.
+> *"let's close the session"* — **I write down where we got to, before this conversation resets
+> and takes the reasoning with it.**
 
-⚠️ **Never hand them a command to type.** ⭐ They say the sentence, you run what it means — that is
-the whole point of the system being on disk instead of in their head.
-
----
-
-### ⛔ A BLOCKED STEP IS NOT A STEP THAT CHANGES HANDS
-
-🔴 **Measured 2026-09-06.** A permission guard refused the setup, and the run
-answered *"open PowerShell and paste this command"*. ⚠️ The person was exactly
-as unable to run it as before — and now also believed it was theirs to do.
-
-⭐ **Say what is blocked, ask them to allow it, then finish the errand.**
-⛔ Never hand them a command to type: that is the one promise §1 makes.
-
-| ⛔ Never | ⭐ Instead |
-|---|---|
-| *"paste this into a terminal"* | *"I need your permission to run the setup — may I?"* |
-| *"run `python Mente/bin/init`"* | 🔴 they never see a command |
-| *"you can do it yourself with…"* | ⭐ the errand stays yours until it is done or refused |
-
-### ⭐ THEY MUST BE ABLE TO ASK: is it on, and how do I stop it
-
-🔴 **Measured 2026-09-06, and it is the complaint underneath all the others:**
-*"I do not even know whether it is active, or what is being used."* ⛔ There was
-no way to ask — the install printed a report once and nothing answered
-afterwards.
-
-⭐ **Tell them these three, in their words, right after the setup:**
-
-> | Say this | And I will |
-> |---|---|
-> | *"is Mente OS on?"* | run `bin/status` — it says what is running, in plain words |
-> | *"turn Mente OS off"* | run `bin/off` — the checks stop · ⛔ nothing is deleted |
-> | *"turn it back on"* | run `bin/on` |
-
-⚠️ **Say `off` PAUSES, never that it removes anything.** ⭐ The difference is the
-whole reason the switch exists: a person who believes stopping it costs their
-work will not stop it, and will not trust it either.
+⚠️ It is the only one whose cost is invisible until too late: the others can be asked late and
+still work. ⛔ A person who never learns it loses the reasoning of every session and concludes
+the system does not work.
 
 ---
 
