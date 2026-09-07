@@ -249,6 +249,48 @@ _bin = os.path.join(ROOT, "bin")
 case("⑭d ⭐ the three commands it names actually ship",
      all(os.path.isfile(os.path.join(_bin, n)) for n in ("status", "off", "on")))
 
+# ── ⑮ THE INSTALL MUST BE VISIBLE ──────────────────────────────────────────
+# 🔴 Measured 2026-09-06: "it installs but it does not seem installed — no
+# metrics, no commands, nothing." ⛔ The interface used to live behind the first
+# block, so a run that never opened one taught the person nothing.
+case("⑮ 🔴 ⭐ it shows the system is on, right after the setup",
+     "show them it is on" in _low)
+case("⑮b ⭐ and hands over the whole interface at once",
+     "the whole interface" in _low and "not only if a block gets opened" in _low)
+# ⚠️ The sentences must be reachable BEFORE §5 — a person who never opens a
+# block still needs them. Measured by position, not by presence.
+_i4c = text.find("4c · ")
+_i5 = text.find("## 5 · THE FIRST THING")
+case("⑮c ⛔ and it comes BEFORE the first block, not after",
+     0 < _i4c < _i5, "4c@%d < 5@%d" % (_i4c, _i5))
+
+# ── ⑯ THE BOUNDARY IS ABOUT WHAT WAS ALREADY THERE ─────────────────────────
+# 🔴 Measured: the owner, standing in a folder they had just installed into, was
+# offered "do not touch Mente OS or its configuration". ⛔ A question whose only
+# honest answer is "all of it, it is mine" should not have been asked.
+case("⑯ 🔴 ⭐ the boundary protects prior work, never the engine",
+     "never about the engine" in _low)
+case("⑯b ⛔ and an empty folder is not asked for a list",
+     "do not ask for a list" in _low)
+case("⑯c ⚠️ it names the shape of the wrong question",
+     "all of it, it is mine" in _low)
+
+# ── ⑰ WHERE THE PRODUCT LANDS, SAID BEFORE IT IS WRITTEN ───────────────────
+# 🔴 Measured: material written to the repository root, then beside BLOCK.md
+# where BLK-SHP-001 refused it. ⛔ Two wrong places, because the script named
+# where the RECORD goes and never where the PRODUCT goes.
+case("⑰ 🔴 ⭐ it says where the product lands, not only the record",
+     "where the work itself will land" in _low)
+case("⑰b ⭐ and names Cerebro as that place",
+     "cerebro/<name>/" in _low)
+case("⑰c ⛔ and the repository root as the place it never goes",
+     "never" in _low and "the repository root" in _low)
+# ⚠️ Whitespace-collapsed: the sentence wraps across two source lines, and a
+# probe matching it unwrapped measures the line width, not the rule.
+_flat = " ".join(_low.split())
+case("⑰d ⭐ and that declaring it is what makes it governed",
+     "not the same as being governed" in _flat)
+
 # ── ⑦ IT IS DECLARED AS AN ENGINE FILE ─────────────────────────────────────
 tsv = os.path.join(ROOT, "pieces.tsv")
 case("⑦ it is declared in the piece table",

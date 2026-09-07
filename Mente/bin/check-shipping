@@ -83,6 +83,16 @@ def base_branch():
     for c in ("main", "master", "trunk"):
         if ok("git", "show-ref", "--verify", "--quiet", "refs/heads/" + c):
             return c, "conventional"
+    # 🔴 A REPOSITORY WITH NO COMMITS YET, measured 2026-09-06. Before the first
+    # commit there is no `refs/heads/<name>` to find, so this returned None and
+    # the base read as NOT MEASURED on every fresh install — ⛔ and the same gap
+    # let the very first commit past `hooks/pre-commit.sh`. ⭐ HEAD names the
+    # branch a commit is ABOUT to create, which is the answer show-ref cannot
+    # give. ⚠️ Same resolution as the hook, deliberately: two answers to one
+    # question is how a gate and its validator start disagreeing.
+    head = sh("git", "symbolic-ref", "--quiet", "--short", "HEAD")
+    if head in ("main", "master", "trunk"):
+        return head, "unborn"
     return None, "none"
 
 
@@ -116,12 +126,17 @@ def main():
     branch = sh("git", "symbolic-ref", "--quiet", "--short", "HEAD")
 
     if base is None:
-        # ⬜ NOT_MEASURED, said out loud. ⛔ Silence here reads as "the base is
-        # fine", which is the exact failure SHP-BAS-001 exists to prevent.
-        findings.append(("SHP-BAS-001", "(repository)",
-                         "⬜ no base branch resolves · declare MENTE_BASE_BRANCH "
-                         "· until then the base cannot be checked, and an "
-                         "unchecked base is not a correct one"))
+        # 🔴 A ⬜ IS NOT A 🔴, measured 2026-09-06. A folder with no git
+        # repository in it made this a red finding — ⛔ the validator accused an
+        # installation of a fault where there was only a question it could not
+        # ask. ⚠️ A person who cannot read code sees red and concludes the
+        # install is broken, which is exactly what happened.
+        # ⭐ Not measured is SAID, never counted as a violation: it is reported
+        # on its own line and the exit stays clean.
+        print("⬜ NOT MEASURED · no base branch resolves · this folder is not a "
+              "git repository, or none of main/master/trunk exists yet\n"
+              "   ⚠️ nothing is wrong — the base simply cannot be checked until "
+              "there is one · declare MENTE_BASE_BRANCH to name it")
     elif branch and branch != base:
         # SHP-BAS-001 · the base is checked BEFORE anything opens. A branch that
         # does not descend from the base was cut from somewhere else, and after

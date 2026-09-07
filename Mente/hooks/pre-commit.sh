@@ -32,6 +32,17 @@ if [ -z "$BASE" ]; then
     fi
   done
 fi
+# 🔴 THE FIRST COMMIT ESCAPED, measured 2026-09-06 on a real Windows install.
+# Before any commit exists there is no `refs/heads/<name>` to find, so BASE came
+# back empty and this hook exited silently — ⛔ and the very first commit of the
+# repository, the one that lands the whole install, went straight onto the base
+# branch. ⚠️ The gate looked wired and had never once refused anything.
+# ⭐ HEAD names the branch a commit is ABOUT to create, whether or not it exists
+# yet, so it answers where `show-ref` cannot.
+if [ -z "$BASE" ]; then
+  _head="$(git symbolic-ref --quiet --short HEAD 2>/dev/null || echo '')"
+  case "$_head" in main|master|trunk) BASE="$_head" ;; esac
+fi
 [ -z "$BASE" ] && exit 0          # ⬜ NOT_MEASURED — no base to protect yet
 
 CURRENT="$(git symbolic-ref --quiet --short HEAD 2>/dev/null || echo '')"

@@ -210,5 +210,37 @@ try:
 finally:
     open(_rule, "w", encoding="utf-8").write(_orig)
 
+# ── ⑭ 🔴 THE VERY FIRST COMMIT OF A REPOSITORY ─────────────────────────────
+# 🔴 MEASURED 2026-09-06 on a real Windows install. Before any commit exists
+# there is no `refs/heads/<name>`, so the base-branch lookup came back empty and
+# this hook exited silently — ⛔ and the FIRST commit of the repository, the one
+# that lands the entire install, went straight onto the base branch.
+# ⚠️ The gate looked wired and had never once refused anything. ⭐ A gate whose
+# first real chance to fire is the one it misses is not a gate yet.
+_t = tempfile.mkdtemp(prefix="probe-shipping-first-")
+try:
+    subprocess.run(("git", "init", "-q", _t), capture_output=True, timeout=30)
+    _r = subprocess.run(("bash", HOOK), cwd=_t, capture_output=True,
+                        text=True, timeout=30)
+    _said = (_r.stdout + _r.stderr)
+    _br = subprocess.run(("git", "symbolic-ref", "--short", "HEAD"), cwd=_t,
+                         capture_output=True, text=True, timeout=30).stdout.strip()
+    if _br in ("main", "master", "trunk"):
+        _ok = _r.returncode == 1 and "REFUSED" in _said
+        print("  %-46s %s %s" % ("⑭ 🔴 the first commit of a repo is refused too",
+                                 "✅" if _ok else "🔴",
+                                 "exit=%d on empty %s" % (_r.returncode, _br)))
+        # ⚠️ "FAIL" means the validator CAUGHT the fault here — it counts
+        # as correct. 🔴 Found by sabotage: appending it on the miss made
+        # this case unable to lower the score, which measures nothing.
+        p.results.append(("⑭ primer commit", "PASS" if _ok else "MISSED"))
+    else:
+        # ⬜ CHK-CAU-003 · said out loud. This machine's git defaults to a name
+        # the rule does not protect, so the case could not run.
+        print("  ⬜ ⑭ NOT MEASURED · git init made branch %r, not a base name"
+              % _br)
+finally:
+    plat.rmtree(_t)
+
 p.crash_guard()
 sys.exit(0 if p.report() else 1)
