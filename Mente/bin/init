@@ -306,6 +306,76 @@ def wire_gates(dry):
     return "wired into .claude/settings.json"
 
 
+def install_voice(dry):
+    """③d Place the output style, and SELECT it — both, or neither counts.
+
+    🔴 THE FAILURE, measured 2026-09-06 on a real installation. The engine ships
+    `memory/principles/owner-0-voice.md` — the whole doctrine of how it speaks —
+    and NOTHING read it. Zero mentions of `outputStyle` in this installer and in
+    the settings template, so a fresh install answered in the assistant's
+    default voice while carrying 264 lines describing another one. ⛔ The owner
+    said it plainly: "the way of answering is not active".
+
+    ⚠️ TWO WRITES, and one without the other is nothing: the file gives the host
+    something to load, the setting is what makes it load. ⭐ A style placed and
+    not selected is the same document nobody reads, one folder further along.
+
+    ⛔ Never over an existing style of theirs, and ⛔ never over an
+    `outputStyle` they already chose — that is their voice, not ours.
+    """
+    src_root = os.path.join(TEMPLATES, "output-styles")
+    if not os.path.isdir(src_root):
+        return None
+    out, placed = [], []
+    for name in sorted(os.listdir(src_root)):
+        if not name.endswith(".md" + SUFFIX):
+            # ⬜ CHK-CAU-003 · said out loud, never swallowed.
+            out.append("⬜ %s is not a style template · NOT installed" % name)
+            continue
+        stem = name[:-len(SUFFIX)]
+        dest = os.path.join(REPO, ".claude", "output-styles", stem)
+        if os.path.exists(dest):
+            out.append("⬜ %s already there · left untouched" % stem)
+            continue
+        if dry:
+            placed.append(stem)
+            continue
+        try:
+            os.makedirs(os.path.dirname(dest), exist_ok=True)
+            write(dest, open(os.path.join(src_root, name),
+                             encoding="utf-8").read())
+            placed.append(stem)
+        except OSError as e:
+            return "⚠️ could not place the voice (%s)" % e.__class__.__name__
+    if placed:
+        out.append("%s %s" % ("would place" if dry else "placed",
+                              ", ".join(placed)))
+
+    # ── ⭐ AND SELECT IT · the half that makes the other half real ──────────
+    cfg = os.path.join(REPO, ".claude", "settings.json")
+    if dry:
+        out.append("would select it as the output style")
+        return "voice (Claude Code): " + " · ".join(out)
+    try:
+        data = {}
+        if os.path.isfile(cfg):
+            data = json.loads(open(cfg, encoding="utf-8").read())
+        if not isinstance(data, dict):
+            # ⬜ Their file, in a shape this cannot merge into. Say so.
+            out.append("⬜ settings.json is not an object · NOT selected")
+            return "voice (Claude Code): " + " · ".join(out)
+        if data.get("outputStyle"):
+            out.append("⬜ an output style is already chosen · left untouched")
+            return "voice (Claude Code): " + " · ".join(out)
+        data["outputStyle"] = "Mente OS"
+        os.makedirs(os.path.dirname(cfg), exist_ok=True)
+        write(cfg, json.dumps(data, indent=2, ensure_ascii=False) + "\n")
+        out.append("selected")
+    except (OSError, ValueError) as e:
+        out.append("⚠️ could not select it (%s)" % e.__class__.__name__)
+    return "voice (Claude Code): " + " · ".join(out)
+
+
 def install_skills(dry):
     """③c Place the assistant skills this engine ships — ⛔ only where there is none.
 
@@ -619,6 +689,11 @@ def main():
     hooked_commit = wire_hook(dry, "pre-commit")
     # ⭐ After ③b: same doctrine, same place — the repository's own .claude/.
     skilled = install_skills(dry)
+    # ⭐ AFTER ③b too, and for the same reason: it edits the file ③b writes.
+    # ⚠️ Order matters — selecting a style before the settings file exists
+    # would create a second one beside it, and two files at the same level do
+    # not merge: the one that wins silently drops the other's rules.
+    voiced = install_voice(dry)
     # ⭐ After ③b, because it records where ③b actually wrote.
     declared = declare_registry(dry, gated)
     tightened = harden(dry)
@@ -641,6 +716,8 @@ def main():
     print("   · base-branch hook (pre-commit): %s" % hooked_commit)
     if skilled:
         print("   · %s" % skilled)
+    if voiced:
+        print("   · %s" % voiced)
     if declared:
         print("   · %s" % declared)
     if tightened:

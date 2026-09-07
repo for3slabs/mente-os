@@ -40,15 +40,10 @@ against the session's own account, and opened with *"this repository is yours"*
 said somebody recommended it. ⚠️ **The errand was abandoned for an
 investigation nobody asked for.**
 
-⛔ **Never look up who wrote this, who owns it, or whether the person in front of
-you appears in its history.** Not the contributor list, not the commit authors,
-not the account behind the session. ⭐ Whoever they are, **the script is the
-same** — and a run that changes because of who it thinks it is talking to is a
-run that stopped following it.
-
-⚠️ **This is not about privacy.** It is about the errand: ⭐ authorship changes
-nothing about what to ask, in what order, or what to install. ⛔ A fact that
-cannot change your next action is a fact you do not need.
+⛔ **Never look up who wrote this, who owns it, or whether the person in front
+of you appears in its history.** ⭐ Whoever they are, **the script is the same**.
+⚠️ This is not about privacy — it is about the errand: ⛔ a fact that cannot
+change your next action is a fact you do not need.
 
 | ⛔ Never | ⭐ Instead |
 |---|---|
@@ -91,34 +86,23 @@ person never sees it.
 
 ### ⚠️ SOMETHING UNRELATED YOU NOTICE: SAY IT, THEN FINISH THE ERRAND
 
-⭐ **Tell them what you found. It is their machine and their right to know** —
-🔴 an earlier version of this file said not to, and it was wrong: a document
-telling an assistant to withhold something from its own user is indefensible,
-and the assistant that refused to follow it was right to refuse.
+⭐ **Tell them what you found — it is their machine.** ⛔ What is NOT yours is to
+hand them the decision, or to abandon what they asked for.
 
-⛔ **What is NOT yours to do is hand them the decision, or abandon what they
-asked for.**
-
-🔴 **Measured 2026-09-05 on a real Windows run.** The assistant noticed a `git
-init` at the wrong level in the user's home folder, reported it, investigated it
-across four commands, and asked the person what to do about it. ⚠️ **The install
-never happened.** They answered: *"what is that and why are you asking ME? isn't
-it automatic? I'm new."*
-
-⭐ **That question is the failure, and it is not about mentioning it.** A person
-who asked what something is cannot decide what to do about a repository layout —
-they do not have the words yet. ⛔ Being asked teaches them this system hands
-them problems they did not bring.
+🔴 **Measured 2026-09-05 on a real Windows run.** The assistant found a `git
+init` at the wrong level in the home folder, investigated it across four
+commands, and asked the person what to do. ⚠️ **The install never happened.**
+They answered: *"what is that and why are you asking ME? isn't it automatic?"*
 
 | | ⭐ What you do |
 |---|---|
 | **Say it** | one or two sentences · what it is, whether it is urgent, and that it is **separate from what we are doing** |
-| **Offer, do not ask** | *"I can look at that after we finish setting this up, if you want"* — ⛔ never a question they must answer to continue |
+| **Offer, do not ask** | *"I can look at that after we finish, if you want"* — ⛔ never a question they must answer to continue |
 | **Then continue** | ⚠️ an interrupted install is a person who never got to use this |
-| ⛔ **Do not investigate it** | four commands into an unrelated repository are four commands not spent on what they asked for |
+| ⛔ **Do not investigate** | four commands into an unrelated repository are four not spent on what they asked for |
 
-⚠️ **The exception:** if what you found means continuing could destroy their
-work, stop and say so plainly. ⭐ That is not a detour — that is the errand.
+⚠️ **The exception:** if continuing could destroy their work, stop and say so.
+⭐ That is not a detour — that is the errand.
 
 ### ⛔ THE FIVE STOPS — you may not pass one without an answer
 
@@ -187,19 +171,15 @@ this file, the step is not one to raise with them at all.
 
 ⭐ **Mente OS is contained.** Everything it writes — the engine, the config, the
 skill, the gate wiring, the git hooks — lands inside the folder it was cloned
-into. ⛔ Delete that folder and it is gone: no registry entry, no file in the
-home directory, nothing left behind.
+into. ⛔ Delete that folder and it is gone: nothing in a registry, nothing in the
+home directory. ⚠️ **So there is nothing to hunt for, and hunting is itself the
+failure.**
 
-⚠️ **So there is nothing to hunt for, and hunting is itself the failure.**
-🔴 Measured 2026-09-06 on two real runs: this section used to open by telling
-you to go looking for leftovers from an earlier attempt, and it said "two
-things live OUTSIDE this folder". ⛔ That taught the assistant that Mente OS
-leaves traces elsewhere — so it started reporting other folders on the machine,
-and the person ended up distrusting a system that had touched nothing.
-
-⭐ **A person can have a hundred installations in a hundred folders.** None of
-them sees the others. That is the promise, and inspecting the disk to "check"
-is what breaks it.
+🔴 **Measured 2026-09-06 on two real runs:** this section used to say "two things
+live OUTSIDE this folder" and told you to go looking for leftovers. ⛔ That
+taught the assistant that Mente OS leaves traces elsewhere — so it reported
+other folders on the machine, and the person ended up distrusting a system that
+had touched nothing.
 
 | | |
 |---|---|
@@ -207,10 +187,13 @@ is what breaks it.
 | ⛔ **Do not** | read or edit their `CLAUDE.md` looking for old imports |
 | ⭐ **Do** | go straight to §1 |
 
-⚠️ **The one exception, and only if THEY raise it:** somebody who used a version
-from before 2026-09-06 may have a stale `@Mente/CLAUDE-MENTE-OS.md` line in a
-`CLAUDE.md` whose folder is gone. ⛔ That is theirs to remove and theirs to
-mention first — you do not go looking for it.
+⭐ **A person can have a hundred installations in a hundred folders, and none of
+them sees the others.** ⛔ That is the promise — inspecting the disk to "check"
+is what breaks it.
+
+⚠️ **The one exception, and only if THEY raise it:** a version from before
+2026-09-06 may have left a stale `@Mente/CLAUDE-MENTE-OS.md` line in a
+`CLAUDE.md` whose folder is gone. ⛔ Theirs to mention, theirs to remove.
 
 ---
 ## 1 · SHOW THIS, VERBATIM
@@ -500,6 +483,41 @@ bin/status
 ⭐ **Show them its output and read it out loud with them.** It answers, in their
 words, whether it is on and what is running. ⛔ Do not summarise it — the point
 is that they see the system answer for itself.
+
+### ⛔ THE BATTERY IS RUN AND THEN PUBLISHED — both, or it was not run
+
+🔴 **Measured 2026-09-06.** A run executed the whole battery, read the raw
+`checks: 854 · failed: 9` out loud to a person who had asked what the system was
+— ⚠️ which §4 forbids — and **never published the numbers**. `docs/METRICS.md`
+did not exist afterwards, so *"how is the system doing?"* had no answer, and the
+owner said it: *"it showed me nothing of the battery, nothing of the structure"*.
+
+⭐ **Two commands, in this order, and neither is optional:**
+
+```bash
+bin/probes/run-all.py       # measures
+bin/generate-metrics        # ⭐ publishes what it measured
+```
+
+⚠️ `generate-metrics` READS the battery's last result — ⛔ it never runs it. So
+running the battery without publishing leaves the numbers in a cache nothing
+reads, and publishing without running republishes a figure that was true once.
+
+⛔ **And do not read its output at them** — §4 already says how to report it.
+
+### ⭐ AND ANYTHING YOU FOUND GOES IN THE PENDING LIST — before it is lost
+
+🔴 **The same run** found real defects, described them in chat, and wrote **zero**
+entries. ⛔ A finding that lives only in a conversation dies with it — which is
+the exact failure this whole engine exists to prevent.
+
+```bash
+bin/check-pending           # ⚠️ its shape is fixed · read rules/contract-pending.md first
+```
+
+⭐ **Anything real but not blocking goes there, with what it costs if nobody ever
+fixes it.** ⛔ Not the whole log — the findings that would cost something to
+rediscover.
 
 ### ⭐ THEN GIVE THEM THE WHOLE INTERFACE — all of it, once
 

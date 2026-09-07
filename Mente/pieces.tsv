@@ -53,6 +53,7 @@ resume	bin/on	engine	executable	removes that marker · the exact inverse of bin/
 pre-commit	hooks/pre-commit.sh	engine	canonical	blocks a commit that violates the block's contract
 session-start	hooks/session-start.sh	engine	canonical	runs every validator at session start — ⭐ silent unless something is wrong
 pre-edit-standards	hooks/pre-edit-standards.py	engine	executable	names a block's standards before its files are touched — ⭐ layer 3 of ADR-011
+gate-no-block	hooks/gate-no-block.py	engine	canonical	🔴 refuses work with no block open — measured: a run built and published real work while status reported none
 gate-critical	hooks/gate-critical.py	engine	executable	the few actions that BLOCK — ⬜ what is irreversible is the installation's
 watch-external	hooks/watch-external.py	engine	executable	notices that external state moved before acting on a stale view — ⬜ what to watch is declared
 probe-watch-external	bin/probes/probe-watch-external.py	engine	executable	proves the watcher looks when it matters and respects its truce otherwise
@@ -102,6 +103,7 @@ tpl-router	templates/CLAUDE.md.template	engine	canonical	the blueprint bin/init 
 tpl-rules	templates/PROJECT-RULES.md.template	engine	canonical	the blueprint for the project-level rules
 tpl-config	templates/mente.config.yml.template	engine	canonical	the blueprint for the instance declaration
 tpl-skill-wrap	templates/skills/session-wrap/SKILL.md.template	engine	template	the session-close skill bin/init installs — 🔴 it used to ship ACTIVE, so a clone alone loaded it into somebody's assistant, and every installation shared one copy
+tpl-voice	templates/output-styles/mente-os.md.template	engine	template	the output style bin/init places AND selects — the engine shipped its voice as a document nothing read
 tpl-gates	templates/claude-settings.json.template	engine	canonical	the gate wiring bin/init installs — 🔴 it used to ship ACTIVE, so a clone alone wired five gates into somebody's assistant
 tpl-workspace	templates/WORKSPACE.md.template	engine	canonical	the blueprint for the machine map — says WHERE, never WHAT
 tpl-arquitectura	templates/ARCHITECTURE.md.template	engine	canonical	the blueprint for the architecture pillar — born empty

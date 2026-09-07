@@ -44,6 +44,11 @@
           },
           {
             "type": "command",
+            "command": "python3 \"$CLAUDE_PROJECT_DIR/Mente/hooks/gate-no-block.py\"",
+            "$comment": "🔴 BLOCKS (exit 2): work with no block open. Measured 2026-09-06 — a full run built and published real work while `bin/status` said no block was open, because reporting it was all anything did. Ways out: MENTE_SCRATCH=1, or a file inside Mente/."
+          },
+          {
+            "type": "command",
             "command": "python3 \"$CLAUDE_PROJECT_DIR/Mente/hooks/gate-critical.py\"",
             "$comment": "🔴 BLOCKS (exit 2): destructive change with no rollback · closing an insufficient block."
           }
@@ -93,6 +98,30 @@
   },
 
   "permissions": {
+    "$allow_comment": [
+      "⭐ THE ENGINE'S OWN COMMANDS, pre-approved. 🔴 Measured 2026-09-06: a run",
+      "was stopped by a permission prompt on `bin/init` and answered `open",
+      "PowerShell and paste this command` — the person was exactly as unable as",
+      "before, and now believed the errand was theirs.",
+      "",
+      "⚠️ These are READ-and-REPORT commands plus the installer. They write only",
+      "inside this folder, make no network call, and every one of them is listed",
+      "in Mente/CAPABILITIES.md with what it refuses to do.",
+      "⛔ Nothing here grants a general shell: `git`, `rm` and anything else stay",
+      "as they were."
+    ],
+    "allow": [
+      "Bash(python3 Mente/bin/status:*)",
+      "Bash(python3 Mente/bin/off:*)",
+      "Bash(python3 Mente/bin/on:*)",
+      "Bash(python3 Mente/bin/init:*)",
+      "Bash(python3 Mente/bin/check-health:*)",
+      "Bash(python3 Mente/bin/new-block:*)",
+      "Bash(python3 Mente/bin/new-campaign:*)",
+      "Bash(python3 Mente/bin/grade-block:*)",
+      "Bash(python3 Mente/bin/generate-metrics:*)",
+      "Bash(python3 Mente/bin/probes/run-all.py:*)"
+    ],
     "$comment": [
       "⬜ DECLARE YOUR OWN GATES HERE — the trees the AI must not read.",
       "They must match 'gates:' in Mente/mente.config.yml: if the two disagree,",
