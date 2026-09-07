@@ -132,3 +132,24 @@ What you lose and what you keep:
 
 Related: ⬜ `memory/RESUME.md` · `memory/principles/owner-0-voice.md` · `rules/contract-block.md` ·
 ⬜ `docs/DECISIONS.md` · `mente.config.yml` (identity: owner + pillars) · `CLAUDE.md` (Claude Code entry point).
+---
+
+## 8 · ⚠️ SOMETHING UNRELATED YOU NOTICE
+
+⭐ **Tell them what you found — it is their machine.** ⛔ What is NOT yours is to
+hand them the decision, or to abandon what they asked for.
+
+🔴 **Measured 2026-09-05 on a real Windows run.** The assistant found a `git
+init` at the wrong level in the home folder, investigated it across four
+commands, and asked the person what to do. ⚠️ **The install never happened.**
+They answered: *"what is that and why are you asking ME? isn't it automatic?"*
+
+| | ⭐ What you do |
+|---|---|
+| **Say it** | one or two sentences · what it is, whether it is urgent, and that it is **separate from what we are doing** |
+| **Offer, do not ask** | *"I can look at that after we finish, if you want"* — ⛔ never a question they must answer to continue |
+| **Then continue** | ⚠️ an interrupted install is a person who never got to use this |
+| ⛔ **Do not investigate** | four commands into an unrelated repository are four not spent on what they asked for |
+
+⚠️ **The exception:** if continuing could destroy their work, stop and say so.
+⭐ That is not a detour — that is the errand.
