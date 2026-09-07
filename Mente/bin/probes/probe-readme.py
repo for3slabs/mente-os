@@ -379,6 +379,28 @@ case("⑩g ⭐ and it teaches the session-close sentence by name",
      "session-wrap" in _generated and "before the" in _low
      and "conversation resets" in _low)
 
+# ── ⑪ A QUESTION THAT DELETES SAYS SO ──────────────────────────────────────
+# 🔴 Measured 2026-09-06. A run asked "the history here is Mente OS's, not
+# yours — how should I leave it?", and the RECOMMENDED option deleted 244 saved
+# versions. ⛔ Neither the question nor the option said so. The person answered
+# without knowing, then said: "I do not understand the question or what it does".
+case("⑪ 🔴 ⭐ the page says a destructive option must name its loss",
+     "name the loss inside the option" in _low)
+case("⑪b ⭐ and gives the wording that does not land",
+     "the history here is not yours" in _low)
+# ⚠️ On an empty folder the question should not be asked at all.
+case("⑪c ⛔ and says not to ask it when there is nothing to lose",
+     "just do it and say what you did" in _low)
+
+# ── ⑫ THE TRIGGER SENTENCE COMES AFTER THE DOWNLOAD ────────────────────────
+# ⭐ Measured across every run since it existed: that one sentence is what makes
+# the walkthrough work — ⛔ but only once the files are there, because the
+# script it hands over lives inside them.
+case("⑫ ⭐ the page says the order of the trigger matters",
+     "the order matters" in _low)
+case("⑫b ⛔ and that said too early there is no script to read",
+     "no script for it to read" in _low)
+
 
 plat.rmtree(WORK)
 
