@@ -14,7 +14,7 @@ ABORT, not default.
 Runs against an ISOLATED COPY — ⛔ measured the hard way: running the installer
 in the source tree writes an owner name across the whole engine.
 """
-import os, glob, re, shutil, subprocess, sys, tempfile
+import ast, os, glob, re, shutil, subprocess, sys, tempfile
 import os as _os, sys as _sys
 _d = _os.path.dirname(_os.path.abspath(__file__))
 while _d != _os.path.dirname(_d):
@@ -495,6 +495,74 @@ case("㉗b ⛔ and no skill names an instance-only file as an instruction",
 # fix reads as "name nothing", and the next author hardcodes a path again.
 case("㉗c ⭐ and it points at the piece table for instance paths",
      all("pieces.tsv" in _b for _, _b in _bodies), "%d skill(s)" % len(_bodies))
+
+# ── ㉘ 🔴 WHAT IS GENERATED IS NOT CONVERTED EITHER ─────────────────────────
+# 🔴 THE FAILURE, measured 2026-09-06 on a real Windows install. Every file this
+# script writes went through a plain `open(..., "w")`, and on Windows Python
+# turns each "\n" into "\r\n" — ⛔ so the Claude Code skill landed with CRLF, its
+# YAML frontmatter did not parse, and `/session-wrap` was simply ABSENT from the
+# person's command menu. ⚠️ The install reported success and the command was
+# gone: nothing said the two were related.
+# ⭐ `.gitattributes` already refuses conversion for the same reason; the
+# installer was the one place still doing it. ⛔ A generated file is a shipped
+# file — the rule does not stop at the repository boundary.
+_crlf = []
+for _root, _dirs, _files in os.walk(_repoC):
+    if ".git" in _root.split(os.sep):
+        continue
+    for _f in _files:
+        _p = os.path.join(_root, _f)
+        try:
+            if b"\r\n" in open(_p, "rb").read():
+                _crlf.append(os.path.relpath(_p, _repoC))
+        except OSError:
+            # ⬜ CHK-CAU-003 · said out loud, never swallowed.
+            _crlf.append("⬜ unreadable: " + os.path.relpath(_p, _repoC))
+case("㉘ 🔴 ⭐ nothing the installer generates carries CRLF",
+     not _crlf, ", ".join(sorted(_crlf))[:44] or "0 file(s)")
+
+# 🔴 FOUND BY SABOTAGING THE CASE ABOVE: on a POSIX kernel Python translates
+# nothing, so removing `newline=""` left it green — ⛔ the case only fails on
+# the platform where nobody runs the battery, which is the same as not measuring
+# it. ⭐ So the SOURCE is read too: every write of a generated file must go
+# through the one writer that disables translation. ⚠️ Reading code is weaker
+# than reading output, and it is asserted here BECAUSE the output cannot answer
+# on this platform — stated, not hidden.
+# ⚠️ Read from the PARSED source, not the raw text: the post-mortem inside
+# `write()` quotes the broken call verbatim, and a probe grepping the file
+# reported the explanation of the bug as the bug — measured while writing this.
+# ⭐ `ast` sees calls; it does not see prose.
+_src = open(os.path.join(ROOT, "bin", "init"), encoding="utf-8").read()
+_raw, _unsafe = [], []
+for _node in ast.walk(ast.parse(_src)):
+    if not (isinstance(_node, ast.Call)
+            and getattr(_node.func, "id", "") == "open"):
+        continue
+    _mode = next((a.value for a in _node.args[1:]
+                  if isinstance(a, ast.Constant)), "r")
+    if "w" not in str(_mode) and "a" not in str(_mode):
+        continue
+    _raw.append("line %d" % _node.lineno)
+    if not any(k.arg == "newline" for k in _node.keywords):
+        _unsafe.append("line %d" % _node.lineno)
+case("㉘c 🔴 ⭐ every generated-file write disables translation",
+     not _unsafe, ", ".join(_unsafe)[:44] or "%d write(s), all safe" % len(_raw))
+
+# ⭐ AND THE SKILL SPECIFICALLY, because its frontmatter is what breaks: a
+# `/command` that does not appear is indistinguishable from one never installed.
+_sk = os.path.join(_repoC, ".claude", "skills")
+_bad = []
+for _n in sorted(os.listdir(_sk)) if os.path.isdir(_sk) else []:
+    _f = os.path.join(_sk, _n, "SKILL.md")
+    if not os.path.isfile(_f):
+        _bad.append("%s has no SKILL.md" % _n)
+        continue
+    _raw = open(_f, "rb").read()
+    # ⛔ The frontmatter must open on the very first bytes and parse as lines.
+    if b"\r" in _raw or not _raw.startswith(b"---\n"):
+        _bad.append("%s frontmatter would not parse" % _n)
+case("㉘b 🔴 ⭐ the installed skill's frontmatter parses",
+     not _bad, ", ".join(_bad)[:44] or "clean")
 
 
 good = sum(1 for _, ok in results if ok)
