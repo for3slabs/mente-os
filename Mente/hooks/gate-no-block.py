@@ -105,17 +105,17 @@ def main():
 
     # ⭐ Declared throwaway. It is honoured, and the beat records that it was.
     if os.environ.get("MENTE_SCRATCH", "").strip() not in ("", "0"):
-        beat("gate-no-block", "scratch")
+        beat(MENTE, "gate-no-block")
         return 0
 
     path = target(payload)
     if inside_engine(path):
         return 0
     if a_block_is_open():
-        beat("gate-no-block", "block open")
+        beat(MENTE, "gate-no-block")
         return 0
 
-    beat("gate-no-block", "REFUSED")
+    beat(MENTE, "gate-no-block")
     sys.stderr.write(REFUSAL)
     return 2
 
