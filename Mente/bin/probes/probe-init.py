@@ -14,7 +14,7 @@ ABORT, not default.
 Runs against an ISOLATED COPY — ⛔ measured the hard way: running the installer
 in the source tree writes an owner name across the whole engine.
 """
-import ast, os, glob, re, shutil, subprocess, sys, tempfile
+import ast, os, glob, json, re, shutil, subprocess, sys, tempfile
 import os as _os, sys as _sys
 _d = _os.path.dirname(_os.path.abspath(__file__))
 while _d != _os.path.dirname(_d):
@@ -445,7 +445,7 @@ r = run(tree6, "--owner", OWNER)
 case("㉑ ⛔ no templates/ → it says so, it does not crash",
      r.returncode == 2 and "Traceback" not in r.stderr, "exit=%d" % r.returncode)
 
-plat.rmtree(WORK)# ── ㉗ 🔴 A SKILL MAY NAME ONLY WHAT THE ENGINE SHIPS ───────────────────────
+# ── ㉗ 🔴 A SKILL MAY NAME ONLY WHAT THE ENGINE SHIPS ───────────────────────
 # 🔴 THE FAILURE, measured 2026-09-06 on a real installation. This skill shipped
 # naming files that exist in the author's own instance and in no clone —
 # `RETOMAR.md`, `PENDIENTES.md`, `bin/check-sufficiency`, `bin/test-f0-f6`:
@@ -508,7 +508,13 @@ case("㉗c ⭐ and it points at the piece table for instance paths",
 # file — the rule does not stop at the repository boundary.
 _crlf = []
 for _root, _dirs, _files in os.walk(_repoC):
-    if ".git" in _root.split(os.sep):
+    # ⚠️ `.git` holds packed objects and `__pycache__` compiled bytecode: both
+    # are binary and neither was written by this installer. 🔴 Found once the
+    # teardown moved to the end and this case finally ran — a probe measuring
+    # Python's own .pyc files reports the interpreter, not the engine.
+    _parts = _root.split(os.sep)
+    if ".git" in _parts or "__pycache__" in _parts:
+        _dirs[:] = []
         continue
     for _f in _files:
         _p = os.path.join(_root, _f)
@@ -564,6 +570,68 @@ for _n in sorted(os.listdir(_sk)) if os.path.isdir(_sk) else []:
 case("㉘b 🔴 ⭐ the installed skill's frontmatter parses",
      not _bad, ", ".join(_bad)[:44] or "clean")
 
+# ── ㉙ 🔴 THE VOICE IS PLACED AND SELECTED — both, or neither counts ────────
+# 🔴 THE FAILURE, measured 2026-09-06 on a real installation. The engine ships
+# `memory/principles/owner-0-voice.md` — 264 lines describing how it speaks —
+# and NOTHING read it: zero mentions of `outputStyle` in this installer or in
+# the settings template. A fresh install answered in the assistant's default
+# voice while carrying the doctrine of another one. ⛔ The owner said it: "the
+# way of answering is not active".
+# ⭐ A style placed and not selected is the same unread document, one folder on.
+_style_dir = os.path.join(_repoC, ".claude", "output-styles")
+_styles = sorted(os.listdir(_style_dir)) if os.path.isdir(_style_dir) else []
+case("㉙ 🔴 ⭐ the install places an output style",
+     bool(_styles), ", ".join(_styles) or ("none · dir=%s" % os.path.isdir(_style_dir)))
+
+_cfg = os.path.join(_repoC, ".claude", "settings.json")
+_chosen = ""
+if os.path.isfile(_cfg):
+    try:
+        _chosen = json.load(open(_cfg, encoding="utf-8")).get("outputStyle", "")
+    except (ValueError, OSError):
+        _chosen = ""
+case("㉙b 🔴 ⭐ and SELECTS it — the half that makes the other half real",
+     bool(_chosen), _chosen or "not selected")
+
+# ⛔ It must never take a voice the owner already chose. Their file, their call.
+_t2 = os.path.join(tempfile.mkdtemp(prefix="tree-voice-", dir=WORK), "repo")
+os.makedirs(os.path.join(_t2, ".claude"))
+shutil.copytree(ROOT, os.path.join(_t2, "Mente"))
+open(os.path.join(_t2, ".claude", "settings.json"), "w",
+     encoding="utf-8", newline="").write('{"outputStyle":"theirs"}')
+subprocess.run([sys.executable, os.path.join(_t2, "Mente", "bin", "init"),
+                "--owner", "X"], capture_output=True, text=True, timeout=120)
+_after = json.load(open(os.path.join(_t2, ".claude", "settings.json"),
+                        encoding="utf-8")).get("outputStyle")
+case("㉙c ⛔ and never over a style they already chose",
+     _after == "theirs", _after or "gone")
+plat.rmtree(os.path.dirname(_t2))
+
+# ── ㉚ THE ENGINE'S OWN COMMANDS ARE PRE-APPROVED ───────────────────────────
+# 🔴 Measured the same run: a permission prompt stopped `bin/init` and the
+# assistant answered "open PowerShell and paste this command". ⚠️ Asking the
+# owner to approve their own tool, one command at a time, is what turns a
+# walkthrough into homework.
+_perm = {}
+if os.path.isfile(_cfg):
+    try:
+        _perm = json.load(open(_cfg, encoding="utf-8")).get("permissions", {})
+    except (ValueError, OSError):
+        _perm = {}
+_allow = _perm.get("allow", []) if isinstance(_perm, dict) else []
+case("㉚ ⭐ the engine's read-and-report commands are pre-approved",
+     any("bin/status" in a for a in _allow), "%d entry(ies)" % len(_allow))
+# ⛔ And nothing here may hand out a general shell — that is not ours to grant.
+_broad = [a for a in _allow if a.strip() in ("Bash", "Bash(*)", "Bash(*:*)")]
+case("㉚b ⛔ and no entry grants a general shell", not _broad,
+     ", ".join(_broad) or "none")
+
+
+# 🔴 THE TEARDOWN GOES LAST. Found 2026-09-06: an insertion left this line
+# glued to a comment ABOVE the cases that read the installed tree, so ㉗ and
+# ㉘ measured a directory that had just been deleted — ⛔ every one of them
+# green because there was nothing left to be wrong.
+plat.rmtree(WORK)
 
 good = sum(1 for _, ok in results if ok)
 print("\n  ➜ %d of %d correct" % (good, len(results)))

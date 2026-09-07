@@ -136,6 +136,18 @@ its own history with it, and the moment to say so is HERE, not after the setup.
 > this folder is going to be your own project, I set that record up as yours —
 > ⛔ I do that for you, you never type anything.
 
+⛔ **AND IF YOU ASK THEM ABOUT IT, SAY WHAT IT COSTS.** 🔴 Measured 2026-09-06: a
+run asked *"the history here is Mente OS's, not yours — how should I leave
+it?"*, and the recommended option **deleted 244 saved versions**. ⚠️ Neither the
+question nor the option said so. The person answered without knowing, then said:
+*"I do not understand the question or what it does."*
+
+| ⛔ Never | ⭐ Instead |
+|---|---|
+| *"the history here is not yours"* | *"this folder still remembers the versions of the system I downloaded, not your work"* |
+| an option that deletes, worded neutrally | ⚠️ **name the loss inside the option**: *"start fresh — the ~240 downloaded versions go, your files stay"* |
+| asking at all, on an empty folder | ⭐ **just do it and say what you did** — there is nothing of theirs to lose |
+
 ⛔ **THE PERMISSION BELONGS TO YOU, THE WORK BELONGS TO ME.** 🔴 Measured the
 same run: a permission prompt blocked the setup, and the assistant answered
 *"open PowerShell and paste this command"*. ⚠️ **A blocked step is not a step
@@ -181,6 +193,8 @@ git clone https://github.com/for3slabs/mente-os.git .
 ## 👋 Then say this, and nothing else
 
 > ### *"Set up Mente OS and walk me through it."*
+
+⭐ **That sentence is what starts the walkthrough** — 🔴 measured 2026-09-06, and it is the one thing that has worked in every run since: it hands the assistant the script and it takes you by the hand from there. ⚠️ **The order matters**: it explains what this is, it asks before downloading, and only THEN does this sentence do its work. ⛔ Said before the files are here, there is no script for it to read.
 
 That is the whole thing. 🤖 Your assistant takes it from there: it checks what
 your computer already has and handles whatever is missing, asks what to call

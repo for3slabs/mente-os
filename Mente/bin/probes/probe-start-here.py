@@ -291,6 +291,26 @@ _flat = " ".join(_low.split())
 case("⑰d ⭐ and that declaring it is what makes it governed",
      "not the same as being governed" in _flat)
 
+# ── ⑱ MEASURING IS NOT PUBLISHING ──────────────────────────────────────────
+# 🔴 Measured 2026-09-06. A run executed the whole battery, read the raw
+# `checks: 854 · failed: 9` out loud to a person who had asked what the system
+# was, and never published the numbers: `docs/METRICS.md` did not exist
+# afterwards. ⛔ The owner said it — "it showed me nothing of the battery,
+# nothing of the structure". The script named `generate-metrics` zero times.
+case("⑱ 🔴 ⭐ the script says to publish what the battery measured",
+     "generate-metrics" in text)
+case("⑱b ⭐ and says publishing is not optional",
+     "run and then published" in _low)
+# ⚠️ The pair only means something together: measuring without publishing
+# leaves the numbers in a cache nothing reads.
+case("⑱c ⚠️ and that generate-metrics READS, never runs",
+     "never runs it" in _low)
+# ⛔ The same run described real defects in chat and wrote zero entries.
+case("⑲ 🔴 ⭐ findings go in the pending list, not only in the chat",
+     "pending list" in _low and "dies with it" in _low)
+case("⑲b ⭐ and it points at the contract that fixes the shape",
+     "contract-pending" in text)
+
 # ── ⑦ IT IS DECLARED AS AN ENGINE FILE ─────────────────────────────────────
 tsv = os.path.join(ROOT, "pieces.tsv")
 case("⑦ it is declared in the piece table",

@@ -122,6 +122,7 @@ You do not invoke these. They fire at the moment they matter, and **most of them
 |---|---|---|
 | session start | `hooks/session-start.sh` — runs every validator it discovers | ⬜ informs — **speaks only on 🔴** |
 | before an edit | `hooks/pre-edit-standards.py` — the owning block's standards, named back to you | ⬜ injects |
+| before an edit | `hooks/gate-no-block.py` — 🔴 work with NO block open · measured: a full run built and published real work while `bin/status` reported no block, because reporting was all anything did · ways out: `MENTE_SCRATCH=1`, or a file inside `Mente/` | 🔴 **blocks** |
 | before an edit | `hooks/gate-critical.py` — destructive SQL with no rollback · an insufficient close | 🔴 **blocks** |
 | before a write | `hooks/gate-secrets.py` — a secret VALUE about to reach disk | 🔴 **blocks** · ⛔ fails CLOSED |
 | before a specialist | `hooks/gate-handoff.py` — one that may WRITE with no declared scope | 🔴 **blocks** |
