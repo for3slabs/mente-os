@@ -58,6 +58,49 @@ def block_rows(ids):
         "| `%s` | ⬜ why this campaign needs it |\n" % b for b in ids)
 
 
+def link_back(cid, names):
+    """Write the campaign into each block's §C — ⛔ the link both ways.
+
+    🔴 THE FAILURE, measured 2026-09-07. A campaign was opened naming its
+    block, the block kept saying `- none` in §C, and NOT ONE validator
+    objected: not `check-campaign`, not `check-block`, not
+    `check-inheritance`. ⛔ A block can belong to a mission without knowing
+    it — and whoever opens that block tomorrow cannot tell what it is for,
+    which is the exact forgetting this engine exists to prevent.
+
+    ⚠️ The contract already says the link is declared from BOTH sides
+    (`work/README.md`). Only one side was ever written.
+
+    ⭐ Never over an existing answer: a block that already names a campaign
+    is answering a question somebody decided, and this is not the place to
+    overrule it.
+    """
+    out = []
+    for n in names:
+        b = os.path.join(MENTE, "work", "blocks", "active", n, "BLOCK.md")
+        if not os.path.isfile(b):
+            # ⬜ CHK-CAU-003 · said out loud. The row still stands; the
+            # campaign names a block that is not open yet.
+            out.append("⬜ %s not open · §C not written" % n)
+            continue
+        try:
+            t = open(b, encoding="utf-8", newline="").read()
+            if "campaign:" in t:
+                out.append("⬜ %s already names one · left untouched" % n)
+                continue
+            new = re.sub(r"(?m)^- none\s*$", "- campaign: `%s`" % cid, t,
+                         count=1)
+            if new == t:
+                out.append("⬜ %s · §C has its own answer · left untouched" % n)
+                continue
+            with open(b, "w", encoding="utf-8", newline="") as fh:
+                fh.write(new)
+            out.append(n)
+        except OSError as e:
+            out.append("⚠️ %s (%s)" % (n, e.__class__.__name__))
+    return out
+
+
 def main():
     args = sys.argv[1:]
     if not args or args[0].startswith("-"):
@@ -131,7 +174,10 @@ def main():
 
     try:
         os.makedirs(dest_dir, exist_ok=True)
-        open(dest, "w", encoding="utf-8").write(body)
+        # ⚠️ newline="" · the same translation bug this engine
+        # documents fixing in bin/init.
+        with open(dest, "w", encoding="utf-8", newline="") as _fh:
+            _fh.write(body)
     except OSError as e:
         die("could not write %s · %s" % (plat.rel(dest, MENTE),
                                          e.__class__.__name__), 2)
@@ -144,6 +190,9 @@ def main():
     print("🎯 %s\n   · %d block(s) declared: %s\n   · still ⬜: %s"
           % (plat.rel(dest, MENTE), len(names), ", ".join(names),
              ", ".join(pending)))
+    linked = link_back(cid, names)
+    if linked:
+        print("   · §C written back into: %s" % ", ".join(linked))
     print("\n👉 An empty authority means nobody knows which yardstick decided "
           "it succeeded.\n   Then: bin/check-campaign")
     return 0

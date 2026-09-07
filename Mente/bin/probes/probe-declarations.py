@@ -24,7 +24,7 @@ import utf8                                          # noqa: F401,E402
 import plat                                          # noqa: E402
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from harness import ROOT                       # noqa: E402
+from harness import ROOT, rewrite                       # noqa: E402
 
 results = []
 WORK = tempfile.mkdtemp(prefix="mente-dec-")
@@ -61,7 +61,7 @@ def run(*args):
 
 
 def plant(rows):
-    open(RULE, "w", encoding="utf-8").write(
+    rewrite(RULE, 
         HEAD + rows + "\n\nRelated: `rules/README.md`.\n")
 
 

@@ -21,7 +21,7 @@ import utf8                                          # noqa: F401,E402
 import plat                                          # noqa: E402
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from harness import MARK, ROOT                 # noqa: E402
+from harness import MARK, ROOT, rewrite                 # noqa: E402
 
 REF = os.environ.get("MENTE_CROSSRUN_BLOCKS", "")
 REPO = os.path.dirname(ROOT)
@@ -188,7 +188,7 @@ clean()
 # ── C · the thresholds come from the contract
 orig = open(CONTRACT, encoding="utf-8").read()
 try:
-    open(CONTRACT, "w", encoding="utf-8").write(
+    rewrite(CONTRACT, 
         orig.replace("| ⬜ code file extensions | `.py .js .ts .tsx .jsx` |",
                      "| ⬜ code file extensions | `.zz` |"))
     plant(CLEAN, "code")
@@ -203,7 +203,7 @@ try:
                              else "the table governs nothing"))
     results.append(("threshold from contract", ok))
 finally:
-    open(CONTRACT, "w", encoding="utf-8").write(orig)
+    rewrite(CONTRACT, orig)
     clean()
 
 # QLT-VRD-001 · an MVP names the debt it closes with. ⛔ A verdict printed
@@ -224,7 +224,7 @@ try:
     plant(CLEAN, "code")
     _, before = run()
     b = re.search(r"(\d+) dimension\(s\) still", before)
-    open(CONTRACT, "w", encoding="utf-8").write(
+    rewrite(CONTRACT, 
         orig2.replace("| 1 | architecture | ⬜ undeclared |",
                       "| 1 | architecture | one thing, one layer |", 1))
     _, after = run()
@@ -236,7 +236,7 @@ try:
                                           a.group(1) if a else "?")))
     results.append(("criterion counter moves", ok))
 finally:
-    open(CONTRACT, "w", encoding="utf-8").write(orig2)
+    rewrite(CONTRACT, orig2)
     clean()
 
 # ── crash guard

@@ -14,7 +14,7 @@ while _d != _os.path.dirname(_d):
     _d = _os.path.dirname(_d)
 import utf8                                          # noqa: F401,E402
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from harness import Probe, ROOT, MARK
+from harness import Probe, ROOT, MARK, rewrite
 
 ARCHIVE = os.path.join(ROOT, "work", "blocks", "archive")
 REF = os.environ.get("MENTE_CROSSRUN_ARCHIVE", "")
@@ -165,13 +165,13 @@ try:
     p.case("⑧b ALIAS · a renamed section, with no alias declared",
            lambda: plant(summary=_renamed), "ARC-SUM-001")
 
-    open(_pr, "w", encoding="utf-8").write(
+    rewrite(_pr, 
         _orig_pr + "\narchive_field what was built = (qué se hizo|what was built)\n")
     p.inverse("⑧c ALIAS · the same section, WITH its alias declared",
               lambda: plant(summary=_renamed))
 finally:
     if _had_pr:
-        open(_pr, "w", encoding="utf-8").write(_orig_pr)
+        rewrite(_pr, _orig_pr)
     elif os.path.exists(_pr):
         os.remove(_pr)        # ⬜ it did not exist here; leave the clone as found
     p.clean()

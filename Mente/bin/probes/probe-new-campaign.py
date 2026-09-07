@@ -25,7 +25,7 @@ import utf8                                          # noqa: F401,E402
 import plat                                          # noqa: E402
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from harness import ROOT                       # noqa: E402
+from harness import ROOT, MARK                 # noqa: E402
 
 results = []
 WORK = tempfile.mkdtemp(prefix="mente-nc-")
@@ -136,6 +136,64 @@ case("⑰ ⭐ both refuse the SAME invalid id, identically", a == b == 1,
      "block=%d campaign=%d" % (a, b))
 
 plat.rmtree(WORK)
+
+# ── ⑨ 🔴 THE LINK IS DECLARED FROM BOTH SIDES, OR IT IS NOT DECLARED ───────
+# 🔴 THE FAILURE, measured 2026-09-07. A campaign was opened naming its block,
+# the block kept `- none` in §C, and NOT ONE validator objected — not
+# check-campaign, not check-block, not check-inheritance. ⛔ A block can belong
+# to a mission without knowing it, and whoever opens that block tomorrow cannot
+# tell what it is for: the exact forgetting this engine exists to prevent.
+# ⚠️ `work/README.md` already says the link is declared from BOTH sides. Only
+# one side was ever written.
+_r2 = tempfile.mkdtemp(prefix=MARK + "link-")
+try:
+    _bd = os.path.join(ROOT, "work", "blocks", "active", MARK + "-lk")
+    os.makedirs(_bd, exist_ok=True)
+    open(os.path.join(_bd, "BLOCK.md"), "w", encoding="utf-8",
+         newline="").write("# BLOCK · %s-lk\n\n## A · Identity\n\n"
+                           "id: %s-lk\n\n## C · Connections\n\n- none\n"
+                           % (MARK, MARK))
+    _rr = subprocess.run([sys.executable, os.path.join(ROOT, "bin",
+                                                       "new-campaign"),
+                          MARK + "-lkc", "--blocks", MARK + "-lk",
+                          "--mission", "m"], capture_output=True, text=True,
+                         timeout=60)
+    if _rr.returncode != 0:
+        # ⬜ CHK-CAU-003 · said out loud. An UNINSTALLED engine has no owner,
+        # so `new-campaign` correctly refuses — 🔴 and a case that cannot run
+        # must report NOT MEASURED, never a red the code did not earn.
+        # ⭐ The behaviour is still asserted, one layer down: the source must
+        # carry the write-back, so a removal is caught on every platform.
+        print("  ⬜ ⑱ NOT MEASURED · new-campaign refused here: %s"
+              % (_rr.stdout + _rr.stderr).strip().splitlines()[0][:52])
+        _nc = open(os.path.join(ROOT, "bin", "new-campaign"),
+                   encoding="utf-8").read()
+        case("⑱ 🔴 ⭐ new-campaign writes the link back into each block's §C",
+             "def link_back(" in _nc and "campaign: `%s`" in _nc)
+    else:
+        _bt = open(os.path.join(_bd, "BLOCK.md"), encoding="utf-8").read()
+        case("⑱ 🔴 ⭐ opening a campaign writes it back into each block's §C",
+             "campaign: `%s-lkc`" % MARK in _bt,
+             "§C: %r" % _bt.strip().splitlines()[-1][:30])
+    # ⛔ And never over an answer somebody already gave.
+    open(os.path.join(_bd, "BLOCK.md"), "w", encoding="utf-8",
+         newline="").write("# BLOCK · x\n\n## A · Identity\n\n"
+                           "id: %s-lk\n\n## C · Connections\n\n"
+                           "- campaign: `otra`\n" % MARK)
+    subprocess.run([sys.executable, os.path.join(ROOT, "bin", "new-campaign"),
+                    MARK + "-lkd", "--blocks", MARK + "-lk", "--mission", "m"],
+                   capture_output=True, text=True, timeout=60)
+    _bt2 = open(os.path.join(_bd, "BLOCK.md"), encoding="utf-8").read()
+    case("⑱b ⛔ and never over a campaign the block already names",
+         "otra" in _bt2 and MARK + "-lkd" not in _bt2)
+finally:
+    for _d in (_bd, os.path.join(ROOT, "work", "campaigns", MARK + "-lkc"),
+               os.path.join(ROOT, "work", "campaigns", MARK + "-lkd")):
+        if os.path.isdir(_d):
+            plat.rmtree(_d)
+    plat.rmtree(_r2)
+
+
 good = sum(1 for _, ok in results if ok)
 print("\n  ➜ %d of %d correct" % (good, len(results)))
 for l, ok in results:

@@ -14,7 +14,7 @@ while _d != _os.path.dirname(_d):
     _d = _os.path.dirname(_d)
 import utf8                                          # noqa: F401,E402
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from harness import Probe, ROOT, MARK
+from harness import Probe, ROOT, MARK, rewrite
 from fixtures import block, BLOCKS
 
 # ⭐ The cross-run needs real objects nobody here wrote. Where they live
@@ -51,7 +51,7 @@ def _strip(bid, head):
 _idx = os.path.join(BLOCKS, "README.md")
 _had_idx = os.path.exists(_idx)
 _orig_idx = open(_idx, encoding="utf-8").read() if _had_idx else None
-open(_idx, "w", encoding="utf-8").write(
+rewrite(_idx, 
     (_orig_idx or "# Blocks\n") + "\n- %s-a\n- %s-b\n- %s-c\n" % (MARK, MARK, MARK))
 
 print("═══ A · SABOTAGE · check-block ═══\n")
@@ -432,7 +432,7 @@ else:
     print("  ⬜ NOT_MEASURED · set %s to a tree of real blocks" % "MENTE_CROSSRUN_BLOCKS")
 
 if _had_idx:
-    open(_idx, "w", encoding="utf-8").write(_orig_idx)
+    rewrite(_idx, _orig_idx)
 else:
     os.remove(_idx)
 
