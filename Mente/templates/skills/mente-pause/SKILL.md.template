@@ -1,0 +1,50 @@
+---
+name: mente-pause
+description: >-
+  Pause or resume Mente OS in this folder — the checks stop firing, nothing is
+  deleted. Use when the person says "turn Mente OS off", "pause it", "stop the
+  checks", "apágalo", "turn it back on", "reanúdalo", or asks how to stop the
+  system getting in the way. Also use when a gate is blocking work they have
+  decided to do anyway.
+---
+# mente-pause — stop the checks without losing anything
+
+🔴 **THE FAILURE THIS ANSWERS, measured 2026-09-07.** `bin/off` and `bin/on`
+shipped and never appeared in the `/` menu, so nobody knew the system could be
+paused. ⛔ A guard with no visible way out is one people work around instead of
+switching off honestly — and a worked-around guard leaves no trace.
+
+## To pause
+
+```bash
+Mente/bin/off
+```
+
+⭐ **Say what it means, in their words:** *"the checks stop running. Nothing is
+deleted — your files, your work and your notes are exactly as they were."*
+
+## To resume
+
+```bash
+Mente/bin/on
+```
+
+## ⚠️ Before you pause
+
+⛔ **Ask why.** ⭐ A gate refusing something is usually right, and pausing it to
+get past one refusal is how a protection quietly ends.
+
+| They want to | ⭐ Do this instead |
+|---|---|
+| write one throwaway file | `MENTE_SCRATCH=1` on that one command |
+| work outside the open block | ask if the block's boundary should widen — ⛔ and let THEM decide |
+| get past a refusal they disagree with | ⚠️ read the refusal out loud first · it names the way forward |
+
+⭐ **Pausing is legitimate** — a demo, a migration, a day of throwaway work. ⛔
+Pausing to avoid one specific refusal is not, and saying so is part of the job.
+
+## ⬜ Where a path lives
+
+⛔ **Do not hardcode a path from another installation.** ⭐ Every engine piece is
+listed in `Mente/pieces.tsv` — read it when you need to know where something is,
+and a moved piece stays findable without editing this file.

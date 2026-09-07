@@ -182,6 +182,39 @@ run(tree3, "--force", "--owner", OWNER)
 case("⑯ ⚠️ a second run does not duplicate the import",
      open(user, encoding="utf-8").read().count("@Mente/CLAUDE-MENTE-OS.md") == 1)
 
+# ── ⑮b 🔴 AN `@import` IS A POINTER, NOT AN INSTRUCTION THAT RUNS ───────────
+# 🔴 THE FAILURE, measured 2026-09-07 on a real Windows install. The project
+# `CLAUDE.md` was 136 bytes: a comment and one `@Mente/...` line. The owner
+# said the assistant "has it but does not read it — it does not recognise where
+# it goes, how to behave, or how to start working." ⛔ It reached its first turn
+# never having been told to read RESUME, to check for an open block, or how to
+# close a session. ⭐ The mature instance that DOES work carries the same words
+# INSIDE its CLAUDE.md, 8.5 KB of them — one hop closer, and that hop is the
+# whole difference between installed and used.
+_c = open(user, encoding="utf-8").read()
+case("⑮b 🔴 ⭐ the startup lives INSIDE CLAUDE.md, not only behind the import",
+     "## 🚀 STARTUP" in _c and len(_c) > 1200, "%d bytes" % len(_c))
+
+# ⭐ AND IT MUST CARRY THE FOUR THINGS A FIRST TURN NEEDS. ⛔ A startup block
+# that names none of them is a heading: it looks installed and decides nothing.
+_need = {"read RESUME first": "RESUME.md",
+         "check for an open block": "work/blocks/active",
+         "how the session ends": "/session-wrap",
+         "the refusal before /clear": "check-clear-ready"}
+_absent = [k for k, v in _need.items() if v not in _c]
+case("⑮c 🔴 ⭐ and it names what the first turn must decide",
+     not _absent, ", ".join(_absent) or "4 of 4")
+
+# ⛔ AND IT IS APPENDED BEFORE THE IMPORT, never after: what comes after a
+# pointer is read only by whoever followed the pointer.
+# ⚠️ `find`, not `index`: a missing block must give a VERDICT here, not a
+# ValueError. ⛔ CHK-CAU-002 — measured while sabotage-testing this very case:
+# removing the block crashed the probe and it still exited 0, so the battery
+# would have counted the whole file green.
+_i, _j = _c.find("## 🚀 STARTUP"), _c.find("@Mente/CLAUDE-MENTE-OS.md")
+case("⑮d ⛔ the startup precedes the import line, not the other way round",
+     _i >= 0 and _j >= 0 and _i < _j, "startup@%d import@%d" % (_i, _j))
+
 # ── ⑥ IT WIRES WHAT GIT CANNOT CARRY ────────────────────────────────────────
 # 🔴 A hook file that is not WIRED never runs and looks installed.
 #
@@ -430,6 +463,35 @@ r = run(treeL, "--owner", OWNER)
 case("㉖d ⛔ a skill of theirs is left untouched, and it says so",
      open(_mine, encoding="utf-8").read() == "mine, not yours\n"
      and "already there" in r.stdout)
+
+# ── ㉖e 🔴 THE WHOLE INTERFACE IS A `/command`, NOT A SCRIPT TO REMEMBER ────
+# 🔴 THE FAILURE, measured 2026-09-07 on a real Windows install. The owner said:
+# "it is installed, it uses it now and then, but it has not read how it must
+# behave, where it goes, or how to start working." ⛔ Only ONE of the four things
+# a person says out loud existed as a `/command`: `/session-wrap`. Turning the
+# system on, off, or asking whether it is on were scripts under `bin/`, so the
+# assistant had to REMEMBER them — and what is only remembered is used now and
+# then. ⭐ A `/` menu is the one surface a person sees without being told.
+_want = ("session-wrap", "mente-status", "mente-pause")
+_gone = [n for n in _want
+         if not os.path.isfile(os.path.join(repoK, ".claude", "skills", n,
+                                            "SKILL.md"))]
+case("㉖e 🔴 ⭐ every spoken command installs as a /command",
+     not _gone, ", ".join(_gone) or "%d of %d" % (len(_want), len(_want)))
+
+# ⭐ AND EACH ONE MUST SAY WHEN TO FIRE. ⛔ A skill whose `description` does not
+# carry the words a person actually says is a skill the assistant never selects
+# — installed, listed, and silent, which is the same failure one layer along.
+_mute = []
+for _n in _want:
+    _f = os.path.join(repoK, ".claude", "skills", _n, "SKILL.md")
+    if not os.path.isfile(_f):
+        continue                       # ⬜ already reported by ㉖e
+    _head = open(_f, encoding="utf-8").read().split("---", 2)[1]
+    if "description:" not in _head or "Use " not in _head:
+        _mute.append(_n)
+case("㉖f ⛔ and each says WHEN to fire, in the words a person uses",
+     not _mute, ", ".join(_mute) or "%d skill(s)" % len(_want))
 
 # ── ⑦ --dry-run WRITES NOTHING ──────────────────────────────────────────────
 repo5, tree5 = fresh()

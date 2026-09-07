@@ -250,6 +250,56 @@ def fill_engine(values, dry):
     return touched
 
 
+# 🔴 THE STARTUP GOES IN THE FILE THAT IS ACTUALLY LOADED, measured 2026-09-07.
+# The engine's startup lived behind `@Mente/CLAUDE-MENTE-OS.md`, so the project's
+# own CLAUDE.md was 136 bytes: two lines and an import. ⛔ An import is a
+# pointer, not an instruction that runs — the assistant reached the first turn
+# never having been told to read RESUME, check for an open block, or how to end
+# a session. The owner said it exactly: "it is installed, it uses it now and
+# then, but it has not READ how it must behave or where to begin."
+# ⭐ The instance that DOES work (measured on a mature one) carries the startup
+# INSIDE its CLAUDE.md — 8.5 KB, loaded by the host on its own. That is the
+# whole difference: the same words, one hop closer.
+# ⚠️ Kept short on purpose. Everything that is not needed on turn one stays
+# behind the import; what is here is what decides the first move.
+STARTUP_BLOCK = """<!-- Mente OS · added by Mente/bin/init. Safe to delete this
+     whole block if you remove the Mente/ folder. -->
+
+## 🚀 STARTUP — do this before the first answer, without being asked
+
+1. **READ FIRST** `Mente/memory/RESUME.md` — where we left off and the next
+   step. ⭐ In most sessions it is all you need.
+2. **Is a piece of work open?** `Mente/work/blocks/active/*/BLOCK.md` — if one
+   is, load its `§A-E` and work INSIDE its `§B` boundary. ⛔ If `§A-E` is not
+   enough, say so — do not infer.
+3. ⛔ **Nothing is written outside an open block.** A gate refuses it. Ask them
+   what the work is, open a block, and ask THEM what it may and may not touch.
+4. **The deliverable lives in the block's own folder**, never in a new folder at
+   the repository root — ⚠️ measured: a run invented `docs/` and the work was
+   invisible to every check.
+
+## ⌨️ What they can ask for, in their words
+
+| They say | You run |
+|---|---|
+| *"is Mente OS on?"* | `Mente/bin/status` |
+| *"turn it off"* / *"turn it back on"* | `Mente/bin/off` · `Mente/bin/on` — ⛔ deletes nothing |
+| *"where were we?"* / *"what's pending?"* | read `RESUME.md` · `PENDING.md` |
+| ⭐ *"let's close the session"* | `/session-wrap` — **before** the conversation resets |
+| before `/clear` | `Mente/bin/check-clear-ready` — ⛔ it refuses if something would be lost |
+
+⚠️ **Say the session-close one out loud once.** ⛔ It is the only habit whose
+cost is invisible until too late: the files survive a reset, the reasoning does
+not.
+
+## 🗣️ How to answer
+
+⭐ The voice is `Mente OS` (`.claude/output-styles/`) and it is already selected.
+🔴 Measured 2026-09-07: an assistant installed it, read it, and kept answering
+in its own — a style placed but not obeyed is the same document nobody read.
+
+📖 The rest — the pieces, the gates, the contracts — is in
+"""
 def wire_import(dry):
     """③ Append the router import to the user's own CLAUDE.md.
 
@@ -266,7 +316,7 @@ def wire_import(dry):
     if current is not None and IMPORT_LINE in current:
         return "already imported"
     if dry:
-        return "would append the import"
+        return "would append the startup block and the import"
     try:
         # ⚠️ newline="" here too: this appends to the user's OWN CLAUDE.md,
         # so a translated line ending would show up as a change in THEIR
@@ -282,8 +332,7 @@ def wire_import(dry):
             # gone. ⛔ A bare `@Mente/...` explains nothing to whoever finds it,
             # and an unexplained leftover reads as memory the machine should
             # not have.
-            fh.write("<!-- Mente OS · added by Mente/bin/init. Safe to delete "
-                     "these two lines if you remove the Mente/ folder. -->\n")
+            fh.write(STARTUP_BLOCK)
             fh.write("%s\n" % IMPORT_LINE)
     except OSError as e:
         return "⚠️ could not write CLAUDE.md (%s)" % e.__class__.__name__

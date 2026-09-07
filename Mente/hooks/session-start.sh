@@ -84,6 +84,29 @@ for name in "${CHECKS[@]}"; do
   }
 done
 
+# ── 🔴 SAY WHERE THE WORK STANDS · the hook's other job ─────────────────────
+# 🔴 Measured 2026-09-07. This hook ran validators and stayed silent when they
+# were clean — so the one moment the system could orient the assistant, it said
+# nothing. ⛔ The assistant reached turn one never told to read RESUME or check
+# for an open block, and worked as if the system were not there. The owner:
+# "it is installed, it uses it now and then, but it has not read how to behave."
+# ⚠️ This is NOT the "speak only on 🔴" rule broken: that rule is about
+# FINDINGS. Where the work stands is not a finding — it is the brief, and a
+# brief withheld is what the whole engine exists to prevent.
+# ⭐ Two lines, and only what changes the first move.
+_open=0
+for _b in "$MENTE"/work/blocks/active/*/BLOCK.md; do
+  [ -f "$_b" ] && _open=$((_open + 1))
+done
+if [ "$_open" -gt 0 ]; then
+  printf '📦 %d piece(s) of work open · read its §A-E and stay inside its §B\n' "$_open"
+else
+  printf '⬜ no piece of work open · ⛔ nothing may be written until one is\n'
+fi
+# ⚠️ Named, never pasted: a brief the hook prints is a brief nobody re-reads.
+[ -f "$MENTE/memory/RESUME.md" ] && \
+  printf '🧭 read Mente/memory/RESUME.md first — where we left off\n'
+
 [ "$found" -gt 0 ] && printf '\n👉 run: Mente/bin/probes/run-all.py\n'
 
 exit 0   # ⛔ always 0 — this hook informs, it never blocks

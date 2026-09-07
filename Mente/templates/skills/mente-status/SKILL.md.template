@@ -1,0 +1,51 @@
+---
+name: mente-status
+description: >-
+  Answer "is Mente OS on?" — what is running in this folder, whether a piece of
+  work is open, and what the person can ask for next. Use whenever they ask if
+  the system is active, what it is doing, whether it is working, what is
+  running, or say "status", "¿está encendido?", "¿qué tienes abierto?". Also
+  invoke it right after an install, before anything else.
+---
+# mente-status — show them it is on
+
+🔴 **THE FAILURE THIS ANSWERS, measured 2026-09-07.** A full install succeeded
+and the owner said: *"it is installed, it uses it now and then, but it has not
+read how it must behave or where to begin."* ⛔ The commands existed as scripts
+in `bin/`, so an assistant had to REMEMBER them — and a command nobody sees in
+the `/` menu is a command that gets used now and then.
+
+## Do this
+
+```bash
+Mente/bin/status
+```
+
+⭐ **Show its output and read it with them.** ⛔ Do not summarise it — the point
+is that they see the system answer for itself.
+
+Then, if they have not been told yet, hand over the whole interface **once**:
+
+| They say | What happens |
+|---|---|
+| *"where were we?"* | I read where we left off — no guessing |
+| *"what's still pending?"* | I read what was postponed |
+| *"let's work on X"* | I open a piece of work and ask what I may touch |
+| *"turn Mente OS off"* | ⛔ the checks pause · nothing is deleted |
+| ⭐ *"let's close the session"* | **I write down where we got to, before this conversation resets** |
+
+⚠️ **Say the last one out loud.** ⛔ It is the only one whose cost is invisible
+until too late: the files survive a reset, the reasoning does not.
+
+## ⛔ Never
+
+- ⛔ Hand them a command to type. ⭐ They say the sentence, you run what it means.
+- ⛔ Report green when a layer is down. ⚠️ If `bin/status` says a check is not
+  wired, say so in their words — a tool whose job is telling you whether you are
+  protected must never be the one that is wrong.
+
+## ⬜ Where a path lives
+
+⛔ **Do not hardcode a path from another installation.** ⭐ Every engine piece is
+listed in `Mente/pieces.tsv` — read it when you need to know where something is,
+and a moved piece stays findable without editing this file.
