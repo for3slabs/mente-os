@@ -157,6 +157,30 @@ case("⑭ ⛔ an unreadable configuration does not crash the check",
      "Traceback" not in r.stderr)
 
 plat.rmtree(WORK)
+
+# ── ⑯ 🔴 WORK GIT CANNOT SEE IS WORK A COMMIT DOES NOT SAVE ────────────────
+# 🔴 THE FAILURE, measured 2026-09-07 on a real installation. An audit ran
+# inside a block, wrote eleven findings into it, and committed. The commit
+# carried ONE LINE: `.gitignore` excludes `work/blocks/*` and
+# `work/campaigns/*`, so every finding stayed on disk only — and the person was
+# told the work was saved. ⛔ Deleting the folder would have taken all of it,
+# and nothing anywhere said so.
+# ⚠️ The exclusion is RIGHT. What was missing is that anybody was told.
+_src = open(os.path.join(ROOT, "bin", "check-clear-ready"),
+            encoding="utf-8").read()
+case("⑯ 🔴 ⭐ the cut check warns about work git does not track",
+     "does NOT track" in _src)
+# ⛔ And it must say the exclusion is correct, not sound like a defect: a
+# warning that reads as breakage gets "fixed" by deleting the ignore rule.
+case("⑯b ⭐ and says the exclusion is right, not broken",
+     "the engine travels, your work does not" in _src)
+# 🔴 Asked about a FILE, never the folder: `git check-ignore` on a directory
+# answers "not ignored" even when the rule inside excludes every file —
+# measured here, and it made the whole check silent.
+case("⑯c 🔴 ⭐ it asks git about a file, not the folder",
+     "never the folder" in _src)
+
+
 good = sum(1 for _, ok in results if ok)
 print("\n  ➜ %d of %d correct" % (good, len(results)))
 for l, ok in results:

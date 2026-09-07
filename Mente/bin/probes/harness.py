@@ -215,3 +215,25 @@ def link_or_skip(src, dst):
         return True
     except (OSError, NotImplementedError, AttributeError):
         return False
+
+
+def rewrite(path, body):
+    """Write a file of the REAL tree back, with the line endings it had.
+
+    🔴 THE FAILURE, measured 2026-09-07 on a real Windows install. Six probes
+    sabotage a real engine file and restore it — through a plain
+    `open(..., "w", encoding="utf-8")`. On Windows that turns every "\\n" into
+    "\\r\\n", so `probe-grade` left `rules/contract-quality-verdict.md` with 311
+    CRLF lines where it had found 311 LF ones. ⛔ Then `probe-init ㉘`, whose
+    whole job is "nothing carries CRLF", reported the mess its own neighbour
+    had just made: 3 of the 10 failures the battery showed were probes
+    contaminating each other, not defects.
+
+    ⚠️ It is the SAME bug this engine documents fixing in `bin/init` — there is
+    even a case asserting the installer disables translation. ⭐ Fixed there,
+    never in the probes that check it.
+
+    ⛔ One writer, not fifteen: fixing fourteen would look identical.
+    """
+    with open(path, "w", encoding="utf-8", newline="") as fh:
+        fh.write(body)

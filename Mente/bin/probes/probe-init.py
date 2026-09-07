@@ -665,6 +665,35 @@ case("㉛b ⛔ and no hook is left with a bare interpreter name",
      not any(re.match(r'"?(python3?|bash)"?\s', _c) for _c in _cmds),
      "%d hook(s)" % len(_cmds))
 
+# 🔴 A PATH WITH A SPACE MUST SURVIVE THE STAMP. Measured 2026-09-07 on a real
+# Windows install: the substitution stripped the closing quote so the
+# interpreter ran on into its argument, which works until the path contains a
+# space. `C:\Program Files\Git\bin\bash.exe` arrived unterminated, the shell
+# split it, and `session-start` died with `C:Program: command not found`.
+# ⛔ Not one beat from that hook, so RESUME.md was never written and the memory
+# the whole system rests on stayed the shipped template.
+# ⚠️ ㉛ above runs the interpreter, which cannot catch this on a POSIX kernel —
+# there are no spaces in `/usr/bin/bash`. ⭐ So the substitution is exercised
+# directly, with a path that has one, on every platform.
+_ns = {}
+_isrc = open(os.path.join(ROOT, "bin", "init"), encoding="utf-8").read()
+_a = _isrc.index("        def _cmd(argv):")
+_b = _isrc.index("        body = body.replace('\"python3 ")
+exec(_isrc[_a:_b].replace("        ", "", 1).replace("\n        ", "\n"), _ns)
+_tpl = '{"command": "bash \\"$DIR/x.sh\\""}'
+_spaced = "C:\\Program Files\\Git\\bin\\bash.exe"
+_ok, _why = False, ""
+try:
+    _stamped = _tpl.replace('"bash ', _ns["_cmd"]([_spaced]))
+    _parsed = json.loads(_stamped)          # ⛔ it must still be valid JSON
+    _argv = __import__("shlex").split(_parsed["command"])
+    _ok = _argv[0] == _spaced
+    _why = "argv[0]=%r" % _argv[0]
+except Exception as _e:                                    # noqa: BLE001
+    _why = "%s: %s" % (type(_e).__name__, _e)
+case("㉛c 🔴 ⭐ an interpreter path WITH A SPACE survives the stamp",
+     _ok, _why[:52])
+
 # ── ㉜ 🔴 A STAMPED FILE IS NOT ITS OWN MOULD ───────────────────────────────
 # 🔴 Measured 2026-09-07: nine templates open with `<!-- ⚠️ TEMPLATE — bin/init
 # copies this to … -->`, and the installer copied it through. The person's own

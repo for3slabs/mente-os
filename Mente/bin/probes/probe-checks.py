@@ -4,7 +4,7 @@
 ⭐ The validator that audits the validators. Its own probe is the one that
 must be hardest to fool.
 """
-import os, sys
+import ast, glob, os, sys
 import os as _os, sys as _sys
 _d = _os.path.dirname(_os.path.abspath(__file__))
 while _d != _os.path.dirname(_d):
@@ -115,6 +115,52 @@ for _c, _what in (("0", "PASS"), ("1", "REJECT"), ("2", "PENDING"), ("3", "WARN"
     p.inverse("⑧%s ⭐ exit %s (%s) is declared → accepted"
               % ("abcd"["0123".index(_c)], _c, _what),
               lambda c=_c: plant(_OK % c))
+
+# ── ⑨ 🔴 A PROBE MUST NOT LEAVE THE TREE DIRTIER THAN IT FOUND IT ──────────
+# 🔴 THE FAILURE, measured 2026-09-07 on a real Windows install. Six probes
+# sabotage a real engine file and restore it through a plain
+# `open(..., "w", encoding="utf-8")`. On Windows that turns every "\n" into
+# "\r\n": `probe-grade` left `rules/contract-quality-verdict.md` with 311 CRLF
+# lines where it had found 311 LF ones. ⛔ Then `probe-init ㉘` — whose whole
+# job is "nothing carries CRLF" — reported the mess its own neighbour had just
+# made. 3 of the 10 failures the battery showed were probes contaminating each
+# other, and the owner was told they were defects.
+# ⚠️ The same bug this engine documents fixing in `bin/init`, never fixed in
+# the probes that check it.
+# ⚠️ Only names that point at a SHIPPED engine file. 🔴 `FIX`/`LOCAL` were
+# in this list at first and the case fired on `probe-config`, whose
+# fixtures live under a MARK-prefixed temp folder and are thrown away —
+# a rule that flags correct behaviour is one somebody switches off.
+_REAL = ("CONTRACT", "RULE", "_rule", "_idx", "_pr")
+_unsafe = []
+for _p in sorted(glob.glob(os.path.join(ROOT, "bin", "probes", "probe-*.py"))):
+    try:
+        _tree = ast.parse(open(_p, encoding="utf-8").read())
+    except (OSError, SyntaxError):
+        # ⬜ CHK-CAU-003 · said out loud, never swallowed.
+        _unsafe.append("⬜ unparsed:" + os.path.basename(_p))
+        continue
+    for _n in ast.walk(_tree):
+        if not (isinstance(_n, ast.Call)
+                and getattr(_n.func, "id", "") == "open"):
+            continue
+        _m = next((a.value for a in _n.args[1:]
+                   if isinstance(a, ast.Constant)), "r")
+        if ("w" not in str(_m) and "a" not in str(_m)) or \
+                any(k.arg == "newline" for k in _n.keywords):
+            continue
+        # ⭐ Only writes aimed at the REAL tree matter: a probe's own temp
+        # fixture is thrown away, and demanding `newline=""` there would be
+        # noise that gets the rule switched off.
+        _t = _n.args[0] if _n.args else None
+        if (getattr(_t, "id", "") or getattr(_t, "attr", "")) in _REAL:
+            _unsafe.append("%s:%d" % (os.path.basename(_p), _n.lineno))
+_ok9 = not _unsafe
+print("  %-58s %s %s" % ("⑨ 🔴 ⭐ no probe rewrites a real file with translation on",
+                         "✅" if _ok9 else "🔴",
+                         ", ".join(_unsafe)[:44] or "clean"))
+p.results.append(("⑨ probes no traducen", "PASS" if _ok9 else "DIRTY"))
+
 
 p.crash_guard()
 

@@ -335,9 +335,29 @@ def wire_gates(dry):
             # settings file that looks wired and protects nothing.
             return ("⬜ gates NOT wired · no working python found · "
                     "⚠️ install one, then re-run bin/init --force")
-        body = body.replace('"python3 ', json.dumps(" ".join(py))[:-1] + ' ')
+        # 🔴 THE INTERPRETER KEEPS ITS OWN QUOTES, measured 2026-09-07 on a
+        # real Windows install. This used to strip the closing quote with
+        # `[:-1]` so the path would run on into the script argument — which
+        # works until the path has a SPACE in it. `C:\Program Files\Git\bin\
+        # bash.exe` then arrived as an unterminated quote, the shell split it,
+        # and the session hook died with `C:Program: command not found`.
+        # ⛔ Not one beat from `session-start` on that machine, so RESUME.md
+        # was never written — and the memory the whole system rests on stayed
+        # the shipped template.
+        # ⭐ The interpreter is quoted INSIDE the JSON string, not around it.
+        # ⚠️ The value is already `"bash \"$DIR/x.sh\""` — a JSON string whose
+        # content is a shell command. So the path needs shell quotes, escaped
+        # for JSON, and the surrounding JSON quote stays where it was.
+        # 🔴 Measured while fixing this: quoting it as a JSON value instead
+        # produced `"/usr/bin/bash" \"...\""` — a settings file that no longer
+        # parses at all, which is worse than the broken path it replaced.
+        def _cmd(argv):
+            inner = " ".join(a.replace("\\", "\\\\").replace('"', '\\"')
+                             for a in argv)
+            return '"\\"%s\\" ' % inner if " " in inner else '"%s ' % inner
+        body = body.replace('"python3 ', _cmd(py))
         if sh:
-            body = body.replace('"bash ', json.dumps(" ".join(sh))[:-1] + ' ')
+            body = body.replace('"bash ', _cmd(sh))
         else:
             unverified = " · ⬜ bash NOT verified · the session hook may not run"
         os.makedirs(os.path.dirname(dest), exist_ok=True)

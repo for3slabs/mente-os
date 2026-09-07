@@ -93,6 +93,49 @@ def uncommitted(where, label):
                         "\n   …" if len(lines) > 5 else ""))
 
 
+def work_is_unbacked(where, label):
+    """🔴 The work git cannot see — and therefore cannot save.
+
+    🔴 THE FAILURE, measured 2026-09-07 on a real installation. An audit ran
+    inside a block, wrote eleven findings into it, and committed. The commit
+    contained ONE LINE: `.gitignore` excludes `work/blocks/*` and
+    `work/campaigns/*`, so every finding stayed on disk only. ⛔ The person was
+    told the work was saved. Deleting the folder would have taken all of it,
+    and nothing anywhere said so.
+
+    ⚠️ The exclusion is RIGHT — the engine travels, the owner's work does not.
+    ⭐ What was missing is that anybody was told: an exclusion nobody knows
+    about is a backup nobody has.
+    """
+    root = os.path.join(where, "Mente", "work")
+    if not os.path.isdir(root):
+        root = os.path.join(where, "work")
+    if not os.path.isdir(root):
+        return
+    n, sample = 0, None
+    for sub in ("blocks", "campaigns"):
+        d = os.path.join(root, sub)
+        for cur, _dirs, files in os.walk(d) if os.path.isdir(d) else ():
+            for f in files:
+                if f.endswith(".md") and f.upper() != "README.MD":
+                    n += 1
+                    sample = sample or os.path.join(cur, f)
+    if not n or not sample:
+        return
+    # ⬜ Asked about a FILE, never the folder. 🔴 `git check-ignore` on the
+    # directory answers "not ignored" even when the rule inside it excludes
+    # every file — measured here, and it made this whole check silent.
+    if git("check-ignore", sample, cwd=where) is None:
+        return
+    risks.append("%d file(s) of work in %s that git does NOT track\n"
+                 "   ⚠️ `.gitignore` excludes work/blocks and work/campaigns — "
+                 "⭐ correct: the engine travels, your work does not.\n"
+                 "   ⛔ But it means a commit does NOT save them. Delete the "
+                 "folder and every block and campaign goes with it.\n"
+                 "   👉 Copy them somewhere backed up, or track them in a "
+                 "repository of your own." % (n, label))
+
+
 def unpushed(where, label):
     """⭐ A commit that never left is one machine away from being the only copy."""
     br = git("rev-parse", "--abbrev-ref", "HEAD", cwd=where)
@@ -146,6 +189,7 @@ def main():
 
     uncommitted(REPO, "this tree")
     unpushed(REPO, "this tree")
+    work_is_unbacked(REPO, "this tree")
     open_work()
 
     sibs = siblings()
