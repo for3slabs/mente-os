@@ -30,7 +30,9 @@ those are worth: followed when remembered. ⛔ So it is not a rule. It is a func
 that must never be guessed are here together.
 """
 import os
+import shutil
 import stat
+import subprocess
 import sys
 
 
@@ -275,3 +277,72 @@ def rmtree(path):
     else:
         shutil.rmtree(path, onerror=_retry)
     return not os.path.exists(path)
+
+
+def _runs(argv):
+    """True when `argv` actually starts and answers. ⛔ Never `os.path.exists`.
+
+    🔴 THE FAILURE THIS ANSWERS, measured 2026-09-07 on a real Windows install.
+    `sys.executable` pointed at
+    `WindowsApps/PythonSoftwareFoundation.Python.../python.exe` — a Microsoft
+    Store EXECUTION ALIAS: a 2-byte stub that works when a terminal invokes it
+    and fails when a hook does. It was stamped into every gate, ⛔ so not one
+    gate ever ran: `Mente/.beats/` was never created. The install reported
+    success and the whole enforcement layer was dead.
+    ⚠️ The file existed. Existence was never the question.
+    """
+    try:
+        r = subprocess.run(argv + ["--version"], capture_output=True,
+                           timeout=15)
+        return r.returncode == 0 and bool((r.stdout or r.stderr).strip())
+    except (OSError, subprocess.SubprocessError):
+        return False
+
+
+def python(verify=True):
+    """The interpreter to write into a hook — one that has been SEEN to run.
+
+    ⭐ Candidates in order of trust: the one running this, then the launcher,
+    then the names on PATH. ⬜ Returns None when none of them answers, and the
+    caller says so rather than stamping a guess.
+    """
+    seen, out = set(), []
+    for c in ([sys.executable] if sys.executable else []) + \
+             [shutil.which(n) for n in ("py", "python3", "python")]:
+        if c and c not in seen:
+            seen.add(c)
+            out.append(c)
+    for c in out:
+        # ⚠️ `py` is the Windows launcher: it needs -3 to name a version.
+        argv = [c, "-3"] if os.path.basename(c).lower().startswith("py.") else [c]
+        if not verify or _runs(argv):
+            return argv
+    return None
+
+
+def bash(verify=True):
+    """The shell to write into a hook — ⛔ never the bare name on Windows.
+
+    🔴 MEASURED 2026-09-07 on a real Windows install. `bash` on PATH resolved to
+    `C:\\WINDOWS\\system32\\bash.exe`, the WSL launcher, which cannot see a
+    `C:\\...` path: every shell hook died with `exit 127`, and the battery
+    reported 9 failures that were the interpreter, not the engine.
+    ⭐ Git for Windows ships a bash that does understand those paths, so it is
+    preferred over whatever PATH happens to answer first.
+    """
+    cands = []
+    if os.name == "nt":
+        cands += [r"C:\Program Files\Git\bin\bash.exe",
+                  r"C:\Program Files\Git\usr\bin\bash.exe",
+                  r"C:\Program Files (x86)\Git\bin\bash.exe"]
+    w = shutil.which("bash")
+    # ⛔ The WSL launcher is excluded by NAME, not by trying it: it answers
+    # `--version` perfectly well and still cannot open a Windows path.
+    if w and "system32" not in w.replace("/", "\\").lower():
+        cands.append(w)
+    for c in cands:
+        if os.path.isfile(c) and (not verify or _runs([c])):
+            return [c]
+    # ⬜ Nothing verified. The caller reports it rather than stamping a name
+    # that will fail silently on every hook for the life of the install.
+    return None
