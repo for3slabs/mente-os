@@ -133,6 +133,21 @@ case("⑤ 🔴 ⭐ the settings template actually calls it",
 case("⑤b ⛔ and on the tools that write",
      '"matcher": "Edit|Write|MultiEdit"' in _txt)
 
+# ── ⑥ IT LEAVES NOTHING BEHIND ─────────────────────────────────────────────
+# 🔴 Measured 2026-09-06, and it reached main: `beat(mente, name)` takes the
+# Mente ROOT first, and this gate passed its own label there — so every call
+# wrote into a folder named after the gate, BESIDE the repository. Three stray
+# files were committed before anyone looked. ⛔ A hook that litters outside the
+# folder breaks the one promise the engine makes: delete it and it is gone.
+_stray = os.path.join(os.path.dirname(ROOT), "gate-no-block")
+case("⑥ 🔴 ⭐ the gate writes its beat inside Mente/, not beside it",
+     not os.path.exists(_stray),
+     "🔴 %s exists" % _stray if os.path.exists(_stray) else "clean")
+# ⭐ And the positive half: it DOES leave a beat, where check-gates reads it.
+# ⛔ Without this, "writes nothing anywhere" would also pass.
+case("⑥b ⭐ and the beat is where check-gates looks for it",
+     os.path.isfile(os.path.join(ROOT, ".beats", "gate-no-block")))
+
 print("\n  ⬜ NOT MEASURED · whether an assistant OBEYS the refusal · that runs\n"
       "     outside this engine · these cases prove the refusal happens")
 
