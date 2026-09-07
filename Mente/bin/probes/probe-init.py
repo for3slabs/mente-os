@@ -14,7 +14,7 @@ ABORT, not default.
 Runs against an ISOLATED COPY — ⛔ measured the hard way: running the installer
 in the source tree writes an owner name across the whole engine.
 """
-import os, glob, shutil, subprocess, sys, tempfile
+import os, glob, re, shutil, subprocess, sys, tempfile
 import os as _os, sys as _sys
 _d = _os.path.dirname(_os.path.abspath(__file__))
 while _d != _os.path.dirname(_d):
@@ -225,6 +225,13 @@ case("⑰b 🔴 the base-branch hook is WIRED too", _ok2, _how2)
 _repoC, _treeC = fresh()
 run(_treeC, "--owner", "Someone")
 _git = ["git", "-c", "user.email=p@p", "-c", "user.name=p"]
+# ⚠️ ON A BRANCH, because the install wires `pre-commit` and that gate refuses
+# the base branch — 🔴 including the repository's FIRST commit, since 2026-09-06.
+# ⛔ Committing on `master` here silently produced nothing, and every validator
+# below then measured an uncommitted tree instead of an installed one.
+# ⭐ The fixture obeys the gate it just installed; that is the point of the gate.
+subprocess.run(["git", "switch", "-q", "-c", "chore/install"], cwd=_repoC,
+               capture_output=True)
 subprocess.run(["git", "add", "-A"], cwd=_repoC, capture_output=True)
 subprocess.run(_git + ["commit", "-qm", "install"], cwd=_repoC,
                capture_output=True)
@@ -438,7 +445,58 @@ r = run(tree6, "--owner", OWNER)
 case("㉑ ⛔ no templates/ → it says so, it does not crash",
      r.returncode == 2 and "Traceback" not in r.stderr, "exit=%d" % r.returncode)
 
-plat.rmtree(WORK)
+plat.rmtree(WORK)# ── ㉗ 🔴 A SKILL MAY NAME ONLY WHAT THE ENGINE SHIPS ───────────────────────
+# 🔴 THE FAILURE, measured 2026-09-06 on a real installation. This skill shipped
+# naming files that exist in the author's own instance and in no clone —
+# `RETOMAR.md`, `PENDIENTES.md`, `bin/check-sufficiency`, `bin/test-f0-f6`:
+# ⛔ six citations, none of which resolve on a fresh install. The assistant
+# following it improvised the entire session close, and a person who could not
+# read code would have written their brief into a file nothing reads.
+# ⭐ A skill travels to EVERY clone, so it may name only engine paths.
+_sk = os.path.join(ROOT, "templates", "skills")
+_bodies = []
+for _n in sorted(os.listdir(_sk)) if os.path.isdir(_sk) else []:
+    _f = os.path.join(_sk, _n, "SKILL.md.template")
+    if os.path.isfile(_f):
+        _bodies.append((_n, open(_f, encoding="utf-8").read()))
+    else:
+        # ⬜ CHK-CAU-003 · said out loud, never swallowed.
+        print("  ⬜ %s has no SKILL.md.template · NOT MEASURED" % _n)
+
+# ⭐ Every `bin/<name>` a skill tells the assistant to run must exist. ⛔ This is
+# the case that would have caught it: two of the six were commands.
+_missing = []
+for _n, _b in _bodies:
+    for _cmd in set(re.findall(r"bin/([a-z0-9][\w.-]*)", _b)):
+        _p = os.path.join(ROOT, "bin", _cmd)
+        if not os.path.exists(_p) and not os.path.exists(_p + ".py"):
+            _missing.append("%s → bin/%s" % (_n, _cmd))
+case("㉗ 🔴 ⭐ every command a skill names actually ships",
+     not _missing, ", ".join(_missing) or "%d skill(s)" % len(_bodies))
+
+# ⛔ And no INSTANCE filename either. These four are the measured ones: they are
+# real files in the author's tree, which is exactly why they read as correct.
+_INSTANCE = ("RETOMAR.md", "PENDIENTES.md", "Bitacora_Progreso",
+             "Registro_Conversaciones", "Estado_Sesion")
+_named = []
+for _n, _b in _bodies:
+    # ⚠️ The block that DOCUMENTS the failure legitimately names them. Only
+    # lines that instruct count — a quoted post-mortem is evidence, not an order.
+    for _line in _b.split("\n"):
+        if _line.lstrip().startswith(">") or "none of which resolve" in _line:
+            continue
+        for _w in _INSTANCE:
+            if _w in _line:
+                _named.append("%s → %s" % (_n, _w))
+case("㉗b ⛔ and no skill names an instance-only file as an instruction",
+     not _named, ", ".join(sorted(set(_named))) or "clean")
+
+# ⭐ THE POSITIVE HALF: it must say where to LOOK instead. ⛔ Without this the
+# fix reads as "name nothing", and the next author hardcodes a path again.
+case("㉗c ⭐ and it points at the piece table for instance paths",
+     all("pieces.tsv" in _b for _, _b in _bodies), "%d skill(s)" % len(_bodies))
+
+
 good = sum(1 for _, ok in results if ok)
 print("\n  ➜ %d of %d correct" % (good, len(results)))
 for l, ok in results:
