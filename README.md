@@ -166,6 +166,55 @@ order. Read it before your next action, not after.
 
 ---
 
+## 📋 Copy and paste — the whole thing is three messages
+
+⭐ **You do not have to understand any of this page to use it.** Paste these
+three, in this order, into an assistant that can read files and run commands.
+
+### ① Find out what it is — nothing is downloaded
+
+```text
+Read https://github.com/for3slabs/mente-os and explain what it is
+in simple words. Do not download anything yet.
+```
+
+⚠️ **The second sentence is the one that matters.** 🔴 Measured: without it,
+assistants download first and ask afterwards.
+
+### ② Get it
+
+⭐ **First open the empty folder where it should live.** Then:
+
+```text
+Download it here.
+```
+
+⛔ **Nothing else.** Explaining how is what pushes the assistant off the script.
+
+### ③ The sentence that starts everything
+
+```text
+Set up Mente OS and walk me through it.
+```
+
+⭐ **In English, word for word** — it is the phrase this page hands the
+assistant, and a translation does not reach the same script. ⚠️ It only works
+once the files are here: said earlier, there is nothing for it to read.
+
+---
+
+### 🔬 And one more, to prove the guard is real
+
+⭐ **After it is set up, and without opening a piece of work:**
+
+```text
+Write me a study plan in a file.
+```
+
+⛔ **It must refuse**, and say that nothing would be governing that work.
+🔴 If it writes the file anyway, the guard failed — that is worth reporting.
+---
+
 ## 🚀 Getting it
 
 **Make a folder for the project this will look after, and clone inside it** — the trailing `.` matters:

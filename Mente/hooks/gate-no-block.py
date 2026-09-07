@@ -19,7 +19,7 @@ absence of a block. Reporting was not enough — ⚠️ this refuses.
 
 Contract: a PreToolUse payload on stdin · exit 0 allow · exit 2 BLOCK.
 """
-import os, sys, json, glob
+import os, re, sys, json, glob
 import os as _os, sys as _sys
 _d = _os.path.dirname(_os.path.abspath(__file__))
 while _d != _os.path.dirname(_d):
@@ -32,6 +32,8 @@ MENTE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 REPO = os.path.dirname(MENTE)
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from _beat import beat                                         # noqa: E402
+sys.path.insert(0, os.path.join(MENTE, "bin"))
+from blockread import body_of                                  # noqa: E402
 
 
 def target(payload):
@@ -57,6 +59,62 @@ def a_block_is_open():
     return bool(glob.glob(os.path.join(d, "*", "BLOCK.md")))
 
 
+def declared_in(path):
+    """Is `path` named by SOME open block's §B IN? ⬜ None when nothing says.
+
+    🔴 THE FAILURE, measured 2026-09-07. A run opened a block correctly and then
+    wrote its deliverable to the repository root — outside everything §B named —
+    and `check-block` still reported `0 violations`, because a block validates
+    its own SHAPE, never where the work actually landed. ⛔ The gate refused
+    work with NO block and waved through work OUTSIDE the block, which is the
+    same hole one step along.
+
+    ⚠️ It answers None, not False, when no §B names anything readable: a gate
+    that refuses because it could not read is a gate that gets switched off.
+    """
+    d = os.path.join(MENTE, "work", "blocks", "active")
+    names, saw_any, unreadable = [], False, []
+    for b in sorted(glob.glob(os.path.join(d, "*", "BLOCK.md"))):
+        try:
+            body = body_of(open(b, encoding="utf-8").read(), "B")
+        except (OSError, ValueError):
+            # ⬜ CHK-CAU-003 · a block whose §B cannot be read is NOT MEASURED,
+            # never a silent skip. ⛔ Swallowed, an unreadable block leaves the
+            # gate free to refuse a write that block may well have allowed.
+            sys.stderr.write("⬜ gate-no-block · %s · §B unreadable · this "
+                             "block's scope was NOT MEASURED\n"
+                             % os.path.basename(os.path.dirname(b)))
+            unreadable.append(b)
+            continue
+        # ⭐ Only the IN half. The OUT half is prose about limits, and matching
+        # a path against it would refuse the very file a block exists to write.
+        head = body.split("OUT", 1)[0] if body else ""
+        for line in head.split("\n"):
+            line = line.strip()
+            if not line.startswith("-"):
+                continue
+            for tok in re.findall(r"`([^`]+)`", line):
+                tok = tok.strip().rstrip("*").rstrip("/")
+                if tok and not tok.startswith("⬜"):
+                    names.append(tok)
+                    saw_any = True
+    if not saw_any:
+        return None                     # ⬜ nothing declared · NOT MEASURED
+    if unreadable:
+        # ⚠️ Some scope could not be read, so "outside every block" is not a
+        # claim this can make. ⭐ NOT MEASURED, not a refusal.
+        return None
+    real = os.path.realpath(path)
+    for n in names:
+        # ⚠️ Matched on the RESOLVED path: `../` walks past a string compare,
+        # and this decides whether a write is refused.
+        cand = n if os.path.isabs(n) else os.path.join(REPO, n)
+        cand = os.path.realpath(cand)
+        if real == cand or real.startswith(cand + os.sep):
+            return True
+    return False
+
+
 def inside_engine(path):
     """⚠️ The engine's own folder is not somebody's project work. Installing,
     configuring and fixing Mente OS itself must not require a block about Mente
@@ -69,6 +127,28 @@ def inside_engine(path):
         return False
     return real.startswith(os.path.realpath(MENTE) + os.sep)
 
+
+OUT_OF_SCOPE = """
+🔴 REFUSED · this path is outside every open block's §B
+
+   %s
+
+   ⛔ A block is open, but its §B IN does not name this. Writing here
+      produces work the block does not account for — and every validator
+      stays green, because a block checks its own SHAPE, never where the
+      work actually landed.
+
+   ⭐ Measured 2026-09-07: a run opened a block correctly and then wrote
+      its deliverable to the repository root. `check-block` reported
+      0 violations, and the file was invisible to the whole engine.
+
+   Two honest ways forward:
+     · write it where §B already allows — the product belongs in
+       Mente/Cerebro/<name>/, the record in the block itself
+     · or add this path to §B, ASK THEM FIRST, and say what it widens
+
+   ⛔ Do not widen the scope silently to fit what you were going to do.
+"""
 
 REFUSAL = """
 🔴 REFUSED · there is no piece of work open
@@ -112,6 +192,17 @@ def main():
     if inside_engine(path):
         return 0
     if a_block_is_open():
+        # ⭐ A block is open — now the question is whether THIS path is inside
+        # what it declared. 🔴 Measured 2026-09-07: it was not, and nothing
+        # said so; the deliverable landed in the repository root and every
+        # validator stayed green because none of them looks at where work went.
+        inside = declared_in(path)
+        if inside is False:
+            beat(MENTE, "gate-no-block")
+            sys.stderr.write(OUT_OF_SCOPE % path)
+            return 2
+        # ⬜ None · no §B names anything readable · NOT MEASURED, never a
+        # refusal: a gate that blocks because it could not read gets removed.
         beat(MENTE, "gate-no-block")
         return 0
 

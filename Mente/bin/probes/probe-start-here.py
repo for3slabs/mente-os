@@ -94,12 +94,20 @@ for name, label in (("RESUME", "the cold-start brief"),
 # document telling an assistant to withhold something from its own user is
 # indefensible; the failure was never the mention, it was abandoning the errand
 # and handing a newcomer a decision they have no words for.
+# ⚠️ THE RULE MOVED to `base-rules.md` §8 — it governs every run, not only the
+# first one, and this file was over its ceiling. ⭐ Both halves are still
+# asserted, against the file that now carries them, plus the pointer that has to
+# stay here: 🔴 a rule that moves without leaving one is a rule nobody finds.
+_base = os.path.join(ROOT, "base-rules.md")
+_blow = open(_base, encoding="utf-8").read().lower() if os.path.isfile(_base) else ""
+case("④a ⭐ and this file still points at where it went",
+     "base-rules.md` §8" in text)
 case("④b 🔴 ⭐ an unrelated finding IS told to them — never withheld",
-     bool(re.search(r"tell them what you found", low))
-     and not re.search(r"not yours to raise|do not report anything you notice", low))
+     bool(re.search(r"tell them what you found", _blow))
+     and not re.search(r"not yours to raise|do not report anything you notice", _blow))
 case("④c ⛔ but it is offered, not asked — and never investigated",
-     bool(re.search(r"offer, do not ask", low))
-     and bool(re.search(r"do not investigate", low)))
+     bool(re.search(r"offer, do not ask", _blow))
+     and bool(re.search(r"do not investigate", _blow)))
 case("④d 🔴 ⭐ a newcomer is not handed a technical decision",
      bool(re.search(r"ask them to decide something technical", low)))
 

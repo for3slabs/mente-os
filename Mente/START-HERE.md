@@ -86,23 +86,9 @@ person never sees it.
 
 ### ⚠️ SOMETHING UNRELATED YOU NOTICE: SAY IT, THEN FINISH THE ERRAND
 
-⭐ **Tell them what you found — it is their machine.** ⛔ What is NOT yours is to
-hand them the decision, or to abandon what they asked for.
-
-🔴 **Measured 2026-09-05 on a real Windows run.** The assistant found a `git
-init` at the wrong level in the home folder, investigated it across four
-commands, and asked the person what to do. ⚠️ **The install never happened.**
-They answered: *"what is that and why are you asking ME? isn't it automatic?"*
-
-| | ⭐ What you do |
-|---|---|
-| **Say it** | one or two sentences · what it is, whether it is urgent, and that it is **separate from what we are doing** |
-| **Offer, do not ask** | *"I can look at that after we finish, if you want"* — ⛔ never a question they must answer to continue |
-| **Then continue** | ⚠️ an interrupted install is a person who never got to use this |
-| ⛔ **Do not investigate** | four commands into an unrelated repository are four not spent on what they asked for |
-
-⚠️ **The exception:** if continuing could destroy their work, stop and say so.
-⭐ That is not a detour — that is the errand.
+⭐ **Tell them, offer to look later, and keep going.** ⛔ Do not hand them the decision
+and do not investigate it — the full rule, with the run that measured it, is
+`base-rules.md` §8.
 
 ### ⛔ THE FIVE STOPS — you may not pass one without an answer
 
@@ -123,17 +109,11 @@ question.
 | 4 | what to call them | ⛔ before the name enters 78 documents |
 | 5 | shall I save a starting point | ⛔ before anything is recorded |
 
-⚠️ **AND EVERY ONE IN PLAIN WORDS.** 🔴 The same run asked stop 4 like this:
-
-> *"The engine writes it in `mente.config.yml` and in all generated
-> documentation. I do not invent it — `init` itself warns that an assistant
-> already got this wrong."*
-
-⛔ Every word of that is for a developer. The person was asked to approve a
-system they cannot picture. ⭐ Same question, their language:
-
-> *"What should I call you? It goes in the notes the system keeps, and you can
-> change it later."*
+⚠️ **AND EVERY ONE IN PLAIN WORDS.** 🔴 The same run asked stop 4 as *"the
+engine writes it in `mente.config.yml` and in all generated documentation"* —
+⛔ every word of that is for a developer, and the person was asked to approve a
+system they cannot picture. ⭐ Their language: *"What should I call you? It goes
+in the notes the system keeps, and you can change it later."*
 
 ⛔ **Never inside a question:** `bin/init` · `.git` · `mente.config.yml` ·
 `settings.json` · `hooks` · `repository` · `validator`. ⭐ Say what it DOES for them,
@@ -155,15 +135,15 @@ other."*
 
 ### ⭐ NEVER USE A WORD THEY DID NOT ASK FOR
 
-⛔ `commit` · `branch` · `merge` · `repo` · `hook` · `validator` · `probe` · `placeholder`.
+⛔ Add to the list above: `commit` · `branch` · `merge` · `repo` · `probe` · `placeholder`.
 
-🔴 **Measured on the same run:** the assistant asked *"shall I commit these initialisation
-changes?"* to somebody who had asked what Mente OS was twenty minutes earlier. ⚠️ Their reply was
-*"where are you going to commit them, I do not understand why I should commit."*
+🔴 **Measured:** the assistant asked *"shall I commit these initialisation changes?"* to somebody
+who had asked what Mente OS was twenty minutes earlier. ⚠️ Their reply: *"where are you going to
+commit them, I do not understand why I should commit."*
 
-⭐ **If a step genuinely needs one of those words, explain it in one sentence FIRST, in their
-terms, then ask.** §4b is the one for `commit`, written out. ⛔ If no such explanation exists in
-this file, the step is not one to raise with them at all.
+⭐ **If a step genuinely needs one, explain it in one sentence FIRST, in their terms, then ask.**
+§4b is the one for `commit`. ⛔ If no such explanation exists in this file, the step is not one to
+raise with them at all.
 
 ---
 
@@ -399,15 +379,12 @@ be called on this machine:
 > | **<the account name>** | Your user account on this machine |
 > | **Something else** | Type any name — it goes in the notes the system keeps for you, and you can change it later |
 
-⛔ **ASK IT WITH THOSE WORDS.** 🔴 Measured on a real run: the wording was
-rewritten into *"the engine writes it in `mente.config.yml` and in all generated
-documentation"* — ⚠️ a person cannot approve a system they cannot picture, and
-every term in that sentence is one they never asked to learn.
+⛔ **ASK IT WITH THOSE WORDS** — the five stops above show what the developer
+version of this question looks like, and why nobody can answer it.
 
-🔴 **Measured twice, 2026-09-02, and it is the complaint that keeps coming back.** Both runs asked
-§2 as a proper floating chooser and then typed THIS one as plain prose, because this file used to
-say it could not be a chooser. ⛔ It can: two real candidates plus an escape hatch is three
-options.
+🔴 **Measured twice, 2026-09-02:** both runs asked §2 as a proper chooser and then typed THIS one
+as prose, because this file used to say it could not be one. ⛔ It can: two real candidates plus
+an escape hatch is three options.
 
 ⚠️ **If both commands come back empty**, then and only then ask it as a sentence — a chooser with
 one option is refused by the tool and the person never sees it.
@@ -611,6 +588,29 @@ reach into another.
 ⚠️ **A question whose only honest answer is "all of it, it is mine" is a question that should not
 have been asked.** ⭐ Look at the folder first: if the boundary is derivable from what is there,
 state it and let them correct you — ⛔ that is not the same as inventing a limit.
+
+### ⛔ THE BOUNDARY IS NOT A PERMIT YOU WRITE FOR YOURSELF
+
+🔴 **Measured 2026-09-07, and it is the subtlest failure so far.** A run opened a
+block correctly, then wrote §B IN to name the file it had already decided to
+create — in the repository root, outside every structure the engine governs.
+⚠️ `check-block` reported **0 violations**, and `check-document` audited 58
+documents without ever seeing the deliverable. ⛔ **The work was invisible to the
+system that was supposed to be holding it.**
+
+⭐ **§B is what THEY allow, not what you intend.** The order is: ask where the
+work belongs → write that → then build. ⛔ Writing §B after deciding is a permit,
+and a permit you issue yourself constrains nobody.
+
+| ⛔ Never | ⭐ Instead |
+|---|---|
+| draft §B once you know what you will write | ask first, write §B from their answer |
+| name a path in IN because you need it there | name where the work BELONGS — §5's table decides that |
+| widen §B when a gate refuses | ⚠️ **stop and ask** · say what widening it would allow |
+
+⚠️ **The gate now refuses a write outside §B**, so this is enforced rather than
+requested. ⭐ The refusal names the path and offers both honest ways out — and
+the dishonest one, widening the scope in silence, is the one it calls out.
 
 ### ⭐ AND SAY WHERE THE WORK ITSELF WILL LAND — before writing it
 

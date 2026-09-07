@@ -627,6 +627,69 @@ case("㉚b ⛔ and no entry grants a general shell", not _broad,
      ", ".join(_broad) or "none")
 
 
+# ── ㉛ 🔴 AN INTERPRETER THAT WAS SEEN TO RUN ───────────────────────────────
+# 🔴 THE FAILURE, measured 2026-09-07 on a real Windows install. `sys.executable`
+# resolved to a Microsoft Store EXECUTION ALIAS — `WindowsApps/…/python.exe`, a
+# 2-byte stub that a terminal can start and a hook cannot. It was stamped into
+# every gate, so NOT ONE ever ran: `Mente/.beats/` was never created. ⛔ The
+# install reported success and the entire enforcement layer was dead.
+# ⚠️ The file existed. Existence was never the question.
+_cmds = []
+_cfg2 = os.path.join(_repoC, ".claude", "settings.json")
+if os.path.isfile(_cfg2):
+    try:
+        _h = json.load(open(_cfg2, encoding="utf-8")).get("hooks", {})
+        for _grp in [g for v in _h.values() for g in v]:
+            for _hk in _grp.get("hooks", []):
+                _cmds.append(_hk.get("command", ""))
+    except (ValueError, OSError):
+        pass
+# ⭐ The interpreter is the first token, quoted or not. It must START.
+_dead = []
+for _c in _cmds:
+    _exe = re.match(r'"([^"]+)"|(\S+)', _c)
+    _exe = (_exe.group(1) or _exe.group(2)) if _exe else ""
+    if not _exe:
+        continue
+    try:
+        _r = subprocess.run([_exe, "--version"], capture_output=True, timeout=15)
+        if _r.returncode != 0 or not (_r.stdout or _r.stderr).strip():
+            _dead.append(os.path.basename(_exe))
+    except (OSError, subprocess.SubprocessError):
+        _dead.append(os.path.basename(_exe))
+case("㉛ 🔴 ⭐ every interpreter a hook names actually STARTS",
+     not _dead, ", ".join(sorted(set(_dead))) or "%d hook(s)" % len(_cmds))
+# ⛔ And the bare name is never stamped on Windows: `bash` there is the WSL
+# launcher, which cannot open a C:\ path — measured, every shell hook exit 127.
+case("㉛b ⛔ and no hook is left with a bare interpreter name",
+     not any(re.match(r'"?(python3?|bash)"?\s', _c) for _c in _cmds),
+     "%d hook(s)" % len(_cmds))
+
+# ── ㉜ 🔴 A STAMPED FILE IS NOT ITS OWN MOULD ───────────────────────────────
+# 🔴 Measured 2026-09-07: nine templates open with `<!-- ⚠️ TEMPLATE — bin/init
+# copies this to … -->`, and the installer copied it through. The person's own
+# `memory/RESUME.md` began by saying it was a template and that "you never write
+# this file by hand". ⛔ No validator caught it, and the assistant read it as an
+# instruction: the scaffolding was teaching it the memory was not its to fill.
+_scaffolded = []
+for _root, _dirs, _files in os.walk(os.path.join(_repoC, "Mente")):
+    if "__pycache__" in _root.split(os.sep) or "templates" in _root.split(os.sep):
+        _dirs[:] = [d for d in _dirs if d != "__pycache__"]
+        if "templates" in _root.split(os.sep):
+            continue
+    for _f in _files:
+        if not _f.endswith((".md", ".yml", ".tsv")):
+            continue
+        _p = os.path.join(_root, _f)
+        try:
+            if "TEMPLATE —" in open(_p, encoding="utf-8",
+                                    errors="replace").read(400):
+                _scaffolded.append(os.path.relpath(_p, _repoC))
+        except OSError:
+            _scaffolded.append("⬜ unreadable: " + _f)
+case("㉜ 🔴 ⭐ no installed file still carries its template scaffolding",
+     not _scaffolded, ", ".join(sorted(_scaffolded))[:44] or "clean")
+
 # 🔴 THE TEARDOWN GOES LAST. Found 2026-09-06: an insertion left this line
 # glued to a comment ABOVE the cases that read the installed tree, so ㉗ and
 # ㉘ measured a directory that had just been deleted — ⛔ every one of them

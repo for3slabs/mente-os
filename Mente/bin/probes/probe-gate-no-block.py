@@ -133,6 +133,45 @@ case("⑤ 🔴 ⭐ the settings template actually calls it",
 case("⑤b ⛔ and on the tools that write",
      '"matcher": "Edit|Write|MultiEdit"' in _txt)
 
+# ── ⑦ 🔴 A BLOCK IS OPEN, BUT THIS PATH IS OUTSIDE IT ──────────────────────
+# 🔴 THE FAILURE, measured 2026-09-07. A run opened a block correctly and then
+# wrote its deliverable to the repository ROOT — outside everything §B named.
+# `check-block` reported 0 violations and `check-document` audited 58 documents
+# without ever seeing the file. ⛔ The gate refused work with NO block and waved
+# through work OUTSIDE the block: the same hole, one step along.
+_sc = os.path.join(ACTIVE, "probe-gnb-scope")
+_made2 = None
+if not _open:
+    try:
+        os.makedirs(_sc, exist_ok=True)
+        open(os.path.join(_sc, "BLOCK.md"), "w", encoding="utf-8",
+             newline="").write(
+            "# BLOCK · probe-gnb-scope\n\n## B · Scope\n\n### ✅ IN\n"
+            "- `Mente/Cerebro/probe-scope/` — the material\n\n"
+            "### ⛔ OUT\n- nothing\n")
+        _made2 = _sc
+    except OSError:
+        _made2 = None
+try:
+    if _made2:
+        r = fire(os.path.join(ROOT, "Cerebro", "probe-scope", "x.md"))
+        case("⑦ ⭐ a path INSIDE §B passes", r.returncode == 0,
+             "exit=%d" % r.returncode)
+        r = fire(os.path.join(os.path.dirname(ROOT), "LOOSE.md"))
+        case("⑦b 🔴 ⭐ a path OUTSIDE every §B is REFUSED",
+             r.returncode == 2, "exit=%d" % r.returncode)
+        _said = (r.stdout + r.stderr).lower()
+        # ⛔ And the refusal must name the dishonest way out, because that is
+        # the one an assistant reaches for: widen §B to fit what it planned.
+        case("⑦c ⛔ and it refuses silent widening of the scope",
+             "do not widen the scope silently" in _said)
+    else:
+        # ⬜ CHK-CAU-003 · said out loud, never swallowed.
+        print("  ⬜ ⑦-⑦c NOT MEASURED · could not place a scoped block")
+finally:
+    if _made2 and os.path.isdir(_made2):
+        plat.rmtree(_made2)
+
 # ── ⑥ IT LEAVES NOTHING BEHIND ─────────────────────────────────────────────
 # 🔴 Measured 2026-09-06, and it reached main: `beat(mente, name)` takes the
 # Mente ROOT first, and this gate passed its own label there — so every call

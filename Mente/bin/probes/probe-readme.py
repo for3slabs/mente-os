@@ -401,6 +401,31 @@ case("⑫ ⭐ the page says the order of the trigger matters",
 case("⑫b ⛔ and that said too early there is no script to read",
      "no script for it to read" in _low)
 
+# ── ⑬ THE THREE MESSAGES, READY TO PASTE ───────────────────────────────────
+# ⭐ The owner's framing: a person — technical or not — who lands on this page
+# should be able to COPY AND PASTE their way through, without understanding a
+# word of the rest. 🔴 Everything else on this page explains; this part is the
+# only one that can be USED without reading.
+case("⑬ ⭐ the page carries the three messages, ready to paste",
+     "copy and paste" in _low and "three messages" in _low)
+# ⛔ In fenced blocks, or "copy this" is a lie — a person cannot select prose
+# reliably, and the trigger only works word for word.
+_fences = re.findall(r"```text\n(.+?)\n```", _generated, re.S)
+case("⑬b ⛔ and each one is a block that can actually be copied",
+     len(_fences) >= 3, "%d block(s)" % len(_fences))
+# ⭐ The trigger must appear EXACTLY — it is the phrase the script answers to.
+case("⑬c 🔴 ⭐ the trigger is there, word for word",
+     any(f.strip() == "Set up Mente OS and walk me through it."
+         for f in _fences))
+# ⚠️ And the sentence that stops the download-first failure.
+case("⑬d ⭐ and the first message says not to download yet",
+     any("do not download anything yet" in f.lower() for f in _fences))
+# ⭐ THE PROOF MESSAGE: the owner asked for it because a guard nobody can test
+# is a guard nobody believes. ⛔ It names the expected refusal, not just the ask.
+case("⑬e ⭐ and a message that proves the guard refuses",
+     any("study plan" in f.lower() for f in _fences)
+     and "it must refuse" in _low)
+
 
 plat.rmtree(WORK)
 
