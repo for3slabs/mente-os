@@ -15,7 +15,7 @@ while _d != _os.path.dirname(_d):
 import utf8                                          # noqa: F401,E402
 import plat                                          # noqa: E402
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from harness import Probe, ROOT, MARK
+from harness import Probe, ROOT, MARK, rewrite
 
 RULE = os.path.join(ROOT, "rules", "rule-shipping.md")
 HOOK = os.path.join(ROOT, "hooks", "pre-commit.sh")
@@ -27,7 +27,7 @@ _clean = p.clean
 
 def clean():
     """⭐ Restore what this probe EDITS, not only what it creates."""
-    open(RULE, "w", encoding="utf-8").write(ORIG)
+    rewrite(RULE, ORIG)
     _clean()
 
 
@@ -36,7 +36,7 @@ p.clean = clean
 
 def edit(a, b):
     s = open(RULE, encoding="utf-8").read()
-    open(RULE, "w", encoding="utf-8").write(s.replace(a, b))
+    rewrite(RULE, s.replace(a, b))
 
 
 print("═══ A · SABOTAGE · check-shipping ═══\n")
@@ -190,7 +190,7 @@ finally:
 _rule = os.path.join(ROOT, "rules", "rule-shipping.md")
 _orig = open(_rule, encoding="utf-8").read()
 try:
-    open(_rule, "w", encoding="utf-8").write(
+    rewrite(_rule, 
         _orig.replace("`templates/RESUME.md.template`", "`templates/ghost.template`"))
     _c, _o, _e = p.run()
     _hit = "SHP-CLS-001" in _o
@@ -200,7 +200,7 @@ try:
     p.results.append(("⑫ ruta de cierre", "PASS" if _hit else "NOT_DETECTED"))
 
     # ⭐ the inverse: the real declaration must NOT fire
-    open(_rule, "w", encoding="utf-8").write(_orig)
+    rewrite(_rule, _orig)
     _c, _o, _e = p.run()
     _quiet = "SHP-CLS-001" not in _o
     print("  %-46s %s %s" % ("⑬ CLS · the real declaration does not fire",
@@ -208,7 +208,7 @@ try:
                              "does NOT fire (correct)" if _quiet else "false positive"))
     p.results.append(("⑬ cierre correcto", "PASS" if _quiet else "FALSE_POSITIVE"))
 finally:
-    open(_rule, "w", encoding="utf-8").write(_orig)
+    rewrite(_rule, _orig)
 
 # ── ⑭ 🔴 THE VERY FIRST COMMIT OF A REPOSITORY ─────────────────────────────
 # 🔴 MEASURED 2026-09-06 on a real Windows install. Before any commit exists
