@@ -19,7 +19,7 @@ import utf8                                          # noqa: F401,E402
 import plat                                          # noqa: E402
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from harness import ROOT                       # noqa: E402
+from harness import ROOT, MARK                 # noqa: E402
 
 results = []
 WORK = tempfile.mkdtemp(prefix="mente-clear-")
@@ -174,6 +174,27 @@ case("⑯ 🔴 ⭐ the cut check warns about work git does not track",
 # warning that reads as breakage gets "fixed" by deleting the ignore rule.
 case("⑯b ⭐ and says the exclusion is right, not broken",
      "the engine travels, your work does not" in _src)
+
+# ── ⑯d 🔴 AND MEMORY IS ON THAT LIST TOO ──────────────────────────────────
+# 🔴 THE FAILURE, measured 2026-09-08 while auditing work/ and memory/ one file
+# at a time. The warning above named `work/blocks` and `work/campaigns` and
+# stopped there — ⛔ so `memory/RESUME.md`, the ONE file this engine promises
+# the next session reads first, was excluded by the same `.gitignore` and
+# nothing said so. ⚠️ Losing a block costs a boundary; losing RESUME costs the
+# reason the work exists at all.
+# ⭐ Measured by RUNNING it on a tree, never by reading the source: the two
+# cases above assert what the file SAYS, and a walk that never reaches
+# memory/ would satisfy both.
+_rp, _tp = make_repo("memcheck")
+open(os.path.join(_tp, "memory", "RESUME.md"), "w", encoding="utf-8",
+     newline="").write("# where we left off\n")
+_o = run(_tp)
+_said = "does NOT track" in (_o.stdout + _o.stderr)
+case("⑯d 🔴 ⭐ an untracked memory/ file is counted, not only blocks",
+     _said, "counted" if _said else "🔴 memory/ never walked")
+# ⛔ Its own tree, removed by its own case: the battery counts a probe that
+# leaves one behind as a failure, and it is right to.
+plat.rmtree(_rp)
 # 🔴 Asked about a FILE, never the folder: `git check-ignore` on a directory
 # answers "not ignored" even when the rule inside excludes every file —
 # measured here, and it made the whole check silent.
@@ -186,5 +207,10 @@ print("\n  ➜ %d of %d correct" % (good, len(results)))
 for l, ok in results:
     if not ok:
         print("     🔴 %s" % l)
+# ⛔ ITS OWN TEMP TREE, removed by its own run. 🔴 Measured 2026-09-08: this
+# probe made a tree per case and never removed the parent, so every run left
+# one behind and the battery counted it as residue — correctly. ⚠️ A probe that
+# litters is a probe whose next run measures its own leftovers.
+plat.rmtree(WORK)
 print("  leftovers: %s" % ("none" if not os.path.exists(WORK) else "🔴 copia"))
 sys.exit(0 if good == len(results) else 1)

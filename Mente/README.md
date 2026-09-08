@@ -157,14 +157,11 @@ You do not invoke these. They fire at the moment they matter.
 
 **Only three actions block. Everything else informs.** That ratio is deliberate: a gate that
 obstructs more than it protects gets switched off, and a switched-off gate protects nothing.
+Every gate prints how to bypass it — **a gate with no escape hatch gets deleted.**
 
-Every gate prints how to bypass it. **A gate with no escape hatch gets deleted.**
-
-**To wire the gates into Claude Code**, merge the `hooks` block from `.claude/settings.json` into
-your own. ⭐ **Merge — never replace.** Settings combine across levels, but two files at the same
-level do not: the one that wins silently drops the other's rules, and you would lose whatever you
-had configured. ⛔ Every `PreToolUse` group needs its `matcher`; without one the hook fires on
-every tool call, and a narrow gate becomes a system-wide stop.
+⭐ **`bin/init` wires them for you** — into `.claude/settings.json`, never over one you already
+have — and then FIRES each one to prove it answers. 🔴 Measured 2026-09-07: five gates reported as
+wired were dead, and every report stayed green. **Wired is not alive.**
 
 ---
 
@@ -181,17 +178,16 @@ bin/check-declared           # does every engine file have its row
 bin/secrets-lease status     # is the secrets permission open, and what did it record
 ```
 
-⬜ **Planned, not built:** `bin/check-clear-ready` ·
-`bin/generate-index` · ⬜ `bin/generate-metrics`. ⛔ They are named in `CAPABILITIES.md` with the
-same marker — ⚠️ **a command list that mixes what runs with what is planned sends the reader to
-a shell prompt to find out which is which.**
+`bin/check-clear-ready` refuses a context reset while something would be lost ·
+`bin/generate-index` and `bin/generate-metrics` 🤖 rebuild the indexes and every live number.
 
 `bin/probes/run-all.py` is the truth. It takes a lock, so **one run at a time** — a second is
 refused on purpose, because both would corrupt each other's probe fixtures.
 
-> ⚠️ **Never write a count into a document.** Live numbers live in ⬜ `docs/METRICS.md`, regenerated.
-> A number copied into prose is correct exactly once — this project froze the same one twice in
-> a single day before the rule existed.
+> ⚠️ **Never write a count into a document.** Live numbers live in `docs/METRICS.md`, regenerated.
+> A number copied into prose is correct exactly once — 🔴 this project froze the same one twice in
+> a single day before the rule existed, and this page called three built commands "planned" until
+> 2026-09-08.
 
 ---
 
@@ -223,20 +219,18 @@ stale the moment a declaration is made.
 
 | Folder | What |
 |---|---|
-| `bin/` | the validators — executables |
-| `hooks/` | the gates that fire automatically |
-| `rules/` | contracts · rules · ADRs |
-| `memory/principles/` | the voice and the three architects — their criterion |
-| `work/blocks/` | 📦 the work — `active/` `blocked/` `archive/` · one unit each |
-| `work/campaigns/` | 🎯 the mission above several blocks — it orders, it never executes |
-| `docs/` | architecture · 🤖 generated indexes |
-| `memory/` | where you left off · pending items · the logbook |
-| `Cerebro/` | your project's own thinking — the pillar and the vision |
-| `connection/` | the gate to other installations |
-| `secrets/` | ⚠️ never in git |
+| `bin/` · `hooks/` | the validators, and the gates that fire on their own |
+| `rules/` | contracts · rules · the decision records |
+| `work/` | 📦 blocks and 🎯 campaigns — the work itself |
+| `memory/` | where you left off · what is pending · the voice and the architects |
+| `docs/` | 🤖 the generated indexes and every live number |
+| `Cerebro/` | your project's own thinking |
+| `connection/` · `secrets/` | the gate to other installations · ⚠️ never in git |
 
 ⭐ **Every folder carries its own README** explaining what goes in it, what does not, and why.
 Read that one before adding a file — it is the shortest path to getting the placement right.
+⛔ This page stays a map: the detail lives in the folder it describes, and a copy here is a
+second description that goes stale without anything noticing.
 
 ---
 
@@ -245,9 +239,9 @@ Read that one before adding a file — it is the shortest path to getting the pl
 Read **⬜ `memory/RESUME.md`**. It is the only file guaranteed to be read, and its ceiling is
 declared on purpose — ⭐ **it should be enough to start working without asking anything.**
 
-Closing a session is the other half: run the `session-wrap` skill, or follow
-⬜ `rules/rule-session-close.md`. **`/clear` is a cut, not a save** — whatever is not on disk is
-lost with no warning. ⬜ `bin/check-clear-ready` refuses while something would be lost.
+Closing a session is the other half: say **"let's close the session"** and the `session-wrap`
+skill writes it down. **`/clear` is a cut, not a save** — whatever is not on disk is lost with no
+warning, and `bin/check-clear-ready` refuses while something would be.
 
 ---
 

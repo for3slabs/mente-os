@@ -214,7 +214,7 @@ def main():
             continue
         try:
             os.makedirs(DOCS, exist_ok=True)
-            open(out, "w", encoding="utf-8").write(body)
+            open(out, "w", encoding="utf-8", newline="").write(body)
             wrote.append(name)
         except OSError as e:
             print("🔴 could not write %s · %s" % (name, e.__class__.__name__))

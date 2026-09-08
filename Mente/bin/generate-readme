@@ -101,7 +101,7 @@ def main():
               "page did not\n   Fix: Mente/bin/generate-readme", file=sys.stderr)
         return 1
     try:
-        open(TARGET, "w", encoding="utf-8").write(want)
+        open(TARGET, "w", encoding="utf-8", newline="").write(want)
     except OSError as e:
         print("🔴 cannot write %s (%s)" % (TARGET, e.__class__.__name__),
               file=sys.stderr)

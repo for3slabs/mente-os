@@ -23,6 +23,7 @@ Usage:
   bin/new-block <id> --type <code|docs|infra|data> [--lane <lane>] [--intent TEXT]
 Exit: 0 opened · 1 refused · 2 could not complete
 """
+import json
 import os
 import os as _os, sys as _sys
 _d = _os.path.dirname(_os.path.abspath(__file__))
@@ -136,12 +137,70 @@ def register(bid, intent, indexes):
     target = indexes[0]
     line = "- `%s` — %s\n" % (bid, intent)
     try:
-        with open(target, "a", encoding="utf-8") as fh:
+        with open(target, "a", encoding="utf-8", newline="") as fh:
             fh.write(line)
     except OSError as e:
         return "⚠️ could not write %s (%s)" % (plat.rel(target, MENTE),
                                                e.__class__.__name__)
     return "listed in %s" % plat.rel(target, MENTE)
+
+
+def voice_switch():
+    """⭐ THE VOICE ENTERS HERE — at the first block, not at install.
+
+    🔴 THE FAILURE, measured 2026-09-07 on a real Windows install. `bin/init`
+    placed the output style AND selected it, and the assistant read it, said so
+    out loud — *"the install swapped in its own voice mid-run … it doesn't
+    replace how I talk to you"* — and kept answering in its own. ⛔ A style
+    placed but not obeyed is the same as a document nobody read.
+
+    ⭐ THE OWNER'S DIAGNOSIS, stated 2026-09-07, and it is the fix: the voice
+    should arrive **when the first piece of work opens**, because that is the
+    moment a person can tell the system is doing something. An install that
+    changes how their assistant speaks before any work exists reads as an
+    intrusion; the same change at the first block reads as the system starting.
+
+    ⚠️ IT ONLY SPEAKS ON THE FIRST BLOCK. Repeating it at every block turns a
+    signal into noise, and noise is what gets ignored.
+    """
+    active = os.path.join(MENTE, "work", "blocks", "active")
+    try:
+        opened = [d for d in os.listdir(active)
+                  if os.path.isfile(os.path.join(active, d, "BLOCK.md"))]
+    except OSError:
+        return                              # ⬜ cannot count · say nothing
+    if len(opened) != 1:
+        return                              # ⭐ the FIRST block only
+
+    repo = os.path.dirname(MENTE)
+    style = os.path.join(repo, ".claude", "output-styles", "mente-os.md")
+    cfg = os.path.join(repo, ".claude", "settings.json")
+    placed = os.path.isfile(style)
+    selected = False
+    try:
+        selected = json.load(open(cfg, encoding="utf-8")).get(
+            "outputStyle") == "Mente OS"
+    except (OSError, ValueError):
+        pass                                # ⬜ unreadable · treated as not set
+
+    print("\n🗣️  THE VOICE IS ON FROM HERE — this is the assistant's cue")
+    ready = sum((placed, selected))
+    if placed and selected:
+        # ⭐ CHK-IND-002 · the COUNT, never a bare ✅: the same green would
+        # otherwise print when nothing was measured, and absence of evidence
+        # would read as evidence.
+        print("   ✅ %d of 2 · the style file is placed AND selected in "
+              ".claude/" % ready)
+    elif placed:
+        print("   ⬜ placed but NOT selected · run: Mente/bin/init --force")
+    else:
+        print("   🔴 the voice is NOT installed · run: Mente/bin/init --force")
+    print("   ⭐ TO THE ASSISTANT: answer in it from your NEXT message — report"
+          "\n      what was measured, never what you intend, and close with the"
+          "\n      delivery block. ⛔ A style read and not used is a style that"
+          "\n      was never installed.")
+    print("   ⚠️ Measured 2026-09-07: an assistant read this style, said so out"
+          "\n      loud, and kept answering in its own.")
 
 
 def main():
@@ -226,7 +285,12 @@ def main():
 
     try:
         os.makedirs(dest_dir, exist_ok=True)
-        open(dest, "w", encoding="utf-8").write(body)
+        # ⚠️ newline="" · on Windows a plain open() turns every "\n" into
+        # "\r\n", and this file is read by every validator and by the
+        # assistant. 🔴 The same bug was fixed in bin/init, in the probe
+        # harness and in new-campaign — and stayed here, the fourth place.
+        with open(dest, "w", encoding="utf-8", newline="") as _fh:
+            _fh.write(body)
     except OSError as e:
         die("could not write %s · %s" % (plat.rel(dest, MENTE),
                                          e.__class__.__name__), 2)
@@ -238,6 +302,7 @@ def main():
              "§A-D written · E-K are added while the work happens"))
     print("\n👉 fill the ⬜ in §B before starting: an IN with no OUT is a wish, "
           "not a boundary.\n   Then: bin/check-block")
+    voice_switch()
     return 0
 
 

@@ -66,7 +66,8 @@ session:
   #   project_dir: -home-someone-myproject     # only to override the computed value
   project_dir: null
 
-  # Thresholds calibrated against real data (rules/rule-session-close.md §4).
+  # Thresholds calibrated against real data. ⬜ The rule that records how they
+  # were derived is not written yet (rules/rule-session-close.md).
   size_warn_mb: 15
   size_red_mb: 50
   # A session is "heavy enough that losing it costs something" past this. A past incident came
@@ -108,7 +109,7 @@ gates: []
 siblings: []
 
 # ── PATHS TREATED AS OUTSIDE THIS TREE ──────────────────────────────────────
-# check-links will not chase pointers into these. The tooling entries below are safe defaults
+# check-document will not chase pointers into these. The tooling entries below are safe defaults
 # that apply to almost everyone — keep them. Add your own repos/dirs under the ⬜ line.
 outside:
   - ".claude/"
