@@ -27,7 +27,7 @@ import utf8                                          # noqa: F401,E402
 import plat                                          # noqa: E402
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from harness import ROOT                       # noqa: E402
+from harness import rewrite, ROOT                       # noqa: E402
 
 results = []
 WORK = tempfile.mkdtemp(prefix="mente-life-")
@@ -98,7 +98,7 @@ s = s.replace("### ⛔ OUT",
 s = s.replace("- `rules/rule-working-in-a-block.md`",
               "- `rules/rule-working-in-a-block.md`\n"
               "- `rules/rule-shipping.md` — for: *.py", 1)
-open(B, "w", encoding="utf-8").write(s)
+rewrite(B, s)
 r = tool("check-block")
 case("③ the block passes its own contract", r.returncode == 0,
      (r.stdout.strip().splitlines() or [""])[-1][:34])
@@ -118,15 +118,15 @@ CHK = ("\n## I · Checkpoints\n\n- **2026-01-15 · iteration 1**\n"
        "  changed: the reader\n  did not change: the gate\n  pieces: bin/x\n"
        "  standard: rules/rule-shipping.md\n  verified: the battery, all green\n"
        "  unexpected: none\n  remains: none\n  scope: held\n")
-open(B, "a", encoding="utf-8").write(CHK)
+rewrite(B, open(B, encoding="utf-8").read() + CHK)
 case("⑦ a complete checkpoint passes", tool("check-block").returncode == 0)
 
 whole = open(B, encoding="utf-8").read()
-open(B, "w", encoding="utf-8").write(
+rewrite(B, 
     whole.replace("  did not change: the gate\n", ""))
 case("⑧ and one missing `did not change` is refused",
      "BLK-CHK-001" in tool("check-block").stdout)
-open(B, "w", encoding="utf-8").write(whole)
+rewrite(B, whole)
 
 # ── ③ EVIDENCE ─────────────────────────────────────────────────────────────
 ROW = ("## F · Sub-blocks\n\n| # | task | piece | dependents | acceptance | "
@@ -134,10 +134,10 @@ ROW = ("## F · Sub-blocks\n\n| # | task | piece | dependents | acceptance | "
        "| 1 | write it | bin/x | 0 | it runs | %s | closed |\n\n")
 whole = open(B, encoding="utf-8").read().replace(
     "## I · Checkpoints", ROW % "done" + "## I · Checkpoints", 1)
-open(B, "w", encoding="utf-8").write(whole)
+rewrite(B, whole)
 case("⑨ evidence saying «done» is refused",
      "BLK-SUB-004" in tool("check-block").stdout)
-open(B, "w", encoding="utf-8").write(
+rewrite(B, 
     whole.replace("| it runs | done |", "| it runs | ran it · 2026-01-15 |"))
 case("⑩ and the same row WITH its date passes",
      tool("check-block").returncode == 0)
@@ -151,7 +151,7 @@ whole += ("\n## K · Closing\n\nclosed: 2026-01-15\ncompleted: the work\n"
           # ⭐ BLK-CLS-008 · the lane this block declares needs its level named.
           "evidence level: L3\n"
           "acceptance: criteria met\nsufficiency: pass\n")
-open(B, "w", encoding="utf-8").write(whole)
+rewrite(B, whole)
 case("⑪ closing with no close.json is refused",
      "BLK-CLS-007" in tool("check-block").stdout)
 

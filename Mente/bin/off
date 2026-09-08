@@ -61,7 +61,7 @@ def main():
         print("\n👉 Say \"turn Mente OS back on\" when you want it running.")
         return 0
     try:
-        with open(OFF, "w", encoding="utf-8") as fh:
+        with open(OFF, "w", encoding="utf-8", newline="") as fh:
             fh.write("paused %s\n" % date.today().isoformat())
     except OSError as e:
         print("🔴 could not pause (%s)" % e.__class__.__name__, file=sys.stderr)

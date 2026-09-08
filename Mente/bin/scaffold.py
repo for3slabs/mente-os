@@ -83,4 +83,45 @@ def stamp(template, values):
     for k, v in dict(values, date=values.get("date") or
                      date.today().isoformat()).items():
         body = body.replace("{{%s}}" % k, v)
-    return body
+    # ⭐ STRIPPED HERE, not by each caller. 🔴 Measured 2026-09-08: the stripper
+    # lived inside `bin/init`, so every block `new-block` opened was born with
+    # `⚠️ TEMPLATE — bin/new-block copies this to …` as its first line, and the
+    # assistant read it as an instruction. ⛔ Leaving it to the callers means a
+    # scaffolder added tomorrow forgets it, and nothing notices for weeks.
+    return strip_scaffold(body)
+
+
+# ⚠️ The scaffolding comment every template opens with: an instruction to
+# whoever EDITS the mould, addressed to nobody once it is stamped.
+_SCAFFOLD = re.compile(r"\A<!--\s*⚠️\s*TEMPLATE\s*—.*?-->\s*\n", re.S)
+# ⚠️ A YAML template cannot use an HTML comment, so its scaffolding is a run of
+# `#` lines instead — 🔴 found by the probe, which reads the RESULT and does not
+# care what the comment syntax was.
+_SCAFFOLD_HASH = re.compile(
+    r"\A(?:#[^\n]*\n)*?#[^\n]*THIS IS THE TEMPLATE[^\n]*\n(?:#[^\n]*\n)*\s*")
+
+
+def strip_scaffold(text):
+    """Remove the template's own instructions before it becomes a real file.
+
+    🔴 THE FAILURE, measured 2026-09-07 on a real installation. Nine templates
+    open with `<!-- ⚠️ TEMPLATE — bin/init copies this to … -->`, and the
+    installer copied it through: the person's own `memory/RESUME.md` began by
+    saying it was a template and that "you never write this file by hand".
+    ⛔ No validator caught it — `check-document` reads the header, never
+    whether a file is still its own mould.
+    ⚠️ And the assistant read it as an instruction: the scaffolding was
+    teaching it that the memory was not its to fill in.
+
+    🔴 AND THE HALF THAT WAS STILL BROKEN, measured 2026-09-08 while auditing
+    templates/ one file at a time. This function lived INSIDE `bin/init`, so
+    only `init` stripped anything: every block `new-block` opened was born
+    carrying `⚠️ TEMPLATE — bin/new-block copies this to …` as its first line.
+    ⛔ The assistant reading that block read an instruction meant for whoever
+    edits the mould.
+
+    ⭐ CHK-SHR-001 · it lives HERE now, beside the other question both
+    scaffolders ask, so a fix reaches every caller instead of one.
+    """
+    text = _SCAFFOLD.sub("", text, count=1)
+    return _SCAFFOLD_HASH.sub("", text, count=1)

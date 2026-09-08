@@ -507,7 +507,7 @@ def main():
 
     try:
         os.makedirs(os.path.dirname(OUT), exist_ok=True)
-        open(OUT, "w", encoding="utf-8").write(body)
+        open(OUT, "w", encoding="utf-8", newline="").write(body)
     except OSError as e:
         print("🔴 could not write %s · %s" % (OUT, e.__class__.__name__))
         return 2
