@@ -19,7 +19,6 @@
     "exist, these entries are inert — a missing hook script is skipped, it does",
     "not break the session."
   ],
-
   "hooks": {
     "SessionStart": [
       {
@@ -32,21 +31,26 @@
         ]
       }
     ],
-
     "PreToolUse": [
       {
-        "matcher": "Edit|Write|MultiEdit",
+        "matcher": "Edit|Write|MultiEdit|Bash",
         "hooks": [
-          {
-            "type": "command",
-            "command": "python3 \"$CLAUDE_PROJECT_DIR/Mente/hooks/pre-edit-standards.py\"",
-            "$comment": "injects the owning block's required standards before an edit. Informs, never blocks."
-          },
           {
             "type": "command",
             "command": "python3 \"$CLAUDE_PROJECT_DIR/Mente/hooks/gate-no-block.py\"",
             "$comment": "🔴 BLOCKS (exit 2): work with no block open. Measured 2026-09-06 — a full run built and published real work while `bin/status` said no block was open, because reporting it was all anything did. Ways out: MENTE_SCRATCH=1, or a file inside Mente/."
           },
+          {
+            "type": "command",
+            "command": "python3 \"$CLAUDE_PROJECT_DIR/Mente/hooks/pre-edit-standards.py\"",
+            "$comment": "injects the owning block's required standards before an edit. Informs, never blocks."
+          }
+        ],
+        "$comment": "🔴 Bash IS an edit. Measured 2026-09-07 on a real Windows run: a whole project was built and shipped and NOT ONE gate fired — the assistant wrote every file with `cat > path <<'EOF'`, and these two were wired on Edit|Write|MultiEdit only. The transcript counted Bash 83 uses, Write/Edit 0. ⛔ A gate that watches a door nobody walks through reports green forever."
+      },
+      {
+        "matcher": "Edit|Write|MultiEdit",
+        "hooks": [
           {
             "type": "command",
             "command": "python3 \"$CLAUDE_PROJECT_DIR/Mente/hooks/gate-critical.py\"",
@@ -96,7 +100,6 @@
       }
     ]
   },
-
   "permissions": {
     "$allow_comment": [
       "⭐ THE ENGINE'S OWN COMMANDS, pre-approved. 🔴 Measured 2026-09-06: a run",

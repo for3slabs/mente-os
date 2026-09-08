@@ -18,6 +18,7 @@ while _d != _os.path.dirname(_d):
         _sys.path.insert(0, _os.path.join(_d, "bin")); break
     _d = _os.path.dirname(_d)
 import utf8                                          # noqa: F401,E402
+import shutil
 import plat                                          # noqa: E402
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -110,9 +111,20 @@ print("═══ A · SABOTAGE · grade-block · veredicto Y causa ═══\n")
 
 case("⓪ a CLEAN block", CLEAN, "PRODUCT")
 
-case("① a file nobody imports",
-     dict(CLEAN, orphan_thing="", **{"orphan.py": "def x():\n    return 1\n"}),
-     "MVP", "files nobody imports")
+# ⬜ DEAD-CODE DETECTION NEEDS `grep`, and a platform may not have it.
+# 🔴 Measured 2026-09-07 on a fresh Windows install: `grep` is not on PATH
+# there, so `grade-block` correctly reports the dimension as ⬜ — and this case,
+# which asserts a 🔴, then failed. ⛔ A probe that demands a red the platform
+# cannot produce reports a defect that is not there, and teaches people to
+# ignore reds.
+_HAS_GREP = shutil.which("grep") is not None
+if _HAS_GREP:
+    case("① a file nobody imports",
+         dict(CLEAN, orphan_thing="", **{"orphan.py": "def x():\n    return 1\n"}),
+         "MVP", "files nobody imports")
+else:
+    print("  %-46s ⬜ NOT MEASURED · grep is not installed"
+          % "① a file nobody imports")
 
 case("② with no test file at all",
      {k: v for k, v in CLEAN.items() if not k.startswith("test_")},
@@ -209,14 +221,21 @@ finally:
 # QLT-VRD-001 · an MVP names the debt it closes with. ⛔ A verdict printed
 # without the rows behind it leaves a debt nobody inherits — the same as never
 # having found it.
-plant(dict(CLEAN, **{"orphan.py": "def x():\n    return 1\n"}), "code")
-_c, _out = run()
-_ok = "Closing as MVP requires" in _out and "dead code" in _out
-print("  %-46s %s %s" % ("⑫b VRD · el MVP nombra su deuda",
-                         "✅" if _ok else "🔴",
-                         "listada en el reporte" if _ok else "the verdict never names it"))
-results.append(("MVP names its debt", _ok))
-clean()
+if _HAS_GREP:
+    plant(dict(CLEAN, **{"orphan.py": "def x():\n    return 1\n"}), "code")
+    _c, _out = run()
+    _ok = "Closing as MVP requires" in _out and "dead code" in _out
+    print("  %-46s %s %s" % ("⑫b VRD · el MVP nombra su deuda",
+                             "✅" if _ok else "🔴",
+                             "listada en el reporte" if _ok
+                             else "the verdict never names it"))
+    results.append(("MVP names its debt", _ok))
+    clean()
+else:
+    # ⬜ Same reason as ①: the debt this asserts is dead code, and dead code is
+    # what `grep` measures. ⛔ Said out loud, never counted as a pass.
+    print("  %-46s ⬜ NOT MEASURED · grep is not installed"
+          % "⑫b VRD · el MVP nombra su deuda")
 
 # ── the criterion counter must MOVE when a dimension is declared
 orig2 = open(CONTRACT, encoding="utf-8").read()

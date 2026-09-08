@@ -28,6 +28,8 @@ while _d != _os.path.dirname(_d):
         _sys.path.insert(0, _os.path.join(_d, "bin")); break
     _d = _os.path.dirname(_d)
 import utf8                                          # noqa: F401,E402
+import shutil
+import plat                                          # noqa: E402
 from datetime import date
 from collections import defaultdict
 
@@ -81,10 +83,29 @@ SECRET = re.compile(
     re.I)
 
 
+# ⬜ Tools this file shells out to that a platform may simply not have.
+# 🔴 THE FAILURE, measured 2026-09-07 on a fresh Windows install: `grep` is not
+# on PATH there, `sh()` swallowed the FileNotFoundError and returned "" — so
+# "no importers" and "the tool is missing" became the same answer. ⛔ Every
+# file was counted as dead code and a CLEAN block was graded MVP. A verdict the
+# engine never measured is worse than no verdict: it is acted on.
+MISSING_TOOLS = set()
+
+
 def sh(*cmd):
+    """The command's output · "" on failure · ⚠️ and it RECORDS a missing tool.
+
+    ⛔ CHK-CAU-003 · a tool that is not installed is NOT MEASURED, never an
+    empty result. The caller reads `MISSING_TOOLS` and downgrades its verdict
+    to ⬜ rather than reporting a red the code did not earn.
+    """
     try:
-        return subprocess.run(cmd, capture_output=True, text=True, timeout=60).stdout
-    except Exception:
+        return subprocess.run(cmd, capture_output=True, text=True,
+                              timeout=60).stdout
+    except (OSError, subprocess.SubprocessError):
+        # ⚠️ FileNotFoundError is an OSError — the shape that matters here.
+        if cmd and shutil.which(cmd[0]) is None:
+            MISSING_TOOLS.add(cmd[0])
         return ""
 
 
@@ -166,14 +187,26 @@ def importers(stem, root):
            r"|(from|import)[ ]+%s([^A-Za-z0-9_]|$)" % (q, q))
     inc = ["--include=*%s" % e for e in CODE_EXT]
     out = sh("grep", "-rlE", pat, root, *inc, *EXCLUDE)
+    # ⚠️ NORMALISED BEFORE SPLITTING. 🔴 Measured 2026-09-07 on a fresh Windows
+    # install: `grep` returns `C:\...\used.py` with BACKSLASHES, so splitting
+    # on "/" produced the whole path as the "filename" and the self-match never
+    # fired — ⛔ every file came back with zero importers, and a clean block
+    # was graded MVP for dead code that did not exist. A verdict that depends
+    # on the operating system is not a verdict.
+    if "grep" in MISSING_TOOLS:
+        # ⬜ NOT MEASURED · the tool this answer depends on is not installed.
+        # ⛔ Returning [] here means "nobody imports it", and that is how a
+        # clean block was graded MVP on Windows for dead code that did not
+        # exist. The caller must be able to tell the two apart.
+        return None
     return [h for h in out.strip().split("\n")
-            if h and "/%s." % stem not in h.split("/")[-1]]
+            if h and "/%s." % stem not in h.replace("\\", "/").split("/")[-1]]
 
 
 def dead_code(dirs, root):
     dead_files, dead_exports = [], []
     for f in files_in(dirs, root, CODE_EXT):
-        rel = f.replace(root.rstrip("/") + "/", "")
+        rel = plat.rel(f, root)
         stem = os.path.basename(f).rsplit(".", 1)[0]
         # entry points are loaded by the framework, not imported by code
         if re.fullmatch(r"route|page|layout|index|middleware|main|__init__", stem):
@@ -185,7 +218,12 @@ def dead_code(dirs, root):
         # ⛔ Not a blanket exemption — only names a runner actually collects.
         if re.search(r"\.(test|spec)$", stem) or re.match(r"(test_|conftest$)", stem):
             continue
-        if not importers(stem, root):
+        _imp = importers(stem, root)
+        if _imp is None:
+            # ⬜ CHK-CAU-003 · said by the caller, which prints the ⬜ row.
+            # ⛔ Never counted as dead: an unmeasured file is not a defect.
+            continue
+        if not _imp:
             dead_files.append(rel)
             continue
         try:
@@ -219,7 +257,7 @@ def duplication(dirs, root):
             continue
         for i in range(len(lines) - WINDOW + 1):
             seen["\n".join(lines[i:i + WINDOW])].append(
-                "%s:%d" % (f.replace(root.rstrip("/") + "/", ""), i + 1))
+                "%s:%d" % (plat.rel(f, root), i + 1))
     return [v for v in seen.values() if len({x.split(":")[0] for x in v}) > 1]
 
 
@@ -261,7 +299,7 @@ def broken_links(dirs, root):
                 continue
             p = os.path.normpath(os.path.join(os.path.dirname(f), tgt.split("#")[0]))
             if not os.path.exists(p):
-                bad.append("%s → %s" % (f.replace(root.rstrip("/") + "/", ""), tgt))
+                bad.append("%s → %s" % (plat.rel(f, root), tgt))
     return bad
 
 
@@ -273,7 +311,7 @@ def orphan_docs(dirs, root):
         if name.upper().startswith("README"):
             continue
         if not sh("grep", "-rl", name, root, "--include=*.md", *EXCLUDE).replace(f, "").strip():
-            out.append(f.replace(root.rstrip("/") + "/", ""))
+            out.append(plat.rel(f, root))
     return out
 
 
@@ -315,7 +353,7 @@ def pasted_secrets(dirs, root):
         except (OSError, UnicodeDecodeError):
             continue          # ⬜ unreadable, skipped · the count says how many
         for m in SECRET.finditer(src):
-            out.append("%s:%d" % (f.replace(root.rstrip("/") + "/", ""),
+            out.append("%s:%d" % (plat.rel(f, root),
                                   src[:m.start()].count("\n") + 1))
     return out
 
@@ -444,7 +482,7 @@ def main():
         dups, cyc = duplication(dirs, root), cycles(dirs, root)
         tests = [f for f in files_in(dirs, root, CODE_EXT)
                  if re.search(r"(\.test\.|\.spec\.|(^|/)test_|(^|/)tests?/)",
-                              f.replace(root, ""))]
+                              plat.rel(f, root))]
         row("files nobody imports (dead code)", len(dead_files), red_if=bool(dead_files))
         row("exports never imported", len(dead_exports), yel_if=bool(dead_exports))
         row("duplicated blocks (>=%d lines)" % WINDOW, len(dups),
@@ -541,6 +579,19 @@ def main():
             "NOTHING MEASURED": "⬜"}[verdict]
     print("  LAYER 1 VERDICT: %s %s   (metrics for type `%s`)" % (icon, verdict, btype))
 
+    if MISSING_TOOLS:
+        # ⬜ CHK-CAU-003 · SAID OUT LOUD, above everything else. 🔴 Measured
+        # 2026-09-07 on a fresh Windows install: `grep` is not on PATH there,
+        # the helper swallowed the error, and a CLEAN block was graded MVP for
+        # dead code that did not exist. ⛔ A missing tool that stays silent
+        # turns "could not measure" into "measured and found guilty" — and the
+        # person acts on a verdict the engine never earned.
+        print("\n  ⬜ NOT MEASURED · %s not installed on this platform\n"
+              "     ⛔ The dimensions that need it are ⬜, never 🔴 — a tool\n"
+              "        that is absent proves nothing about this code.\n"
+              "     ⭐ On Windows, Git for Windows ships it: install it, or\n"
+              "        grade this block on a machine that has it."
+              % " · ".join(sorted(MISSING_TOOLS)))
     if verdict == "NOTHING MEASURED":
         print("\n  ⛔ Zero files in scope. Every metric above is correct and the\n"
               "     verdict means nothing — absence of evidence is not evidence.\n"

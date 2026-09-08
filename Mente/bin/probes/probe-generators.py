@@ -179,12 +179,25 @@ case("⑯ ⚠️ only a different DATE does not count as stale",
 # ⚠️ The target file must be removed first: an existing file is rewritten
 # through its own inode, so a read-only DIRECTORY does not stop it. ⛔ Testing
 # the wrong barrier proves nothing about the one that matters.
-os.remove(os.path.join(DOCS, "METRICS.md"))
-os.chmod(DOCS, 0o500)
-r = run("generate-metrics")
-case("⑰ ⛔ with no write permission → it says so, it does not crash",
-     r.returncode == 2 and "Traceback" not in r.stderr, "exit=%d" % r.returncode)
-os.chmod(DOCS, 0o755)
+# ⬜ AND ONLY WHERE A MODE MEANS ANYTHING. 🔴 Measured 2026-09-07 on a fresh
+# Windows install: `os.chmod(dir, 0o500)` is a no-op on NTFS, so the write
+# SUCCEEDED, the generator correctly returned 0, and this case reported 🔴 —
+# ⛔ a red the code did not earn, on the platform the engine is trying to prove
+# itself on. ⭐ `plat.modes_are_real()` already answers this question; the probe
+# simply never asked it.
+if plat.modes_are_real(DOCS):
+    os.remove(os.path.join(DOCS, "METRICS.md"))
+    os.chmod(DOCS, 0o500)
+    r = run("generate-metrics")
+    case("⑰ ⛔ with no write permission → it says so, it does not crash",
+         r.returncode == 2 and "Traceback" not in r.stderr,
+         "exit=%d" % r.returncode)
+    os.chmod(DOCS, 0o755)
+else:
+    # ⬜ CHK-CAU-003 · said out loud. ⛔ A barrier this platform cannot build
+    # is a barrier this case cannot test — and silence would read as a pass.
+    print("  %-58s ⬜ NOT MEASURED · this platform does not enforce modes"
+          % "⑰ ⛔ with no write permission → it says so")
 
 # ── ⭐ E-21 · the engine measuring how much of itself it can check ──────────
 # ⛔ Designing a lot and validating a little is the failure mode a governance
