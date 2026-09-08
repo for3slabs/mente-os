@@ -88,6 +88,26 @@ LIVENUM = re.compile(r"\b\d+\s*/\s*\d+\b|\b\d+\s+checks?\b", re.I)
 # would report a promise as a defect, and noise is how a validator stops being read.
 PLANNED = re.compile(r"⬜[^\n]{0,90}$")
 
+
+_BASENAMES = {}
+
+
+def _basename_index():
+    """Every real file in the tree, keyed by basename → its paths from ROOT.
+
+    ⭐ Built ONCE and cached: DOC-CNT-008 asks this per exempted pointer, and a
+    walk per question would make the check cost more than the whole validator.
+    ⚠️ SKIP_DIRS applies, so a vendored copy cannot answer for an engine file.
+    """
+    if _BASENAMES:
+        return _BASENAMES
+    for dp, dn, fn in os.walk(ROOT):
+        dn[:] = [d for d in dn if d not in SKIP_DIRS]
+        for n in fn:
+            _BASENAMES.setdefault(n, []).append(
+                os.path.relpath(os.path.join(dp, n), ROOT).replace(os.sep, "/"))
+    return _BASENAMES
+
 # ⭐ DOC-BOD-004 · a split is declared by a MARKER, never inferred from phrasing.
 # ⛔ The first version matched on wording — "layer split", "the other half" —
 # and found ZERO of the two splits that exist, because one declares its pair in
@@ -531,7 +551,25 @@ def check(path, rel, ceilings, quiet):
                             text[:m.start()].count("\n") + 1, stale))
             continue
         if PLANNED.search(text[max(0, _at - 90):_at]):
-            continue          # ⬜ marks a piece the engine has not written yet
+            # ⭐ DOC-CNT-008 · THE MIRROR OF 007 — not resolving is not enough
+            # either. ⬜ says "the engine has not written this yet", and that is
+            # exempted on purpose: reporting a promise as a defect is noise.
+            # ⛔ But the marker is a CLAIM, and a claim can be false. If the file
+            # exists SOMEWHERE ELSE in the tree, ⬜ is not a promise — it is a
+            # wrong path wearing the one costume this checker will not open.
+            # 🔴 Measured 2026-09-08: `base-rules.md` sent the reader to
+            # `principles/owner-1-docs.md` and its two siblings. `Mente/principles/`
+            # does not exist; the three live in `memory/principles/`, and the SAME
+            # table cites the voice correctly one row above. Three broken pointers
+            # in the file that governs every project, invisible for the ⬜.
+            _elsewhere = _basename_index().get(os.path.basename(ref), [])
+            if _elsewhere and ref not in seen_refs:
+                seen_refs.add(ref)
+                bad.append(("DOC-CNT-008", rel, text[:_at].count("\n") + 1,
+                            "⬜ says %r is unwritten · it EXISTS at %s · a wrong "
+                            "path wearing the marker the checker will not open"
+                            % (ref, _elsewhere[0])))
+            continue
         # ⭐ A CONTRAST REFERENCE names where something ELSE belongs — "that is
         # `docs/plans/`", "not here, that is X". ⛔ It is a destination an
         # installation may create, not a claim that a file is there, and
