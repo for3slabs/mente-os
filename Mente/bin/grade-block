@@ -124,9 +124,23 @@ def scope_dirs(text):
     for line in body.split("\n"):
         if not line.lstrip().startswith("-"):
             continue
-        for tok in re.findall(r"[\w./\[\]*-]+/[\w./\[\]*-]*", line):
+        # ⭐ ONLY THE PART BEFORE THE PROSE. 🔴 THE FAILURE, measured 2026-09-08
+        # on a real install: a §B line read
+        #   - `.gitignore` — add `site/node_modules/` and `site/dist/`
+        # and this read ALL THREE paths as declared scope. ⛔ The block was
+        # graded against `node_modules` — 11,119 vendor files — while `site/`,
+        # its actual scope, was dropped by the filter below. `pre-edit-standards`
+        # already cuts at the em dash for exactly this reason; this did not.
+        for tok in re.findall(r"[\w./\[\]*-]+/[\w./\[\]*-]*",
+                              line.split("—")[0]):
             d = tok.split("*")[0].rstrip("/")
-            if d and "/" in d:
+            # ⚠️ AND A ONE-SEGMENT FOLDER IS STILL A FOLDER. 🔴 `site/` becomes
+            # `site`, which has no "/" left — so requiring one dropped the very
+            # path the block declared. ⛔ The same shape as the `len(p) > 4`
+            # filter fixed in pre-edit-standards the same day: a scope test that
+            # rejects short or shallow paths silently measures the wrong tree.
+            # ⭐ What must be excluded is a token that names nothing.
+            if d and d not in (".", "..", "/"):
                 dirs.append(d)
     return sorted(set(dirs))
 

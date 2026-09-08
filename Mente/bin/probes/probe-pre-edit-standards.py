@@ -190,6 +190,47 @@ case("⑬ 🔴 ⭐ a Windows-style path is recognised by the block that owns it"
      else "🔴 the hook went silent")
 
 clean()
+# ── ⑭ 🔴 A SHORT PATH IS STILL A PATH ─────────────────────────────────────
+# 🔴 THE FAILURE, measured 2026-09-08 on a real install. `declared_paths()`
+# filtered by LENGTH — `if len(p) > 4`, the only filter in the file with no
+# reason written beside it. `site/` normalises to `site`, four characters, and
+# was DROPPED. ⛔ A block declaring `site/`, `src/` and `web/` got an EMPTY
+# scope back: the standards were never injected and the hook said nothing.
+# ⚠️ Its silence is indistinguishable from "this edit is outside every scope" —
+# the exact failure its own docstring documents fixing for backslashes.
+# ⭐ Measured by RUNNING the hook, not by importing it: what matters is whether
+# a real edit inside a short folder gets its standards.
+_sb = os.path.join(ROOT, "work", "blocks", "active", MARK + "-short")
+os.makedirs(_sb, exist_ok=True)
+try:
+    open(os.path.join(_sb, "BLOCK.md"), "w", encoding="utf-8",
+         newline="").write(
+        "# BLOCK · %s-short\n\n## A · Identity\n\nid: %s-short\ntype: code\n\n"
+        "## B · Scope\n\n### ✅ IN\n\n- `site/` — the web\n\n### ⛔ OUT\n\n"
+        "- ⛔ everything else · DERIVED: fixture\n\n## D · Required standards\n\n"
+        "- `rules/rule-working-in-a-block.md`\n" % (MARK, MARK))
+    _r = run(os.path.join(os.path.dirname(ROOT), "site", "src", "x.ts"))
+    _out = _r.stdout + _r.stderr
+    # ⚠️ Asserted as the block CLAIMING the file, never as the absence of a
+    # warning. 🔴 Caught while sabotage-testing this very case: with the bug
+    # restored the hook says NOTHING AT ALL, and "no warning" was satisfied by
+    # that silence — the case passed against the broken code it was written for.
+    case("⑭ 🔴 ⭐ a file inside a 4-character folder is CLAIMED by its block",
+         ("%s-short" % MARK) in _out,
+         "claimed" if ("%s-short" % MARK) in _out else "🔴 silence — orphaned")
+    # ⛔ AND THE OTHER DIRECTION, or "recognise everything" would pass too.
+    # ⛔ THE OTHER DIRECTION, or "recognise everything" would pass too.
+    # ⚠️ Asserted as NOT CLAIMED, not as "reported outside": with a block open
+    # the hook stays silent for a folder nobody declared — that silence is a
+    # separate finding, and a case must measure one thing.
+    _r2 = run(os.path.join(os.path.dirname(ROOT), "otro", "x.ts"))
+    case("⑭b ⛔ and one in a folder nobody declared is NOT claimed",
+         "block `" not in (_r2.stdout + _r2.stderr),
+         "not claimed" if "block `" not in (_r2.stdout + _r2.stderr)
+         else "🔴 claimed by a block that never declared it")
+finally:
+    plat.rmtree(_sb)
+
 good = sum(1 for _, ok in results if ok)
 print("\n  ➜ %d of %d correct" % (good, len(results)))
 for l, ok in results:
