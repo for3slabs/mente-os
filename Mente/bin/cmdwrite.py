@@ -65,6 +65,40 @@ _ARG_WRITERS = {"tee": "all", "cp": "last", "mv": "last", "install": "last",
                 "touch": "all", "truncate": "last", "dd": None}
 
 
+_QUOTED = re.compile(r'"[^"\\]*(?:\\.[^"\\]*)*"' r"|'[^']*'")
+
+
+def _mask_quoted(cmd):
+    """The command with QUOTED text replaced by placeholders of equal length.
+
+    🔴 THE FAILURE, measured 2026-09-08 on a real install. `grep -rn "a > b" x/`
+    was refused twice during an audit: the `>` lives INSIDE a quoted search
+    pattern, and the redirection matcher read it as "writes to the file b".
+    ⛔ A read-only `grep` rejected as a write is exactly what makes somebody
+    switch the gate off — and its way out, `MENTE_SCRATCH=1`, disables the gate
+    entirely (ADR-012).
+
+    ⚠️ Length is preserved so every offset downstream still lines up; only the
+    CONTENT is hidden. ⭐ A `>` inside quotes is data, never an instruction.
+
+    ⛔ EXCEPT A QUOTED REDIRECTION TARGET. 🔴 Caught the moment this was
+    written: masking every quoted string also hid `cat > "my dir/a b.md"`, so
+    a legitimate write to a path WITH A SPACE came back as `xxxxxxx`. The one
+    place a quoted string is not data is immediately after a `>`.
+    """
+    out, i = [], 0
+    for m in _QUOTED.finditer(cmd):
+        before = cmd[:m.start()].rstrip()
+        # ⭐ Kept verbatim when it IS the destination of a redirection.
+        keep = before.endswith(">")
+        out.append(cmd[i:m.start()])
+        out.append(m.group(0) if keep
+                   else '"' + "x" * (len(m.group(0)) - 2) + '"')
+        i = m.end()
+    out.append(cmd[i:])
+    return "".join(out)
+
+
 def _strip_heredocs(cmd):
     """The command with heredoc BODIES removed, their `<<TAG` markers kept.
 
@@ -129,7 +163,15 @@ def writes(command):
     """Paths this command writes · [] if none · ⬜ None if not recognised."""
     if not isinstance(command, str) or not command.strip():
         return []                        # nothing to run, nothing to write
-    text = _strip_heredocs(command)
+    # ⭐ Heredoc bodies first. ⚠️ Then TWO views of the same command, because
+    # the two searches below need opposite things from a quoted string:
+    #   · REDIRECTIONS read the masked text — a `>` inside quotes is data
+    #   · AN INTERPRETER'S CODE reads the raw text — `python -c "open('z','w')"`
+    #     keeps its destination INSIDE the quotes
+    # 🔴 Measured while fixing this: masking for both broke the interpreter
+    # case, and a fix that breaks the case beside it is not a fix.
+    raw = _strip_heredocs(command)
+    text = _mask_quoted(raw)
 
     # ⬜ UNBALANCED QUOTING · NOT MEASURED, and never a partial path.
     # 🔴 Caught while probing the boundaries: `cat > "unterminated` returned
@@ -142,7 +184,7 @@ def writes(command):
         return None
     found, unknown = [], False
 
-    for seg in _segments(text):
+    for seg, seg_raw in zip(_segments(text), _segments(raw)):
         seg = seg.strip()
         if not seg:
             continue
@@ -182,7 +224,9 @@ def writes(command):
 
         # ④ interpreters — tooling, unless the line itself names a write
         elif verb in TOOLING:
-            for m in WRITE_IN_CODE.finditer(seg):
+            # ⚠️ The RAW segment: an interpreter's destination lives inside
+            # the quotes the masking hides.
+            for m in WRITE_IN_CODE.finditer(seg_raw):
                 if m.group(1):
                     found.append(m.group(1))
                 else:

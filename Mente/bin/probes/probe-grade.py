@@ -314,6 +314,33 @@ else:
     print("  ⬜ NOT_MEASURED · set MENTE_CROSSRUN_BLOCKS to a real blocks/ folder")
 
 clean()
+# ── 🔴 THE SCOPE IS WHAT §B DECLARES, NOT WHAT ITS PROSE MENTIONS ─────────
+# 🔴 THE FAILURE, measured 2026-09-08 on a real install. A §B line read
+#     - `.gitignore` — add `site/node_modules/` and `site/dist/`
+# and `scope_dirs()` read ALL THREE paths as declared scope, because it never
+# cut at the em dash. ⛔ Worse, `site/` — the ACTUAL scope — was dropped by a
+# filter requiring a "/" in the normalised token. The block was graded against
+# 11,119 vendor files while its own 13 were invisible, and the verdict listed
+# duplicated Babel internals as the block's defects.
+# ⭐ `pre-edit-standards` already cut at the em dash for exactly this reason.
+import importlib.machinery as _m, importlib.util as _u
+_ld = _m.SourceFileLoader("_gb", os.path.join(ROOT, "bin", "grade-block"))
+_gb = _u.module_from_spec(_u.spec_from_loader("_gb", _ld))
+try:
+    _ld.exec_module(_gb)
+except SystemExit:
+    pass
+_sd = _gb.scope_dirs(
+    "## ✅ IN\n"
+    "- `site/` — el proyecto completo\n"
+    "- `site/package.json` y su lockfile — dependencias\n"
+    "- `.gitignore` — añadir `site/node_modules/` y `site/dist/`\n")
+_want = ["site", "site/package.json"]
+_ok = _sd == _want
+print("  %-46s %s %s" % ("⑭ 🔴 ⭐ §B declares the scope, its prose does not",
+                         "✅" if _ok else "🔴", "" if _ok else _sd))
+results.append(("scope from §B, not from prose", _ok))
+
 good = sum(1 for _, ok in results if ok)
 print("\n  ➜ %d of %d correct" % (good, len(results)))
 for l, ok in results:

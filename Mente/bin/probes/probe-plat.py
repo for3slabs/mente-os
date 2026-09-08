@@ -224,6 +224,37 @@ case("⑨b 🔴 ⭐ an extensionless #!/bash file is run THROUGH bash",
      len(_argv) == 2 and "bash" in _argv[0].lower(), True)
 plat.rmtree(os.path.dirname(_sh_noext))
 
+# ── ⑨c 🔴 A GIT BASH PATH IS A REAL PATH ──────────────────────────────────
+# 🔴 THE FAILURE, measured 2026-09-08 on a real Windows install. Git Bash hands
+# a tool `/c/dev/project/site/x.txt`, and `os.path.realpath` on Windows reads it
+# as relative to the current drive: `C:\c\dev\project\site\x.txt` — a place that
+# does not exist. ⛔ `gate-no-block` then judged a file INSIDE its block's
+# declared scope to be outside it and REFUSED legitimate work; the same path
+# written `C:/dev/...` passed.
+# ⚠️ A gate that refuses correct work is a gate that gets switched off, and its
+# documented way out disables it entirely (ADR-012).
+# ⭐ Asserted on the SOURCE, because the translation only fires on `nt` and this
+# battery also runs on a POSIX kernel where `/c/...` is a legitimate directory.
+_psrc = open(os.path.join(MENTE, "bin", "plat.py"), encoding="utf-8").read()
+_rp = _psrc.split("def realpath(")[1].split("\ndef ")[0] if "def realpath(" in _psrc else ""
+case("⑨c 🔴 ⭐ plat.realpath translates Git Bash's /c/ on Windows only",
+     bool(_rp) and 'os.name == "nt"' in _rp and "([A-Za-z])" in _rp, True)
+
+# ⭐ AND THE GATE MUST USE IT — a resolver nobody calls fixes nothing.
+# ⛔ Measured the same day: the gate had four bare `os.path.realpath` calls.
+_gsrc = open(os.path.join(MENTE, "hooks", "gate-no-block.py"),
+             encoding="utf-8").read()
+case("⑨d 🔴 ⭐ and gate-no-block resolves through it, never bare",
+     "plat.realpath(" in _gsrc and "os.path.realpath(" not in _gsrc, True)
+
+# ⭐ ON A POSIX KERNEL IT MUST CHANGE NOTHING: `/c/...` is a real directory
+# somebody may have, and rewriting it there breaks a correct path.
+if os.name != "nt":
+    case("⑨e ⛔ and on POSIX it leaves /c/ alone",
+         plat.realpath("/c/dev/x"), "/c/dev/x")
+else:
+    print("  ⬜ ⑨e NOT MEASURED · this is the platform the fix is FOR")
+
 # ── ⑪b 🔴 NOBODY MAY HAND THE OS A BARE `bash` — not even a probe ─────────
 # 🔴 THE FAILURE, measured 2026-09-07 on a fresh Windows install. `plat.bash()`
 # already existed and already solved this, and ELEVEN call sites across five

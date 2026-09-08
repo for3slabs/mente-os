@@ -54,7 +54,19 @@ def declared_paths(scope):
             continue                       # a continuation line claims nothing
         for tok in re.findall(r"[\w./-]+/[\w./*-]*", m.group(1).split("—")[0]):
             p = tok.split("*")[0].rstrip("/")
-            if len(p) > 4:
+            # ⚠️ FILTERED BY SHAPE, never by LENGTH. 🔴 THE FAILURE, measured
+            # 2026-09-08 on a real install: this said `if len(p) > 4`, with no
+            # reason written beside it — the only filter in this file without
+            # one. `site/` normalises to `site`, four characters, and was
+            # DROPPED. ⛔ The block declared its own scope and this hook did not
+            # recognise it: `declared_paths()` came back EMPTY for a §B naming
+            # `site/`, `src/` and `web/`, and the standards were never injected.
+            # ⚠️ And the hook says nothing — its silence is indistinguishable
+            # from "this edit is outside every scope", which is the exact
+            # failure its own docstring documents fixing for backslashes.
+            # ⭐ What must be excluded is a path that names nothing: an empty
+            # token, or a bare `/`. Length was never the question.
+            if p and p not in (".", "..", "/"):
                 out.append(p)
     return out
 

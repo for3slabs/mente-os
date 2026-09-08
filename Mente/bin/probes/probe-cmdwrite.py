@@ -67,6 +67,27 @@ eq("⑫ ⛔ `2> /dev/null` is not a file somebody authored",
 eq("⑬ ⛔ `2>&1` is a descriptor, not a path", "cat a > out.txt 2>&1",
    ["out.txt"])
 
+# ── ㉙ 🔴 A `>` INSIDE QUOTES IS DATA, NOT A REDIRECTION ───────────────────
+# 🔴 THE FAILURE, measured 2026-09-08 on a real install. `grep -rn "a > b" x/`
+# was REFUSED twice during an audit: the `>` lives inside a quoted search
+# pattern and the matcher read it as "writes to the file b". ⛔ A read-only
+# grep rejected as a write is what makes somebody switch the gate off — and its
+# way out disables the gate entirely (ADR-012).
+eq("㉙ 🔴 ⭐ a `>` inside double quotes writes nothing",
+   'grep -rn "len(p) > 4" Mente/', [])
+eq("㉙b ⭐ and inside single quotes either", "grep 'a > b' x/", [])
+eq("㉙c ⛔ but a real write in the SAME line is still seen",
+   'grep "a > b" x/ && echo y > out.txt', ["out.txt"])
+
+# ⛔ AND THE ONE PLACE A QUOTED STRING IS NOT DATA: the destination itself.
+# 🔴 Caught while writing the fix above — masking every quoted string also hid
+# `cat > "my dir/a b.md"`, so a legitimate write to a path WITH A SPACE came
+# back as `xxxxxxx`. A fix that breaks the case beside it is not a fix.
+eq("㉙d ⛔ a QUOTED redirection target survives the masking",
+   'cat > "mi dir/a b.md"', ["mi dir/a b.md"])
+eq("㉙e ⛔ and an appended one too",
+   'echo x >> "log dir/a.txt"', ["log dir/a.txt"])
+
 # ── ⬜ AND WHAT IT MUST REFUSE TO GUESS ────────────────────────────────────
 # ⚠️ Three answers, not two. ⛔ `None` collapsed into `[]` is a hole; collapsed
 # into "everything" it refuses correct work. The caller must tell them apart.

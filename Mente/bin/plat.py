@@ -30,6 +30,7 @@ those are worth: followed when remembered. ⛔ So it is not a rule. It is a func
 that must never be guessed are here together.
 """
 import os
+import re
 import shutil
 import stat
 import subprocess
@@ -56,6 +57,37 @@ def join(*parts):
 # ⭐ Extensions Windows treats as runnable. Used only to answer "is this a
 # command?" where the executable bit cannot.
 _WIN_RUNNABLE = (".exe", ".bat", ".cmd", ".com", ".ps1")
+
+
+def realpath(path):
+    r"""`os.path.realpath`, but understanding the shell's OWN path notation.
+
+    🔴 THE FAILURE, measured 2026-09-08 on a real Windows install. Git Bash
+    hands a tool `/c/dev/project/site/x.txt`, and `os.path.realpath` on Windows
+    reads that as a path relative to the current drive: it answers
+    `C:\c\dev\project\site\x.txt` — a place that does not exist. ⛔ The gate
+    then judged a file INSIDE the block's declared scope to be outside it, and
+    refused legitimate work. The same path written `C:/dev/...` passed.
+
+    ⚠️ A GATE THAT REFUSES CORRECT WORK IS A GATE THAT GETS SWITCHED OFF, and
+    its documented way out is `MENTE_SCRATCH=1` — which disables it entirely.
+    A frequent false positive trains people to reach for that, which is the
+    outcome ADR-012 exists to prevent.
+
+    ⭐ ONE reader (CHK-SHR-001): every caller that compares a path against a
+    declared scope must resolve it the same way, or two of them disagree about
+    the same file.
+    """
+    if not isinstance(path, str) or not path:
+        return path
+    # ⚠️ Only on Windows, and only the `/<letter>/` shape. ⛔ On a POSIX kernel
+    # `/c/...` is a real directory somebody may have, and rewriting it there
+    # would break a correct path to fix one that is not broken.
+    if os.name == "nt":
+        m = re.match(r"^/([A-Za-z])/(.*)$", path)
+        if m:
+            path = "%s:/%s" % (m.group(1).upper(), m.group(2))
+    return os.path.realpath(path)
 
 
 def is_command(path):

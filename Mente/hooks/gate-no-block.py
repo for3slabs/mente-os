@@ -27,6 +27,10 @@ while _d != _os.path.dirname(_d):
         _sys.path.insert(0, _os.path.join(_d, "bin")); break
     _d = _os.path.dirname(_d)
 import utf8                                          # noqa: F401,E402
+# ⭐ CHK-SHR-001 · ONE reader for "what path is this really". 🔴 Measured
+# 2026-09-08: Windows resolves Git Bash's `/c/...` to `C:\\c\\...` — a place
+# that does not exist — and this gate then refused work inside its own scope.
+import plat                                          # noqa: E402
 
 MENTE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 REPO = os.path.dirname(MENTE)
@@ -122,12 +126,12 @@ def declared_in(path):
         # ⚠️ Some scope could not be read, so "outside every block" is not a
         # claim this can make. ⭐ NOT MEASURED, not a refusal.
         return None
-    real = os.path.realpath(path)
+    real = plat.realpath(path)
     for n in names:
         # ⚠️ Matched on the RESOLVED path: `../` walks past a string compare,
         # and this decides whether a write is refused.
         cand = n if os.path.isabs(n) else os.path.join(REPO, n)
-        cand = os.path.realpath(cand)
+        cand = plat.realpath(cand)
         if real == cand or real.startswith(cand + os.sep):
             return True
     return False
@@ -140,10 +144,10 @@ def inside_engine(path):
     if not path:
         return True                     # nothing named · nothing to govern
     try:
-        real = os.path.realpath(path)
+        real = plat.realpath(path)
     except OSError:
         return False
-    return real.startswith(os.path.realpath(MENTE) + os.sep)
+    return real.startswith(plat.realpath(MENTE) + os.sep)
 
 
 OUT_OF_SCOPE = """
