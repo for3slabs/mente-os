@@ -220,7 +220,7 @@ finally:
 _t = tempfile.mkdtemp(prefix="probe-shipping-first-")
 try:
     subprocess.run(("git", "init", "-q", _t), capture_output=True, timeout=30)
-    _r = subprocess.run(("bash", HOOK), cwd=_t, capture_output=True,
+    _r = subprocess.run(tuple(plat.script(HOOK)), cwd=_t, capture_output=True,
                         text=True, timeout=30)
     _said = (_r.stdout + _r.stderr)
     _br = subprocess.run(("git", "symbolic-ref", "--short", "HEAD"), cwd=_t,

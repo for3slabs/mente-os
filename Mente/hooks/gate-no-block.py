@@ -34,22 +34,40 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from _beat import beat                                         # noqa: E402
 sys.path.insert(0, os.path.join(MENTE, "bin"))
 from blockread import body_of                                  # noqa: E402
+# ⭐ CHK-SHR-001 · ONE reader for "what does this command write". ⛔ A copy of
+# that logic inside this hook is a second answer that drifts from the first.
+from cmdwrite import writes as cmd_writes                      # noqa: E402
 
 
-def target(payload):
-    """The path an action is about. ⛔ Every field type checked: `json.load`
-    accepts any valid JSON, and a hook that raises prints a trace and lets the
-    action through — it does not protect, it only looks like it."""
+def targets(payload):
+    """Every path an action writes · [] if none · ⬜ None if NOT MEASURED.
+
+    🔴 THE FAILURE THAT WIDENED THIS, measured 2026-09-07 on a real Windows
+    run. A whole project was built and shipped and NOT ONE gate fired: the
+    assistant wrote every file with `cat > path <<'EOF'` from Bash, and the
+    write gates were wired on `Edit|Write|MultiEdit`. ⛔ Measured in the
+    transcript: `Bash 83 uses · Write/Edit 0`. The engine watched a door
+    nobody walked through — and every check stayed green.
+
+    ⛔ Every field type checked: `json.load` accepts any valid JSON, and a
+    hook that raises prints a trace and lets the action through — it does not
+    protect, it only looks like it.
+    """
     if not isinstance(payload, dict):
-        return ""
+        return []
     ti = payload.get("tool_input")
     if not isinstance(ti, dict):
-        return ""
+        return []
     for k in ("file_path", "path", "notebook_path"):
         v = ti.get(k)
         if isinstance(v, str) and v:
-            return v
-    return ""
+            return [v]
+    # ⭐ A Bash command is an edit too. ⬜ `None` when the shape was not
+    # recognised — NOT MEASURED, never a refusal and never a silent pass.
+    cmd = ti.get("command")
+    if isinstance(cmd, str) and cmd.strip():
+        return cmd_writes(cmd)
+    return []
 
 
 def a_block_is_open():
@@ -188,19 +206,36 @@ def main():
         beat(MENTE, "gate-no-block")
         return 0
 
-    path = target(payload)
-    if inside_engine(path):
+    paths = targets(payload)
+    if paths is None:
+        # ⬜ CHK-CAU-003 · the command's shape was not recognised, so what it
+        # writes was NOT MEASURED. ⛔ Said out loud and allowed: refusing what
+        # could not be read is how a gate gets switched off, and then nothing
+        # is governed at all (ADR-012). ⚠️ It still leaves a beat, so the
+        # engine can show HOW OFTEN it could not measure.
+        beat(MENTE, "gate-no-block")
+        sys.stderr.write("⬜ gate-no-block · this command's writes were NOT "
+                         "MEASURED · allowed\n")
         return 0
+    if not paths:
+        return 0                        # nothing written · nothing to govern
+    # ⭐ The engine's own housekeeping is never somebody's project work, and a
+    # command touching ONLY Mente/ needs no block (see inside_engine).
+    outside = [p for p in paths if not inside_engine(p)]
+    if not outside:
+        return 0
+
     if a_block_is_open():
-        # ⭐ A block is open — now the question is whether THIS path is inside
-        # what it declared. 🔴 Measured 2026-09-07: it was not, and nothing
-        # said so; the deliverable landed in the repository root and every
-        # validator stayed green because none of them looks at where work went.
-        inside = declared_in(path)
-        if inside is False:
-            beat(MENTE, "gate-no-block")
-            sys.stderr.write(OUT_OF_SCOPE % path)
-            return 2
+        # ⭐ A block is open — now the question is whether THESE paths are
+        # inside what it declared. 🔴 Measured 2026-09-07: one was not, and
+        # nothing said so; the deliverable landed in the repository root and
+        # every validator stayed green because none of them looks at where
+        # work went.
+        for p in outside:
+            if declared_in(p) is False:
+                beat(MENTE, "gate-no-block")
+                sys.stderr.write(OUT_OF_SCOPE % p)
+                return 2
         # ⬜ None · no §B names anything readable · NOT MEASURED, never a
         # refusal: a gate that blocks because it could not read gets removed.
         beat(MENTE, "gate-no-block")

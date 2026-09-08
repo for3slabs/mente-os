@@ -62,3 +62,37 @@ def _run_utf8(*args, **kw):
 
 
 subprocess.run = _run_utf8
+
+
+# ── ④ what THIS process WRITES TO FILES ─────────────────────────────────────
+# 🔴 THE HALF THAT WAS STILL MISSING, measured 2026-09-07 on a fresh Windows
+# install: `open(path, "w")` with no encoding uses the LOCALE too, so a probe
+# writing `➜` died with `UnicodeEncodeError: 'charmap'` — the same bug as ③, one
+# door along. ⛔ The file it was writing is the battery's own cache, so the
+# failure looked like a broken probe rather than a broken write.
+# ⭐ Same reasoning as ③: "remember to pass encoding= on every open" is a rule
+# in a document, and this engine measured what those are worth. There are 14
+# such calls; this fixes all of them without touching one, and an explicit
+# `encoding=` at a call site still wins.
+# ⚠️ BINARY MODE IS LEFT ALONE. ⛔ Forcing an encoding on a "rb"/"wb" call would
+# raise where the code is correct — the engine reads shebangs as bytes on
+# purpose.
+_open = io.open
+
+
+def _open_utf8(file, mode="r", *args, **kw):
+    if "b" not in mode and "encoding" not in kw:
+        kw["encoding"] = "utf-8"
+        kw.setdefault("errors", "replace")
+    return _open(file, mode, *args, **kw)
+
+
+io.open = _open_utf8
+try:
+    import builtins
+    builtins.open = _open_utf8
+except Exception:                                             # noqa: BLE001
+    # ⬜ CHK-CAU-003 · if the builtin cannot be replaced, ③ and ① still hold and
+    # only file writes stay locale-dependent. Said, not swallowed.
+    sys.stderr.write("⬜ utf8 · could not default open() to UTF-8 · "
+                     "file writes use the locale encoding here\n")

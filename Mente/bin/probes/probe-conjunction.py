@@ -146,7 +146,7 @@ case("⑦ ⚠️ they answer DIFFERENT questions about the same row",
      clean and denied)
 
 # ── ⭐ pre-push ↔ check-accounts · layer 2 reads the same registry ──────────
-r = subprocess.run(["bash", os.path.join(TREE, "hooks", "pre-push.sh"),
+r = subprocess.run(plat.script(os.path.join(TREE, "hooks", "pre-push.sh")) + [
                     "old", "https://host/an-org/dead.git"], cwd=TREE,
                    capture_output=True, text=True, timeout=60,
                    env=dict(os.environ, MENTE_ACCOUNTS=reg))

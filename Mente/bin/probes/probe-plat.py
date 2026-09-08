@@ -14,7 +14,7 @@ answer, which is the only way to reach behaviour this machine cannot produce.
   · `os.access(X_OK)` is true for every readable file — NTFS has no such bit
   · `os.chmod` on a directory is accepted and changes nothing
 """
-import os, sys, ntpath
+import os, re, sys, ntpath, tempfile
 import os as _os, sys as _sys
 _d = _os.path.dirname(_os.path.abspath(__file__))
 while _d != _os.path.dirname(_d):
@@ -146,8 +146,15 @@ case("⑦ a folder that is not there is not private",
 case("⑧ a shebang script is run by THIS interpreter",
      plat.script(os.path.join(MENTE, "bin", "check-block"), "--quiet"),
      [sys.executable, os.path.join(MENTE, "bin", "check-block"), "--quiet"])
-case("⑨ a .sh goes through bash, not the OS",
-     plat.script(os.path.join(MENTE, "hooks", "pre-push.sh"))[0], "bash")
+# ⭐ A RESOLVED bash, not the literal name. 🔴 Measured 2026-09-07 on a fresh
+# Windows install: `bash` on PATH is `C:\WINDOWS\system32\bash.exe`, the WSL
+# launcher — it answers `--version` and then cannot open a `C:\...` path, so
+# every shell script died with exit 127. ⛔ Asserting the NAME is what let that
+# ship: the name was right and the program was wrong.
+_sh = plat.script(os.path.join(MENTE, "hooks", "pre-push.sh"))[0]
+case("⑨ a .sh goes through a RESOLVED bash, never the bare name",
+     bool(_sh) and "bash" in _sh.lower() and (
+         os.path.isabs(_sh) or _sh == "bash" and os.name == "posix"), True)
 # ⭐ THE INVARIANT: no production call may hand the OS a bare engine script.
 # ⛔ Four sites did, and each failed in the direction that lets work through.
 import ast as _ast
@@ -194,8 +201,58 @@ case("⑩ no engine script is run by bare path", raw, [])
 # 🔴 shell=True is `cmd.exe /c` on Windows and `/bin/sh -c` elsewhere — two
 # languages for one string. The watcher's `; exit 1` convention returned 0
 # there, so it reported "nothing new" forever.
-case("⑪ an owner's shell command runs under bash",
-     plat.shell("echo hi; exit 1"), ["bash", "-c", "echo hi; exit 1"])
+_cmd = plat.shell("echo hi; exit 1")
+case("⑪ an owner's shell command runs under a RESOLVED bash",
+     bool(_cmd) and "bash" in _cmd[0].lower()
+     and _cmd[-2:] == ["-c", "echo hi; exit 1"], True)
+
+# ── ⑨b 🔴 A SHELL SCRIPT WITH NO EXTENSION IS STILL A SHELL SCRIPT ────────
+# 🔴 THE FAILURE, measured 2026-09-07 on a fresh Windows install. `script()`
+# read the shebang to recognise PYTHON and never to recognise SHELL — so an
+# extensionless shell file came back bare and Windows answered
+# `WinError 193 · not a valid Win32 application`. ⛔ The probe CRASHED and took
+# every case after it down with it, which is how one unhandled shape becomes a
+# whole file reporting nothing.
+# ⚠️ AND IT IS THE COMMON SHAPE, not an exotic one: a git hook is extensionless
+# by convention, and so is the launcher this engine writes when Windows refuses
+# a symlink. The file said what it was in its first line and nothing read it.
+_sh_noext = os.path.join(tempfile.mkdtemp(prefix="probe-plat-"), "hook-like")
+with open(_sh_noext, "w", encoding="utf-8", newline="") as _fh:
+    _fh.write("#!/usr/bin/env bash\nexit 0\n")
+_argv = plat.script(_sh_noext)
+case("⑨b 🔴 ⭐ an extensionless #!/bash file is run THROUGH bash",
+     len(_argv) == 2 and "bash" in _argv[0].lower(), True)
+plat.rmtree(os.path.dirname(_sh_noext))
+
+# ── ⑪b 🔴 NOBODY MAY HAND THE OS A BARE `bash` — not even a probe ─────────
+# 🔴 THE FAILURE, measured 2026-09-07 on a fresh Windows install. `plat.bash()`
+# already existed and already solved this, and ELEVEN call sites across five
+# probes — plus `plat.script()` and `plat.shell()` themselves — still wrote
+# `"bash"` by hand. ⛔ On that machine `bash` resolves to the WSL launcher,
+# which cannot open a `C:\...` path: `probe-session-start` reported **2 of 10**
+# and every red was the interpreter, not the engine.
+# ⭐ THE PATTERN THIS CLOSES, and the engine has met it four times now: a bug
+# is fixed in one place and not in the places that CHECK it. This case IS the
+# check — it reads the shipped source, so a twelfth site cannot appear quietly.
+_INVOKE = re.compile(r'(?:run|Popen|check_output|call)\s*\(\s*[\[(]\s*["\']bash["\']')
+_bare = []
+for _dp, _dn, _fn in os.walk(os.path.join(MENTE, "bin")):
+    if "__pycache__" in _dp:
+        continue
+    for _f in sorted(_fn):
+        if not _f.endswith(".py"):
+            continue
+        _path = os.path.join(_dp, _f)
+        for _i, _line in enumerate(open(_path, encoding="utf-8",
+                                        errors="replace"), 1):
+            # ⚠️ Only an INVOCATION counts. A mention in a comment, a docstring
+            # or `plat.bash()` itself is not a call to the OS, and a detector
+            # looser than the thing it measures reports defects that are not
+            # there.
+            if _INVOKE.search(_line):
+                _bare.append("%s:%d" % (plat.rel(_path, MENTE), _i))
+case("⑪b 🔴 ⭐ no probe hands the OS a bare `bash` — plat resolves it",
+     _bare, [])
 
 # ── ⑫⑬ deleting a tree git has written into ─────────────────────────────
 # 🔴 git writes .git/objects/** at 0o444. On POSIX the directory's mode decides
@@ -258,16 +315,29 @@ if os.path.exists(_d):
 # mode means anything.
 _c = [("⑭ a Windows mount is NOT trusted for modes, under a POSIX kernel",
        plat.modes_are_real("/mnt/c/anything") is False),
+      # ⬜ These two ask about POSIX paths, and only a POSIX kernel can answer.
+      # 🔴 Measured 2026-09-07 on a fresh Windows install: `/home/someone` is
+      # not a path there, so both read 🔴 — a RED THE CODE DID NOT EARN, on the
+      # exact platform the engine is trying to prove itself on. ⛔ A probe that
+      # measures the author's kernel and calls it a defect teaches people to
+      # ignore reds, and then a real one goes unread.
       ("⑭b and a native path still is",
-       plat.modes_are_real("/home/someone") is True),
+       plat.modes_are_real("/home/someone") is True
+       if os.name == "posix" else None),
       ("⑭c the executable bit answers per path too",
-       plat.executable_bit_is_real("/mnt/c/x") is False
-       and plat.executable_bit_is_real("/home/x") is True),
+       (plat.executable_bit_is_real("/mnt/c/x") is False
+        and plat.executable_bit_is_real("/home/x") is True)
+       if os.name == "posix" else None),
       # ⬜ With no path it answers for the OS alone — the old contract, still
       # right for a native tree and relied on by callers with no path to give.
       ("⑭d with no path it answers for the OS, as before",
        plat.modes_are_real() == (os.name == "posix"))]
 for _lbl, _ok in _c:
+    if _ok is None:
+        # ⬜ CHK-CAU-003 · said out loud, never counted as a pass and never
+        # counted as a red: this kernel cannot answer the question.
+        print("  %-58s ⬜ NOT MEASURED · needs a POSIX kernel" % _lbl)
+        continue
     n += 1
     print("  %-58s %s" % (_lbl, "✅" if _ok else "🔴"))
     if not _ok:
