@@ -455,8 +455,8 @@ def prove_gates(dry):
     install and it is the only moment the system can prove itself before
     somebody trusts it with real work.
 
-    ⛔ IT NEVER FAILS THE INSTALL. A gate that cannot be proved is reported
-    LOUDLY and the install continues — refusing to install because a hook is
+    ⛔ INS-ORD-004 · IT NEVER FAILS THE INSTALL. A gate that cannot be proved
+    is reported LOUDLY and the install continues — refusing to install because a hook is
     unhappy would leave the person with nothing at all (ADR-012).
     """
     dest = os.path.join(REPO, ".claude", "settings.json")
@@ -501,8 +501,9 @@ def prove_gates(dry):
     if not alive and not dead:
         return "⬜ NOT MEASURED · no gate is wired to fire"
     if dead:
-        # 🔴 SAID LOUDLY, and it names them. ⛔ "some gates failed" is a
-        # sentence nobody can act on.
+        # 🔴 INS-ORD-003 · SAID LOUDLY, and it NAMES them. ⛔ "some gates
+        # failed" is a sentence nobody can act on, and the measured run had
+        # seven of them.
         return ("🔴 %d of %d gate(s) DO NOT RUN: %s\n"
                 "      ⛔ They are wired and dead — the host reports their\n"
                 "         failure as non-blocking, so work goes through\n"
@@ -904,9 +905,12 @@ def main():
     # ⭐ After ③b, because it records where ③b actually wrote.
     declared = declare_registry(dry, gated)
     tightened = harden(dry)
-    # ⭐ LAST, and only once everything is wired: the switch. It FIRES each
-    # gate the way the host will, because wired is not alive — measured
-    # 2026-09-07, five gates reported as wired and every one dead.
+    # ⭐ INS-ORD-001 · the nine steps above run in the order
+    # `rules/contract-install-order.md` declares; each writes into what the
+    # previous one produced, so a reorder succeeds against the wrong state.
+    # ⭐ INS-ORD-002 · and the switch fires LAST, once everything is on disk:
+    # wired is not alive — measured 2026-09-07, five gates reported as wired
+    # and every one dead.
     proved = prove_gates(dry)
 
     head = "🔎 dry run — nothing was written\n" if dry else ""

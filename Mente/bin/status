@@ -103,8 +103,9 @@ def _gates_answer():
     `command not found`. ⛔ The host treats that as non-blocking, so they failed
     154 times in one session and this file kept saying green.
 
-    ⭐ COUNTING IS NOT MEASURING. A tool whose job is telling somebody whether
-    they are protected must never be the one that is wrong — so it FIRES one.
+    ⭐ INS-ORD-005 · COUNTING IS NOT MEASURING. A tool whose job is telling
+    somebody whether they are protected must never be the one that is wrong —
+    so it FIRES one before it claims anything.
     """
     p = os.path.join(REPO, ".claude", "settings.json")
     try:

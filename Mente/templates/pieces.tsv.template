@@ -179,6 +179,7 @@ adr-030	rules/decisions/ADR-030-the-block-message-is-the-receipt.md	engine	canon
 decisions-readme	rules/decisions/README.md	engine	canonical	the append-only folder — ships empty, the records are yours
 check-handoff	bin/check-handoff	engine	executable	validates a delegation manifest and binds it against reality
 contract-handoff	rules/contract-handoff.md	engine	canonical	bounded delegation — what a specialist may read, write, and when it stops
+contract-install-order	rules/contract-install-order.md	engine	canonical	the ten steps of an install and why each sits where it does — 🔴 every step reported success once while all five gates were dead
 tpl-handoff	templates/handoff.yml.template	engine	template	the manifest to copy and fill before delegating
 probes-harness	bin/probes/harness.py	engine	executable	the sabotage harness — one place, so every probe verifies the same way
 probes-fixtures	bin/probes/fixtures.py	engine	executable	the fixtures probes plant, carrying the marker in their identity
