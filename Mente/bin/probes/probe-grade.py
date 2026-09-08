@@ -19,6 +19,7 @@ while _d != _os.path.dirname(_d):
     _d = _os.path.dirname(_d)
 import utf8                                          # noqa: F401,E402
 import shutil
+import tempfile
 import plat                                          # noqa: E402
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -314,6 +315,14 @@ else:
     print("  ⬜ NOT_MEASURED · set MENTE_CROSSRUN_BLOCKS to a real blocks/ folder")
 
 clean()
+import importlib.machinery as _m, importlib.util as _u
+_ld = _m.SourceFileLoader("_gb", os.path.join(ROOT, "bin", "grade-block"))
+_gb = _u.module_from_spec(_u.spec_from_loader("_gb", _ld))
+try:
+    _ld.exec_module(_gb)
+except SystemExit:
+    pass
+
 # ── 🔴 THE SCOPE IS WHAT §B DECLARES, NOT WHAT ITS PROSE MENTIONS ─────────
 # 🔴 THE FAILURE, measured 2026-09-08 on a real install. A §B line read
 #     - `.gitignore` — add `site/node_modules/` and `site/dist/`
@@ -323,18 +332,69 @@ clean()
 # 11,119 vendor files while its own 13 were invisible, and the verdict listed
 # duplicated Babel internals as the block's defects.
 # ⭐ `pre-edit-standards` already cut at the em dash for exactly this reason.
-import importlib.machinery as _m, importlib.util as _u
-_ld = _m.SourceFileLoader("_gb", os.path.join(ROOT, "bin", "grade-block"))
-_gb = _u.module_from_spec(_u.spec_from_loader("_gb", _ld))
-try:
-    _ld.exec_module(_gb)
-except SystemExit:
-    pass
 _sd = _gb.scope_dirs(
     "## ✅ IN\n"
     "- `site/` — el proyecto completo\n"
     "- `site/package.json` y su lockfile — dependencias\n"
     "- `.gitignore` — añadir `site/node_modules/` y `site/dist/`\n")
+# ── ⑮ 🔴 THE WALK IS PRUNED, NOT FILTERED AFTERWARDS ──────────────────────
+# 🔴 THE FAILURE, measured 2026-09-08 on a real install. `files_in()` used
+# `glob("**/*", recursive=True)` and dropped excluded paths AFTER listing them —
+# so it descended into `node_modules`, enumerated 12,245 entries and returned 2.
+# ⛔ 42 seconds per call, once per dimension: `grade-block` took 253 s on a
+# block of 13 files and blew past every timeout. A verdict nobody waits for is
+# a verdict nobody reads.
+#
+# ⭐ TWO CASES, BECAUSE THEY MEASURE TWO DIFFERENT THINGS — and the first
+# version of this probe had only the second. Sabotage-verified 2026-09-08:
+# putting the `glob` back left the case GREEN, because glob and walk return the
+# SAME list. ⛔ The defect was never in the answer, it was in how much ground
+# was covered to reach it — so a probe reading only the returned names cannot
+# see it. ⑮a counts the directories ENTERED; ⑮b reads what came back.
+_wt = tempfile.mkdtemp(prefix="probe-grade-walk-")
+try:
+    for _d in ("src", "node_modules/dep", ".astro"):
+        os.makedirs(os.path.join(_wt, "site", _d), exist_ok=True)
+    for _f, _where in (("mine.py", "src"), ("vendor.py", "node_modules/dep"),
+                       ("cache.py", ".astro")):
+        open(os.path.join(_wt, "site", _where, _f), "w",
+             encoding="utf-8", newline="").write("x = 1\n")
+
+    # ⑮a · the excluded tree is never ENTERED. Both `os.walk` and `glob` list a
+    # directory through `os.scandir`, so recording its argument records every
+    # folder the search actually opened.
+    _seen = []
+    _real_scandir = os.scandir
+
+    def _spy(path="."):
+        _seen.append(str(path))
+        return _real_scandir(path)
+
+    os.scandir = _spy
+    try:
+        _fs = _gb.files_in(["site"], _wt, (".py",))
+    finally:
+        os.scandir = _real_scandir
+    _entered = [x for x in _seen if "node_modules" in x or ".astro" in x]
+    _ok2a = _entered == []
+    print("  %-46s %s %s" % ("⑮a 🔴 ⭐ vendor is PRUNED, never entered",
+                             "✅" if _ok2a else "🔴",
+                             "" if _ok2a else "entró en %d: %s"
+                             % (len(_entered), _entered[0])))
+    results.append(("walk prunes the excluded tree", _ok2a))
+
+    # ⑮b · and what comes back is only the block's own file. 🔴 Caught the
+    # moment the walk replaced the glob: `glob("**/*")` never descends into a
+    # dotted folder, `os.walk` does — two generated `.d.ts` files from `.astro`
+    # entered a block's scope, a verdict measuring files nobody wrote.
+    _names = sorted(os.path.basename(f) for f in _fs)
+    _ok2b = _names == ["mine.py"]
+    print("  %-46s %s %s" % ("⑮b 🔴 ⭐ hidden folders are out of the result",
+                             "✅" if _ok2b else "🔴", "" if _ok2b else _names))
+    results.append(("hidden folders stay out", _ok2b))
+finally:
+    plat.rmtree(_wt)
+
 _want = ["site", "site/package.json"]
 _ok = _sd == _want
 print("  %-46s %s %s" % ("⑭ 🔴 ⭐ §B declares the scope, its prose does not",

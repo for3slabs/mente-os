@@ -174,11 +174,28 @@ def files_in(dirs, root, ext=None):
         if os.path.isfile(base):
             out.append(base)
             continue
-        for f in glob.glob(os.path.join(base, "**", "*"), recursive=True):
-            if os.path.isdir(f) or skip & set(f.split(os.sep)):
-                continue
-            if ext is None or f.endswith(ext):
-                out.append(f)
+        # ⭐ PRUNED WHILE WALKING, never filtered afterwards. 🔴 THE FAILURE,
+        # measured 2026-09-08 on a real install: this used
+        # `glob.glob(**/*, recursive=True)` and dropped the excluded paths
+        # after the fact — so it DESCENDED into `node_modules`, listed 12,245
+        # entries, and returned 2. ⛔ 42 seconds per call, once per dimension:
+        # `grade-block` took 253 s on a block of 13 files and blew past every
+        # timeout. A verdict nobody waits for is a verdict nobody reads.
+        # ⚠️ `os.walk` lets the excluded directories be removed from `dirnames`
+        # in place, which is what stops the descent — `glob` has no such hook.
+        for cur, dirnames, filenames in os.walk(base):
+            # ⚠️ AND HIDDEN DIRECTORIES STAY OUT. 🔴 Caught the moment the walk
+            # replaced the glob: `glob("**/*")` never descends into a dotted
+            # folder, so `.astro/` — a build cache — had always been invisible.
+            # ⛔ `os.walk` does descend, and two generated `.d.ts` files entered
+            # the block's scope: a verdict measuring files nobody wrote.
+            dirnames[:] = [x for x in dirnames
+                           if x not in skip and not x.startswith(".")]
+            if skip & set(cur.split(os.sep)):
+                continue        # ⬜ the base itself was excluded
+            for name in filenames:
+                if ext is None or name.endswith(ext):
+                    out.append(os.path.join(cur, name))
     return sorted(set(out))
 
 

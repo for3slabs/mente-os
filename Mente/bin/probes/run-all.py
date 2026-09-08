@@ -163,6 +163,7 @@ print("═══ TODAS LAS SONDAS ═══%s\n"
       % ("" if not SERIAL else "  (serial · MENTE_PROBES_SERIAL=1)"))
 _started = time.time()
 total = failed = 0
+reds = []          # (probe, case) for every case a probe reported red
 rows = []
 
 if SERIAL:
@@ -231,6 +232,24 @@ for name, r in results:
         print("  %-24s 🔴 CRASHED · %s" % (name, crash[:60]))
         continue
     good, all_ = int(m.group(1)), int(m.group(2))
+    # ⭐ WHICH cases fell, not only how many. 🔴 THE FAILURE, measured
+    # 2026-09-08: a real installation reported `failed: 6` and named none of
+    # them, so finding out what broke meant re-running four probes by hand and
+    # reading their tails. ⛔ CHK-IND-002 — a count with no detail is a number
+    # nobody can act on, and here it cost the diagnosis, not just the reading.
+    # ⚠️ Each probe ALREADY prints its own `🔴 <label>` lines under its tally;
+    # this run was capturing that stdout and discarding it.
+    # ⛔ ONLY the lines AFTER the tally. 🔴 Caught the moment this landed: a
+    # first version read every line starting with 🔴 and reported five GREEN
+    # cases as failures — the emoji is part of their NAME (`🔴 ⭐ the switch
+    # RUNS the gate` passes). Each probe prints its failures in a summary under
+    # its `➜ N of M correct` line; that summary is the only place a red line
+    # means a red case.
+    _tail = r.stdout[m.end():]
+    for _ln in _tail.splitlines():
+        _t = _ln.strip()
+        if _t.startswith("🔴 ") and len(_t) > 3:
+            reds.append((name, _t[2:].strip()))
     dups = duplicate_labels(r.stdout)
     if dups:
         # ⭐ One failure, not one per numeral: the defect is the probe's
@@ -399,6 +418,12 @@ for c in missing:
 _line = ("  ➜ checks: %d · failed: %d%s"
          % (total, failed, "" if not failed else "  🔴"))
 print("\n" + _line)
+
+# ⭐ AND THE HEADLINE NAMES THEM. ⛔ Without this the only way to learn what
+# `failed: 6` meant was to re-run the probes one by one — which is the same
+# work the battery just did, done twice.
+for _who, _what in reds:
+    print("     🔴 %-22s %s" % (_who, _what))
 
 # ⭐ The result is RECORDED where bin/generate-metrics can read it. ⛔ That
 # generator used to run the battery to learn this number — which recursed
