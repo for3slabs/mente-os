@@ -292,6 +292,31 @@ p.case("㉜b 🔴 ⭐ a ⬜ pointer whose target EXISTS elsewhere",
 p.inverse("㉜c ⛔ a ⬜ over a file that exists NOWHERE stays exempt",
           lambda: put(GOOD + "\nSee ⬜ `rules/zz-never-written-anywhere.md`.\n"))
 
+# ⭐ AND A VENDOR TREE MUST NOT ANSWER FOR AN ENGINE PIECE. 🔴 The basename
+# index prunes SKIP_DIRS, and until a vendor folder existed to prune, removing
+# that line changed nothing — the case was reported ⬜ NOT MEASURED rather than
+# green. ⛔ Measured once one was planted: a third party's file answers for an
+# unwritten engine piece, and DOC-CNT-008 accuses the document of a wrong path
+# that nobody wrote. ⚠️ A false accusation is how a validator gets switched off,
+# and this one would fire on any repository with dependencies installed.
+def _vendored():
+    """Plant `node_modules/<x>/zzprobe-vendored.md`, cite it under a ⬜."""
+    # ⚠️ The folder MUST be named `node_modules` — SKIP_DIRS matches names, not
+    # paths. ⛔ And `track()` refuses to delete a path that is not this probe's
+    # fixture, which is correct: a real `node_modules` at the root would be
+    # erased by the cleanup. ⭐ So the tracked path is a MARKED parent, and the
+    # vendor folder lives one level inside it.
+    _par = p.track(os.path.join(ROOT, "zzprobe-vendor"))
+    _nm = os.path.join(_par, "node_modules", "dep")
+    os.makedirs(_nm, exist_ok=True)
+    open(os.path.join(_nm, "zzprobe-vendored.md"), "w",
+         encoding="utf-8", newline="").write("# vendored\n")
+    return put(GOOD + "\nSee ⬜ `rules/zzprobe-vendored.md`.\n")
+
+
+p.inverse("㉜e 🔴 ⭐ a vendored file does NOT answer for an engine piece",
+          _vendored)
+
 # ⚠️ And WITHOUT the marker it is a plain broken pointer — 004, not 008. ⛔ The
 # two must not collapse into one: 004 says "nothing is there", 008 says "it is
 # there, you spelled the path wrong", and only the second can name the fix.
