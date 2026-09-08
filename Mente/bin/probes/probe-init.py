@@ -787,7 +787,7 @@ case("㉛c 🔴 ⭐ an interpreter path WITH A SPACE survives the stamp",
 # ── ㉛d 🔴 BASH EATS A BACKSLASH — the gates died 154 times in one session ──
 # 🔴 THE FAILURE, measured 2026-09-07 on a real Windows install. The host runs
 # a hook THROUGH BASH, and bash reads `\` as an escape: the stamped
-# `C:\Users\Datos\...\python.exe` reached it as `C:UsersDatos...` and every gate
+# `C:\Users\<user>\...\python.exe` reached it as `C:Users<user>...` and every gate
 # answered `command not found`, exit 127. ⛔ The host classes that as a
 # NON-BLOCKING error — so all five gates failed SILENTLY **154 times in one
 # session**, `.beats/` stayed empty, and the whole run went through ungoverned
