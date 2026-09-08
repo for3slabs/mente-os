@@ -187,6 +187,70 @@ case("⑥ 🔴 ⭐ the gate writes its beat inside Mente/, not beside it",
 case("⑥b ⭐ and the beat is where check-gates looks for it",
      os.path.isfile(os.path.join(ROOT, ".beats", "gate-no-block")))
 
+# ── ⑨ 🔴 BASH IS A DOOR TOO, AND IT WAS THE ONLY ONE BEING USED ────────────
+# 🔴 THE FAILURE, measured 2026-09-07 on a real Windows run. A whole project was
+# built and shipped — nine files — and NOT ONE gate fired. The gates were wired,
+# alive, and left beats when called by hand. ⛔ The assistant simply never used
+# the door they watched: it wrote every file with `cat > path <<'EOF'` from
+# Bash, while the write gates sat on `Edit|Write|MultiEdit`. The transcript
+# counted **Bash 83 uses · Write/Edit 0**.
+# ⭐ Wiring is not coverage. A gate watching a door nobody walks through reports
+# green forever, and every check above it stays green with it.
+def fire_cmd(command, env=None):
+    e = dict(os.environ)
+    e.pop("MENTE_SCRATCH", None)
+    if env:
+        e.update(env)
+    return subprocess.run([sys.executable, HOOK], input=json.dumps(
+        {"tool_input": {"command": command}}), capture_output=True,
+        text=True, timeout=30, env=e)
+
+
+_cmd_out = os.path.join(tempfile.gettempdir(), "probe-gnb-bash.md")
+if not _open:
+    r = fire_cmd("cat > %s <<'EOF'\nhola\nEOF" % _cmd_out)
+    case("⑨ 🔴 ⭐ a `cat >` from Bash is REFUSED, exactly as a Write is",
+         r.returncode == 2, "exit=%d" % r.returncode)
+    r = fire_cmd("echo hi > %s" % _cmd_out)
+    case("⑨b 🔴 a redirection is a write whatever the verb", r.returncode == 2,
+         "exit=%d" % r.returncode)
+else:
+    # ⬜ CHK-CAU-003 · said out loud. A block is open in THIS tree, so the
+    # no-block refusal cannot be measured — and a case that cannot run reports
+    # NOT MEASURED, never a green it did not earn.
+    print("  ⬜ ⑨ NOT MEASURED · a block is open in this tree")
+    _src = open(HOOK, encoding="utf-8").read()
+    case("⑨ 🔴 ⭐ the gate reads a Bash command's writes",
+         "cmd_writes" in _src and "tool_input" in _src)
+
+# ⛔ AND THE HALF THAT DECIDES WHETHER IT SURVIVES: ordinary tooling must pass.
+# 🔴 A gate that refuses `npm install` is switched off within a day (ADR-012),
+# and then nothing is governed at all.
+_tooling = [(_c, fire_cmd(_c).returncode)
+            for _c in ("npm install", "git commit -m x", "ls -la && grep x f")]
+_refused = ["%s→%d" % (c, rc) for c, rc in _tooling if rc != 0]
+case("⑨c ⛔ ordinary tooling is NEVER refused (npm · git · a read)",
+     not _refused, ", ".join(_refused) or "3 of 3 allowed")
+
+# ⬜ AND AN UNRECOGNISED COMMAND IS NOT MEASURED, never a refusal.
+r = fire_cmd("herramienta-que-nadie-conoce x")
+case("⑨d ⬜ an unrecognised command is allowed and SAID, not refused",
+     r.returncode == 0 and "NOT MEASURED" in r.stderr, "exit=%d" % r.returncode)
+
+# ── ⑩ 🔴 AND THE WIRING MUST NAME BASH, or every case above is theatre ─────
+# ⭐ The gate can be perfect and still never run. This reads the shipped
+# template, because that is what lands in somebody's installation.
+_tpl = os.path.join(ROOT, "templates", "claude-settings.json.template")
+try:
+    _cfg = json.load(open(_tpl, encoding="utf-8"))
+    _m = [e.get("matcher", "") for e in _cfg.get("hooks", {}).get(
+        "PreToolUse", []) for h in e.get("hooks", [])
+        if "gate-no-block" in h.get("command", "")]
+    case("⑩ 🔴 ⭐ the shipped wiring puts this gate on Bash too",
+         any("Bash" in m for m in _m), " · ".join(_m) or "not wired at all")
+except (OSError, ValueError) as _e:
+    print("  ⬜ ⑩ NOT MEASURED · %s" % type(_e).__name__)
+
 print("\n  ⬜ NOT MEASURED · whether an assistant OBEYS the refusal · that runs\n"
       "     outside this engine · these cases prove the refusal happens")
 

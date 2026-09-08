@@ -202,26 +202,44 @@ def script(path, *args):
     """
     low = path.lower()
     if low.endswith(".sh"):
-        return ["bash", path] + list(args)
+        # ⭐ bash(), never the bare name. 🔴 Measured 2026-09-07 on a fresh
+        # Windows install: `bash` on PATH is `C:\WINDOWS\system32\bash.exe`,
+        # the WSL launcher, which CANNOT open a `C:\...` path — every shell
+        # script died with exit 127. ⛔ This function is how the whole engine
+        # runs a `.sh`, so the bare name broke every one of them at once.
+        return list(bash(verify=False)) + [path] + list(args)
     if low.endswith((".exe", ".bat", ".cmd", ".com")):
         return [path] + list(args)
-    if low.endswith(".py") or _is_python_shebang(path):
+    if low.endswith(".py") or _shebang_says(path, b"python"):
         return [sys.executable, path] + list(args)
+    # ⭐ A SHELL SCRIPT WITH NO EXTENSION IS STILL A SHELL SCRIPT. 🔴 Measured
+    # 2026-09-07 on a fresh Windows install: a git hook and a launcher are
+    # extensionless by convention, so this returned them bare and Windows
+    # answered `WinError 193 · not a valid Win32 application` — the probe
+    # CRASHED and took every case after it down with it. ⛔ The file said what
+    # it was in its first line and nothing read it.
+    if _shebang_says(path, b"sh"):
+        return list(bash(verify=False)) + [path] + list(args)
     return [path] + list(args)
 
 
-def _is_python_shebang(path):
-    """⭐ Does the file itself say it is Python? ⛔ The extension cannot answer:
-    every command in `bin/` is extensionless on purpose."""
+def _shebang_says(path, word):
+    """⭐ Does the file's FIRST LINE name this interpreter? ⛔ The extension
+    cannot answer: every command in `bin/` is extensionless on purpose, and so
+    is every git hook.
+
+    ⚠️ `word` is matched inside the shebang, so b"sh" catches `sh`, `bash` and
+    `zsh` — which is what is wanted: all three read the same dialect here.
+    """
     try:
         with open(path, "rb") as fh:
             first = fh.readline(120)
     except OSError:
-        # ⬜ CHK-CAU-003 · unreadable is not "not Python". The caller gets the
-        # path unchanged and the OS reports the real error, instead of this
-        # deciding silently on its behalf.
+        # ⬜ CHK-CAU-003 · unreadable is not "not this interpreter". The caller
+        # gets the path unchanged and the OS reports the real error, instead of
+        # this deciding silently on its behalf.
         return False
-    return first.startswith(b"#!") and b"python" in first.lower()
+    return first.startswith(b"#!") and word in first.lower()
 
 
 def shell(command):
@@ -237,7 +255,9 @@ def shell(command):
     ⭐ The owner writes ONE shell dialect — POSIX — and it runs the same on
     all three platforms, because Git for Windows ships bash.
     """
-    return ["bash", "-c", command]
+    # ⭐ Same reason as script(): the launcher on PATH answers `--version` and
+    # then cannot see the filesystem the command talks about.
+    return list(bash(verify=False)) + ["-c", command]
 
 
 def rmtree(path):

@@ -106,7 +106,7 @@ try:
     # ⛔ Everything above measures the writer. This runs the real hooks with
     # the marker in place: a switch the gates ignore is a lie told to the
     # owner about their own machine.
-    r = run(["bash", os.path.join(HOOKS, "session-start.sh")],
+    r = run(plat.script(os.path.join(HOOKS, "session-start.sh")),
             input="", env=dict(os.environ, MENTE_STARTUP_CHECKS=""))
     case("④ 🔴 ⭐ the session hook goes SILENT while paused",
          r.returncode == 0 and out(r).strip() == "", "%d byte(s)" % len(out(r)))
@@ -126,14 +126,14 @@ try:
         # ⭐ pre-push resolves its root from where the hook LIVES, so it is run
         # from the engine copy exactly as .git/hooks would invoke it.
         _url = "https://example.invalid/nobody/undeclared.git"
-        r = run(["bash", os.path.join(HOOKS, "pre-push.sh"), "origin", _url])
+        r = run(plat.script(os.path.join(HOOKS, "pre-push.sh"), "origin", _url))
         case("④b 🔴 ⭐ pre-push lets an UNDECLARED push through while paused",
              r.returncode == 0, "exit=%d" % r.returncode)
     finally:
         if not _had_reg and os.path.isfile(_reg):
             os.remove(_reg)
 
-    r = run(["bash", os.path.join(HOOKS, "pre-commit.sh")], cwd=os.path.dirname(ROOT))
+    r = run(plat.script(os.path.join(HOOKS, "pre-commit.sh")), cwd=os.path.dirname(ROOT))
     case("④c 🔴 ⭐ pre-commit does not block while paused",
          r.returncode == 0, "exit=%d" % r.returncode)
 
@@ -155,7 +155,7 @@ try:
             "repo\tcuenta\trol\tremoto\truta\twhy\tguia\n"
             "declared-elsewhere\tx\tactivo\torigin\t.\tprobe\t-\n")
     try:
-        r = run(["bash", os.path.join(HOOKS, "pre-push.sh"), "origin", _url])
+        r = run(plat.script(os.path.join(HOOKS, "pre-push.sh"), "origin", _url))
         case("⑥ 🔴 ⭐ pre-push ABORTS the same push once resumed",
              r.returncode == 1, "exit=%d" % r.returncode)
     finally:

@@ -85,7 +85,16 @@ while IFS=$'\t' read -r repo cuenta rol remoto ruta why guia; do
   case "$repo" in ''|'#'*|repo) continue ;; esac
   # ⚠️ Matched case-insensitively: a host that treats names case-insensitively
   # would otherwise let a differently-cased spelling walk straight past.
-  if printf '%s' "$REMOTE_URL" | grep -qiF -- "$repo"; then
+  # 🔴 MATCHED IN THE SHELL, NEVER THROUGH A PIPE TO grep. Measured 2026-09-07
+  # on a fresh Windows install: `printf … | grep -qiF` made Git Bash print
+  # `Aborted` and return non-zero — `-q` closes the pipe and printf takes a
+  # SIGPIPE — so a REGISTERED destination was refused. ⛔ That is the dangerous
+  # direction: a guard that blocks correct work gets switched off, and then the
+  # undeclared destinations walk through too.
+  # ⭐ `case` is POSIX, needs no process, and cannot break a pipe.
+  _u=$(printf '%s' "$REMOTE_URL" | tr '[:upper:]' '[:lower:]')
+  _r=$(printf '%s' "$repo" | tr '[:upper:]' '[:lower:]')
+  if [ -n "$_r" ] && case "$_u" in *"$_r"*) true ;; *) false ;; esac; then
     REPO="$repo"; ROL="$rol"
     break
   fi

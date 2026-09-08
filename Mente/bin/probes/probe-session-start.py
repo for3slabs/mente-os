@@ -24,8 +24,20 @@ HOOK = os.path.join(ROOT, "hooks", "session-start.sh")
 results = []
 
 
+# ⭐ plat.bash(), never the bare name. 🔴 Measured 2026-09-07 on a fresh
+# Windows install: `bash` on PATH resolved to `C:\WINDOWS\system32\bash.exe`,
+# the WSL launcher, which cannot open a `C:\...` path — every case that runs
+# the hook died with exit 127 and this probe reported 2 of 10. ⛔ The engine
+# had already solved this for the INSTALLER and not for the probe that checks
+# it: the same fix, missing in the place that measures it.
+# ⚠️ It returns an ARGV LIST, not a name — a Git-Bash launcher may need flags.
+_SHELL = plat.bash()
+
+
 def run(payload="", env=None):
-    return subprocess.run(["bash", HOOK], cwd=ROOT, input=payload,
+    if not _SHELL:
+        return None                      # ⬜ no usable shell · NOT MEASURED
+    return subprocess.run(list(_SHELL) + [HOOK], cwd=ROOT, input=payload,
                           capture_output=True, text=True,
                           env=dict(os.environ, **(env or {})))
 

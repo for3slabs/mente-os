@@ -123,6 +123,7 @@ workspace	docs/WORKSPACE.md	owner	canonical	which repo is which on THIS machine 
 check-document	bin/check-document	engine	executable	enforces the lock rules of the document contract
 contract-document	rules/contract-document.md	engine	canonical	the shape a document must have — header, ceilings, names, moving
 blockread	bin/blockread.py	engine	helper	ONE reader for a block's sections — shared, because four copies had diverged
+cmdwrite	bin/cmdwrite.py	engine	canonical	which paths a shell command writes — 🔴 the gates watched Edit|Write and a whole project shipped through `cat >` unseen
 check-block	bin/check-block	engine	executable	enforces the lock rules of the block contract
 contract-block	rules/contract-block.md	engine	canonical	one unit of work, one file — shape, opening, blocked, closing, archive
 check-work	bin/check-work	engine	executable	enforces the lock rules of working inside a block
@@ -241,3 +242,4 @@ probe-patterns	bin/probes/probe-patterns.py	engine	executable	proves the example
 check-code-patterns	bin/check-code-patterns	engine	executable	finds the catalogued patterns a text matcher can find — ⚠️ every finding is a question, never a verdict
 probe-code-patterns	bin/probes/probe-code-patterns.py	engine	executable	runs each pattern's own Fails/Passes pair through its detector
 probe-conjunction	bin/probes/probe-conjunction.py	engine	executable	proves a gate and the validator it CALLS still agree — ⛔ a probe proves a piece, never a pair
+probe-cmdwrite	bin/probes/probe-cmdwrite.py	engine	executable	proves a write arriving through Bash is seen, and that ordinary tooling is never refused

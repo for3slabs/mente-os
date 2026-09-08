@@ -63,7 +63,7 @@ def layer2(url, env=None):
     e = dict(os.environ)
     e.update(ENV)
     e.update(env or {})
-    return subprocess.run(["bash", L2, "origin", url], cwd=TREE,
+    return subprocess.run(plat.script(L2, "origin", url), cwd=TREE,
                           capture_output=True, text=True, env=e)
 
 
@@ -157,7 +157,7 @@ link = os.path.join(WORK, "linked-pre-push")
 # ⬜ A system that refuses symlinks cannot answer this one — ⛔ and it CRASHED
 # here on Windows (WinError 1314), taking every case after it down with it.
 if link_or_skip(L2, link):
-    r = subprocess.run(["bash", link, "origin", "https://host/someone/unknown.git"],
+    r = subprocess.run(plat.script(link, "origin", "https://host/someone/unknown.git"),
                        cwd=TREE, capture_output=True, text=True,
                        env=dict(os.environ, **ENV))
     case("⑮ 🔴 invoked through a SYMLINK it still aborts (does not fail open)",
@@ -174,8 +174,8 @@ launcher = os.path.join(WORK, "launcher-pre-push")
 with open(launcher, "w", encoding="utf-8", newline="\n") as fh:
     fh.write('#!/usr/bin/env bash\nexec "%s" "$@"\n' % L2)
 os.chmod(launcher, 0o755)
-r = subprocess.run(["bash", launcher, "origin",
-                    "https://host/someone/unknown.git"],
+r = subprocess.run(plat.script(launcher, "origin",
+                    "https://host/someone/unknown.git"),
                    cwd=TREE, capture_output=True, text=True,
                    env=dict(os.environ, **ENV))
 case("⑮b 🔴 invoked through a LAUNCHER it still aborts",
@@ -213,7 +213,7 @@ subprocess.run(["git", "init", "-q", _outer], capture_output=True)
 _inner = os.path.join(_outer, "clone")
 shutil.copytree(os.path.dirname(TREE), _inner)
 _hook = os.path.join(_inner, "Mente", "hooks", "pre-push.sh")
-_r = subprocess.run(["bash", _hook, "origin", "https://host/someone/unknown.git"],
+_r = subprocess.run(plat.script(_hook, "origin", "https://host/someone/unknown.git"),
                     cwd=_inner, capture_output=True, text=True,
                     env=dict(os.environ, **{k: v for k, v in ENV.items()
                                             if k != "MENTE_ACCOUNTS"}))

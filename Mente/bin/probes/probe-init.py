@@ -294,8 +294,14 @@ else:
     # message only appears on the platform that cannot be staged here.
     _src = open(os.path.join(tree, "bin", "init"), encoding="utf-8").read()
     _h = _src[_src.index("def harden("):]
+    # ⚠️ Matched WITHOUT the empty parentheses. 🔴 Measured 2026-09-07 on a
+    # fresh Windows install: `harden()` correctly calls `modes_are_real(d)` —
+    # with the path, because only the path can answer — and this case looked
+    # for the literal `modes_are_real()`, so it never matched and reported 🔴
+    # on the exact platform it exists to check. ⛔ A probe asserting a call's
+    # SPELLING fails the day the call gets its argument right.
     case("⑱ ⬜ modes not enforced here · init reports ⬜, it does not claim 700",
-         "modes_are_real()" in _h and "NOT MEASURED" in _h,
+         "modes_are_real(" in _h and "NOT MEASURED" in _h,
          "harden() asks the platform first")
 
 # ⚠️ an existing hook pointing elsewhere is LEFT ALONE — it is not ours to
@@ -440,10 +446,27 @@ case("㉕b ⛔ and it names the sources it must NOT derive from",
 # skill, and deleting one installation did not remove what its skill had written
 # outside it. An engine that says "delete the folder and it is gone" cannot ship
 # a file that outlives the folder.
+# ⚠️ ASKED OF WHAT SHIPS, not of this tree. 🔴 Measured 2026-09-07: run inside
+# an INSTALLED tree — which is every tree a person actually has — the folder is
+# there because `bin/init` correctly put it there, and this case reported 🔴 for
+# the engine working as designed. ⛔ A probe that fails on a correct
+# installation is a probe people learn to ignore.
+# ⭐ The real question is whether the SHIPPED repository carries it, and git is
+# the only thing that can answer that.
 _active = os.path.join(os.path.dirname(ROOT), ".claude", "skills")
-case("㉖ 🔴 ⭐ no skill ships ACTIVE in the clone",
-     not os.path.isdir(_active),
-     "clean" if not os.path.isdir(_active) else "🔴 loads before install")
+_tracked = subprocess.run(("git", "ls-files", ".claude/skills"),
+                          cwd=os.path.dirname(ROOT), capture_output=True,
+                          text=True).stdout.strip()
+if _tracked:
+    case("㉖ 🔴 ⭐ no skill ships ACTIVE in the clone", False,
+         "🔴 committed: %s" % _tracked.split("\n")[0])
+elif os.path.isdir(_active):
+    # ⭐ Present but untracked — exactly what an install produces. The rule
+    # holds: a fresh `git clone` would not carry it.
+    case("㉖ 🔴 ⭐ no skill ships ACTIVE in the clone", True,
+         "installed here, but git carries none")
+else:
+    case("㉖ 🔴 ⭐ no skill ships ACTIVE in the clone", True, "clean")
 case("㉖b ⭐ it ships as a template instead",
      os.path.isfile(os.path.join(ROOT, "templates", "skills",
                                  "session-wrap", "SKILL.md.template")))
