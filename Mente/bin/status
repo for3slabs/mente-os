@@ -32,6 +32,8 @@ import utf8                                          # noqa: F401,E402
 import json
 import os
 import sys
+import subprocess
+import plat
 
 MENTE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 REPO = os.path.dirname(MENTE)
@@ -91,6 +93,40 @@ def _gates():
     return sum(len(v) for v in h.values() if isinstance(v, list)), "read"
 
 
+def _gates_answer():
+    """⬜ Do the wired gates actually RUN? True · False · None if not measured.
+
+    🔴 THE FAILURE THIS ANSWERS, measured 2026-09-07 on a real Windows install.
+    This command printed `🟢 Mente OS is ON · 6 checks run on their own` while
+    every one of those checks was DEAD: the host runs a hook through bash, bash
+    ate the backslashes out of the interpreter path, and all of them answered
+    `command not found`. ⛔ The host treats that as non-blocking, so they failed
+    154 times in one session and this file kept saying green.
+
+    ⭐ COUNTING IS NOT MEASURING. A tool whose job is telling somebody whether
+    they are protected must never be the one that is wrong — so it FIRES one.
+    """
+    p = os.path.join(REPO, ".claude", "settings.json")
+    try:
+        cfg = json.load(open(p, encoding="utf-8"))
+    except (OSError, ValueError):
+        return None
+    cmds = [h.get("command", "") for g in cfg.get("hooks", {}).get(
+        "PreToolUse", []) for h in g.get("hooks", []) if h.get("command")]
+    if not cmds:
+        return None
+    try:
+        r = subprocess.run(list(plat.bash(verify=False)) + ["-c", cmds[0]],
+                           input='{"tool_input": {}}', capture_output=True,
+                           text=True, timeout=20, cwd=REPO,
+                           env=dict(os.environ, CLAUDE_PROJECT_DIR=REPO))
+    except (OSError, subprocess.SubprocessError):
+        return None
+    # ⚠️ 127 is "command not found" — the measured shape of a dead gate. ⭐ Any
+    # other code means it ran and decided, which is the whole question here.
+    return not (r.returncode == 127 or "command not found" in (r.stderr or ""))
+
+
 def _blocks():
     d = os.path.join(MENTE, "work", "blocks", "active")
     if not os.path.isdir(d):
@@ -132,7 +168,25 @@ def main():
         print("   ⬜ checks before a change · NOT MEASURED · the settings file "
               "could not be read")
     elif g:
-        print("   ✅ %d check(s) run on their own before your work changes" % g)
+        answers = _gates_answer()
+        if answers is False:
+            # 🔴 LOUD, and above everything else. ⛔ A person told they are
+            # protected while they are not is worse off than one told nothing.
+            # ⚠️ IN THEIR WORDS, and never a command to type. 🔴 ⑦c of
+            # probe-onoff: this file speaks to the OWNER, and an owner who is
+            # handed a command has been handed an errand they cannot judge.
+            print("   🔴 %d check(s) are set up but NOT running — your work is "
+                  "not being checked" % g)
+            print("      ⛔ They fail without saying so, so nothing is stopping "
+                  "a change that should be stopped.")
+            print("      👉 Ask your assistant to set Mente OS up again — it "
+                  "takes a moment and fixes this.")
+        elif answers is None:
+            print("   ⬜ %d check(s) wired · whether they RUN was NOT MEASURED"
+                  % g)
+        else:
+            print("   ✅ %d check(s) run on their own before your work changes"
+                  % g)
     else:
         print("   ⬜ no automatic checks are wired")
 

@@ -772,12 +772,47 @@ try:
     _stamped = _tpl.replace('"bash ', _ns["_cmd"]([_spaced]))
     _parsed = json.loads(_stamped)          # ⛔ it must still be valid JSON
     _argv = __import__("shlex").split(_parsed["command"])
-    _ok = _argv[0] == _spaced
+    # ⚠️ Compared as a PATH, not as a string. ⭐ The stamp now writes forward
+    # slashes so bash cannot eat them (see ㉛d); Windows resolves `/` and `\`
+    # to the same file, so asserting the spelling would fail on a fix that is
+    # correct. ⛔ What must hold is that argv[0] still POINTS at the
+    # interpreter, spaces intact.
+    _ok = _argv[0].replace("/", "\\").lower() == _spaced.lower()
     _why = "argv[0]=%r" % _argv[0]
 except Exception as _e:                                    # noqa: BLE001
     _why = "%s: %s" % (type(_e).__name__, _e)
 case("㉛c 🔴 ⭐ an interpreter path WITH A SPACE survives the stamp",
      _ok, _why[:52])
+
+# ── ㉛d 🔴 BASH EATS A BACKSLASH — the gates died 154 times in one session ──
+# 🔴 THE FAILURE, measured 2026-09-07 on a real Windows install. The host runs
+# a hook THROUGH BASH, and bash reads `\` as an escape: the stamped
+# `C:\Users\Datos\...\python.exe` reached it as `C:UsersDatos...` and every gate
+# answered `command not found`, exit 127. ⛔ The host classes that as a
+# NON-BLOCKING error — so all five gates failed SILENTLY **154 times in one
+# session**, `.beats/` stayed empty, and the whole run went through ungoverned
+# while every report said the gates were wired.
+# ⚠️ ㉛c only covers a path WITH A SPACE, and that is why this shipped: the
+# failing machine's path had none, so the old code left it unquoted and bare.
+# ⭐ Forward slashes, always quoted. Windows accepts `/` in a path, and bash
+# leaves it alone — measured in Git Bash: the backslash form fails, this one
+# answers.
+_bare = "C:\\Users\\Datos\\AppData\\Local\\WindowsApps\\python.exe"
+_ok2, _why2 = False, ""
+try:
+    _st = _tpl.replace('"bash ', _ns["_cmd"]([_bare]))
+    _cmdline = json.loads(_st)["command"]       # ⛔ still valid JSON
+    # ⚠️ What BASH actually receives: every `\x` collapses to `x`.
+    _after = re.sub(r"\\(.)", r"\1", _cmdline)
+    _first = __import__("shlex").split(_after)[0]
+    # ⭐ The test is not "is it spelled right" — it is whether the path that
+    # SURVIVES bash still points at the interpreter.
+    _ok2 = _first.replace("/", "\\").lower() == _bare.lower()
+    _why2 = "bash sees %r" % _first[:40]
+except Exception as _e:                                    # noqa: BLE001
+    _why2 = "%s: %s" % (type(_e).__name__, _e)
+case("㉛d 🔴 ⭐ and a path with NO space survives bash's backslash eating",
+     _ok2, _why2[:52])
 
 # ── ㉜ 🔴 A STAMPED FILE IS NOT ITS OWN MOULD ───────────────────────────────
 # 🔴 Measured 2026-09-07: nine templates open with `<!-- ⚠️ TEMPLATE — bin/init

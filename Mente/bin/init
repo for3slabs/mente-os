@@ -401,9 +401,26 @@ def wire_gates(dry):
         # produced `"/usr/bin/bash" \"...\""` — a settings file that no longer
         # parses at all, which is worse than the broken path it replaced.
         def _cmd(argv):
-            inner = " ".join(a.replace("\\", "\\\\").replace('"', '\\"')
+            """The interpreter, quoted so BASH can still find it.
+
+            🔴 THE FAILURE, measured 2026-09-07 on a real Windows install. The
+            host runs a hook through bash, and bash eats a backslash as an
+            escape: `C:\\Users\\Datos\\...` reached it as `C:UsersDatos...` and
+            every gate died with `command not found`, exit 127. ⛔ The host
+            calls that a NON-BLOCKING error, so all five gates failed silently
+            **154 times in one session** and the work went through untouched.
+            ⚠️ A gate that dies quietly is worse than no gate: the person
+            believes they are protected.
+
+            ⭐ FORWARD SLASHES, ALWAYS QUOTED. Windows accepts `/` in a path
+            just as it accepts `\\`, and bash leaves it alone — measured in Git
+            Bash: the backslash form fails, this one answers. ⛔ Quoted even
+            without a space, because the previous version only quoted when it
+            saw one, and that is exactly how this shipped.
+            """
+            inner = " ".join(a.replace("\\", "/").replace('"', '\\"')
                              for a in argv)
-            return '"\\"%s\\" ' % inner if " " in inner else '"%s ' % inner
+            return '"\\"%s\\" ' % inner
         body = body.replace('"python3 ', _cmd(py))
         if sh:
             body = body.replace('"bash ', _cmd(sh))
@@ -414,6 +431,85 @@ def wire_gates(dry):
     except (OSError, ValueError) as e:
         return "⚠️ could not wire the gates (%s)" % e.__class__.__name__
     return "wired into .claude/settings.json" + unverified
+
+
+def prove_gates(dry):
+    """③b-bis THE SWITCH — every gate is FIRED once, exactly as the host will.
+
+    🔴 THE FAILURE THAT MADE THIS A STEP, measured 2026-09-07 on a real Windows
+    install. `bin/init` reported `gates: wired into .claude/settings.json`, the
+    battery passed, `bin/status` said 🟢 ON — and every gate was DEAD. The host
+    runs a hook through bash, bash ate the backslashes out of the interpreter
+    path, and all five answered `command not found`, exit 127. ⛔ The host calls
+    that a NON-BLOCKING error: the gates failed **154 times in one session**,
+    silently, and a whole project was built ungoverned while every report said
+    it was protected.
+
+    ⭐ WIRED IS NOT ALIVE, and only running it can tell the two apart. This
+    fires each gate the way the host will — through the shell, with the literal
+    command string from the file it just wrote — and refuses to call the
+    install finished until they answer.
+
+    ⚠️ QA BEFORE SPEED, and that ordering is the owner's, stated 2026-09-07: a
+    guard that has not been tested is not a guard. It costs a second or two at
+    install and it is the only moment the system can prove itself before
+    somebody trusts it with real work.
+
+    ⛔ IT NEVER FAILS THE INSTALL. A gate that cannot be proved is reported
+    LOUDLY and the install continues — refusing to install because a hook is
+    unhappy would leave the person with nothing at all (ADR-012).
+    """
+    dest = os.path.join(REPO, ".claude", "settings.json")
+    if dry or not os.path.exists(dest):
+        return None
+    try:
+        cfg = json.load(open(dest, encoding="utf-8"))
+    except (OSError, ValueError) as e:
+        return "⬜ NOT MEASURED · could not read the wiring (%s)" \
+            % e.__class__.__name__
+
+    # ⭐ A payload every gate tolerates: it names nothing, so no gate has cause
+    # to refuse. ⛔ The question here is "does it RUN", never "does it block".
+    probe_in = json.dumps({"tool_input": {}})
+    shell = plat.bash(verify=False)
+    alive, dead = [], []
+    seen = set()
+    for group in cfg.get("hooks", {}).get("PreToolUse", []):
+        for h in group.get("hooks", []):
+            cmd = h.get("command", "")
+            name = cmd.rsplit("/", 1)[-1].rstrip('"')
+            if not cmd or name in seen:
+                continue
+            seen.add(name)
+            try:
+                r = subprocess.run(list(shell) + ["-c", cmd], input=probe_in,
+                                   capture_output=True, text=True, timeout=30,
+                                   cwd=REPO,
+                                   env=dict(os.environ,
+                                            CLAUDE_PROJECT_DIR=REPO))
+            except (OSError, subprocess.SubprocessError) as e:
+                dead.append("%s (%s)" % (name, e.__class__.__name__))
+                continue
+            # ⚠️ 127 is "command not found" — the exact shape of the measured
+            # failure. ⭐ Any other code means the gate RAN and made a
+            # decision, which is all this step asks of it.
+            if r.returncode == 127 or "command not found" in (r.stderr or ""):
+                dead.append(name)
+            else:
+                alive.append(name)
+
+    if not alive and not dead:
+        return "⬜ NOT MEASURED · no gate is wired to fire"
+    if dead:
+        # 🔴 SAID LOUDLY, and it names them. ⛔ "some gates failed" is a
+        # sentence nobody can act on.
+        return ("🔴 %d of %d gate(s) DO NOT RUN: %s\n"
+                "      ⛔ They are wired and dead — the host reports their\n"
+                "         failure as non-blocking, so work goes through\n"
+                "         ungoverned while every report says it is protected.\n"
+                "      👉 Mente/bin/check-gates says more"
+                % (len(dead), len(dead) + len(alive), ", ".join(sorted(dead))))
+    return "✅ all %d gate(s) answered when fired" % len(alive)
 
 
 def install_voice(dry):
@@ -808,6 +904,10 @@ def main():
     # ⭐ After ③b, because it records where ③b actually wrote.
     declared = declare_registry(dry, gated)
     tightened = harden(dry)
+    # ⭐ LAST, and only once everything is wired: the switch. It FIRES each
+    # gate the way the host will, because wired is not alive — measured
+    # 2026-09-07, five gates reported as wired and every one dead.
+    proved = prove_gates(dry)
 
     head = "🔎 dry run — nothing was written\n" if dry else ""
     print("%s%s %d file(s) %s · %d kept · %d document(s) filled in"
@@ -833,6 +933,10 @@ def main():
         print("   · %s" % declared)
     if tightened:
         print("   · %s" % tightened)
+    if proved:
+        # ⭐ The switch's answer goes LAST, because it is the one line that
+        # says whether any of the above is real.
+        print("   · gates fired: %s" % proved)
     if not dry:
         print("\n👉 next: bin/check-health · bin/probes/run-all.py")
     return 0
