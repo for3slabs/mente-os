@@ -9,7 +9,7 @@ while _d != _os.path.dirname(_d):
     _d = _os.path.dirname(_d)
 import utf8                                          # noqa: F401,E402
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from harness import Probe, ROOT, MARK
+from harness import rewrite, Probe, ROOT, MARK
 
 D = os.path.join(ROOT, "docs")
 REF = os.environ.get("MENTE_CROSSRUN_DOCS", "")
@@ -102,6 +102,35 @@ p.case("⑭b SIZ · over the ceiling and nobody named the split",
        lambda: put(GOOD.replace("Nothing of consequence.",
                                 "\n".join("line %d" % i for i in range(750)))),
        "DOC-SIZ-001")
+
+# ── ⑭e 🔴 A LOOSE MENTION IS NOT AN EXCUSE ────────────────────────────────
+# 🔴 THE FAILURE, measured 2026-09-08 while auditing docs/. The excuse above
+# asked whether `os.path.basename(rel)` appeared ANYWHERE in a 97 KB backlog —
+# so ten loose mentions of the words "README.md" excused ALL EIGHTEEN READMEs
+# in the tree, and `Mente/README.md` sat six lines over its ceiling with the
+# battery green. ⛔ Not one of the ten named it: the closest said it was "at
+# exactly 250 of 250 — not a violation".
+# ⭐ An excuse must CLAIM the split — the file named on a line that also says
+# `DOC-SIZ-001` or `split`. Otherwise a document excuses itself by being
+# talked about.
+_bl = os.path.join(ROOT, "docs", "ENGINE-BACKLOG.md")
+_blkeep = open(_bl, encoding="utf-8").read() if os.path.exists(_bl) else None
+if _blkeep is None:
+    # ⬜ CHK-CAU-003 · said out loud: without a backlog there is no excuse to
+    # test, and silence here would read as a pass.
+    print("  ⬜ ⑭e NOT MEASURED · no docs/ENGINE-BACKLOG.md to plant a mention in")
+else:
+    try:
+        # ⚠️ A mention of the fixture's own name, with NO claim of a split.
+        rewrite(_bl, _blkeep + "\n- a passing mention of %s, claiming nothing\n"
+                % (MARK + "-fixture.md"))
+        p.case("⑭e 🔴 ⭐ a loose mention does NOT excuse a crossed ceiling",
+               lambda: put(GOOD.replace(
+                   "Nothing of consequence.",
+                   "\n".join("line %d" % i for i in range(750)))),
+               "DOC-SIZ-001")
+    finally:
+        rewrite(_bl, _blkeep)
 
 # ⭐ DOC-IDS-001 · an id is an address. Measured: a real contract carried one
 # twice after a rule was added beside an existing one.

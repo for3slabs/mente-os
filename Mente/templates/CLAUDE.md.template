@@ -110,7 +110,8 @@ When the owner signals a `/clear` (or I propose one), **first** the dying sessio
 in the session registry your instance declares: a row in the index + its autopsy.
 
 **Verify it with `Mente/bin/check-clear-ready`** — it refuses if it is missing.
-Full rule: `Mente/rules/rule-session-close.md`. Origin: a very large runaway session that had to
+Say **"let's close the session"** and the `session-wrap` skill does it. ⬜ The full rule is
+not written yet (`rules/rule-session-close.md`). Origin: a very large runaway session that had to
 be recovered from disk.
 
 > `/clear` is a **cut, not a save.** Whatever is not on disk is lost with no warning.

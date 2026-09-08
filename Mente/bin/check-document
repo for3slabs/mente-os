@@ -312,16 +312,37 @@ def check(path, rel, ceilings, quiet):
         # the honest answer and the ignored one looked identical.
         # ⬜ Where pending work is recorded is the installation's; the engine
         # fixes that it IS recorded, and that the record names this file.
+        # ⚠️ MATCHED ON THE PATH, never on the basename. 🔴 Measured
+        # 2026-09-08 while auditing docs/: this asked whether
+        # `os.path.basename(rel)` appeared anywhere in a 97 KB backlog — so
+        # ten loose mentions of the words "README.md" excused ALL EIGHTEEN
+        # READMEs in the tree, and `Mente/README.md` sat six lines over its
+        # ceiling with the battery green. ⛔ Not one of those ten named it;
+        # the closest said it was "at exactly 250 of 250 — not a violation".
+        # ⭐ A ceiling excused by a file nobody wrote about is not a ceiling.
+        _rel = rel.replace("\\", "/")
         named = False
         for q in (os.path.join(ROOT, "docs", "ENGINE-BACKLOG.md"),
                   os.path.join(ROOT, "memory", "PENDING.md")):
             try:
-                if os.path.basename(rel) in open(q, encoding="utf-8",
-                                                 errors="replace").read():
-                    named = True
-                    break
+                _t = open(q, encoding="utf-8", errors="replace").read()
             except OSError:
                 continue      # ⬜ no such record here · nothing to read
+            # ⚠️ AND THE MENTION MUST BE A CLAIM, not a passing reference.
+            # 🔴 The path alone was still not enough: `Mente/README.md` has the
+            # rel `README.md`, so ten loose mentions of those words still
+            # excused it — including one saying it was "at exactly 250 of 250,
+            # not a violation". ⭐ An excuse has to say the split is OWED:
+            # the file named on a line that also says `DOC-SIZ-001` or the
+            # word `split`. ⛔ Otherwise a document excuses itself by being
+            # talked about.
+            for _ln in _t.replace("\\", "/").split("\n"):
+                if _rel in _ln and ("DOC-SIZ-001" in _ln
+                                    or "split" in _ln.lower()):
+                    named = True
+                    break
+            if named:
+                break
         if not named:
             bad.append(("DOC-SIZ-001", rel, len(lines),
                         "over its ceiling · type %s allows %d · got: %d · ⛔ and "

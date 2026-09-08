@@ -66,7 +66,8 @@ session:
   #   project_dir: -home-someone-myproject     # only to override the computed value
   project_dir: null
 
-  # Thresholds calibrated against real data (rules/rule-session-close.md §4).
+  # Thresholds calibrated against real data. ⬜ The rule that records how they
+  # were derived is not written yet (rules/rule-session-close.md).
   size_warn_mb: 15
   size_red_mb: 50
   # A session is "heavy enough that losing it costs something" past this. A past incident came
