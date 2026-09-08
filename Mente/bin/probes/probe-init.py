@@ -772,12 +772,94 @@ try:
     _stamped = _tpl.replace('"bash ', _ns["_cmd"]([_spaced]))
     _parsed = json.loads(_stamped)          # ⛔ it must still be valid JSON
     _argv = __import__("shlex").split(_parsed["command"])
-    _ok = _argv[0] == _spaced
+    # ⚠️ Compared as a PATH, not as a string. ⭐ The stamp now writes forward
+    # slashes so bash cannot eat them (see ㉛d); Windows resolves `/` and `\`
+    # to the same file, so asserting the spelling would fail on a fix that is
+    # correct. ⛔ What must hold is that argv[0] still POINTS at the
+    # interpreter, spaces intact.
+    _ok = _argv[0].replace("/", "\\").lower() == _spaced.lower()
     _why = "argv[0]=%r" % _argv[0]
 except Exception as _e:                                    # noqa: BLE001
     _why = "%s: %s" % (type(_e).__name__, _e)
 case("㉛c 🔴 ⭐ an interpreter path WITH A SPACE survives the stamp",
      _ok, _why[:52])
+
+# ── ㉛d 🔴 BASH EATS A BACKSLASH — the gates died 154 times in one session ──
+# 🔴 THE FAILURE, measured 2026-09-07 on a real Windows install. The host runs
+# a hook THROUGH BASH, and bash reads `\` as an escape: the stamped
+# `C:\Users\Datos\...\python.exe` reached it as `C:UsersDatos...` and every gate
+# answered `command not found`, exit 127. ⛔ The host classes that as a
+# NON-BLOCKING error — so all five gates failed SILENTLY **154 times in one
+# session**, `.beats/` stayed empty, and the whole run went through ungoverned
+# while every report said the gates were wired.
+# ⚠️ ㉛c only covers a path WITH A SPACE, and that is why this shipped: the
+# failing machine's path had none, so the old code left it unquoted and bare.
+# ⭐ Forward slashes, always quoted. Windows accepts `/` in a path, and bash
+# leaves it alone — measured in Git Bash: the backslash form fails, this one
+# answers.
+_bare = "C:\\Users\\Datos\\AppData\\Local\\WindowsApps\\python.exe"
+_ok2, _why2 = False, ""
+try:
+    _st = _tpl.replace('"bash ', _ns["_cmd"]([_bare]))
+    _cmdline = json.loads(_st)["command"]       # ⛔ still valid JSON
+    # ⚠️ What BASH actually receives: every `\x` collapses to `x`.
+    _after = re.sub(r"\\(.)", r"\1", _cmdline)
+    _first = __import__("shlex").split(_after)[0]
+    # ⭐ The test is not "is it spelled right" — it is whether the path that
+    # SURVIVES bash still points at the interpreter.
+    _ok2 = _first.replace("/", "\\").lower() == _bare.lower()
+    _why2 = "bash sees %r" % _first[:40]
+except Exception as _e:                                    # noqa: BLE001
+    _why2 = "%s: %s" % (type(_e).__name__, _e)
+case("㉛d 🔴 ⭐ and a path with NO space survives bash's backslash eating",
+     _ok2, _why2[:52])
+
+# ── ㉝ 🔴 THE INSTALL IS A SEQUENCE, AND ⑩ IS THE SWITCH ───────────────────
+# 🔴 THE FAILURE, measured 2026-09-07 on a real Windows install. Every step ran,
+# every step reported success, and the system was DEAD: bash ate the backslashes
+# out of the interpreter path and all five gates answered `command not found`.
+# ⛔ The host calls that NON-BLOCKING, so they failed 154 times in one session
+# while `bin/status` said 🟢 ON. ⚠️ No step was wrong — the MISSING step was:
+# nothing ever fired a gate to see whether it answered.
+# ⭐ `rules/contract-install-order.md` names the ten steps and why each sits
+# where it does. These cases are what stops the order drifting.
+_isrc2 = open(os.path.join(ROOT, "bin", "init"), encoding="utf-8").read()
+_main = _isrc2[_isrc2.index("\ndef main("):]
+# ⚠️ Read as POSITIONS, not as a list of names: a step that still exists but
+# moved is the failure this catches, and a membership test would miss it.
+_seq = ["fill_engine(", "wire_import(", "wire_gates(", "wire_hook(",
+        "install_skills(", "install_voice(", "declare_registry(", "harden(",
+        "prove_gates("]
+_pos = [(_n, _main.find(_n)) for _n in _seq]
+_missing = [n for n, i in _pos if i < 0]
+_ordered = [i for _, i in _pos if i >= 0] == sorted(i for _, i in _pos if i >= 0)
+case("㉝ 🔴 ⭐ INS-ORD-001 · the install runs its steps in the declared order",
+     not _missing and _ordered,
+     ", ".join(_missing) or ("ordered" if _ordered else "🔴 out of order"))
+
+# ⭐ INS-ORD-002 · the switch is LAST. ⛔ Run earlier it would fire gates whose
+# wiring is not finished, and report a red the install was about to fix.
+_last = max((i for _, i in _pos if i >= 0), default=-1)
+case("㉝b 🔴 ⭐ INS-ORD-002 · the switch fires LAST, after every write",
+     _main.find("prove_gates(") == _last and _last >= 0)
+
+# ⭐ INS-ORD-003 · a dead gate is NAMED. 🔴 "some gates failed" is a sentence
+# nobody can act on, and the measured run had seven of them.
+_ps = _isrc2[_isrc2.index("def prove_gates("):_isrc2.index("def install_voice(")]
+case("㉝c 🔴 ⭐ INS-ORD-003 · a dead gate is NAMED, never counted in silence",
+     "DO NOT RUN" in _ps and "join(sorted(dead))" in _ps)
+
+# ⭐ INS-ORD-004 · it never fails the install. ⛔ Refusing to install because a
+# hook is unhappy leaves the person with nothing at all — ADR-012 — and a person
+# with nothing cannot even read the diagnosis.
+case("㉝d ⛔ INS-ORD-004 · the switch never fails the install",
+     "return " in _ps and "sys.exit" not in _ps and "raise" not in _ps)
+
+# ⭐ AND IT MUST ACTUALLY FIRE — reading the wiring is what failed before.
+# ⛔ Asserting only that the function exists would pass against a version that
+# counts entries in a file, which is exactly what `bin/status` used to do.
+case("㉝e 🔴 ⭐ the switch RUNS the gate, it does not read the wiring",
+     "subprocess.run" in _ps and "returncode == 127" in _ps)
 
 # ── ㉜ 🔴 A STAMPED FILE IS NOT ITS OWN MOULD ───────────────────────────────
 # 🔴 Measured 2026-09-07: nine templates open with `<!-- ⚠️ TEMPLATE — bin/init

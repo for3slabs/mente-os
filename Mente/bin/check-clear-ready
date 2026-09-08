@@ -107,19 +107,51 @@ def work_is_unbacked(where, label):
     ⭐ What was missing is that anybody was told: an exclusion nobody knows
     about is a backup nobody has.
     """
-    root = os.path.join(where, "Mente", "work")
-    if not os.path.isdir(root):
-        root = os.path.join(where, "work")
-    if not os.path.isdir(root):
+    base = os.path.join(where, "Mente")
+    if not os.path.isdir(base):
+        base = where
+    # ⭐ MEMORY IS ON THIS LIST TOO. 🔴 Measured 2026-09-08 while auditing
+    # work/ and memory/ one file at a time: this check named `work/blocks` and
+    # `work/campaigns` and stopped there — ⛔ so `memory/RESUME.md`, the ONE
+    # file the engine promises the next session reads first, was excluded by
+    # the same `.gitignore` and nothing said so. ⚠️ Losing a block costs a
+    # boundary; losing RESUME costs the reason the work exists.
+    roots = [os.path.join(base, "work", "blocks"),
+             os.path.join(base, "work", "campaigns"),
+             os.path.join(base, "memory")]
+    if not any(os.path.isdir(d) for d in roots):
         return
     n, sample = 0, None
-    for sub in ("blocks", "campaigns"):
-        d = os.path.join(root, sub)
+    for d in roots:
         for cur, _dirs, files in os.walk(d) if os.path.isdir(d) else ():
+            # ⛔ `principles/` is ENGINE doctrine and it ships — excluding it
+            # keeps the count honest. What is at risk is what the owner wrote.
+            if "principles" in cur.replace("\\", "/").split("/"):
+                continue
             for f in files:
-                if f.endswith(".md") and f.upper() != "README.MD":
-                    n += 1
-                    sample = sample or os.path.join(cur, f)
+                if not f.endswith(".md") or f.upper() == "README.MD":
+                    continue
+                q = os.path.join(cur, f)
+                # ⚠️ A MEMORY FILE COUNTS ONLY ONCE SOMEBODY WROTE IN IT.
+                # 🔴 Caught the same day this walk was widened: `bin/init`
+                # stamps RESUME.md and PENDING.md empty, so a FRESH INSTALL
+                # reported three files at risk before the owner had written a
+                # word. ⛔ A warning that fires on day one is a warning people
+                # learn to scroll past — and then the real one goes unread.
+                # ⭐ The blueprint's own "empty on purpose" line is the marker:
+                # while it is there, nothing of theirs is in the file yet.
+                if os.sep + "memory" + os.sep in q + os.sep:
+                    try:
+                        if "Empty on purpose" in open(
+                                q, encoding="utf-8", errors="replace").read():
+                            continue
+                    except OSError:
+                        # ⬜ CHK-CAU-003 · unreadable is not "empty": counted,
+                        # because the risk is real and the emptiness is not
+                        # something this could confirm.
+                        pass
+                n += 1
+                sample = sample or q
     if not n or not sample:
         return
     # ⬜ Asked about a FILE, never the folder. 🔴 `git check-ignore` on the
@@ -128,10 +160,11 @@ def work_is_unbacked(where, label):
     if git("check-ignore", sample, cwd=where) is None:
         return
     risks.append("%d file(s) of work in %s that git does NOT track\n"
-                 "   ⚠️ `.gitignore` excludes work/blocks and work/campaigns — "
+                 "   ⚠️ `.gitignore` excludes work/ and memory/ — "
                  "⭐ correct: the engine travels, your work does not.\n"
                  "   ⛔ But it means a commit does NOT save them. Delete the "
-                 "folder and every block and campaign goes with it.\n"
+                 "folder and every block,\n      every campaign AND "
+                 "where-we-left-off go with it.\n"
                  "   👉 Copy them somewhere backed up, or track them in a "
                  "repository of your own." % (n, label))
 

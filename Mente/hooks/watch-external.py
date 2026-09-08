@@ -19,6 +19,8 @@ while _d != _os.path.dirname(_d):
     _d = _os.path.dirname(_d)
 import utf8                                          # noqa: F401,E402
 import plat                                          # noqa: E402
+_sys.path.insert(0, _os.path.dirname(_os.path.abspath(__file__)))
+from _beat import beat                               # noqa: E402
 
 MENTE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -80,6 +82,17 @@ def ask():
 
 
 def main():
+    # ⭐ THE BEAT COMES FIRST, before any early return. 🔴 THE FAILURE, measured
+    # 2026-09-08: this hook was wired, ran, and left NO trace — and
+    # `check-gates` discovers gates by "does it call beat()", so a hook that
+    # never called it was never audited. ⛔ A circular definition: it does not
+    # count as a gate because it is silent, and its silence is therefore never
+    # noticed. If it died tomorrow nothing would say so.
+    # ⚠️ It is an OBSERVER, not a gate — it always exits 0 and never blocks —
+    # and the beat does not change that. It only proves it still runs.
+    # ⛔ Placed at the TOP because there are six early returns below: a beat at
+    # the end would only prove the paths that reach the end.
+    beat(MENTE, "watch-external")
     if not WATCH_CMD:
         return 0            # ⬜ nothing declared · nothing watched · session-start says so
     try:

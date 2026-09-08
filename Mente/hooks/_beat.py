@@ -57,7 +57,7 @@ def beat(mente, name):
         except OSError:
             pass
         os.makedirs(os.path.dirname(p), exist_ok=True)
-        with open(p, "w", encoding="utf-8") as fh:
+        with open(p, "w", encoding="utf-8", newline="") as fh:
             fh.write(today)
     except Exception:                                          # noqa: BLE001
         return          # ⛔ telemetry never breaks the gate it is measuring

@@ -42,6 +42,27 @@ somebody is about to undo it. ⭐ **The second reader is why every record carrie
 > ⭐ **The pair — a decision that turned out wrong and its correction — is more useful than a
 > clean record that hides that the reasoning ever moved.**
 
+### ⬜ A MISSING NUMBER IS DECLARED, never left to be guessed
+
+🔴 **Measured 2026-09-08 while auditing this folder.** Six numbers were absent
+from the sequence, and the rule above says a record is never deleted — ⛔ so
+either the rule was broken or those numbers were never used, and **from outside
+the two read identically.** ⚠️ A reader who finds a gap cannot tell a retired
+decision from a lost file, and starts looking for something that may not exist.
+
+⭐ **So every gap is listed here, with what happened to it.** ⛔ An unexplained
+gap is not append-only discipline: it is a question the folder refuses to
+answer.
+
+| Number | ⭐ What happened |
+|---|---|
+| `002` `003` `008` | ⬜ **never used** — drafted while the numbering settled, and abandoned before any record existed. Nothing cites them |
+| `016` `017` `029` | ⬜ **never used** — same |
+
+⚠️ **Never reuse one of these.** ⭐ The rule above holds whether or not a record
+was written: a number that appeared in a draft may already be cited somewhere
+this folder cannot see.
+
 ---
 
 ## ⛔ Why it starts empty

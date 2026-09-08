@@ -7,7 +7,7 @@
 
 **Status:** current · **Type:** entry-point · **Updated:** {{date}} · **Owner:** {{owner}}
 **Level:** 🏢 PROJECT — inherits from `Mente/base-rules.md` (🌐 universal)
-**Verified by:** `Mente/bin/check-blocks` · **Model:** `Mente/rules/rule-inheritance.md`
+**Verified by:** `Mente/bin/check-block` · **Model:** `Mente/rules/rule-inheritance.md`
 ---
 
 ## Purpose

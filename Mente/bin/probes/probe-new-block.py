@@ -209,6 +209,28 @@ drop("zzprobe-one")
 c = checker()
 case("⑳ ⭐ and once the entry is removed, it goes quiet", "BLK-OPN-003" not in c.stdout)
 
+# ── 🔴 A BLOCK IS NOT BORN CARRYING ITS OWN MOULD ─────────────────────────
+# 🔴 THE FAILURE, measured 2026-09-08 while auditing templates/ one file at a
+# time. `strip_scaffold` lived INSIDE `bin/init`, so only the installer stripped
+# anything: every block this tool opened began with
+# `<!-- ⚠️ TEMPLATE — bin/new-block copies this to … KEEP IT IN SYNC WITH … -->`.
+# ⛔ That is an instruction to whoever EDITS the mould, and the assistant reading
+# the block read it as an instruction addressed to itself.
+# ⭐ CHK-SHR-001 · the stripper now lives in `scaffold.stamp()`, so a scaffolder
+# added tomorrow cannot forget it.
+run("zzscaffold", "--type", "docs", "--intent", "Scaffolding check.")
+_sc = os.path.join(BLOCKS, "active", "zzscaffold", "BLOCK.md")
+_body = open(_sc, encoding="utf-8").read() if os.path.exists(_sc) else ""
+_marks = [m for m in ("⚠️ TEMPLATE", "KEEP IT IN SYNC", "copies this to")
+          if m in _body]
+case("🔴 ⭐ the block carries NO template scaffolding",
+     bool(_body) and not _marks, ", ".join(_marks) or "clean")
+
+# ⭐ AND IT OPENS ON ITS OWN TITLE. ⛔ Asserting only the absence would pass
+# against a stripper that ate the whole file.
+case("⭐ and it opens on its own heading, not on a comment",
+     _body.lstrip().startswith("# BLOCK"), repr(_body.lstrip()[:22]))
+
 # ── ⛔ no owner, no block ───────────────────────────────────────────────────
 os.remove(os.path.join(TREE, "mente.config.yml"))
 r = run("zzprobe-noowner", "--type", "docs")

@@ -133,11 +133,11 @@ possible failure**: it looks like it is protecting you and it is not.
 
 | Prefix | Behavior | Example |
 |---|---|---|
-| `check-` | reads · reports · **never writes** | `check-health`, `check-links` |
+| `check-` | reads · reports · **never writes** | `check-health`, `check-document` |
 | `generate-` | ⚠️ **writes** a file that is rebuilt, never hand-edited | `generate-index` |
 | `grade-` | reads · emits a **measured verdict** | `grade-block` |
 | `new-` | ⚠️ **creates** something from a contract | `new-block` |
-| `test-` | runs the whole battery | `check-all` |
+| `test-` | runs the whole battery | ⬜ none yet — the battery is `probes/run-all.py` |
 | `verify-` | a composite pre-release pass | `verify-all` |
 
 ⛔ **Do not invent a prefix.** Someone reading `pieces.tsv` must be able to tell whether a command
