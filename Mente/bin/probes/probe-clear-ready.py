@@ -207,5 +207,10 @@ print("\n  ➜ %d of %d correct" % (good, len(results)))
 for l, ok in results:
     if not ok:
         print("     🔴 %s" % l)
+# ⛔ ITS OWN TEMP TREE, removed by its own run. 🔴 Measured 2026-09-08: this
+# probe made a tree per case and never removed the parent, so every run left
+# one behind and the battery counted it as residue — correctly. ⚠️ A probe that
+# litters is a probe whose next run measures its own leftovers.
+plat.rmtree(WORK)
 print("  leftovers: %s" % ("none" if not os.path.exists(WORK) else "🔴 copia"))
 sys.exit(0 if good == len(results) else 1)

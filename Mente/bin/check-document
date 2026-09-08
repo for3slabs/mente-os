@@ -461,10 +461,16 @@ def check(path, rel, ceilings, quiet):
     #     that was never written.
     # ⚠️ Restricted to the engine's own folder names on purpose: a bare `a/b`
     # could be anything, and a checker that guesses reports prose as a defect.
+    # ⚠️ AND THE SAME PATH WRITTEN FROM THE REPOSITORY ROOT. 🔴 Measured
+    # 2026-09-08 while auditing the loose files: the router and its template
+    # said `Mente/bin/check-all` — a command that does not exist — six times,
+    # and this pattern never looked, because it required the string to START
+    # with an engine folder. ⛔ `Mente/…` is how every document written for the
+    # OWNER spells it, which is exactly where a broken pointer costs most.
     POINTER = re.compile(
         r"`([A-Za-z0-9_][A-Za-z0-9_./-]*\.(?:md|template|tsv|yml|py|sh))`"
-        r"|`((?:bin|hooks|rules|templates|docs|work|memory|Cerebro|connection"
-        r"|secrets|cache)/[A-Za-z0-9_./-]+)`")
+        r"|`((?:Mente/)?(?:bin|hooks|rules|templates|docs|work|memory|Cerebro"
+        r"|connection|secrets|cache)/[A-Za-z0-9_./-]+)`")
     # ⭐ A FENCED COMMAND IS A STRONGER POINTER THAN AN INLINE ONE: it does not
     # merely name a piece, it tells the reader what to RUN. ⛔ Measured: four
     # citations of two commands that were deliberately never built — in
