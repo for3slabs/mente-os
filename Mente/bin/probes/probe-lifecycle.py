@@ -223,6 +223,61 @@ case("⑰ ⛔ a renamed field degrades to ⬜, never to a wrong number",
      "`battery.checks` | ⬜ NOT MEASURED" in _m2,
      "the gap is said, not guessed")
 
+# ── ⑱ 🔴 A COUNT OF FAILURES THAT NAMES NONE OF THEM ──────────────────────
+# 🔴 THE FAILURE, measured 2026-09-08 on a real installation. The battery ended
+# `failed: 6` and named not one of the six; learning what broke meant re-running
+# four probes by hand and reading their tails — repeating the work the battery
+# had just done. ⛔ CHK-IND-002: a count with no detail is a number nobody can
+# act on. Here it cost the diagnosis, not merely the reading.
+# ⚠️ AND A GREEN CASE MAY CARRY 🔴 IN ITS NAME — many do, `🔴 ⭐ the switch RUNS
+# the gate` among them. ⛔ A first version matched every line beginning with the
+# emoji and reported five PASSING cases as failures. Only the summary AFTER a
+# probe's `➜ N of M correct` line names real ones.
+_pd = os.path.join(WORK, "probes-named")
+os.makedirs(_pd, exist_ok=True)
+_stub = ('import sys\n'
+         'print("  🔴 a green case whose NAME carries the emoji  \u2705 ok")\n'
+         'print("\\n  \u279c {good} of 2 correct")\n'
+         '{tail}\n'
+         'print("  leftovers: none")\n'
+         'sys.exit({rc})\n')
+for _nm, _g, _tail, _rc in (("probe-zzfail", 1, 'print("     🔴 the case that fell")', 1),
+                            ("probe-zzpass", 2, 'pass', 0)):
+    open(os.path.join(_pd, _nm + ".py"), "w", encoding="utf-8", newline="").write(
+        _stub.format(good=_g, tail=_tail, rc=_rc))
+
+# ⭐ THE REAL CONSUMER IS RUN, never a copy of its logic. 🔴 The first version
+# re-implemented the parse here and asserted the source contained the fix as a
+# STRING — so gutting `run-all`'s collector left this case green. ⛔ That is the
+# defect ⑯ already names one pair over: a probe that reads the producer's text
+# instead of exercising it is testing its own arithmetic.
+# ⚠️ IT RUNS IN A TREE OF ITS OWN, holding two stubs and nothing else. ⛔ The
+# second version planted them in the real `probes/` folder and fired the battery
+# there: correct, and it never finished — a full battery copies the tree once
+# per probe, and this probe runs INSIDE a battery. `run-all` finds its probes
+# beside itself and walks UP for `bin/utf8.py`, so a two-file tree is enough.
+# ⚠️ `MENTE_BATTERY_RUNNING` is cleared: the battery refuses to be its own
+# descendant.
+_mini = os.path.join(_pd, "mini", "bin")
+os.makedirs(os.path.join(_mini, "probes"), exist_ok=True)
+for _mod in ("utf8.py", "plat.py"):
+    shutil.copy(os.path.join(TREE, "bin", _mod), os.path.join(_mini, _mod))
+for _nm in ("probe-zzfail", "probe-zzpass"):
+    shutil.copy(os.path.join(_pd, _nm + ".py"),
+                os.path.join(_mini, "probes", _nm + ".py"))
+shutil.copy(os.path.join(TREE, "bin", "probes", "run-all.py"),
+            os.path.join(_mini, "probes", "run-all.py"))
+_env = dict(os.environ)
+_env.pop("MENTE_BATTERY_RUNNING", None)
+_rr = subprocess.run([sys.executable,
+                      os.path.join(_mini, "probes", "run-all.py")],
+                     capture_output=True, text=True, encoding="utf-8", env=_env)
+_named = [l.strip() for l in _rr.stdout.splitlines() if "🔴 probe-zz" in l]
+case("⑱ 🔴 ⭐ the battery NAMES every failure, and only real ones",
+     len(_named) == 1 and "probe-zzfail" in _named[0]
+     and "the case that fell" in _named[0],
+     "1 named, 0 false positives" if len(_named) == 1 else _named)
+
 plat.rmtree(WORK)
 good = sum(1 for _, ok in results if ok)
 print("\n  ➜ %d of %d correct" % (good, len(results)))
