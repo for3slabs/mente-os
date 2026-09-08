@@ -81,6 +81,23 @@ def a_block_is_open():
     return bool(glob.glob(os.path.join(d, "*", "BLOCK.md")))
 
 
+_SAID = set()
+
+
+def _say_once(msg):
+    """Write `msg` to stderr at most once per process.
+
+    ⭐ A gate fires on EVERY edit. A notice repeated on each one is noise, and
+    noise is how a warning stops being read — the same reason the refusal text
+    is short. ⚠️ Per process, so a new session says it again: the condition is
+    still true and a new reader has not seen it.
+    """
+    if msg in _SAID:
+        return
+    _SAID.add(msg)
+    sys.stderr.write(msg)
+
+
 def declared_in(path):
     """Is `path` named by SOME open block's §B IN? ⬜ None when nothing says.
 
@@ -96,6 +113,7 @@ def declared_in(path):
     """
     d = os.path.join(MENTE, "work", "blocks", "active")
     names, saw_any, unreadable = [], False, []
+    silent = []          # blocks whose §B IN names nothing readable
     for b in sorted(glob.glob(os.path.join(d, "*", "BLOCK.md"))):
         try:
             body = body_of(open(b, encoding="utf-8").read(), "B")
@@ -111,6 +129,7 @@ def declared_in(path):
         # ⭐ Only the IN half. The OUT half is prose about limits, and matching
         # a path against it would refuse the very file a block exists to write.
         head = body.split("OUT", 1)[0] if body else ""
+        _before = len(names)
         for line in head.split("\n"):
             line = line.strip()
             if not line.startswith("-"):
@@ -120,7 +139,23 @@ def declared_in(path):
                 if tok and not tok.startswith("⬜"):
                     names.append(tok)
                     saw_any = True
+        if len(names) == _before:
+            silent.append(os.path.basename(os.path.dirname(b)))
     if not saw_any:
+        # ⬜ CHK-CAU-003 · A SKIP IS SAID OUT LOUD. 🔴 THE FAILURE, measured
+        # 2026-09-08: a block whose §B IN was empty — or still carried the
+        # template's unfilled `⬜` line — let every write through and said
+        # NOTHING. ⛔ An unreadable §B already spoke; an EMPTY one did not, and
+        # the two are the same gap wearing different clothes. ⚠️ Worse than the
+        # unreadable case: an empty IN looks like a block that is simply open,
+        # so the owner believes their work is governed while nothing is.
+        # ⭐ Still exit 0 — a gate that refuses because nothing was declared is
+        # a gate that gets switched off (ADR-012). It reports, it does not block.
+        # ⚠️ ONCE PER PROCESS, not once per write: this hook fires on every
+        # edit, and repeating the line would train the reader to skip it.
+        _say_once("⬜ gate-no-block · %s · §B IN names nothing · your writes "
+                  "are NOT being checked against any scope\n"
+                  % ", ".join(silent or ["no open block"]))
         return None                     # ⬜ nothing declared · NOT MEASURED
     if unreadable:
         # ⚠️ Some scope could not be read, so "outside every block" is not a

@@ -165,6 +165,31 @@ try:
         # the one an assistant reaches for: widen §B to fit what it planned.
         case("⑦c ⛔ and it refuses silent widening of the scope",
              "do not widen the scope silently" in _said)
+
+        # ── ⑦d 🔴 AN EMPTY §B IN LETS EVERYTHING THROUGH — IN SILENCE ──────
+        # 🔴 THE FAILURE, measured 2026-09-08. A block whose §B IN was empty,
+        # or still carried the template's unfilled `⬜` line, let every write
+        # through and said NOTHING. ⛔ An UNREADABLE §B already spoke; an EMPTY
+        # one did not — the same gap wearing different clothes.
+        # ⚠️ WORSE THAN THE UNREADABLE CASE: an empty IN looks like a block
+        # that is simply open, so the owner believes their work is governed
+        # while nothing is being checked at all.
+        # ⭐ It must stay exit 0 — a gate that refuses because nothing was
+        # declared is a gate that gets switched off (ADR-012). It reports.
+        for _lbl, _in in (("⑦d empty", "\n"),
+                          ("⑦e template ⬜", "- ⬜ declare what this block may "
+                                             "touch\n")):
+            open(os.path.join(_sc, "BLOCK.md"), "w", encoding="utf-8",
+                 newline="").write(
+                "# BLOCK · probe-gnb-scope\n\n## B · Scope\n\n### ✅ IN\n"
+                + _in + "\n### ⛔ OUT\n- nothing\n")
+            r = fire(os.path.join(os.path.dirname(ROOT), "LOOSE.md"))
+            _txt = r.stdout + r.stderr
+            case("%s 🔴 ⭐ a §B IN naming nothing SAYS SO" % _lbl,
+                 r.returncode == 0 and "NOT being checked" in _txt,
+                 "exit=%d%s" % (r.returncode,
+                                "" if "NOT being checked" in _txt
+                                else " · said nothing"))
     else:
         # ⬜ CHK-CAU-003 · said out loud, never swallowed.
         print("  ⬜ ⑦-⑦c NOT MEASURED · could not place a scoped block")

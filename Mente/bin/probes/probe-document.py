@@ -270,6 +270,35 @@ p.inverse("㉚ ⛔ a pointer to a CURRENT document is NOT reported",
 p.inverse("㉛ ⛔ a pointer to a NON-.md file is out of scope, not assumed fine",
           lambda: put(GOOD + "\nThe pieces are in `pieces.tsv`.\n"))
 
+# ── DOC-CNT-008 · ⭐ NOT RESOLVING IS NOT ENOUGH EITHER — the mirror of 007 ──
+# ⬜ before a pointer means "the engine has not written this yet", and the
+# checker exempts it on purpose: reporting a promise as a defect is noise, and
+# noise is how a validator stops being read.
+# ⛔ BUT THE MARKER IS A CLAIM, AND A CLAIM CAN BE FALSE. If the file exists
+# somewhere ELSE in the tree, ⬜ is not a promise — it is a wrong path wearing
+# the one costume this checker will not open.
+# 🔴 THE FAILURE, measured 2026-09-08: `base-rules.md` — the file that governs
+# every project — sent the reader to a `principles/` root that does not exist.
+# The three owner files live under `memory/principles/`, and the SAME table
+# cites the voice correctly, with the right prefix, one row above. Three broken
+# pointers, and `check-document` reported 0 violations across 57 documents.
+p.case("㉜b 🔴 ⭐ a ⬜ pointer whose target EXISTS elsewhere",
+       lambda: put(GOOD + "\nThe voice is in ⬜ `zzelsewhere/owner-0-voice.md`.\n"),
+       "DOC-CNT-008")
+
+# ⭐ THE HALF THAT MATTERS AS MUCH: a ⬜ over something genuinely unwritten stays
+# exempt. ⛔ Without this the fix turns every honest promise into a defect, and
+# the ⬜ marker — which is how the engine says "not yet" — becomes unusable.
+p.inverse("㉜c ⛔ a ⬜ over a file that exists NOWHERE stays exempt",
+          lambda: put(GOOD + "\nSee ⬜ `rules/zz-never-written-anywhere.md`.\n"))
+
+# ⚠️ And WITHOUT the marker it is a plain broken pointer — 004, not 008. ⛔ The
+# two must not collapse into one: 004 says "nothing is there", 008 says "it is
+# there, you spelled the path wrong", and only the second can name the fix.
+p.case("㉜d ⚠️ the same pointer with NO ⬜ is 004, not 008",
+       lambda: put(GOOD + "\nThe voice is in `zzelsewhere/owner-0-voice.md`.\n"),
+       "DOC-CNT-004")
+
 # ⭐ A FENCED COMMAND IS A STRONGER POINTER THAN AN INLINE ONE — it does not
 # name a piece, it tells the reader what to RUN. ⛔ Measured: four citations of
 # two commands deliberately never built, in README.md, QUICKSTART.md and

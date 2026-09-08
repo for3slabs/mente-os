@@ -74,8 +74,8 @@ Code, this file plus the pointers below is enough to work correctly.
 |---|---|
 | Where we left off | ⬜ `memory/RESUME.md` |
 | The voice | `memory/principles/owner-0-voice.md` |
-| The three owners | ⬜ `principles/owner-1-docs.md` · `principles/owner-2-dev.md` · `principles/owner-3-validation.md` |
-| Expert criterion | `principles/expertise/{database,backend,frontend}.md` |
+| The three owners | `memory/principles/owner-1-docs.md` · `memory/principles/owner-2-dev.md` · `memory/principles/owner-3-validation.md` |
+| Expert criterion | `memory/principles/expertise/dev-{database,backend,frontend}.md` |
 | Contracts | `rules/contract-block.md` · `rules/contract-document.md` · `rules/contract-adr.md` |
 | Rules | `rules/rule-{lanes,fix-not-patch,friction,isolation,session-close}.md` |
 | Decisions | ⬜ `docs/DECISIONS.md` (generated) + `rules/decisions/ADR-*.md` |

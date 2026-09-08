@@ -388,6 +388,7 @@ when a document grew past its shape and nobody wanted to renumber. ⚠️ **It i
 | `DOC-CNT-005` | ⛔ **No credential, not even as an example** | 🔒 | ⚠️ what is written stays in history |
 | `DOC-CNT-006` | ⭐ **A quotation is verbatim, or it is not a quotation** | 📖 | ⛔ see below |
 | `DOC-CNT-007` | ⭐ **A pointer to a `superseded` or `fossil` document is REPORTED** | 🔒 | ⛔ it resolves, and still sends the reader to the wrong page |
+| `DOC-CNT-008` | ⭐ **A `⬜` does not excuse a pointer whose target EXISTS elsewhere** | 🔒 | ⛔ the marker says "not written yet" about a file that is written |
 
 ⭐ **`DOC-CNT-006` matters more than it looks.** A paraphrase presented as a quote is the agent's
 reading standing in for someone's words — ⚠️ **and the reader cannot tell which they are getting.**
@@ -418,6 +419,21 @@ directory — ⛔ **it must RESOLVE.** ⚠️ A well-formed pointer to nothing r
 > a current authority* — sat in 📖 with nothing behind it. ⚠️ A `superseded` target names its
 > replacement (`DOC-HDR-005`), so the report can say where to point instead; a `fossil` names
 > nobody, and the reader is told to find the current authority themselves.
+
+> ## ⭐ `DOC-CNT-008` · NOT RESOLVING IS NOT ENOUGH EITHER — the mirror of 007
+> A `⬜` before a pointer means *the engine has not written this piece yet*, and the checker
+> exempts it on purpose: reporting a promise as a defect is noise, and noise is how a validator
+> stops being read.
+>
+> ⛔ **But the marker is a claim, and a claim can be false.** If the file EXISTS somewhere else in
+> the tree, `⬜` is not a promise — it is a wrong path wearing the one costume the checker will
+> not open. ⚠️ **Measured 2026-09-08:** `base-rules.md` pointed the reader at
+> a `principles/` root that does not exist — the three owner files live under `memory/principles/`,
+> and the SAME table cites the voice correctly, with the right prefix, one row above.
+> Three broken pointers in the file that governs every project, invisible because of the `⬜`.
+>
+> ⭐ It is the same walk again, asking the opposite question of 007: *it did not resolve — is that
+> because nobody wrote it, or because the path is wrong?* The basename answers it.
 
 ---
 
