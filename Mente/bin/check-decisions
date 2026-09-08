@@ -350,6 +350,46 @@ def main():
                              "is current · supersede one or narrow their scope"
                              % (len(nums), subj[:40], ", ".join(sorted(nums)))))
 
+    # DEC-NUM-005 · A MISSING NUMBER IS DECLARED, never left to be guessed.
+    # 🔴 Measured 2026-09-08 while auditing rules/ one file at a time. Six
+    # numbers were absent from the sequence while the folder's own README says
+    # a record is NEVER deleted — ⛔ so either the rule was broken or those
+    # numbers were never used, and from outside the two read identically. ⚠️ A
+    # reader who finds a gap starts looking for a file that may not exist.
+    # ⭐ The gap itself is fine; an UNDECLARED gap is not.
+    _readme = os.path.join(DECISIONS, "README.md")
+    try:
+        _rtext = open(_readme, encoding="utf-8", errors="replace").read()
+    except OSError:
+        # ⬜ CHK-CAU-003 · said out loud. Without the README nothing can say
+        # whether a gap is declared, so the question is NOT MEASURED — ⛔ never
+        # silently passed.
+        _rtext = None
+        if not quiet:
+            print("⬜ NOT MEASURED · rules/decisions/README.md unreadable · "
+                  "whether the numbering gaps are declared was NOT checked")
+    if _rtext is not None and seen_num:
+        _nums = sorted(int(n) for n in seen_num)
+        # ⚠️ A GAP IS A HOLE, not distance to an outlier. 🔴 Caught by the probe
+        # the same day: its fixtures are numbered 901, so counting from 1 to the
+        # maximum reported 872 missing numbers — ⛔ a validator that fires on a
+        # legitimate high number is one people switch off.
+        # ⭐ Only the runs BETWEEN two real records count, and only short ones:
+        # a jump of more than 20 is a numbering scheme, not a deletion.
+        _gaps = []
+        for _a, _b in zip(_nums, _nums[1:]):
+            if 1 < _b - _a <= 20:
+                _gaps.extend(range(_a + 1, _b))
+        _undeclared = [n for n in _gaps if "`%03d`" % n not in _rtext]
+        if _undeclared:
+            findings.append(("DEC-NUM-005", "rules/decisions/README.md",
+                             "%d number(s) absent from the sequence and not "
+                             "declared in the README: %s · ⛔ a retired record "
+                             "and a lost file read identically from outside · "
+                             "list each gap and what happened to it"
+                             % (len(_undeclared),
+                                ", ".join("%03d" % n for n in _undeclared))))
+
     if not quiet:
         print("check-decisions · %d record(s)%s"
               % (len(files), " · the folder ships empty" if not files else ""))

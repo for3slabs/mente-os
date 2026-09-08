@@ -9,10 +9,13 @@ while _d != _os.path.dirname(_d):
     _d = _os.path.dirname(_d)
 import utf8                                          # noqa: F401,E402
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from harness import Probe, ROOT, MARK
+from harness import rewrite, Probe, ROOT, MARK
 
 D = os.path.join(ROOT, "rules", "decisions")
-p = Probe("check-decisions", "DEC")
+p = Probe("check-decisions", "DEC",
+          # ⭐ the folder README too: DEC-NUM-005 is reported against IT, not
+          # against a fixture, so without this the finding is filtered away.
+          also=("decisions/README.md",))
 
 # ⭐ Fixtures number from 900 up: the engine now ships records of its own, and
 # 001 collided with a REAL one. The collision was correctly reported — ⛔ but it
@@ -188,5 +191,34 @@ if real:
         print("     " + l.split(" · ", 2)[-1][:94])
 else:
     print("  ⬜ NOT_MEASURED · set MENTE_CROSSRUN_DECISIONS to a real decisions/ folder")
+# ── 🔴 DEC-NUM-005 · A GAP IN THE SEQUENCE IS DECLARED ────────────────────
+# 🔴 THE FAILURE, measured 2026-09-08 while auditing rules/ one file at a time.
+# Six numbers were absent from the sequence, and this folder's own README says a
+# record is NEVER deleted. ⛔ So either the rule had been broken or those
+# numbers were never used — and from outside the two read identically. ⚠️ A
+# reader who finds a gap starts looking for a file that may not exist.
+# ⭐ The gap is fine. An UNDECLARED gap is the defect.
+_readme = os.path.join(D, "README.md")
+_keep = open(_readme, encoding="utf-8").read()
+
+
+def _hide_a_gap():
+    """⚠️ Sabotaged by REMOVING a declaration, never by deleting a record: the
+    rule is about what the README says, and deleting an ADR would be testing
+    the append-only rule instead.
+
+    ⛔ NOT tracked: `track()` DELETES, and this README belongs to the engine.
+    The harness refuses it, correctly — it is restored below instead."""
+    rewrite(_readme, re.sub(r"`016`\s*", "", _keep, count=1))
+
+
+if "`016`" in _keep:
+    p.case("⑲ 🔴 ⭐ an UNDECLARED gap in the numbering is caught",
+           _hide_a_gap, "DEC-NUM-005")
+    rewrite(_readme, _keep)
+else:
+    # ⬜ CHK-CAU-003 · said out loud, never a silent skip.
+    print("  ⬜ ⑲ NOT MEASURED · the README declares no gap to remove")
+
 p.clean()
 sys.exit(0 if p.report() else 1)

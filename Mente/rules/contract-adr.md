@@ -344,6 +344,7 @@ document carries; rejecting it would leave the engine unable to ship a single de
 | `DEC-NUM-002` | ⛔ **A number is never reused** | 🔒 | ⭐ not even for a reverted decision |
 | `DEC-NUM-004` | ⛔ **A filename never names a PERSON** | 🔒 | ⭐ name the decision; who took it goes in `decided-by`, where it is data |
 | `DEC-NUM-003` | ⭐ **A reverted decision keeps its file and its number** | 🔒 | ⛔ with `status: reverted` |
+| `DEC-NUM-005` | ⭐ **Every gap in the sequence is DECLARED in the folder's README** | 🔒 | 🔴 measured 2026-09-08: six numbers were absent while the README says a record is never deleted — ⛔ a retired record and a lost file read identically from outside |
 
 ### ⛔ WHY A NAME IN A FILENAME IS DIFFERENT FROM A NAME IN A FIELD
 
