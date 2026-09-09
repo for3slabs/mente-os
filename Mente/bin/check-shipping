@@ -170,9 +170,24 @@ def main():
     # check that any existed. ⬜ The paths are declared in the rule now, and a
     # path absent from that table is NOT MEASURED — said out loud, never
     # silently passed.
+    # ⚠️ THE ⬜ IS OPTIONAL, and that is the point of the fix it survived. 🔴
+    # Measured 2026-09-09: the pattern required `⬜` in the label cell, so the
+    # day the engine actually NAMED the session record's path — dropping the ⬜
+    # because it was no longer unresolved — this reported "no closing artifact
+    # declares a path". ⛔ A checker that only recognises the unfinished state
+    # fires hardest the moment the work is done.
+    # ⭐ The path is read from EITHER column, so a row can name it in the label
+    # or in the "ships as" cell.
     declared_paths = [(lbl, path) for lbl, cell in
-                      re.findall(r"\|\s*\d+\s*\|\s*⬜ ([^|]+?)\s*\|\s*([^|]+?)\s*\|", text)
-                      for path in (re.findall(r"`([^`]+)`", cell) or [None])
+                      re.findall(r"\|\s*\d+\s*\|\s*(?:⬜\s*)?([^|]+?)\s*\|\s*([^|]+?)\s*\|", text)
+                      # ⛔ BOTH cells, never one or the other. 🔴 Caught by
+                      # probe-shipping ⑫: a row can name the artefact on the
+                      # left AND the template it ships from on the right, and
+                      # stopping at the first match left the second unchecked —
+                      # so a broken template path stopped being reported the day
+                      # the left cell gained a path of its own.
+                      for path in (re.findall(r"`([^`]+)`", lbl)
+                                   + re.findall(r"`([^`]+)`", cell) or [None])
                       if path]
     if not declared_paths:
         findings.append(("SHP-CLS-001", "rules/rule-shipping.md",

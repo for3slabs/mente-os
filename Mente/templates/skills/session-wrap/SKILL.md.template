@@ -73,14 +73,18 @@ From the actual conversation, distill honestly and briefly:
 
 ## Step 2 · 🔴 The session record — mandatory, first
 
-⬜ **The engine ships no location for this.** `rules/rule-shipping.md` §11 says so outright: the
-engine fixes that there IS a place, never which one.
+> ## ⛔ DO NOT ASK WHERE IT GOES. `memory/sessions/INDEX.md`.
+> 🔴 **THE FAILURE, measured 2026-09-09.** This step used to say *"if nothing is
+> declared, ask the user where it should live"* — and at a real first close the
+> assistant did exactly that. ⛔ A question about the engine's own filing, put to
+> somebody who had installed it two days earlier, and their reasonable answer
+> landed the record in a path `.gitignore` excludes.
+>
+> ⭐ The rule is `rules/rule-session-close.md` §2. It ships with the engine, the
+> folder ships pre-named, and `bin/init` versions it.
 
-⭐ **Find it, in this order:**
-
-1. `grep -i session Mente/pieces.tsv` — if the instance declared one, that is the address
-2. If nothing is declared: **ask the user where it should live**, create it, and **add its row to
-   `Mente/pieces.tsv`** — ⛔ an undeclared record is a file nothing watches
+⚠️ **Create `INDEX.md` if it is not there yet** — the folder ships with only its
+README. ⛔ Never invent a different path because the file is missing.
 
 Two writes:
 

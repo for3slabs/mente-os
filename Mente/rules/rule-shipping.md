@@ -340,14 +340,29 @@ general advice is safe only under a condition most workspaces do not meet.**
 ⛔ **The rule demanded six artifacts and named the location of none**, so nothing could check that
 any of them existed. A lock over an artifact with no declared address is not a lock.
 
-| # | ⬜ Path | Ships as |
+| # | Path | Ships as |
 |---|---|---|
-| 1 | ⬜ session record | ⬜ declare it — the engine ships no default |
-| 2 | ⬜ cold-start brief | `templates/RESUME.md.template` → the instance names where it lands |
+| 1 | ⭐ `memory/sessions/INDEX.md` | the folder and its README ship — `rule-session-close.md` §2 |
+| 2 | `memory/RESUME.md` | `templates/RESUME.md.template`, stamped by `bin/init` |
 | 6 | ⬜ the active block | ⭐ resolved from the block itself, never declared here |
 
-⭐ **The engine fixes that there IS a place, never which one.** ⛔ A path missing from this table
-is ⬜ NOT MEASURED, and the check says so rather than passing in silence.
+> ## ⛔ THE ENGINE NAMES THE PLACE. It used to say it only fixed that one existed.
+> 🔴 **THE FAILURE, measured 2026-09-09 on a real install.** Row 1 read *"⬜
+> declare it — the engine ships no default"*, and the session-close skill did the
+> only thing that left: it **asked the owner where the session record should
+> live** — a question about the engine's own filing, put to somebody who had
+> installed it two days earlier.
+>
+> ⛔ **THE OWNER'S WORDS:** *"la idea es que Mente OS sepa gobernar sobre su
+> sistema, y esto demuestra que no sabe ni en dónde guardar las cosas."*
+>
+> ⚠️ And the answer they gave was reasonable and wrong: the path they chose was
+> excluded by `.gitignore`, so the record was written and never saved. ⭐ A
+> question whose wrong answer breaks the system is not a question — it is a
+> default the engine owes.
+
+⭐ **What is still the instance's:** what goes INSIDE the record, in whatever
+language it writes. ⛔ The PATH ships identical, or a clone cannot find it.
 
 ⚠️ **These are INSTANCE files.** They are born from a template at install time, so an
 un-instantiated engine legitimately has none — ⛔ **and a check that demanded them would report

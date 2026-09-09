@@ -843,6 +843,21 @@ KEEP_BLOCK = """
 # ⛔ secrets/ stays out either way — that rule is above and is not negotiable.
 !memory/RESUME.md
 !memory/PENDING.md
+# ⭐ THE SESSION HISTORY, and the WORK ITSELF. 🔴 Measured 2026-09-09 on a real
+# install: the first session close wrote a record and opened a block with two
+# deliverables, and NOT ONE of the three was in git. ⛔ `check-clear-ready` said
+# so and it read as "a warning about backups" — a folder deleted takes every
+# block, every campaign and the whole history with it.
+# ⚠️ THE DIRECTORY, with its trailing slash. 🔴 Measured while landing this:
+# `work/blocks/*` above is more specific, so `!work/blocks/` alone left every
+# BLOCK.md excluded — and `!work/blocks/active/**` does not work either, because
+# git never descends into a directory it already excluded. ⭐ The re-inclusion
+# has to name the directory git must enter.
+!work/blocks/active/
+!work/blocks/archive/
+!work/blocks/blocked/
+!work/campaigns/active/
+!work/campaigns/archive/
 !mente.config.yml
 !PROJECT-RULES.md
 !Cerebro/ARCHITECTURE.md
@@ -887,6 +902,14 @@ def keep_memory(dry):
         return "⬜ memory already versioned · left untouched"
     if dry:
         return "would put this installation's memory back into git"
+    # ⛔ ONE LINE IS REPLACED, not appended past. 🔴 Measured 2026-09-09:
+    # `memory/sessions/*` keeps the folder's CONTENT out so the published engine
+    # ships only its README — and git will not re-include a file inside a
+    # directory pattern that already excluded it, however far below the `!`
+    # sits. ⭐ So the installation's own history is enabled by rewriting that one
+    # line, which leaves the README rule and every other exclusion untouched.
+    body = body.replace("\nmemory/sessions/*\n",
+                        "\n# ⭐ rewritten by bin/init · this installation keeps its own history\n")
     try:
         write(gi, body.rstrip("\n") + "\n" + KEEP_BLOCK)
     except OSError as e:

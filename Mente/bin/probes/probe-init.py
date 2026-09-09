@@ -1012,6 +1012,61 @@ case("㊱j2 🔴 ⭐ and the GATE reads the scope --in wrote",
      _out_rc == 2 and _in_rc == 0,
      "outside=%d inside=%d" % (_out_rc, _in_rc))
 
+# ㊱l 🔴 ⭐ THE ENGINE KNOWS WHERE THINGS GO — it does not ask.
+# 🔴 THE FAILURE, measured 2026-09-09 on a real install. At the first real
+# session close the assistant asked the owner *"where should I keep the session
+# record?"* — a question about the engine's own filing, put to somebody who had
+# installed it two days earlier. ⛔ It asked because `rule-shipping.md` §11 said
+# the engine ships no default, and the close skill said to ask.
+# ⚠️ AND THE ANSWER WAS REASONABLE AND WRONG: the path they picked was excluded
+# by `.gitignore`, so the record was written and never saved.
+# ⭐ THE OWNER'S WORDS: "la idea es que Mente OS sepa gobernar sobre su sistema,
+# y esto demuestra que no sabe ni en dónde guardar las cosas."
+case("㊱l 🔴 ⭐ the sessions folder SHIPS, pre-named",
+     has(_tree, "memory/sessions/README.md"))
+
+case("㊱m 🔴 ⭐ and the rule that names it exists",
+     has(_tree, "rules/rule-session-close.md"))
+
+# ⛔ AND THE CLOSE SKILL NO LONGER ASKS. The rule can be right and the skill
+# still ask — they are two files, and the skill is what the assistant reads.
+_sk = os.path.join(_repo, ".claude", "skills", "session-wrap", "SKILL.md")
+_skt = open(_sk, encoding="utf-8").read() if os.path.exists(_sk) else ""
+# ⚠️ THE INSTRUCTION, not the account of the failure. 🔴 Caught the minute this
+# landed: the skill QUOTES the old wording inside the comment that explains why
+# it is gone, so a literal match reported the fix as absent. ⛔ A probe that
+# cannot tell a rule from its own postmortem makes the postmortem undeliverable.
+case("㊱n 🔴 ⭐ the close skill does NOT ask where the record goes",
+     "DO NOT ASK WHERE IT GOES" in _skt
+     and "memory/sessions/INDEX.md" in _skt,
+     "" if _skt else "🔴 skill not installed")
+
+# ⛔ AND THE RECORD AND THE WORK ARE IN GIT. 🔴 Measured the same day: the close
+# wrote a record and the block held two deliverables, and NOT ONE of the three
+# was tracked. ⚠️ Asked of git, never of the .gitignore's text — a `!` that
+# looks right and does nothing is exactly how this was missed.
+def _kept(rel):
+    return _git(_repo, "check-ignore", "-q", rel).returncode != 0
+
+
+_out_of_git = [r for r in ("Mente/memory/sessions/README.md",
+                           "Mente/memory/RESUME.md")
+               if not _kept(r)]
+case("㊱o 🔴 ⭐ the session history is versioned, not just written",
+     _out_of_git == [], _out_of_git or "in git")
+
+# ⚠️ A block too — created here, because a fresh install has none.
+subprocess.run(
+    [sys.executable, os.path.join(_tree, "bin", "new-block"), "zzprobe-kept",
+     "--type", "docs", "--intent", "x", "--in", "docs/"],
+    cwd=_tree, capture_output=True, text=True, timeout=60)
+case("㊱p 🔴 ⭐ and so is the open work",
+     _kept("Mente/work/blocks/active/zzprobe-kept/BLOCK.md"))
+
+# ⛔ THE HALF THAT KEEPS IT SAFE: secrets never come along for the ride.
+case("㊱q ⛔ and secrets/ is STILL out",
+     not _kept("Mente/secrets/zzprobe.key"))
+
 # ㊱k · ⛔ and with nothing passed it stays ⬜ — an INVENTED scope is worse than
 # an unfilled one, because it reads as a limit somebody chose.
 subprocess.run(

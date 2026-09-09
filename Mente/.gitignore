@@ -74,6 +74,16 @@ work/campaigns/*
 memory/*
 !memory/README.md
 !memory/principles/
+# ⭐ AND THE SESSIONS FOLDER, for the same reason one layer down: its README is
+# ENGINE doctrine — it names where the session history goes, so nobody has to
+# decide it mid-close. 🔴 Measured 2026-09-09: nothing named that place, so at a
+# real first close the assistant asked the owner where to keep the record, and
+# their reasonable answer landed it in a path this file excludes.
+# ⛔ The README ships; what an installation writes beside it does not, until
+# `bin/init` adds the exception that versions its own history.
+!memory/sessions/
+memory/sessions/*
+!memory/sessions/README.md
 
 # the project's own thinking — architecture pillar and vision are per-project
 Cerebro/*
