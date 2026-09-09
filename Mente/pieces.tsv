@@ -176,6 +176,8 @@ check-adr-wiring	bin/check-adr-wiring	engine	executable	every consequence a deci
 probe-adr-wiring	bin/probes/probe-adr-wiring.py	engine	executable	proves check-adr-wiring detects a consequence that resolves to nothing
 probe-handoff	bin/probes/probe-handoff.py	engine	executable	proves check-handoff detects what the handoff contract claims — exit codes included
 probe-declared	bin/probes/probe-declared.py	engine	executable	proves check-declared finds a file the piece table omits
+rule-session-close	rules/rule-session-close.md	engine	canonical	where every artefact of a session close goes — ⛔ the engine names the place, it does not ask
+sessions-readme	memory/sessions/README.md	engine	canonical	the session history folder, pre-named so nobody has to decide it mid-close
 rule-shipping	rules/rule-shipping.md	engine	canonical	how a change leaves the workspace — loop, base, grouping, cleanup, session close
 check-shipping	bin/check-shipping	engine	executable	enforces the lock rows of the shipping rule
 probe-shipping	bin/probes/probe-shipping.py	engine	executable	proves check-shipping detects what the shipping rule claims

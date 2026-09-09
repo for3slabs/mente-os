@@ -217,12 +217,71 @@ def open_work():
                      % (len(live), ", ".join(live)))
 
 
+def session_record():
+    """SES-LOC-001 / SES-LOC-002 · the session history has ONE address, and it
+    is versioned.
+
+    🔴 THE FAILURE, measured 2026-09-09 on a real install. At the first session
+    close the assistant asked the owner *"where should I keep the session
+    record?"* — ⛔ a question about the engine's own filing, put to somebody who
+    had installed it two days earlier. It asked because nothing named the place.
+    ⚠️ AND THE ANSWER WAS REASONABLE AND WRONG: the path they picked was
+    excluded by `.gitignore`, so the record was written and never saved.
+
+    ⭐ THE OWNER'S WORDS: *"la idea es que Mente OS sepa gobernar sobre su
+    sistema, y esto demuestra que no sabe ni en dónde guardar las cosas."*
+
+    ⛔ Two things are checked, and the second is the one that bit: the folder
+    exists AND git would keep what lands in it. A record written outside git
+    dies with the folder, exactly like the reasoning it was written to save.
+    """
+    # ⛔ ONLY OF AN INSTALLATION. 🔴 Caught by probe-clear-ready ① the hour this
+    # landed: a bare clone has no `mente.config.yml`, and `bin/init` has not yet
+    # written the exception that versions the history — so this reported a
+    # DEFECT on a tree behaving exactly as designed. ⚠️ A red on a correct clone
+    # is how a real red stops being read, and this engine has paid for that
+    # lesson twice already.
+    if not os.path.exists(os.path.join(ROOT, "mente.config.yml")):
+        return
+    d = os.path.join(ROOT, "memory", "sessions")
+    if not os.path.isdir(d):
+        gaps.append("SES-LOC-001 · memory/sessions/ is not there · the session "
+                    "history has nowhere declared to land")
+        return
+    # ⚠️ `-v`, not `-q`. 🔴 Caught the minute this landed: `git()` here returns
+    # the OUTPUT or None, never a process — and `-q` prints nothing, so a hit
+    # and a miss looked identical. ⛔ `-v` names the rule that matched, which is
+    # also what makes the finding actionable.
+    probe = os.path.join("Mente", "memory", "sessions", "INDEX.md")
+    if git("check-ignore", "-v", "--no-index", probe, cwd=REPO):
+        # ⛔ SES-LOC-002 · written and not saved is the shape of the measured
+        # failure — never a warning about backups in general.
+        risks.append(
+            "SES-LOC-002 · the session history is EXCLUDED from git · a record "
+            "written there is lost with the folder\n"
+            "   ⭐ bin/init writes the exception · re-run it, or add "
+            "`!memory/sessions/` to Mente/.gitignore")
+    # SES-LOC-003 · and the WORK itself. 🔴 Measured the same day: the close
+    # wrote a record and the open block held two real deliverables, and NOT ONE
+    # of the three was tracked. ⛔ `work/blocks/*` is excluded so the ENGINE does
+    # not ship somebody's blocks — applied to the owner's own repository, the
+    # same line deletes their work on the first clean.
+    blocks = os.path.join("Mente", "work", "blocks", "active", "x", "BLOCK.md")
+    if git("check-ignore", "-v", "--no-index", blocks, cwd=REPO):
+        risks.append(
+            "SES-LOC-003 · open work is EXCLUDED from git · every block goes "
+            "with the folder\n"
+            "   ⭐ bin/init writes the exception · re-run it, or add "
+            "`!work/blocks/active/` to Mente/.gitignore")
+
+
 def main():
     quiet = "--quiet" in sys.argv
 
     uncommitted(REPO, "this tree")
     unpushed(REPO, "this tree")
     work_is_unbacked(REPO, "this tree")
+    session_record()
     open_work()
 
     sibs = siblings()
