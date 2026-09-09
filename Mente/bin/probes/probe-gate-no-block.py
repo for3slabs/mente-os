@@ -128,8 +128,15 @@ finally:
 # called. ⛔ A hook on disk that no settings file names protects nothing.
 _tpl = os.path.join(ROOT, "templates", "claude-settings.json.template")
 _txt = open(_tpl, encoding="utf-8").read() if os.path.isfile(_tpl) else ""
+# ⚠️ EITHER SHAPE COUNTS, and the question is the same one. 🔴 Caught the hour
+# `gate-run` landed: this matched the file NAME, so batching the gates into one
+# interpreter — which changed nothing about whether the gate runs — turned this
+# case red. ⛔ A probe that fails on a correct wiring is a probe people edit to
+# make quiet. ⭐ What it asks is "does the shipped wiring invoke this gate",
+# whether directly or through the dispatcher that names it as an argument.
 case("⑤ 🔴 ⭐ the settings template actually calls it",
-     "gate-no-block.py" in _txt)
+     "gate-no-block.py" in _txt
+     or ("gate-run.py" in _txt and "gate-no-block" in _txt))
 case("⑤b ⛔ and on the tools that write",
      '"matcher": "Edit|Write|MultiEdit"' in _txt)
 

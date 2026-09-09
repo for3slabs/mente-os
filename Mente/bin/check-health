@@ -172,7 +172,24 @@ def hooks_wired(cfg):
                     if ("hooks/" + h) in body.replace("\\", "/"):
                         linked.add(h)
 
-    absent = [n for n in names if n not in text and n not in linked]
+    # ⭐ NAMED AS A FILE, OR AS AN ARGUMENT — both are wiring. 🔴 Measured
+    # 2026-09-09: `gate-run.py` runs several gates in ONE interpreter, so the
+    # settings file names the dispatcher and passes the gates as arguments —
+    # `gate-run.py" gate-no-block pre-edit-standards`. ⛔ Matching on the file
+    # name alone then reported five LIVE gates as unregistered, on a machine
+    # where every one of them was firing. ⚠️ A red on a correct install is how
+    # a real red stops being read.
+    stems = {n.rsplit(".", 1)[0] for n in names}
+    dispatched = set()
+    if "gate-run.py" in text:
+        for st in stems:
+            # ⛔ As a standalone word, so `gate-no-block` does not match
+            # `gate-no-block-something`.
+            if re.search(r"\b%s\b" % re.escape(st), text):
+                dispatched.add(st)
+    absent = [n for n in names
+              if n not in text and n not in linked
+              and n.rsplit(".", 1)[0] not in dispatched]
     if absent:
         red("%d hook(s) exist and the registry never names them: %s\n"
             "   ⛔ A hook the host does not know about NEVER RUNS, and looks "
