@@ -1,0 +1,203 @@
+#!/usr/bin/env python3
+"""update-engine — bring a newer Mente OS in without touching what is yours.
+
+⭐ WHAT THIS SOLVES, and it is not obvious until it bites. `check-health` names
+a newer engine and tells you how to take it. For a tree that was cloned and left
+alone, `git merge upstream/<branch>` is that answer and it works.
+
+🔴 IT DOES NOT WORK FOR THE TREE THAT NEEDS IT MOST, measured 2026-09-08 on a
+real install. A person cloned the engine, deleted the clone's history to give
+their project its own — the CORRECT thing to do — and their tree now shares no
+root with the engine. ⛔ A merge there is not an update: it is a conflict in
+every one of 171 files, and following the advice leaves them worse off.
+
+⛔ AND THE OBVIOUS FIX IS WORSE. `git checkout upstream/<branch> -- Mente/`
+updates the engine cleanly and OVERWRITES the instance inside it — measured:
+a RESUME.md holding real memory was replaced by the engine's template in
+silence. A command that loses the memory this system exists to keep is not an
+update, and a silent loss is worse than a loud conflict.
+
+⭐ SO THE INSTANCE IS DERIVED, NEVER LISTED. `Mente/.gitignore` already declares
+every path that belongs to this installation rather than to the engine — that is
+its whole job. This reads it. ⚠️ A hand-written list here would be a second
+answer to a question already answered, and it would go stale the first time the
+engine gains a folder.
+
+Usage:
+  bin/update-engine [--dry-run] [--ref upstream/main]
+Exit: 0 updated or already current · 1 refused · 2 could not complete
+"""
+import os as _os, sys as _sys
+_d = _os.path.dirname(_os.path.abspath(__file__))
+while _d != _os.path.dirname(_d):
+    if _os.path.exists(_os.path.join(_d, "bin", "utf8.py")):
+        _sys.path.insert(0, _os.path.join(_d, "bin")); break
+    _d = _os.path.dirname(_d)
+import utf8                                          # noqa: F401,E402
+import os
+import subprocess
+import sys
+
+MENTE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+REPO = os.path.dirname(MENTE)
+
+
+def git(*a):
+    return subprocess.run(("git",) + a, cwd=REPO, capture_output=True,
+                          text=True, timeout=120)
+
+
+def engine_ref():
+    """The branch the engine calls its default — asked, never assumed.
+
+    🔴 A repository created with git's older default is on `master`. Comparing
+    against a hardcoded `upstream/main` reports "nothing fetched yet" about a
+    tree that fetched perfectly.
+    """
+    ref = git("symbolic-ref", "--short",
+              "refs/remotes/upstream/HEAD").stdout.strip()
+    for c in ([ref] if ref else []) + ["upstream/main", "upstream/master"]:
+        if git("rev-parse", "--verify", "--quiet", c).returncode == 0:
+            return c
+    return None
+
+
+def is_mine(rel):
+    """Is `rel` (a path under Mente/) this INSTALLATION's, rather than the
+    engine's?
+
+    ⭐ THE ANSWER IS GIT'S, NOT MINE. `Mente/.gitignore` already declares
+    exactly this — it is its whole job — and it is a real pattern language:
+    directory rules, globs, and `!` re-inclusions that OVERRIDE an earlier
+    ignore. ⛔ Reading it by hand gets the `!` wrong, and the way it gets it
+    wrong is silent.
+
+    🔴 MEASURED THE FIRST TIME THIS RAN, against a real install: a hand parse
+    that skipped `!` lines and matched on path SEGMENTS held back 23 files —
+    `memory/principles/owner-0-voice.md`, the three architects, the seven
+    disciplines. Those are engine DOCTRINE, marked `!` precisely because they
+    ship. ⛔ Nobody would ever have received an improvement to the voice, and
+    the command would have reported success while doing it.
+
+    ⭐ `git check-ignore --no-index` applies the same rules git applies,
+    including every `!`. One reader for one question — CHK-SHR-001.
+    ⛔ `--no-index` because git answers "not ignored" for anything it already
+    TRACKS, and an installation that versioned its memory tracks all of it.
+    """
+    return git("check-ignore", "--no-index", "-q", rel).returncode == 0
+
+
+def main():
+    dry = "--dry-run" in sys.argv
+    ref = None
+    if "--ref" in sys.argv:
+        i = sys.argv.index("--ref")
+        ref = sys.argv[i + 1] if i + 1 < len(sys.argv) else None
+
+    if git("rev-parse", "--git-dir").returncode != 0:
+        print("🔴 not a git repository · nothing to update from",
+              file=sys.stderr)
+        return 1
+    if git("remote", "get-url", "upstream").returncode != 0:
+        print("🔴 no `upstream` remote · wire it once:\n"
+              "   git remote add upstream "
+              "https://github.com/for3slabs/mente-os.git", file=sys.stderr)
+        return 1
+
+    # ⛔ A DIRTY TREE IS REFUSED, not merged over. Overwriting uncommitted work
+    # is the one failure this command must never cause.
+    dirty = git("status", "--porcelain").stdout.strip()
+    if dirty and not dry:
+        print("🔴 %d uncommitted change(s) · commit or stash them first — this "
+              "command overwrites engine files and would take yours with them"
+              % len(dirty.splitlines()), file=sys.stderr)
+        return 1
+
+    git("fetch", "--quiet", "upstream")
+    ref = ref or engine_ref()
+    if not ref:
+        print("🔴 nothing fetched from `upstream` · run: git fetch upstream",
+              file=sys.stderr)
+        return 2
+
+    # ⭐ WHAT THIS TREE HAS ALREADY TAKEN, recorded as a git ref. 🔴 THE
+    # FAILURE, measured on the real install: this command copies files, it does
+    # not advance history — so `rev-list HEAD..upstream` kept answering 257 and
+    # `check-health` announced the same update at every session, forever. ⛔ An
+    # alert that never clears is an alert people learn to scroll past, which is
+    # the whole reason the notice exists.
+    # ⚠️ A ref, not a file: it survives a checkout, it is not something a person
+    # edits by accident, and it does not appear as an uncommitted change.
+    MARK = "refs/mente/engine-taken"
+    taken = git("rev-parse", "--verify", "--quiet", MARK).stdout.strip()
+    head = git("rev-parse", ref).stdout.strip()
+    if taken and taken == head:
+        print("✅ already current with %s" % ref)
+        return 0
+    behind = git("rev-list", "--count", "HEAD..%s" % ref).stdout.strip()
+    if not taken and behind in ("", "0"):
+        print("✅ already current with %s" % ref)
+        return 0
+    behind = behind or "?"
+
+    # ⭐ What the engine ships under Mente/, minus what is this installation's.
+    listed = git("ls-tree", "-r", "--name-only", ref, "Mente/").stdout.split()
+    # ⚠️ Asked in ONE call, not one per file: 200 files is 200 processes, and
+    # on Windows that is the difference between a second and a minute.
+    # ⛔ TWO FLAGS, BOTH LOAD-BEARING, both measured on the real install.
+    #
+    # `--no-index` · without it git answers "not ignored" for every file it
+    # already TRACKS — and an installation that versioned its own memory tracks
+    # all of it. The command reported "0 left alone as yours" and was one
+    # keystroke from overwriting every instance file it exists to protect.
+    # ⭐ The question is not "is this ignored right now", it is "does a rule in
+    # .gitignore claim it".
+    #
+    # `-z` · NUL-separated, in and out. 🔴 Without it Python on Windows writes
+    # "\r\n" into the child's stdin, so git reads "Mente/bin/init\r" as a
+    # different path, answers about only the first line, and quotes every path
+    # it echoes back — `"Mente/memory/RESUME.md\r"`. Three defects from one
+    # missing flag, and all three read as "nothing is yours".
+    # ⚠️ This is the CRLF bug for the fifth time in this engine.
+    ask = subprocess.run(("git", "check-ignore", "--no-index", "-z",
+                          "--stdin"), cwd=REPO,
+                         input="\0".join(listed), capture_output=True,
+                         text=True, timeout=120)
+    ignored = set(x for x in ask.stdout.split("\0") if x)
+    take = [p for p in listed if p not in ignored]
+    held = len(listed) - len(take)
+
+    print("🤖 %s commit(s) newer · %d engine file(s) would be taken · %d left "
+          "alone as yours" % (behind, len(take), held))
+    if dry:
+        print("🔎 dry run — nothing was written")
+        return 0
+    if not take:
+        print("⬜ nothing to take · the engine's files are all shadowed by "
+              "your .gitignore · NOT MEASURED whether that is intended")
+        return 1
+
+    # ⚠️ In batches: a checkout with thousands of pathspecs exceeds the command
+    # line limit on Windows, and the failure reads as "the update did nothing".
+    for i in range(0, len(take), 200):
+        r = git("checkout", ref, "--", *take[i:i + 200])
+        if r.returncode != 0:
+            print("🔴 checkout failed · %s" % r.stderr.strip()[:120],
+                  file=sys.stderr)
+            return 2
+
+    # ⭐ Recorded LAST, so a failed checkout never claims the update happened.
+    git("update-ref", MARK, head)
+    print("✅ engine updated to %s · %d file(s) · your instance untouched\n"
+          "👉 next: bin/init   — it fills in anything new, and refuses to "
+          "overwrite what you already answered" % (ref, len(take)))
+    return 0
+
+
+if __name__ == "__main__":
+    try:
+        sys.exit(main())
+    except Exception as e:                                     # noqa: BLE001
+        print("🔴 update-engine crashed · %s: %s" % (type(e).__name__, e),
+              file=sys.stderr)
+        sys.exit(2)

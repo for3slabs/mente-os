@@ -319,10 +319,40 @@ def engine_updates(cfg):
             gap("engine updates · git answered something unreadable · NOT "
                 "MEASURED")
             return
+        # ⭐ AND WHAT WAS ALREADY TAKEN DOES NOT COUNT AS NEW. 🔴 Measured on
+        # the real install: `bin/update-engine` copies files without advancing
+        # history, so this kept announcing the same 257 commits at every
+        # session. ⛔ An alert that never clears is one people learn to scroll
+        # past — CHK-SHR-001, the mark update-engine writes is the mark this
+        # reads.
+        taken = git("rev-parse", "--verify", "--quiet",
+                    "refs/mente/engine-taken").stdout.strip()
+        if taken and taken == git("rev-parse", ref).stdout.strip():
+            behind = 0
         if behind:
+            # ⭐ THE ADVICE MUST WORK IN THE CASE THAT NEEDS IT MOST. 🔴 Measured
+            # 2026-09-08 on the real install this whole feature came from: the
+            # person had deleted the clone's history to give their project its
+            # own — the correct thing to do — so their tree and the engine share
+            # NO root. ⛔ `git merge upstream/main` there is not an update, it is
+            # a conflict in every one of 171 files, and the person following the
+            # advice is worse off than before they read it.
+            # ⚠️ merge-base answers it in one call: empty means unrelated.
+            common = git("merge-base", "HEAD", ref).stdout.strip()
+            # ⛔ AND THE SECOND ANSWER IS A COMMAND, not a recipe. 🔴 The first
+            # version told the person to run `git checkout <ref> -- Mente/`.
+            # Measured: that updates the engine and OVERWRITES the instance
+            # inside it — a RESUME.md holding real memory was replaced by the
+            # engine's template, in silence. ⭐ `bin/update-engine` derives what
+            # is theirs from .gitignore and leaves it alone.
+            how = ("git merge %s" % ref if common else
+                   "⚠️ this tree shares no history with the engine (its clone "
+                   "history was replaced), so a merge would conflict on every "
+                   "file · use: Mente/bin/update-engine — it takes the engine "
+                   "and leaves your memory alone")
             note("⭐ %d newer commit(s) in Mente OS since this copy · nothing "
                  "was changed · to see them: git log HEAD..%s · to bring them "
-                 "in: git merge %s" % (behind, ref, ref))
+                 "in: %s" % (behind, ref, how))
     except (OSError, subprocess.SubprocessError) as e:
         gap("engine updates · could not reach git (%s) · whether a newer "
             "engine exists was NOT checked" % e.__class__.__name__)

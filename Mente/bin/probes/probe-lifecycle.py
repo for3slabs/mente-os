@@ -237,11 +237,21 @@ _pd = os.path.join(WORK, "probes-named")
 os.makedirs(_pd, exist_ok=True)
 _stub = ('import sys\n'
          'print("  🔴 a green case whose NAME carries the emoji  \u2705 ok")\n'
+         # ⚠️ ONE SPACE before the tick, not two — this is the shape that
+         # broke the namer twice: the column split leaves the whole line in
+         # the label, so every column test misreads a PASSING case as red.
+         'print("  🔴 refuses \u00b7 a connection string \u2705 exit=2")\n'
          'print("\\n  \u279c {good} of 2 correct")\n'
          '{tail}\n'
          'print("  leftovers: none")\n'
          'sys.exit({rc})\n')
+# ⚠️ AND A PROBE THAT PRINTS NO SUMMARY AT ALL. 🔴 Measured 2026-09-08: the
+# first namer read only the `🔴 <label>` lines a probe writes under its tally —
+# and 15 of 37 probes write no such summary, `probe-plat` among them. ⛔ The
+# battery reported `failed: 1` and named nothing, which is the defect the namer
+# exists to remove, shipped as fixed while covering under half the tree.
 for _nm, _g, _tail, _rc in (("probe-zzfail", 1, 'print("     🔴 the case that fell")', 1),
+                            ("probe-zzquiet", 1, 'pass', 1),
                             ("probe-zzpass", 2, 'pass', 0)):
     open(os.path.join(_pd, _nm + ".py"), "w", encoding="utf-8", newline="").write(
         _stub.format(good=_g, tail=_tail, rc=_rc))
@@ -262,7 +272,7 @@ _mini = os.path.join(_pd, "mini", "bin")
 os.makedirs(os.path.join(_mini, "probes"), exist_ok=True)
 for _mod in ("utf8.py", "plat.py"):
     shutil.copy(os.path.join(TREE, "bin", _mod), os.path.join(_mini, _mod))
-for _nm in ("probe-zzfail", "probe-zzpass"):
+for _nm in ("probe-zzfail", "probe-zzquiet", "probe-zzpass"):
     shutil.copy(os.path.join(_pd, _nm + ".py"),
                 os.path.join(_mini, "probes", _nm + ".py"))
 shutil.copy(os.path.join(TREE, "bin", "probes", "run-all.py"),
@@ -274,9 +284,11 @@ _rr = subprocess.run([sys.executable,
                      capture_output=True, text=True, encoding="utf-8", env=_env)
 _named = [l.strip() for l in _rr.stdout.splitlines() if "🔴 probe-zz" in l]
 case("⑱ 🔴 ⭐ the battery NAMES every failure, and only real ones",
-     len(_named) == 1 and "probe-zzfail" in _named[0]
-     and "the case that fell" in _named[0],
-     "1 named, 0 false positives" if len(_named) == 1 else _named)
+     len(_named) == 2
+     and any("probe-zzfail" in x and "the case that fell" in x for x in _named)
+     and any("probe-zzquiet" in x and "prints no per-case detail" in x
+             for x in _named),
+     "2 named, 0 false positives" if len(_named) == 2 else _named)
 
 plat.rmtree(WORK)
 good = sum(1 for _, ok in results if ok)

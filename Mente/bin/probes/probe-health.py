@@ -187,6 +187,40 @@ case("⑮c ⛔ and it changed NOTHING — it only said so",
      subprocess.run(("git", "rev-list", "--count", "HEAD"), cwd=WORK,
                     capture_output=True, text=True).stdout.strip() == "1")
 
+# ── ⑮d 🔴 THE ADVICE MUST WORK IN THE CASE THAT NEEDS IT MOST ──────────────
+# 🔴 THE FAILURE, measured 2026-09-08 on the real install this feature came
+# from. The person had deleted the clone's history to give their project its
+# own — the CORRECT thing to do — so their tree shares no root with the engine.
+# ⛔ `git merge upstream/<branch>` there is not an update: it is a conflict in
+# every one of 171 files. Following the advice leaves them worse off than not
+# reading it.
+# ⛔ AND THE FIRST FIX WAS WORSE: `git checkout <ref> -- Mente/` updates the
+# engine cleanly and OVERWRITES the instance inside it — measured, a RESUME.md
+# holding real memory replaced by the engine's template, in silence.
+_unrel = os.path.join(WORK, "unrelated")
+os.makedirs(_unrel, exist_ok=True)
+shutil.copytree(TREE, os.path.join(_unrel, "Mente"),
+                ignore=shutil.ignore_patterns("__pycache__", ".beats", ".git"))
+for _c in (("git", "init", "-q", "."),
+           ("git", "-c", "user.email=t@t", "-c", "user.name=t", "commit",
+            "-q", "--allow-empty", "-m", "their own history"),
+           ("git", "remote", "add", "upstream", _eng),
+           ("git", "fetch", "-q", "upstream")):
+    subprocess.run(_c, cwd=_unrel, capture_output=True, text=True)
+# ⚠️ RUN THE COPY INSIDE THAT TREE, not this one: check-health resolves the
+# repository from its OWN path, so running the working tree's script would
+# measure the working tree's git and prove nothing.
+r = subprocess.run(
+    [sys.executable, os.path.join(_unrel, "Mente", "bin", "check-health")],
+    cwd=os.path.join(_unrel, "Mente"), capture_output=True, text=True,
+    env=dict(os.environ, MENTE_HOOK_REGISTRY=registry(hooks),
+             MENTE_SESSION_DIR=SESS, MENTE_SESSION_ID="small"))
+case("⑮d 🔴 ⭐ with no shared root it does NOT advise a merge",
+     "newer commit" in r.stdout and "git merge" not in r.stdout,
+     "" if "git merge" not in r.stdout else "🔴 still says merge")
+case("⑮e ⭐ and it names the command that leaves your memory alone",
+     "update-engine" in r.stdout)
+
 # ── 🔴 THE DEFECT THE CLEAN CLONE FOUND, INVISIBLE IN THE WORKING TREE ─────
 # mente.config.yml is an INSTANCE file, so a clone legitimately lacks one. The
 # first version returned early on that and ignored the environment entirely —

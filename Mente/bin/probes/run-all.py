@@ -245,11 +245,51 @@ for name, r in results:
     # RUNS the gate` passes). Each probe prints its failures in a summary under
     # its `➜ N of M correct` line; that summary is the only place a red line
     # means a red case.
-    _tail = r.stdout[m.end():]
+    # ⛔ AND THE TALLY IS NOT ALWAYS LAST. 🔴 Measured 2026-09-08, the same day
+    # this cut was written: `probe-plat` prints its `leftovers:` line BEFORE the
+    # tally, so a probe that failed had its summary above the cut and the
+    # battery named nothing — the very defect this code exists to fix, one line
+    # of output away. ⭐ Take whichever side holds the summary: real failures
+    # are the lines `🔴 <label>` a probe prints under its own tally, and a green
+    # case carrying 🔴 in its NAME always has other text after it on the line.
+    _tail = r.stdout
+    # ⭐ THE VERDICT COLUMN, not the summary. 🔴 THE FIRST VERSION read the
+    # `🔴 <label>` lines a probe prints under its tally — and 15 of 37 probes
+    # print no such summary at all, `probe-plat` among them. ⛔ So the battery
+    # said `failed: 1` and named nothing, which is the exact defect the naming
+    # was built to remove, reported as fixed while covering under half the
+    # tree.
+    # ⭐ Every probe prints one line per case: the label padded to a fixed
+    # width, then the verdict. A RED case has 🔴 in that verdict column; a green
+    # case that carries 🔴 inside its NAME is followed by more label text and
+    # then a ✅. Splitting on runs of spaces separates the two reliably.
     for _ln in _tail.splitlines():
-        _t = _ln.strip()
-        if _t.startswith("🔴 ") and len(_t) > 3:
-            reds.append((name, _t[2:].strip()))
+        if "🔴" not in _ln or not _ln.startswith("  "):
+            continue
+        _parts = re.split(r"\s{2,}", _ln.strip())
+        # ⛔ A ✅ ANYWHERE ON THE LINE SETTLES IT GREEN, and this test comes
+        # first. 🔴 Measured twice while landing this: `🔴 refuses · ⭐ a
+        # connection string — with no name beside it ✅ exit=2` is a PASSING
+        # case whose name opens with the emoji, and its verdict is one space
+        # away rather than two — so the column split leaves the whole line in
+        # `_parts[0]` and every column-based test misreads it.
+        if "✅" in _ln:
+            continue
+        if len(_parts) < 2:
+            # a summary line — `🔴 <label>` with nothing after it
+            _t = _ln.strip()
+            if _t.startswith("🔴 ") and len(_t) > 3:
+                reds.append((name, _t[2:].strip()))
+            continue
+        # ⛔ The verdict is what follows the padding. Only a 🔴 THERE is a
+        # failure; one inside `_parts[0]` is part of the case's NAME.
+        # ⚠️ And a ✅ anywhere in the verdict settles it green. 🔴 Caught the
+        # minute this landed: `refuses · ⭐ a connection string  ✅ exit=2`
+        # carries 🔴 in its name AND a ✅ two columns along, and a plain
+        # "no ✅ on the line" test called it a failure.
+        _verdict = " ".join(_parts[1:])
+        if "🔴" in _verdict and "✅" not in _verdict:
+            reds.append((name, _parts[0].strip()))
     dups = duplicate_labels(r.stdout)
     if dups:
         # ⭐ One failure, not one per numeral: the defect is the probe's
@@ -259,6 +299,16 @@ for name, r in results:
         failed += 1
         print("  %-24s 🔴 case label used twice: %s"
               % (name, " ".join(dups)[:44]))
+    # ⬜ A FAILURE NOBODY DESCRIBED IS STILL SAID. 🔴 Measured 2026-09-08: 15 of
+    # 37 probes print no per-case failure line at all, so when one of them fell
+    # the battery had nothing to name and stayed silent — indistinguishable
+    # from a run with nothing to say. ⛔ CHK-IND-002 again: the count without
+    # its detail. ⭐ Naming the probe and saying the detail is missing is the
+    # honest answer, and it points at the probe that should print one.
+    if good < all_ and not any(w == name for w, _ in reds):
+        reds.append((name, "⬜ %d case(s) fell · this probe prints no per-case "
+                           "detail — run it alone to see which"
+                           % (all_ - good)))
     ok = r.returncode == 0 and good == all_ and not leftovers and not dups
     total += all_
     failed += all_ - good
