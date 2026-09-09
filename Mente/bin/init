@@ -257,6 +257,29 @@ STARTUP_BLOCK = """<!-- Mente OS · added by Mente/bin/init. Safe to delete this
    the repository root — ⚠️ measured: a run invented `docs/` and the work was
    invisible to every check.
 
+## ⛔ WHEN NOT TO ASK — the rule that decides every question
+
+> ⭐ **A question whose wrong answer makes the system WORSE is not a question.
+> It is a default.** Set it, say what you set in one line, and move on.
+
+🔴 Measured 2026-09-08 on a real install. A newcomer was asked four things in
+one setup: whether to keep receiving engine updates, whether their own memory
+should be backed up, what a setup block may touch, and their name. ⛔ Three had
+exactly one answer that leaves the system working — and for one of them the
+assistant recommended the answer that breaks it. **They said: *"me siento
+abrumado"*.** A person who cannot yet evaluate an option is not deciding, they
+are guessing, and a guess carries the weight of a decision they never made.
+
+| Ask | Never ask |
+|---|---|
+| Their **name** — nothing can derive it | Whether to receive updates · whether to back up their memory · whether the engine's own folder is in scope for setting up the engine |
+| Which of **two real alternatives** they prefer, both of which work | Anything where one answer is simply wrong |
+| Before something **destructive or irreversible** | Anything already answered by a file you have not read yet |
+
+⚠️ **The setup work is not theirs to bound.** Opening a block to finish an
+install: `--in "Mente/ · .git/ · .gitignore" --out "Mente/secrets/ — credentials
+never in git"`. State it, do not ask it.
+
 ## ⌨️ What they can ask for, in their words
 
 | They say | You run |
@@ -341,10 +364,29 @@ def wire_gates(dry):
     if not os.path.exists(src):
         return "⬜ no template · gates NOT wired"
     if os.path.exists(dest):
+        # ⭐ LOOK INSIDE BEFORE ACCUSING YOURSELF. 🔴 THE FAILURE, measured
+        # 2026-09-08 on a real install: a second run of init found the settings
+        # file — one IT had written minutes earlier, with all five gates in it —
+        # and reported "⚠️ the gates are NOT active". ⛔ The gates were active
+        # and firing. An installer that tells a person their protection is off
+        # when it is on teaches them to distrust every line it prints, and this
+        # person could not check for themselves.
+        # ⚠️ The question is whether OUR hooks are in there, not whether the
+        # file exists. If they are, this is a normal second run.
+        try:
+            have = json.load(open(dest, encoding="utf-8")).get("hooks") or {}
+            mine = sum(len(v) for v in have.values() if isinstance(v, list))
+        except (OSError, ValueError):
+            # ⬜ CHK-CAU-003 · unreadable is NOT MEASURED, never "not active".
+            return ("⬜ .claude/settings.json exists but could not be read · "
+                    "whether the gates are wired was NOT MEASURED")
+        if mine:
+            return ("⬜ .claude/settings.json already exists · left untouched · "
+                    "✅ %d hook matcher(s) already wired in it" % mine)
         # ⬜ NOT a pass and NOT a failure: their file stands, and the gates
         # this engine ships are simply not active until they merge it.
         return ("⬜ .claude/settings.json already exists · left untouched · "
-                "⚠️ the gates are NOT active — merge `hooks` from %s"
+                "⚠️ it declares no hooks — merge `hooks` from %s"
                 % plat.rel(src, REPO))
     if dry:
         return "would wire the gates into .claude/settings.json"
@@ -707,6 +749,152 @@ def wire_hook(dry, name="pre-push"):
     return "wired (launcher — this system refused a symlink)"
 
 
+# ⭐ THE ENGINE THIS CLONE CAME FROM — never asked, always recorded.
+# ⛔ It has to be read BEFORE `git init` is ever considered, because that is the
+# moment the answer stops existing.
+ENGINE_URL = "https://github.com/for3slabs/mente-os.git"
+NO_PUSH = "MENTE-OS-UPSTREAM-IS-READ-ONLY"
+
+
+def wire_upstream(dry):
+    """⑥ Keep the line to the engine open, so updates can be SEEN.
+
+    🔴 THE FAILURE, measured 2026-09-08 on a real install. A person cloned the
+    engine, said "this is my project now, it must be clean", and the assistant
+    correctly proposed deleting the clone's history. ⛔ Then it asked whether to
+    keep a link for updates — and offered "cut it completely" as the RECOMMENDED
+    option. The person is the one who writes the engine's improvements; the
+    recommended answer was the one that guarantees their own copy never sees
+    them.
+
+    ⭐ THE RULE THIS STEP EXISTS FOR: **a question whose wrong answer makes the
+    system worse is not a question, it is a default.** Receiving updates is not
+    a preference — nobody wants a tool that cannot be improved. It is wired,
+    and the person may remove it later with one command.
+
+    ⚠️ FETCH ONLY. The push URL is set to a string that is not a URL, so a
+    distracted `git push upstream` fails loudly instead of trying to write to
+    somebody else's repository. ⛔ Measured on the same install: `origin`
+    pointed at the engine author's repo and nothing said so.
+
+    ⭐ AND IT NEVER TOUCHES `origin`. That name belongs to the person's own
+    remote, whether they have one yet or not.
+    """
+    def git(*a):
+        return subprocess.run(("git",) + a, cwd=REPO, capture_output=True,
+                              text=True, timeout=15)
+    try:
+        if git("rev-parse", "--git-dir").returncode != 0:
+            # ⬜ Not a repository yet — nothing to wire, and saying so beats a
+            # silent skip that reads as "wired".
+            return "⬜ no git repository here · updates NOT wired"
+        have = git("remote", "get-url", "upstream")
+        if have.returncode == 0:
+            url = have.stdout.strip()
+            if dry:
+                return "upstream already set (%s) · would leave it" % url
+            # ⭐ Even then, make sure it cannot push. A remote someone added by
+            # hand almost certainly still has a writable push URL.
+            git("remote", "set-url", "--push", "upstream", NO_PUSH)
+            return "upstream already set (%s) · push disabled" % url
+        if dry:
+            return "would wire `upstream` to the engine, fetch-only"
+        if git("remote", "add", "upstream", ENGINE_URL).returncode != 0:
+            return "⬜ could not add the `upstream` remote · updates NOT wired"
+        git("remote", "set-url", "--push", "upstream", NO_PUSH)
+        # ⭐ AND THE FIRST FETCH HAPPENS HERE, once. 🔴 Without it the remote
+        # exists and nothing has ever been compared, so check-health reports
+        # ⬜ NOT MEASURED on every session until somebody runs `git fetch` by
+        # hand — and a newcomer does not know that is theirs to do. ⛔ A wiring
+        # that needs an undocumented second step is a wiring that stays dead.
+        # ⚠️ It may fail — no network, a proxy, a firewall — and that is fine:
+        # the remote is still wired and the first successful fetch will be the
+        # session-start one. A failed fetch NEVER fails the install.
+        fetched = git("fetch", "--quiet", "upstream")
+        if fetched.returncode != 0:
+            return ("upstream → the engine, fetch-only · ⬜ could not reach it "
+                    "now · it will be compared once the network allows")
+        return "upstream → the engine, fetch-only (never pushes) · fetched"
+    except (OSError, subprocess.SubprocessError) as e:
+        # ⬜ CHK-CAU-003 · a skip is said out loud.
+        return ("⬜ NOT MEASURED · could not reach git (%s) · updates NOT wired"
+                % e.__class__.__name__)
+
+
+# ⭐ The exceptions that put THIS installation's memory back into git, and the
+# marker init recognises so a second run neither duplicates nor overwrites them.
+KEEP_MARK = "# ── Mente OS · added by bin/init · this installation's own memory"
+KEEP_BLOCK = """
+%s ──
+# ⭐ WHY THESE LINES EXIST, and why the rules above them are still right.
+# The rules above serve the engine when it is PUBLISHED: an instance file
+# carries a name, so a clone that inherits one starts up wearing somebody
+# else's identity. ⛔ But "does not travel to the published engine" and "is not
+# saved in your own repository" are DIFFERENT questions, and the rules above
+# answer the first one for both.
+#
+# 🔴 Measured 2026-09-08 on a real install: the person's own RESUME.md,
+# PENDING.md and config — the memory this whole system exists to keep — were
+# outside git. A deleted folder would have taken every one of them, and the
+# assistant had to argue the point instead of it simply being true.
+#
+# ⭐ This is YOUR installation, not the published engine. Your memory is
+# versioned. Delete this block if you are packaging the engine for others.
+# ⛔ secrets/ stays out either way — that rule is above and is not negotiable.
+!memory/RESUME.md
+!memory/PENDING.md
+!mente.config.yml
+!PROJECT-RULES.md
+!Cerebro/ARCHITECTURE.md
+!docs/WORKSPACE.md
+!connection/bridges/BRIDGES.md
+""" % KEEP_MARK
+
+
+def keep_memory(dry):
+    """⑦ Put this installation's own memory back into git.
+
+    🔴 THE FAILURE, measured 2026-09-08 on a real install. `Mente/.gitignore`
+    excludes the instance — the name, the config, RESUME and PENDING — because
+    the ENGINE must not ship carrying somebody's identity. ⛔ Applied to the
+    person's OWN repository, the same rule leaves the memory this whole system
+    exists to preserve outside version control: delete the folder and it is
+    gone. The assistant on that install had to notice it, argue it, and work
+    around it with `git add -f`.
+
+    ⭐ THE RULE: **a question whose wrong answer makes the system worse is not a
+    question, it is a default.** Nobody installing a memory system wants its
+    memory unbacked.
+
+    ⚠️ THE EXCEPTIONS MUST LIVE IN `Mente/.gitignore` ITSELF. Measured, three
+    ways: git applies the DEEPEST .gitignore with priority, so a `!` written at
+    the repository root cannot un-ignore what this file ignored — the real
+    install tried exactly that and it silently did nothing. ⛔ Appending here
+    also keeps `upstream` usable: git merges a file, it does not conflict with
+    a block it has never seen.
+
+    ⛔ secrets/ is untouched. That exclusion is above this block and stays.
+    """
+    gi = os.path.join(MENTE, ".gitignore")
+    try:
+        body = open(gi, encoding="utf-8").read()
+    except OSError as e:
+        return ("⬜ NOT MEASURED · could not read Mente/.gitignore (%s) · the "
+                "memory is NOT versioned" % e.__class__.__name__)
+    if KEEP_MARK in body:
+        # ⛔ Never twice. A second run appending again would grow the file on
+        # every install and read as a corrupted one.
+        return "⬜ memory already versioned · left untouched"
+    if dry:
+        return "would put this installation's memory back into git"
+    try:
+        write(gi, body.rstrip("\n") + "\n" + KEEP_BLOCK)
+    except OSError as e:
+        return ("⚠️ could not write Mente/.gitignore (%s) · the memory is NOT "
+                "versioned" % e.__class__.__name__)
+    return "memory versioned (RESUME, PENDING, config…) · secrets/ still out"
+
+
 def harden(dry):
     """④ Make the credential folder private.
 
@@ -874,6 +1062,13 @@ def main():
     # installed, which is the failure this whole step exists for.
     hooked = wire_hook(dry)
     hooked_commit = wire_hook(dry, "pre-commit")
+    # ⭐ INS-ORD-006 · the line to the engine, wired without being asked. See
+    # wire_upstream: a question whose wrong answer makes the system worse is
+    # not a question, it is a default.
+    upstreamed = wire_upstream(dry)
+    # ⭐ INS-ORD-007 · and the memory this system exists to keep goes into git,
+    # without being asked. See keep_memory.
+    kept_memory = keep_memory(dry)
     # ⭐ After ③b: same doctrine, same place — the repository's own .claude/.
     skilled = install_skills(dry)
     # ⭐ AFTER ③b too, and for the same reason: it edits the file ③b writes.
@@ -908,6 +1103,8 @@ def main():
     print("   · gates (Claude Code): %s" % gated)
     print("   · layer 2 hook (pre-push):  %s" % hooked)
     print("   · base-branch hook (pre-commit): %s" % hooked_commit)
+    print("   · engine updates: %s" % upstreamed)
+    print("   · your memory in git: %s" % kept_memory)
     if skilled:
         print("   · %s" % skilled)
     if voiced:

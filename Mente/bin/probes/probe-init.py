@@ -890,6 +890,104 @@ case("㉜ 🔴 ⭐ no installed file still carries its template scaffolding",
 # glued to a comment ABOVE the cases that read the installed tree, so ㉗ and
 # ㉘ measured a directory that had just been deleted — ⛔ every one of them
 # green because there was nothing left to be wrong.
+# ── ㊱ 🔴 THE FOUR THINGS A NEWCOMER MUST NOT BE ASKED ──────────────────────
+# 🔴 THE FAILURE, measured 2026-09-08 on a real install. A person installing
+# for the first time was asked FOUR things in one setup: whether to keep
+# receiving engine updates, whether their own memory should be backed up, what
+# a setup block may touch, and their name. ⛔ Three of the four had exactly one
+# answer that leaves the system working — and for one of them the assistant
+# recommended the answer that breaks it (cut the link to the engine, for the
+# person who writes the engine's improvements).
+# ⚠️ THEIR WORDS: *"me siento abrumado"*. A person who cannot yet evaluate an
+# option is not deciding, they are guessing — and a guess carries the weight of
+# a decision nobody made.
+# ⭐ THE RULE THESE CASES FREEZE: a question whose wrong answer makes the system
+# WORSE is not a question, it is a default. Only the name survives as a real
+# question, because nothing can derive it.
+_repo, _tree = fresh()
+_r = run(_tree, "--owner", OWNER)
+_out = _r.stdout + _r.stderr
+
+
+def _git(repo, *a):
+    return subprocess.run(("git",) + a, cwd=repo, capture_output=True,
+                          text=True, timeout=20)
+
+
+# ㊱a · updates are wired, not offered
+_u = _git(_repo, "remote", "get-url", "upstream").stdout.strip()
+case("㊱a 🔴 ⭐ the line to the engine is wired WITHOUT asking",
+     "mente-os" in _u, _u or "no upstream")
+
+# ㊱b · and it can never write to somebody else's repository
+_push = _git(_repo, "remote", "get-url", "--push", "upstream").stdout.strip()
+case("㊱b ⛔ and `upstream` cannot be pushed to",
+     "://" not in _push and _push != "", _push or "🔴 pushable")
+
+# ㊱c · `origin` is the person's own name to claim — the installer never takes it
+case("㊱d ⛔ and `origin` is left for them, never claimed",
+     _git(_repo, "remote", "get-url", "origin").returncode != 0)
+
+# ㊱e · the memory this system exists to keep is IN git
+# ⚠️ Asked of git itself, never of the .gitignore's text: measured the same
+# day, a `!` written at the repository root looks correct and does nothing,
+# because git applies the DEEPEST .gitignore with priority.
+_ign = [f for f in ("memory/RESUME.md", "memory/PENDING.md",
+                    "mente.config.yml", "PROJECT-RULES.md")
+        if _git(_repo, "check-ignore", "-q", "Mente/" + f).returncode == 0]
+case("㊱e 🔴 ⭐ their memory is versioned, without asking",
+     _ign == [], _ign or "all four in git")
+
+# ㊱f · ⛔ AND SECRETS STAY OUT. The half that makes the other half safe: a fix
+# that versions the instance and drags credentials in is not a fix.
+case("㊱f ⛔ and secrets/ is STILL out of git",
+     _git(_repo, "check-ignore", "-q", "Mente/secrets/").returncode == 0)
+
+# ㊱g · a second run neither duplicates the block nor re-reports it as new
+_r2 = run(_tree, "--owner", OWNER)
+_gi = open(os.path.join(_tree, ".gitignore"), encoding="utf-8").read()
+case("㊱g ⚠️ a second run does not duplicate the exceptions",
+     _gi.count("!memory/RESUME.md") == 1,
+     "%d occurrence(s)" % _gi.count("!memory/RESUME.md"))
+
+# ㊱h · 🔴 AND IT DOES NOT ACCUSE ITSELF. Measured: a second run found the
+# settings file it had written minutes earlier, with five gates in it, and
+# reported "⚠️ the gates are NOT active". ⛔ They were active and firing.
+_out2 = _r2.stdout + _r2.stderr
+case("㊱h 🔴 ⭐ a second run does not call its own gates dead",
+     "gates are NOT active" not in _out2,
+     "" if "gates are NOT active" not in _out2 else "🔴 still lies")
+
+# ㊱i · the startup carries the rule, so the next assistant inherits it
+_cl = open(os.path.join(_repo, "CLAUDE.md"), encoding="utf-8").read()
+case("㊱i ⭐ the startup tells the assistant WHEN NOT to ask",
+     "WHEN NOT TO ASK" in _cl and "is not a question" in _cl)
+
+# ㊱j · and a setup block can state its scope instead of asking for it
+_nb = subprocess.run(
+    [sys.executable, os.path.join(_tree, "bin", "new-block"), "zzprobe-scope",
+     "--type", "infra", "--intent", "x", "--in", "Mente/ · .git/",
+     "--out", "Mente/secrets/ — never in git"],
+    cwd=_tree, capture_output=True, text=True, timeout=60)
+_bp = os.path.join(_tree, "work", "blocks", "active", "zzprobe-scope",
+                   "BLOCK.md")
+_bb = open(_bp, encoding="utf-8").read() if os.path.exists(_bp) else ""
+case("㊱j 🔴 ⭐ a block can be opened WITH its scope, not asked for it",
+     "- Mente/" in _bb and "- .git/" in _bb
+     and "⬜ declare what this block may touch" not in _bb)
+
+# ㊱k · ⛔ and with nothing passed it stays ⬜ — an INVENTED scope is worse than
+# an unfilled one, because it reads as a limit somebody chose.
+subprocess.run(
+    [sys.executable, os.path.join(_tree, "bin", "new-block"), "zzprobe-bare",
+     "--type", "infra", "--intent", "x"],
+    cwd=_tree, capture_output=True, text=True, timeout=60)
+_bp2 = os.path.join(_tree, "work", "blocks", "active", "zzprobe-bare",
+                    "BLOCK.md")
+_bb2 = open(_bp2, encoding="utf-8").read() if os.path.exists(_bp2) else ""
+case("㊱k ⛔ and with no --in it stays ⬜, never invented",
+     "⬜ declare what this block may touch" in _bb2)
+
 plat.rmtree(WORK)
 
 good = sum(1 for _, ok in results if ok)

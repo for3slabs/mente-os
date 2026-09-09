@@ -36,11 +36,19 @@ while _d != _os.path.dirname(_d):
 import utf8                                          # noqa: F401,E402
 import os
 import re
+import subprocess
 import sys
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+# ⭐ The repository, not the engine folder: git lives one level up, because
+# Mente OS is a tool dropped INTO somebody's project.
+REPO = os.path.dirname(ROOT)
 CONFIG = os.path.join(ROOT, "mente.config.yml")
 HOOKS = os.path.join(ROOT, "hooks")
+
+# ⭐ HOW MANY CONCERNS THIS CHECK COVERS — declared here, never as a literal
+# in the summary. Raise it in the same commit that adds the concern.
+CONCERNS = 3
 
 findings, gaps, notes = [], [], []
 
@@ -242,6 +250,84 @@ def session(cfg):
         red("this session is %.0f MB — watch it (limit %.0f)%s" % (mb, stop, how))
 
 
+def engine_updates(cfg):
+    """⭐ IS THERE A NEWER ENGINE? Said at session start, never acted upon.
+
+    🔴 THE FAILURE, measured 2026-09-08 on a real install. Nothing in the whole
+    engine mentioned updates — not a remote, not a notice, not one line of
+    documentation. ⛔ So an assistant setting up a fresh copy read it as an OPEN
+    QUESTION and asked the person, offering "cut the link completely" as the
+    recommended answer. The person is the one who writes the engine's
+    improvements; the recommended answer guaranteed their copy never sees them.
+
+    ⭐ IT ONLY LOOKS AT WHAT IS ALREADY ON DISK. `git fetch` is a network call,
+    and a health check that reaches the network is a health check that hangs on
+    a plane. ⚠️ So this compares against the last fetch — which means it says
+    "up to date" the day after a fetch and stays quiet until the next one.
+    ⛔ That is stated in the message, never hidden: a stale comparison presented
+    as current is worse than no comparison.
+
+    ⚠️ AND IT NEVER PULLS. Bringing changes in could overwrite the person's own
+    work with no warning; the decision to merge is theirs, always.
+    """
+    def git(*a):
+        return subprocess.run(("git",) + a, cwd=REPO, capture_output=True,
+                              text=True, timeout=15)
+    try:
+        if git("rev-parse", "--git-dir").returncode != 0:
+            # ⬜ CHK-CAU-003 · SAID, never a silent return. 🔴 Caught the hour
+            # this landed: returning quietly left the concern counted as
+            # measured, so a folder with no git at all reported "1 of 3
+            # measured" — a ✅ over a check that never ran, which is the exact
+            # failure the top of this file names first.
+            gap("engine updates · this folder is not a git repository · "
+                "whether a newer Mente OS exists cannot be checked here")
+            return
+        if git("remote", "get-url", "upstream").returncode != 0:
+            gap("engine updates · no `upstream` remote · this copy cannot see "
+                "whether a newer Mente OS exists · ⭐ wire it once:  "
+                "git remote add upstream "
+                "https://github.com/for3slabs/mente-os.git")
+            return
+        # ⭐ THE ENGINE'S BRANCH IS ASKED, NEVER ASSUMED. 🔴 Caught the hour
+        # this landed: the first version compared against `upstream/main`, and
+        # a repository created with git's older default is on `master` — so
+        # `rev-list` failed and the check reported "nothing fetched yet" on a
+        # tree that had fetched perfectly. ⛔ A person on `master` would never
+        # have seen a single update, and the reason given would have been
+        # wrong. ⚠️ `symbolic-ref` answers what the remote itself says its
+        # default is; the fallbacks cover a remote fetched before that ref
+        # existed.
+        ref = git("symbolic-ref", "--short",
+                  "refs/remotes/upstream/HEAD").stdout.strip()
+        cands = [ref] if ref else []
+        cands += ["upstream/main", "upstream/master"]
+        r, ref = None, None
+        for c in cands:
+            probe = git("rev-list", "--count", "HEAD..%s" % c)
+            if probe.returncode == 0:
+                r, ref = probe, c
+                break
+        if r is None:
+            gap("engine updates · nothing fetched from `upstream` yet · run "
+                "`git fetch upstream` once and this will say whether a newer "
+                "engine exists")
+            return
+        try:
+            behind = int(r.stdout.strip() or 0)
+        except ValueError:
+            gap("engine updates · git answered something unreadable · NOT "
+                "MEASURED")
+            return
+        if behind:
+            note("⭐ %d newer commit(s) in Mente OS since this copy · nothing "
+                 "was changed · to see them: git log HEAD..%s · to bring them "
+                 "in: git merge %s" % (behind, ref, ref))
+    except (OSError, subprocess.SubprocessError) as e:
+        gap("engine updates · could not reach git (%s) · whether a newer "
+            "engine exists was NOT checked" % e.__class__.__name__)
+
+
 def main():
     quiet = "--quiet" in sys.argv
     # ⛔ AN ABSENT CONFIG IS NOT A REASON TO MEASURE NOTHING. Found on a clean
@@ -258,6 +344,7 @@ def main():
         cfg = {}
     hooks_wired(cfg)
     session(cfg)
+    engine_updates(cfg)
 
     if not quiet:
         for n in notes:
@@ -274,8 +361,13 @@ def main():
     elif not quiet:
         # ⛔ Never a bare ✅ over checks that could not run: absence of evidence
         # read as evidence is the failure this whole system names first.
-        print("· %d of 2 concern(s) measured · nothing wrong in those"
-              % (2 - len(gaps)))
+        # ⭐ THE DENOMINATOR IS DECLARED ONCE, beside the checks it counts.
+        # 🔴 Adding a third concern and leaving the literal `2` here printed
+        # "-1 of 2 concern(s) measured" — the exact arithmetic failure this
+        # file's own comment records from the first time. ⛔ A summary that
+        # cannot count is a summary nobody reads.
+        print("· %d of %d concern(s) measured · nothing wrong in those"
+              % (CONCERNS - len(gaps), CONCERNS))
     return 0
 
 
