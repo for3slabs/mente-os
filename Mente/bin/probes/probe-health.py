@@ -9,7 +9,7 @@ in common is silence.
 ⚠️ Both concerns depend on host-specific paths, so most cases here measure the
 NOT MEASURED path: what happens when the engine cannot see.
 """
-import os, shutil, subprocess, sys, tempfile
+import os, re, shutil, subprocess, sys, tempfile
 import os as _os, sys as _sys
 _d = _os.path.dirname(_os.path.abspath(__file__))
 while _d != _os.path.dirname(_d):
@@ -63,8 +63,16 @@ print("═══ SONDA · check-health ═══\n")
 r = run()
 case("① ⬜ with nothing declared → it says what it did NOT measure",
      "NOT MEASURED" in r.stdout and "✅" not in r.stdout, "exit=%d" % r.returncode)
+# ⚠️ THE DENOMINATOR IS READ FROM THE PRODUCER, never written here. 🔴 Measured
+# 2026-09-08: a third concern was added to check-health and this case went red
+# while the validator was correct — the literal `2` lived in two places and only
+# one of them moved. ⛔ A probe that has to be edited every time the thing it
+# measures grows is a probe people delete.
+_hc = open(os.path.join(TREE, "bin", "check-health"), encoding="utf-8").read()
+_n = re.search(r"^CONCERNS = (\d+)", _hc, re.M)
 case("② ⛔ and it does NOT print a ✅ over what was not measured",
-     "0 of 2 concern(s) measured" in r.stdout)
+     bool(_n) and "0 of %s concern(s) measured" % _n.group(1) in r.stdout,
+     "" if _n else "🔴 check-health declares no CONCERNS")
 
 # ── ① HOOK WIRING · the failure that reads as success ──────────────────────
 hooks = sorted(n for n in os.listdir(os.path.join(TREE, "hooks"))
@@ -122,11 +130,62 @@ r = run(MENTE_SESSION_DIR=empty)
 case("⑭ ⬜ an empty directory → nothing to measure, not a ✅",
      "no transcript" in r.stdout)
 
-# ── ⭐ both measured and healthy → the only case that earns a green ─────────
+# ── ⭐ ALL THREE measured and healthy → the only case that earns a green ────
+# ⚠️ THE THIRD ONE NEEDS A REPOSITORY. 🔴 Caught the hour `engine_updates`
+# landed: this tree has no git, so that concern could not be measured and the
+# full ✅ correctly stopped appearing. ⛔ The case was right and the fixture was
+# short — giving it a repository with an `upstream` is what makes "everything
+# measured" true again, rather than lowering what the case demands.
+_up = subprocess.run(("git", "init", "-q", "."), cwd=WORK,
+                     capture_output=True, text=True)
+subprocess.run(("git", "-c", "user.email=t@t", "-c", "user.name=t",
+                "commit", "-q", "--allow-empty", "-m", "base"),
+               cwd=WORK, capture_output=True, text=True)
+# ⭐ A LOCAL "engine" TO COMPARE AGAINST — no network in a probe. ⛔ A remote
+# that was never fetched is an honest ⬜, so pointing at an unreachable URL
+# would measure the gap, not the healthy case this asserts.
+_eng = os.path.join(WORK, "engine.git")
+subprocess.run(("git", "clone", "-q", "--bare", WORK, _eng),
+               capture_output=True, text=True)
+subprocess.run(("git", "remote", "add", "upstream", _eng),
+               cwd=WORK, capture_output=True, text=True)
+subprocess.run(("git", "fetch", "-q", "upstream"), cwd=WORK,
+               capture_output=True, text=True)
 r = run(MENTE_HOOK_REGISTRY=registry(hooks), MENTE_SESSION_DIR=SESS,
         MENTE_SESSION_ID="small")
 case("⑮ ⭐ EVERYTHING measured and healthy → now a full ✅",
-     "✅" in r.stdout and r.returncode == 0)
+     "✅" in r.stdout and r.returncode == 0,
+     "" if "✅" in r.stdout else r.stdout.strip().splitlines()[-1][:70])
+
+# ── ⑮b 🔴 A NEWER ENGINE IS SAID, AND THE BRANCH IS ASKED FOR ──────────────
+# 🔴 THE FAILURE this freezes, caught the hour the check landed: it compared
+# against `upstream/main` by name. A repository created with git's older
+# default is on `master`, so `rev-list` failed and the check reported "nothing
+# fetched yet" about a tree that had fetched perfectly. ⛔ Every person on
+# `master` would have been told they were up to date, forever, and the reason
+# given would have been wrong.
+# ⚠️ Measured with a LOCAL bare repository standing in for the engine — a probe
+# that reaches the network measures the network.
+subprocess.run(("git", "-c", "user.email=t@t", "-c", "user.name=t",
+                "commit", "-q", "--allow-empty", "-m", "newer-engine"),
+               cwd=WORK, capture_output=True, text=True)
+subprocess.run(("git", "push", "-q", "upstream", "HEAD"), cwd=WORK,
+               capture_output=True, text=True)
+subprocess.run(("git", "reset", "-q", "--hard", "HEAD~1"), cwd=WORK,
+               capture_output=True, text=True)
+subprocess.run(("git", "fetch", "-q", "upstream"), cwd=WORK,
+               capture_output=True, text=True)
+r = run(MENTE_HOOK_REGISTRY=registry(hooks), MENTE_SESSION_DIR=SESS,
+        MENTE_SESSION_ID="small")
+case("⑮b 🔴 ⭐ a newer engine is NAMED, whatever the branch is called",
+     "newer commit(s) in Mente OS" in r.stdout,
+     "" if "newer commit" in r.stdout else r.stdout.strip().splitlines()[-1][:60])
+
+# ⛔ AND IT NEVER PULLS. The half that makes the notice safe: bringing changes
+# in could overwrite the person's own work, so the notice says how and stops.
+case("⑮c ⛔ and it changed NOTHING — it only said so",
+     subprocess.run(("git", "rev-list", "--count", "HEAD"), cwd=WORK,
+                    capture_output=True, text=True).stdout.strip() == "1")
 
 # ── 🔴 THE DEFECT THE CLEAN CLONE FOUND, INVISIBLE IN THE WORKING TREE ─────
 # mente.config.yml is an INSTANCE file, so a clone legitimately lacks one. The

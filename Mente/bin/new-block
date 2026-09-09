@@ -21,6 +21,7 @@ later, against work already under way.
 
 Usage:
   bin/new-block <id> --type <code|docs|infra|data> [--lane <lane>] [--intent TEXT]
+                     [--in 'path · path'] [--out 'limit · limit']
 Exit: 0 opened · 1 refused · 2 could not complete
 """
 import json
@@ -270,6 +271,23 @@ def main():
     intent = opt("--intent") or "⬜ one sentence: what this block is for"
     body = stamp(TEMPLATE, {"id": bid, "type": btype, "lane": lane,
                             "owner": who, "date": today, "intent": intent})
+    # ⭐ A SCOPE THE CALLER ALREADY KNOWS IS NOT A QUESTION. 🔴 THE FAILURE,
+    # measured 2026-09-08 on a real install: the assistant had to open a block
+    # just to finish the git setup, and nothing let it state the obvious
+    # boundary — so it asked the person "what may this work touch?", about
+    # their own installer's own folder. ⛔ A newcomer cannot answer that, and a
+    # wrong answer makes the system worse, not better.
+    # ⚠️ Still ⬜ when nothing is passed: an INVENTED scope is worse than an
+    # unfilled one, because it reads as a limit somebody chose.
+    if body is not None:
+        for _flag, _mark in (("--in", "- ⬜ declare what this block may touch"),
+                             ("--out", "- ⬜ declare a limit · DERIVED: replace "
+                                       "this with a real one and its source")):
+            _v = opt(_flag)
+            if _v and _mark in body:
+                body = body.replace(
+                    _mark, "\n".join("- %s" % x.strip()
+                                      for x in _v.split("·") if x.strip()))
     if body is None:
         die("no templates/BLOCK.md.template · the shape a block must have is "
             "not available to copy", 2)
