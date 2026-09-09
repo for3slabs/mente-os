@@ -39,6 +39,28 @@ DIR = ".beats"
 # Found by probe-gates case ① on its first run, 2026-08-30.
 
 
+def paused(mente):
+    """Is Mente OS paused in this installation? — CHK-SHR-001, ONE reader.
+
+    🔴 THE FAILURE, measured 2026-09-08 by running the whole flow chained.
+    `bin/off` writes `Mente/.off`, `bin/status` reads it and reports PAUSED, and
+    NOT ONE of the seven hooks ever looked. ⛔ A person says "turn Mente OS off",
+    the system confirms it is off, and every gate keeps refusing their work. A
+    switch that reports a state it does not produce is worse than no switch:
+    they now distrust the report as well as the tool.
+
+    ⭐ WHAT A PAUSE MEANS, and it is deliberately not "everything stops".
+    The hooks that only INFORM go quiet — standards injection, external
+    watching, the session brief. ⛔ The ones that stop a real LOSS keep
+    running: secrets and work with no block. A credential pasted during a pause
+    is still in git afterwards, and a leaked secret is rotated, not deleted —
+    so that guard is not the owner's to switch off by asking for quiet.
+    ⚠️ Each hook decides which kind it is by calling this or not; the answer
+    lives here so it cannot drift into seven versions.
+    """
+    return os.path.exists(os.path.join(mente, ".off"))
+
+
 def _path(mente, name):
     return os.path.join(mente, DIR, name)
 

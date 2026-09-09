@@ -972,9 +972,45 @@ _nb = subprocess.run(
 _bp = os.path.join(_tree, "work", "blocks", "active", "zzprobe-scope",
                    "BLOCK.md")
 _bb = open(_bp, encoding="utf-8").read() if os.path.exists(_bp) else ""
+# ⚠️ BACKTICKED, and that is not cosmetic — see ㊱j2: the gate reads only
+# ``…`` tokens, so a scope written as plain text is a scope nothing enforces.
 case("㊱j 🔴 ⭐ a block can be opened WITH its scope, not asked for it",
-     "- Mente/" in _bb and "- .git/" in _bb
-     and "⬜ declare what this block may touch" not in _bb)
+     "- `Mente/`" in _bb and "- `.git/`" in _bb
+     and "⬜ declare what this block may touch" not in _bb,
+     "" if "- `Mente/`" in _bb else "🔴 not backticked")
+
+# ㊱j2 🔴 ⭐ AND THE GATE CAN READ IT — the half that makes ㊱j real.
+# 🔴 THE FAILURE, measured 2026-09-08 by running the whole flow chained rather
+# than each piece alone: `--in` wrote `- site/` as plain text, and
+# `gate-no-block` matches only ``…`` tokens. The gate reported "§B IN names
+# nothing" about a block that had just declared two paths, and every write
+# outside the scope passed. ⛔ WORSE THAN NO SCOPE AT ALL: the file reads as
+# bounded, so the owner believes their work is governed while nothing is.
+# ⚠️ Asserted by FIRING THE GATE, never by reading the file — the first version
+# of ㊱j checked that the text landed, which is exactly what was true while the
+# defect was live.
+_wr = os.path.join(_repo, "zzprobe-outside.md")
+_in = os.path.join(_repo, "Mente", "Cerebro", "zzprobe-scope", "x.md")
+os.makedirs(os.path.dirname(_in), exist_ok=True)
+subprocess.run(
+    [sys.executable, os.path.join(_tree, "bin", "new-block"), "zzprobe-gated",
+     "--type", "docs", "--intent", "x",
+     "--in", "Mente/Cerebro/zzprobe-scope/"],
+    cwd=_tree, capture_output=True, text=True, timeout=60)
+
+
+def _fire(path):
+    return subprocess.run(
+        [sys.executable, os.path.join(_tree, "hooks", "gate-no-block.py")],
+        input=json.dumps({"tool_name": "Write",
+                          "tool_input": {"file_path": path}}),
+        capture_output=True, text=True, timeout=60).returncode
+
+
+_out_rc, _in_rc = _fire(_wr), _fire(_in)
+case("㊱j2 🔴 ⭐ and the GATE reads the scope --in wrote",
+     _out_rc == 2 and _in_rc == 0,
+     "outside=%d inside=%d" % (_out_rc, _in_rc))
 
 # ㊱k · ⛔ and with nothing passed it stays ⬜ — an INVENTED scope is worse than
 # an unfilled one, because it reads as a limit somebody chose.

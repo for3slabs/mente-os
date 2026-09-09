@@ -69,7 +69,19 @@ def main():
     print("⏸️  Mente OS is now PAUSED in this folder.")
     print("   Nothing was deleted. Your files, your work and your notes are "
           "exactly as they were.")
-    print("   The checks simply do not run until you switch it back on.")
+    # 🔴 THE OLD LINE SAID "the checks simply do not run", and it was false
+    # twice over. Measured 2026-09-08: not one hook read this pause, so ALL of
+    # them kept running. ⛔ And now that they read it, two go quiet and five
+    # stay — so the old sentence would still be a lie, in the other direction.
+    # ⭐ Say exactly what stops and exactly what does not: a person who is told
+    # "everything is off" and then hits a refusal stops believing the tool.
+    print("   ⭐ The notices stop: no standards injected, no external "
+          "changes announced, no session brief.")
+    print("   ⛔ Two guards keep running, and they are the ones that stop a "
+          "LOSS you cannot undo:")
+    print("      · a credential heading into git — a leaked secret is "
+          "ROTATED, not deleted")
+    print("      · work with no block open — nothing would know why it exists")
     print("\n👉 Say \"turn Mente OS back on\" to your assistant.")
     return 0
 

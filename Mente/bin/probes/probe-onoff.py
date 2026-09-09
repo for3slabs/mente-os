@@ -13,7 +13,7 @@ the actual scripts, with the marker in place, checked for whether they went
 quiet. ⚠️ A probe that asserts `.off` exists measures the writer, not the
 switch.
 """
-import os, sys, subprocess
+import json, os, sys, subprocess
 import os as _os, sys as _sys
 _d = _os.path.dirname(_os.path.abspath(__file__))
 while _d != _os.path.dirname(_d):
@@ -81,6 +81,10 @@ if not _had:
     _made = True
 try:
     r = run([sys.executable, os.path.join(BIN, "off")])
+    # ⚠️ CAPTURED HERE, from the run that actually pauses. A second `off` on an
+    # already-paused tree prints the short "was already paused" line, so
+    # reading the message there measures the wrong branch.
+    _paused_said = out(r)
     case("③ off pauses, and says nothing was deleted",
          r.returncode == 0 and os.path.exists(OFF)
          and "nothing was deleted" in out(r), "exit=%d" % r.returncode)
@@ -137,8 +141,89 @@ try:
     case("④c 🔴 ⭐ pre-commit does not block while paused",
          r.returncode == 0, "exit=%d" % r.returncode)
 
+    # ── ④d 🔴 THE SEVEN PreToolUse HOOKS · NONE OF THEM LOOKED ────────────
+    # 🔴 THE FAILURE, measured 2026-09-08 by running the whole flow chained.
+    # The git hooks above honoured the pause; the SEVEN hooks the assistant
+    # fires on every edit did not — not one read the marker. ⛔ A person said
+    # "turn Mente OS off", `bin/status` confirmed PAUSED, and every gate kept
+    # refusing their work. A switch that reports a state it does not produce is
+    # worse than no switch: they stop believing the report as well as the tool.
+    #
+    # ⭐ AND A PAUSE IS NOT "EVERYTHING STOPS", which is why both halves are
+    # asserted here. The hooks that only INFORM go quiet. ⛔ The two that stop a
+    # LOSS keep running — a credential pasted during a pause is still in git
+    # afterwards, and a leaked secret is ROTATED, not deleted. Silencing those
+    # would turn a request for quiet into a request nobody meant to make.
+    # ⚠️ A BLOCK THAT OWNS THE PATH, or the notice has nothing to say and the
+    # case measures silence caused by an empty tree. 🔴 Caught by sabotage:
+    # removing the pause check from `pre-edit-standards` left ④d GREEN, because
+    # this tree has no open block and the hook is silent either way. ⛔ A case
+    # that passes against broken code measures nothing.
+    _blk = os.path.join(ROOT, "work", "blocks", "active", "zzprobe-onoff")
+    _scoped = os.path.join(ROOT, "Cerebro", "zzprobe-onoff", "x.md")
+    os.makedirs(_blk, exist_ok=True)
+    os.makedirs(os.path.dirname(_scoped), exist_ok=True)
+    open(os.path.join(_blk, "BLOCK.md"), "w", encoding="utf-8",
+         newline="").write(
+        "# BLOCK · zzprobe-onoff\n\n## B · Scope\n\n### ✅ IN\n"
+        "- `Mente/Cerebro/zzprobe-onoff/` — the material\n\n"
+        "### ⛔ OUT\n- nothing\n\n## D · Required standards\n"
+        "- `rules/rule-working-in-a-block.md`\n")
+    _target = os.path.join(os.path.dirname(ROOT), "zzprobe-paused.md")
+
+    def _hook(name, payload):
+        return run([sys.executable, os.path.join(HOOKS, name)],
+                   input=json.dumps(payload))
+
+    _edit = {"tool_name": "Write",
+             "tool_input": {"file_path": _target, "content": "x"}}
+    # ⭐ The standards notice is asked about a path a block OWNS — that is when
+    # it speaks, so silence there can only come from the pause.
+    r = _hook("pre-edit-standards.py",
+              {"tool_name": "Write",
+               "tool_input": {"file_path": _scoped, "content": "x"}})
+    case("④d 🔴 ⭐ the standards notice goes quiet while paused",
+         out(r).strip() == "" and r.returncode == 0,
+         "%d byte(s)" % len(out(r).strip()))
+
+    r = _hook("watch-external.py", _edit)
+    case("④e ⭐ and so does the external-change notice",
+         out(r).strip() == "" and r.returncode == 0,
+         "%d byte(s)" % len(out(r).strip()))
+
+    # ⛔ THE HALF THAT MAKES THE PAUSE SAFE.
+    r = _hook("gate-secrets.py",
+              {"tool_name": "Write",
+               "tool_input": {"file_path": _target,
+                              "content": "api_key: 'sk-abc123456789xyz'"}})
+    case("④f ⛔ but a credential is STILL refused while paused",
+         r.returncode == 2, "exit=%d" % r.returncode)
+
+    r = _hook("gate-no-block.py", _edit)
+    case("④g ⛔ and so is work with no block open",
+         r.returncode == 2, "exit=%d" % r.returncode)
+
+    # ⚠️ AND `bin/off` SAYS SO. 🔴 Its old line read "the checks simply do not
+    # run" — false while nothing read the pause, and false again now that two
+    # guards deliberately do. ⛔ A person told "everything is off" who then
+    # hits a refusal stops believing the tool.
+    case("④h ⭐ and off SAYS which guards keep running",
+         "keep running" in _paused_said and "rotated" in _paused_said)
+
     # ── ⑤ AND IT COMES BACK ────────────────────────────────────────────────
     r = run([sys.executable, os.path.join(BIN, "on")])
+    # ⭐ AND IT SPEAKS AGAIN. ⛔ Without this, a hook broken by the guard passes
+    # ④d perfectly: permanently silent looks identical to correctly paused.
+    _awake = _hook("pre-edit-standards.py",
+                   {"tool_name": "Write",
+                    "tool_input": {"file_path": _scoped, "content": "x"}})
+    case("④d2 ⛔ and once resumed the notice SPEAKS again",
+         out(_awake).strip() != "", "%d byte(s)" % len(out(_awake).strip()))
+    # ⛔ The planted block goes, and it goes here rather than in a finally far
+    # below: a probe that leaves a block behind makes every later validator
+    # report a defect this probe created.
+    plat.rmtree(_blk)
+    plat.rmtree(os.path.dirname(_scoped))
     case("⑤ on resumes and removes the marker",
          r.returncode == 0 and not os.path.exists(OFF), "exit=%d" % r.returncode)
     r = run([sys.executable, os.path.join(BIN, "on")])

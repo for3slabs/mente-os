@@ -231,6 +231,22 @@ try:
 finally:
     plat.rmtree(_sb)
 
+# ── ⑭ ⏸️ A PAUSE MUST NOT LOOK LIKE A DEATH ────────────────────────────────
+# 🔴 THE FAILURE, caught in `watch-external` the hour the pause landed and
+# present here too: the pause check was written ABOVE `beat()`, so a paused
+# hook left no trace — and `check-gates` discovers gates by exactly that trace.
+# ⛔ A paused hook then reads as a DEAD hook, which is the confusion the whole
+# heartbeat exists to end: "it said nothing because it is quiet" and "it said
+# nothing because it stopped running" become the same observation again.
+# ⭐ Asked of the source: the beat must come FIRST, whatever the early returns
+# below it decide.
+_src = open(os.path.join(ROOT, "hooks", "pre-edit-standards.py"),
+            encoding="utf-8").read()
+_b = _src.find('beat(MENTE, "pre-edit-standards")')
+_p = _src.find("if paused(MENTE)")
+case("⑮ ⏸️ ⛔ it beats BEFORE the pause check, not after",
+     _b != -1 and _p != -1 and _b < _p, "beat@%d pause@%d" % (_b, _p))
+
 good = sum(1 for _, ok in results if ok)
 print("\n  ➜ %d of %d correct" % (good, len(results)))
 for l, ok in results:

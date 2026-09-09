@@ -200,9 +200,19 @@ _ra = open(os.path.join(TREE, "bin", "probes", "run-all.py"),
 _fmt = re.search(r'_line = \("([^"]+)"', _ra)
 _rep = os.path.join(TREE, "cache", "last-battery.txt")
 os.makedirs(os.path.dirname(_rep), exist_ok=True)
-open(_rep, "w", encoding="utf-8").write(
-    ((_fmt.group(1) if _fmt else "  ➜ checks: %d · failed: %d%s")
-     % (42, 7, "")) + "\n")
+# ⚠️ FILLED BY COUNTING THE PRODUCER'S OWN PLACEHOLDERS. 🔴 Measured
+# 2026-09-08: the battery's line gained a fourth field (the ⬜ count) and this
+# crashed with "not enough arguments for format string" — the probe was right
+# to notice a change and wrong to assume a shape. ⛔ Hardcoding the arity makes
+# every future field a false alarm, and a probe that cries wolf gets edited to
+# stop rather than read.
+_shape = _fmt.group(1) if _fmt else "  ➜ checks: %d · failed: %d%s"
+_args, _n = [], 0
+for _spec in re.findall(r"%[-0-9.]*([a-z])", _shape):
+    _args.append({"d": (42, 7)[min(_n, 1)], "s": ""}.get(_spec, ""))
+    if _spec == "d":
+        _n += 1
+open(_rep, "w", encoding="utf-8").write((_shape % tuple(_args)) + "\n")
 tool("generate-metrics")
 try:
     _m = open(os.path.join(TREE, "docs", "METRICS.md"), encoding="utf-8").read()
