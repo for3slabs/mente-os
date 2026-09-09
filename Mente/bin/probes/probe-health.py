@@ -157,6 +157,30 @@ case("⑮ ⭐ EVERYTHING measured and healthy → now a full ✅",
      "✅" in r.stdout and r.returncode == 0,
      "" if "✅" in r.stdout else r.stdout.strip().splitlines()[-1][:70])
 
+# ── ④b 🔴 A GATE PASSED AS AN ARGUMENT IS STILL WIRED ──────────────────────
+# 🔴 THE FAILURE, measured 2026-09-09. `gate-run.py` runs several gates in ONE
+# interpreter — starting Python costs 173 ms on Windows and a gate's own work
+# is ~50 ms, so one process per gate spent 70% of its time booting. ⛔ The
+# settings file then names the DISPATCHER and passes the gates as arguments,
+# and this check, matching on file names, reported five LIVE gates as
+# unregistered on a machine where every one of them was firing.
+# ⚠️ A red on a correct install is how a real red stops being read.
+_disp = os.path.join(WORK, "dispatched.json")
+open(_disp, "w", encoding="utf-8", newline="").write(
+    '{"hooks":{"PreToolUse":[{"matcher":"Bash","hooks":[{"type":"command",'
+    '"command":"python3 hooks/gate-run.py gate-critical gate-accounts"}]}]}}')
+r = run(MENTE_HOOK_REGISTRY=_disp)
+case("④b 🔴 ⭐ a gate DISPATCHED by argument counts as wired",
+     "gate-critical" not in r.stdout and "gate-accounts" not in r.stdout,
+     "" if "gate-critical" not in r.stdout else "🔴 reported as unregistered")
+
+# ⛔ AND ONE NOBODY NAMES IS STILL REPORTED. The half that keeps it honest: if
+# naming the dispatcher excused every gate, the check would have been deleted
+# rather than fixed.
+case("④c ⛔ and a gate NOBODY names is still reported",
+     "gate-handoff" in r.stdout,
+     "" if "gate-handoff" in r.stdout else "🔴 the dispatcher excused it")
+
 # ── ⑮b 🔴 A NEWER ENGINE IS SAID, AND THE BRANCH IS ASKED FOR ──────────────
 # 🔴 THE FAILURE this freezes, caught the hour the check landed: it compared
 # against `upstream/main` by name. A repository created with git's older

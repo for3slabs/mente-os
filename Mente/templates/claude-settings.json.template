@@ -37,23 +37,18 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 \"$CLAUDE_PROJECT_DIR/Mente/hooks/gate-no-block.py\"",
-            "$comment": "🔴 BLOCKS (exit 2): work with no block open. Measured 2026-09-06 — a full run built and published real work while `bin/status` said no block was open, because reporting it was all anything did. Ways out: MENTE_SCRATCH=1, or a file inside Mente/."
-          },
-          {
-            "type": "command",
-            "command": "python3 \"$CLAUDE_PROJECT_DIR/Mente/hooks/pre-edit-standards.py\"",
-            "$comment": "injects the owning block's required standards before an edit. Informs, never blocks."
+            "command": "python3 \"$CLAUDE_PROJECT_DIR/Mente/hooks/gate-run.py\" gate-no-block pre-edit-standards",
+            "$comment": "🔴 gate-no-block BLOCKS (exit 2): work with no block open. Measured 2026-09-06 — a full run built and published real work while `bin/status` said no block was open, because reporting it was all anything did. Ways out: MENTE_SCRATCH=1, or a file inside Mente/. · pre-edit-standards injects the owning block's required standards; it informs, never blocks."
           }
         ],
-        "$comment": "🔴 Bash IS an edit. Measured 2026-09-07 on a real Windows run: a whole project was built and shipped and NOT ONE gate fired — the assistant wrote every file with `cat > path <<'EOF'`, and these two were wired on Edit|Write|MultiEdit only. The transcript counted Bash 83 uses, Write/Edit 0. ⛔ A gate that watches a door nobody walks through reports green forever."
+        "$comment": "🔴 Bash IS an edit. Measured 2026-09-07 on a real Windows run: a whole project was built and shipped and NOT ONE gate fired — the assistant wrote every file with `cat > path <<'EOF'`, and these two were wired on Edit|Write|MultiEdit only. The transcript counted Bash 83 uses, Write/Edit 0. ⛔ A gate that watches a door nobody walks through reports green forever. · ⚡ Both gates run in ONE interpreter (gate-run): measured 2026-09-09 on Windows, starting Python is 173 ms and the gate's own work is ~50 ms, so one process per gate spent 70% of the time booting."
       },
       {
         "matcher": "Edit|Write|MultiEdit",
         "hooks": [
           {
             "type": "command",
-            "command": "python3 \"$CLAUDE_PROJECT_DIR/Mente/hooks/gate-critical.py\"",
+            "command": "python3 \"$CLAUDE_PROJECT_DIR/Mente/hooks/gate-run.py\" gate-critical",
             "$comment": "🔴 BLOCKS (exit 2): destructive change with no rollback · closing an insufficient block."
           }
         ]
@@ -63,18 +58,8 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 \"$CLAUDE_PROJECT_DIR/Mente/hooks/gate-critical.py\"",
-            "$comment": "the same gate on the command path — an edit is not the only way to do damage."
-          },
-          {
-            "type": "command",
-            "command": "python3 \"$CLAUDE_PROJECT_DIR/Mente/hooks/gate-accounts.py\"",
-            "$comment": "layer 1 of the accounts gate: reads the command TEXT. Layer 2 is .git/hooks/pre-push, which cannot be walked around."
-          },
-          {
-            "type": "command",
-            "command": "python3 \"$CLAUDE_PROJECT_DIR/Mente/hooks/watch-external.py\"",
-            "$comment": "looks before an action a stale view would invalidate — the only instant the warning is worth anything."
+            "command": "python3 \"$CLAUDE_PROJECT_DIR/Mente/hooks/gate-run.py\" gate-critical gate-accounts watch-external",
+            "$comment": "gate-critical on the command path — an edit is not the only way to do damage. · gate-accounts is layer 1: it reads the command TEXT; layer 2 is .git/hooks/pre-push, which cannot be walked around. · watch-external looks before an action a stale view would invalidate. ⚡ Three gates, one interpreter: this matcher was the most expensive of all, measured at 2184 ms per command before gate-run."
           }
         ]
       },
@@ -84,7 +69,7 @@
           {
             "type": "command",
             "command": "python3 \"$CLAUDE_PROJECT_DIR/Mente/hooks/gate-handoff.py\"",
-            "$comment": "a specialist that can WRITE does not launch without a declared scope."
+            "$comment": "a specialist that can WRITE does not launch without a declared scope. ⚠️ Alone on its matcher, so there is nothing to batch — wired direct."
           }
         ]
       },
@@ -94,7 +79,7 @@
           {
             "type": "command",
             "command": "python3 \"$CLAUDE_PROJECT_DIR/Mente/hooks/gate-secrets.py\"",
-            "$comment": "reading secrets/ asks; writing there ALWAYS asks. Every access is logged."
+            "$comment": "reading secrets/ asks; writing there ALWAYS asks. Every access is logged. ⚠️ Alone on its matcher — but note it fires on every Read, which is the most frequent action there is: 306 ms each, measured 2026-09-09."
           }
         ]
       }
