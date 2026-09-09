@@ -95,6 +95,7 @@ answers exactly one question. None of them decides anything: they check what is 
 | Command | What it writes | Watch out for |
 |---|---|---|
 | `bin/init` | the instance files, from `templates/` · the router import · the layer-2 hook link · `secrets/` at 700 | ⭐ **refuses to overwrite** what already exists · `--force` replaces and says what it replaced |
+| `bin/update-engine` | ⭐ **a newer Mente OS, without touching what is yours** — the engine's files only, derived from `.gitignore` | ⛔ refuses a dirty tree · ⚠️ the answer for a tree whose clone history was replaced, where `git merge` conflicts on every file |
 | `bin/new-block <id> --type <t>` | a new block with its §A-D opening contract, and its row in the index | ⭐ refuses a used id, an undeclared type or lane · ⛔ opening costs four sections on purpose |
 | `bin/new-campaign <id> --blocks <ids>` | a campaign with its 3 opening sections, holding blocks that EXIST | ⛔ refuses one with no blocks — that is a title, not a campaign |
 | `bin/generate-index` | 🤖 `docs/INDEX.md` · `docs/STATES.md` · `docs/DECISIONS.md` | regenerated, never hand-edited · `--check` reports staleness without writing |
