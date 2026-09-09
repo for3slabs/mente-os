@@ -164,6 +164,7 @@ print("═══ TODAS LAS SONDAS ═══%s\n"
 _started = time.time()
 total = failed = 0
 reds = []          # (probe, case) for every case a probe reported red
+gaps = []          # (probe, what) for every ⬜ a probe declared
 rows = []
 
 if SERIAL:
@@ -253,6 +254,20 @@ for name, r in results:
     # are the lines `🔴 <label>` a probe prints under its own tally, and a green
     # case carrying 🔴 in its NAME always has other text after it on the line.
     _tail = r.stdout
+    # ⬜ AND THE GAPS ARE COUNTED TOO. 🔴 THE FAILURE, measured 2026-09-08: 24
+    # probes declared 34 ⬜ NOT MEASURED between them and the battery's summary
+    # named exactly ONE — the rest lived inside a probe's own output, which
+    # nobody reads when the headline says `failed: 0`. ⛔ CHK-IND-002 in its
+    # purest form: `1013 · 0` is a true number that hides 34 things nobody
+    # checked, and a reader takes it for full coverage.
+    # ⚠️ A gap is never a failure — it does not touch `failed`. It is the third
+    # column the verdict always lacked.
+    for _ln in _tail.splitlines():
+        if "⬜" not in _ln:
+            continue
+        _t = _ln.strip()
+        if "NOT MEASURED" in _t or "NOT_MEASURED" in _t:
+            gaps.append((name, _t.lstrip("⬜ ").strip()))
     # ⭐ THE VERDICT COLUMN, not the summary. 🔴 THE FIRST VERSION read the
     # `🔴 <label>` lines a probe prints under its tally — and 15 of 37 probes
     # print no such summary at all, `probe-plat` among them. ⛔ So the battery
@@ -465,8 +480,9 @@ print("     validators: %d · with a probe: %d%s"
 for c in missing:
     print("     ⬜ %s · NOT PROVEN — a validator with no probe is not demonstrated" % c)
 
-_line = ("  ➜ checks: %d · failed: %d%s"
-         % (total, failed, "" if not failed else "  🔴"))
+_line = ("  ➜ checks: %d · failed: %d%s%s"
+         % (total, failed, "" if not failed else "  🔴",
+            "" if not gaps else " · ⬜ %d not measured" % len(gaps)))
 print("\n" + _line)
 
 # ⭐ AND THE HEADLINE NAMES THEM. ⛔ Without this the only way to learn what
@@ -474,6 +490,10 @@ print("\n" + _line)
 # work the battery just did, done twice.
 for _who, _what in reds:
     print("     🔴 %-22s %s" % (_who, _what))
+# ⬜ NAMED, not just counted — the same rule the reds follow. ⛔ "34 not
+# measured" with no list is the defect one level up.
+for _who, _what in gaps:
+    print("     ⬜ %-22s %s" % (_who, _what[:96]))
 
 # ⭐ The result is RECORDED where bin/generate-metrics can read it. ⛔ That
 # generator used to run the battery to learn this number — which recursed

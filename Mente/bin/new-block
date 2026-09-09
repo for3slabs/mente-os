@@ -285,9 +285,28 @@ def main():
                                        "this with a real one and its source")):
             _v = opt(_flag)
             if _v and _mark in body:
-                body = body.replace(
-                    _mark, "\n".join("- %s" % x.strip()
-                                      for x in _v.split("·") if x.strip()))
+                # ⛔ BACKTICKED, because that is what READS it. 🔴 THE FAILURE,
+                # measured 2026-09-08 by running the whole flow chained: this
+                # wrote `- site/` as plain text, `gate-no-block` matches only
+                # ``…`` tokens, and the gate reported "§B IN names nothing"
+                # about a block that had just declared two paths. ⛔ WORSE THAN
+                # NO SCOPE: the file reads as bounded, the person believes their
+                # work is governed, and every write outside it passes.
+                # ⚠️ A limit in --out is prose with a source, not a path, so
+                # only its leading token is quoted — quoting the sentence would
+                # make the gate match on the reason.
+                _rows = []
+                for _x in _v.split("·"):
+                    _x = _x.strip()
+                    if not _x:
+                        continue
+                    _head, _sep, _tail = _x.partition(" — ")
+                    if not _sep:
+                        _head, _sep, _tail = _x.partition(" - ")
+                    _rows.append("- `%s`%s%s" % (_head.strip("` "),
+                                                 " — " if _sep else "",
+                                                 _tail.strip()))
+                body = body.replace(_mark, "\n".join(_rows))
     if body is None:
         die("no templates/BLOCK.md.template · the shape a block must have is "
             "not available to copy", 2)

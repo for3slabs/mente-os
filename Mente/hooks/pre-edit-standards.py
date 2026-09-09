@@ -22,7 +22,7 @@ import plat                                          # noqa: E402
 
 MENTE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from _beat import beat                                         # noqa: E402
+from _beat import beat, paused              # noqa: E402
 sys.path.insert(0, os.path.join(MENTE, "bin"))
 from blockread import body_of                                  # noqa: E402
 
@@ -143,6 +143,20 @@ def main():
     # ⭐ Proof this hook still fires — see bin/check-gates. An injector that
     # stops running looks exactly like a session where nothing was owned.
     beat(MENTE, "pre-edit-standards")
+
+    # ⏸️ PAUSED MEANS QUIET FOR THIS ONE — ⛔ AND AFTER THE BEAT.
+    # 🔴 Measured 2026-09-08: `bin/off` wrote the pause, `bin/status` reported
+    # PAUSED, and not one hook looked — the person was told the system was off
+    # while every gate kept firing. ⭐ This hook only INFORMS, so a pause
+    # silences it. ⛔ The gates that stop a real loss — secrets, work with no
+    # block — keep running: a credential pasted during a pause is still in git
+    # afterwards, and a leaked secret is ROTATED, not deleted.
+    # ⚠️ AFTER the beat, never before: `check-gates` discovers gates by the
+    # trace they leave, so a pause written above it makes a PAUSED hook
+    # indistinguishable from a DEAD one — the confusion the heartbeat exists
+    # to end. Caught in watch-external the same hour, and it was here too.
+    if paused(MENTE):
+        return 0
     try:
         payload = json.load(sys.stdin)
     except Exception:

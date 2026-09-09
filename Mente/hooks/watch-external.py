@@ -20,7 +20,7 @@ while _d != _os.path.dirname(_d):
 import utf8                                          # noqa: F401,E402
 import plat                                          # noqa: E402
 _sys.path.insert(0, _os.path.dirname(_os.path.abspath(__file__)))
-from _beat import beat                               # noqa: E402
+from _beat import beat, paused  # noqa: E402
 
 MENTE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -93,6 +93,21 @@ def main():
     # ⛔ Placed at the TOP because there are six early returns below: a beat at
     # the end would only prove the paths that reach the end.
     beat(MENTE, "watch-external")
+
+    # ⏸️ PAUSED MEANS QUIET FOR THIS ONE — ⛔ AND AFTER THE BEAT.
+    # 🔴 Caught by ⑩b the hour this landed: placed above `beat()` it made a
+    # PAUSED hook indistinguishable from a DEAD one, because `check-gates`
+    # discovers gates by the trace they leave. A pause must not look like a
+    # failure — that is the same confusion this whole file exists to end. 🔴 Measured 2026-09-08: `bin/off`
+    # wrote the pause, `bin/status` reported PAUSED, and not one hook looked —
+    # so the person was told the system was off while every gate kept firing.
+    # ⭐ This hook only INFORMS, so a pause silences it completely. ⛔ The gates
+    # that stop a real loss — secrets, work with no block — keep running: a
+    # credential pasted during a pause is still in git afterwards, and a leaked
+    # secret is rotated, not deleted.
+    if paused(MENTE):
+        return 0
+
     if not WATCH_CMD:
         return 0            # ⬜ nothing declared · nothing watched · session-start says so
     try:

@@ -237,6 +237,60 @@ case("⑧ ⭐ a tree that kept its clone history updates too",
 case("⑧b 🔴 ⭐ and its memory is left alone as well",
      read(_r2, "memory", "RESUME.md").strip() == "THEIR REAL MEMORY")
 
+# ── ⑨ 🔴 THE `-z` FLAG, MEASURED — not assumed to be a Windows-only story ───
+# 🔴 THE FAILURE it prevents, measured by hand on a real Windows install:
+# `text=True` makes Python translate "\n" to "\r\n" on the way into a child's
+# stdin, so git reads `Mente/bin/init\r` as a path of its own, answers about
+# only the first line, and QUOTES every path it echoes back —
+# `"Mente/memory/RESUME.md\r"`. Three defects from one missing flag, and all
+# three read as "nothing here is yours", one keystroke from overwriting every
+# instance file.
+# ⛔ IT WAS REPORTED ⬜ NOT MEASURED "because it is a Windows path". That was
+# wrong: the defect is CRLF ON STDIN, and nothing stops a probe from writing
+# CRLF deliberately. ⚠️ A platform is not an excuse — the INPUT is what the
+# check needs, and the input can be produced anywhere.
+_zt = os.path.join(WORK, "zflag")
+os.makedirs(os.path.join(_zt, "Mente", "memory"), exist_ok=True)
+os.makedirs(os.path.join(_zt, "Mente", "bin"), exist_ok=True)
+with open(os.path.join(_zt, "Mente", ".gitignore"), "w",
+          encoding="utf-8", newline="") as fh:
+    fh.write("memory/*\n!memory/README.md\n")
+for _f in (("memory", "RESUME.md"), ("bin", "init")):
+    with open(os.path.join(_zt, "Mente", *_f), "w",
+              encoding="utf-8", newline="") as fh:
+        fh.write("x\n")
+git(_zt, "init", "-q", ".")
+_paths = ["Mente/memory/RESUME.md", "Mente/bin/init"]
+
+
+def _ask(sep, extra):
+    r = subprocess.run(("git", "check-ignore", "--no-index") + extra
+                       + ("--stdin",), cwd=_zt, input=sep.join(_paths),
+                       capture_output=True, text=True, timeout=60)
+    return r.stdout
+
+
+# ⭐ THE DEFECT REPRODUCED: CRLF in, and git answers about one path and quotes
+# it. This is the exact shape Windows produces without anyone asking for it.
+_crlf = _ask("\r\n", ())
+case("⑨ 🔴 ⭐ CRLF on stdin really does break the pairing",
+     '"' in _crlf and "\\r" in _crlf and _crlf.count("\n") == 1,
+     repr(_crlf)[:52])
+
+# ⛔ AND `-z` IS WHAT SURVIVES IT: NUL cannot be translated, so neither side of
+# the exchange can be reshaped by a platform's line-ending rules.
+_z = _ask("\0", ("-z",))
+case("⑨b ⛔ and `-z` answers cleanly, with no quoting",
+     _z.split("\0")[0] == "Mente/memory/RESUME.md" and '"' not in _z,
+     repr(_z)[:52])
+
+# ⚠️ THE HALF THAT MATTERS: the command under test must be the one using it. A
+# probe that proves a flag works while the code omits it has measured git.
+_src = open(os.path.join(ROOT, "bin", "update-engine"),
+            encoding="utf-8").read()
+case("⑨c ⭐ and update-engine actually passes `-z`",
+     '"-z"' in _src and '"--no-index"' in _src)
+
 plat.rmtree(WORK)
 good = sum(1 for _, ok in results if ok)
 print("\n  ➜ %d of %d correct" % (good, len(results)))
