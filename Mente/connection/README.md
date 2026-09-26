@@ -15,8 +15,25 @@ read casually.
 
 ```
 connection/
-└── bridges/     🌉 the gate to other Mente OS installations
+├── registry.tsv  ⭐ the lockfile — one row per third-party component (versioned; their code is not)
+├── skills/       🧩 third-party skills, and the ones we write to drive a tool
+├── mcp/          🔌 local MCP servers — the declaration lives in `.mcp.json`
+├── tools/        🛠️ third-party CLIs and repos that are not skills
+└── bridges/      🌉 the gate to other Mente OS installations
 ```
+
+⭐ **Two kinds of "outside", two rules:**
+
+| Kind | Rule | Why |
+|---|---|---|
+| **another installation** (`bridges/`) | ⛔ **point at it, never copy it** | it is a whole second system with its own rules |
+| **a component** (`skills/` `mcp/` `tools/`) | **install it pinned, reviewed, registered** | it has to run HERE — but git keeps only the row, never the code |
+
+⭐ **A component has ONE way in:** `bin/connection add <git-url> --why "…"` fetches it pinned to a
+commit and stops in **quarantine** — fetched, not exposed to the agent. A person reviews it, then
+`bin/connection activate <name>` exposes it. `bin/check-connection` verifies that every component
+is exactly what its registry row says. ⭐ With no registry yet, nothing was installed — that is ⬜,
+never 🔴.
 
 > ⭐ **The folder is named after the FUNCTION, not after a tool.** What lives here may change —
 > bridges today, other connectors later — but the question it answers does not: *what is outside
@@ -79,12 +96,14 @@ the gate again and read the source.
 
 ---
 
-## `bridges/` — the subfolder
+## The subfolders
 
-Holds the registry of other Mente OS installations and the rules for reaching them: which exist,
-why they are separate, the phrase that opens access, and what closes it.
-
-👉 See `bridges/README.md` for the mechanism.
+| Folder | Answers | Read |
+|---|---|---|
+| `skills/` | where a skill from outside lives, and the one install path | `skills/README.md` |
+| `mcp/` | where an MCP server's code lives, and the credential rule | `mcp/README.md` |
+| `tools/` | where a CLI or repo lives, and how a skill drives it | `tools/README.md` |
+| `bridges/` | which other installations exist, and the gate to open one | `bridges/README.md` |
 
 ---
 
@@ -99,6 +118,7 @@ why they are separate, the phrase that opens access, and what closes it.
 
 ---
 
-Related: `bridges/README.md` (🌉 the gate and how it opens) · `../mente.config.yml` (`gates:`,
+Related: `registry.tsv` (the lockfile) · `skills/README.md` (the install path) ·
+`bridges/README.md` (🌉 the gate and how it opens) · `../mente.config.yml` (`gates:`,
 where the enforceable declaration lives) · `../secrets/README.md` (how to reach things, never
 what) · `../CAPABILITIES.md` §4 (what must not be touched) · `../.gitignore` (why this stays).
