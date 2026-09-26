@@ -1,0 +1,334 @@
+#!/usr/bin/env python3
+"""server — knows your server is alive even when nobody is using it.
+
+    connection/server/server status [--quiet]   the last verdict and its age (milliseconds, no network)
+    connection/server/server beat [--quiet]     measure NOW, store it, print the verdict
+    connection/server/server install-key        one time: a dedicated key whose ONLY power is remote-health.sh
+    connection/server/server timer on|off       a beat every 5 min from cron — no session, no LLM, no quota
+
+⭐ WHY (measured 2026-09-26 on a real installation): from the owner's machine
+the server answered neither SSH nor HTTP, and nothing could tell whether the
+server or the tunnel was down. Logged in minutes later, the server said
+`up 11 minutes` — it HAD been down, and nobody knew. A server you only check
+when you use it is a server whose outages you never hear about.
+
+THE TARGET — `connection/server/target.conf`, one line, instance data (gitignored):
+    host=<ip or name> user=<ssh user> name=<label>          required
+    port=22                                                  optional
+    containers=<prefix>     only containers whose name contains it · default: every one
+    health=<name>:<port>:<path>   ask each container matching <name> that publishes
+                            127.0.0.1:<host port>-><port> for <path> · default: no HTTP check
+    tunnel=tailscale        name the failing layer through Tailscale · default: none
+⭐ Only host, user and name are needed: a plain machine with no Docker and no
+tunnel is measured as exactly that, never as a failure of what it does not run.
+
+THE VERDICT, layer by layer — the first layer that fails names the fault:
+  🔴 tunnel   this machine has no route (the declared tunnel is not connected here)
+  🔴 server   the tunnel sees it offline, or it does not answer a ping
+  🔴 sshd     it answers the tunnel ping but the SSH port is closed
+  🔴 network  the SSH port does not answer and no tunnel is declared to say why
+  🔴 key      the port answers but the heartbeat key is refused — the MONITOR is broken
+  🟡 service  it is up, but a container is down/unhealthy or a declared health check ≠ 200
+  🟢          all of the above hold
+  ⬜ stale    no beat for 3 intervals — the monitor itself stopped
+A reboot between two beats (uptime went down) is reported, even when all is 🟢.
+
+⛔ No GPU, no LLM: a TCP connect, a ping and one SSH call. A heartbeat that
+spent model quota would be switched off for costing money; cron spends none.
+
+Exit: 0 🟢 · 1 🔴 · 2 🟡 · 3 ⬜ stale/never measured · 4 usage or setup missing
+Test hooks (probe-server): MENTE_SERVER_STATE · MENTE_SERVER_TARGET ·
+MENTE_SERVER_SSH · MENTE_SERVER_SCP · MENTE_SERVER_TAILSCALE · MENTE_SERVER_TCP_TIMEOUT ·
+MENTE_SERVER_KEY
+"""
+import datetime
+import json
+import os
+import shlex
+import socket
+import subprocess
+import sys
+import time
+
+HERE = os.path.dirname(os.path.abspath(__file__))
+MENTE = os.path.dirname(os.path.dirname(HERE))
+STATE = os.environ.get("MENTE_SERVER_STATE", os.path.join(HERE, "state"))
+TARGET = os.environ.get("MENTE_SERVER_TARGET", os.path.join(HERE, "target.conf"))
+KEY = os.environ.get("MENTE_SERVER_KEY",
+                     os.path.join(MENTE, "secrets", "server-heartbeat_ed25519"))
+REMOTE = "~/.mente/remote-health.sh"
+INTERVAL_MIN = 5
+KEEP = 2016                                  # one week of beats at 5 min
+ICON = {"green": "🟢", "red": "🔴", "yellow": "🟡", "stale": "⬜"}
+EXIT = {"green": 0, "red": 1, "yellow": 2, "stale": 3}
+
+
+def target(required=True):
+    """The key=value pairs of target.conf — or None when it is absent and not required."""
+    if not os.path.isfile(TARGET):
+        if not required:
+            return None
+        print("⬜ no %s — write one line: host=<ip or name> user=<ssh user> name=<label>" %
+              os.path.relpath(TARGET, MENTE))
+        sys.exit(4)
+    t = {}
+    for tok in open(TARGET, encoding="utf-8").read().split():
+        if "=" in tok:
+            k, v = tok.split("=", 1)
+            t[k] = v
+    missing = [k for k in ("host", "user", "name") if not t.get(k)]
+    if missing:
+        print("⬜ %s lacks %s" % (os.path.relpath(TARGET, MENTE), ", ".join(missing)))
+        sys.exit(4)
+    return t
+
+
+def label():
+    t = target(required=False)
+    return "server %s" % (t.get("name", "?") if t else "?")
+
+
+def run(cmd, timeout=15):
+    try:
+        r = subprocess.run(cmd, capture_output=True, text=True, timeout=timeout)
+        return r.returncode, (r.stdout + r.stderr).strip()
+    except (OSError, subprocess.TimeoutExpired) as e:
+        return 124, str(e)
+
+
+def tailscale_bins():
+    env = os.environ.get("MENTE_SERVER_TAILSCALE")
+    if env:
+        return [shlex.split(env)]
+    bins = [["tailscale"]]
+    win = "/mnt/c/Program Files/Tailscale/tailscale.exe"
+    if os.path.exists(win):
+        bins.append([win])                   # WSL routes through the Windows client
+    return bins
+
+
+def tcp(host, port=22):
+    t = float(os.environ.get("MENTE_SERVER_TCP_TIMEOUT", "5"))
+    try:
+        socket.create_connection((host, port), timeout=t).close()
+        return True
+    except OSError:
+        return False
+
+
+def why_unreachable(t, port):
+    """The SSH port did not answer — name the layer that failed, or say it cannot."""
+    if t.get("tunnel") != "tailscale":
+        # ⛔ With no tunnel declared there is nothing to ask which layer failed.
+        # Guessing "server down" would be the exact confusion this file exists to end.
+        return "red", "network", "no answer on :%d · no tunnel declared in target.conf, " \
+                                 "so the failing layer cannot be named" % port
+    connected, seen_offline, pong = False, False, False
+    for b in tailscale_bins():
+        rc, out = run(b + ["status"], 10)
+        if rc != 0 or "Logged out" in out or "stopped" in out.lower():
+            continue
+        connected = True
+        line = next((l for l in out.splitlines() if t["host"] in l or
+                     (" %s " % t.get("name", "\0")) in l), "")
+        seen_offline = seen_offline or "offline" in line
+        rc, out = run(b + ["ping", "-c", "2", t.get("name") or t["host"]], 15)
+        pong = pong or (rc == 0 and "pong" in out)
+    if not connected:
+        return "red", "tunnel", "no Tailscale client connected on this machine"
+    if pong:
+        return "red", "sshd", "answers the tailnet ping, but :%d is closed" % port
+    if seen_offline:
+        return "red", "server", "the tailnet sees it OFFLINE"
+    return "red", "server", "no answer to a tailnet ping"
+
+
+def parse(line):
+    kv = {}
+    for tok in line.split()[1:]:
+        if "=" in tok:
+            k, v = tok.split("=", 1)
+            kv[k] = v
+    return kv
+
+
+def measure():
+    t = target()
+    port = int(t.get("port", "22"))
+    if not tcp(t["host"], port):
+        verdict, layer, detail = why_unreachable(t, port)
+        return {"verdict": verdict, "layer": layer, "detail": detail}
+    ssh = shlex.split(os.environ.get("MENTE_SERVER_SSH", "ssh")) + [
+        "-i", KEY, "-p", str(port), "-o", "BatchMode=yes", "-o", "ConnectTimeout=8",
+        "-o", "StrictHostKeyChecking=accept-new", "%s@%s" % (t["user"], t["host"])]
+    rc, out = run(ssh, 30)
+    line = next((l for l in out.splitlines() if l.startswith("OK ")), "")
+    if not line:
+        return {"verdict": "red", "layer": "key",
+                "detail": "heartbeat key refused or no answer (rc %d) · "
+                          "connection/server/server install-key" % rc}
+    kv = parse(line)
+    bad = []
+    if t.get("containers") and kv.get("docker") == "absent":
+        bad.append("containers=%s declared, but the server has no docker" % t["containers"])
+    hspec = t.get("health", "")
+    hpath = hspec.split(":", 2)[2] if hspec.count(":") >= 2 else ""
+    for pair in filter(None, kv.get("health", "").split(",")):
+        hport, code = pair.split("=")
+        if code != "200":
+            bad.append("%s :%s → %s" % (hpath, hport, code))
+    for k in ("down", "unhealthy"):
+        if kv.get(k, "-") != "-":
+            bad.append("%s: %s" % (k, kv[k]))
+    if hspec and kv.get("health", "") == "":
+        # ⭐ Only when a health check was DECLARED: a server that runs no HTTP
+        # service is not failing one.
+        bad.append("health=%s declared, but no container answers it" % hspec)
+    res = {"verdict": "yellow" if bad else "green", "layer": "service" if bad else "ok",
+           "detail": " · ".join(bad) or "%s/%s containers running%s" % (
+               kv.get("running"), kv.get("total"),
+               " · health %s" % kv["health"] if kv.get("health") else ""),
+           "uptime": int(kv.get("uptime", "0") or 0)}
+    return res
+
+
+def load_last():
+    try:
+        with open(os.path.join(STATE, "last.json"), encoding="utf-8") as fh:
+            return json.load(fh)
+    except FileNotFoundError:
+        return None     # ⬜ never measured — the caller says so, never shows green
+    except (OSError, ValueError) as e:
+        print("⬜ %s unreadable (%s) · treated as never measured" %
+              (os.path.join(STATE, "last.json"), type(e).__name__), file=sys.stderr)
+        return None
+
+
+def store(res):
+    os.makedirs(STATE, exist_ok=True)
+    prev = load_last()
+    res["ts"] = int(time.time())
+    if prev and res.get("uptime") and prev.get("uptime") and res["uptime"] < prev["uptime"]:
+        res["rebooted"] = True
+        res["detail"] += " · ⚠️ REBOOTED since the last beat (up %d min)" % (res["uptime"] // 60)
+    with open(os.path.join(STATE, "last.json"), "w", encoding="utf-8") as fh:
+        json.dump(res, fh)
+    log = os.path.join(STATE, "beats.tsv")
+    lines = open(log, encoding="utf-8").read().splitlines() if os.path.isfile(log) else []
+    lines.append("%s\t%s\t%s\t%s" % (datetime.datetime.fromtimestamp(res["ts"]).isoformat(
+        timespec="seconds"), res["verdict"], res["layer"], res["detail"]))
+    with open(log, "w", encoding="utf-8") as fh:
+        fh.write("\n".join(lines[-KEEP:]) + "\n")
+    return res
+
+
+def show(res, quiet):
+    age = int(time.time()) - res.get("ts", 0)
+    v = res["verdict"]
+    if v != "stale" and age > 3 * INTERVAL_MIN * 60:
+        v, res = "stale", dict(res, detail="last beat %d min ago — the monitor stopped "
+                               "(`server timer on`)" % (age // 60))
+    if quiet and v == "green" and not res.get("rebooted"):
+        return EXIT[v]
+    print("%s %s · %s · %s  (%s)" % (
+        ICON[v], label(), res.get("layer", "?"), res["detail"],
+        "%d min ago" % (age // 60) if age >= 60 else "%d s ago" % age))
+    return EXIT[v]
+
+
+def cmd_status(quiet):
+    last = load_last()
+    if not last:
+        if not quiet:
+            print("⬜ %s · never measured · connection/server/server beat" % label())
+        return 3
+    return show(last, quiet)
+
+
+def forced_command(t):
+    """The ONLY thing the heartbeat key may run — its arguments are fixed here, on install."""
+    args = " ".join(shlex.quote(t.get(k, "")) for k in ("containers", "health"))
+    return ('command="bash %s %s",no-pty,no-port-forwarding,no-agent-forwarding,'
+            'no-X11-forwarding' % (REMOTE, args))
+
+
+def cmd_install_key():
+    t = target()
+    if not os.path.isfile(KEY):
+        rc, out = run(["ssh-keygen", "-q", "-t", "ed25519", "-N", "", "-C",
+                       "mente-heartbeat", "-f", KEY])
+        if rc:
+            print("🔴 ssh-keygen failed: %s" % out); return 4
+    pub = open(KEY + ".pub", encoding="utf-8").read().strip()
+    # ⭐ The ONE step that needs the owner's own access. Their SSH key is used when
+    # they have one; a password only through SSHPASS (read from secrets/ by the
+    # caller, never printed). ⛔ After this step, nothing needs either again.
+    ssh = shlex.split(os.environ.get("MENTE_SERVER_SSH", "ssh"))
+    scp = shlex.split(os.environ.get("MENTE_SERVER_SCP", "scp"))
+    if os.environ.get("SSHPASS"):
+        pw = ["-o", "PreferredAuthentications=password"]
+        ssh, scp = ["sshpass", "-e"] + ssh + pw, ["sshpass", "-e"] + scp + pw
+    else:
+        ssh, scp = ssh + ["-o", "BatchMode=yes"], scp + ["-o", "BatchMode=yes"]
+    port = t.get("port", "22")
+    dest = "%s@%s" % (t["user"], t["host"])
+    line = "%s %s" % (forced_command(t), pub)
+    rc, out = run(ssh + ["-p", port, dest, "mkdir -p ~/.mente && chmod 700 ~/.mente"], 30)
+    rc2, out2 = run(scp + ["-q", "-P", port, os.path.join(HERE, "remote-health.sh"),
+                           dest + ":" + REMOTE], 30)
+    rc3, out3 = run(ssh + ["-p", port, dest,
+                           "touch ~/.ssh/authorized_keys && chmod 600 ~/.ssh/authorized_keys && "
+                           "grep -v 'mente-heartbeat$' ~/.ssh/authorized_keys > ~/.ssh/ak.tmp; "
+                           "echo %s >> ~/.ssh/ak.tmp && mv ~/.ssh/ak.tmp ~/.ssh/authorized_keys && "
+                           "chmod 600 ~/.ssh/authorized_keys" % shlex.quote(line)], 30)
+    if rc or rc2 or rc3:
+        print("🔴 install failed: %s" % (out or out2 or out3))
+        if not os.environ.get("SSHPASS"):
+            print("   your own SSH key was refused — set SSHPASS for this one step")
+        return 4
+    print("🔑 heartbeat key installed — its only power: bash %s (read-only)" % REMOTE)
+    return 0
+
+
+CRON_TAG = "# mente-server-heartbeat"
+
+
+def cmd_timer(on):
+    rc, cur = run(["crontab", "-l"])
+    lines = [l for l in (cur.splitlines() if rc == 0 else []) if CRON_TAG not in l]
+    if on:
+        lines.append("*/%d * * * * %s beat --quiet >/dev/null 2>&1 %s" % (
+            INTERVAL_MIN, shlex.quote(os.path.abspath(__file__)), CRON_TAG))
+    p = subprocess.run(["crontab", "-"], input="\n".join(lines) + "\n", text=True,
+                       capture_output=True)
+    if p.returncode:
+        print("🔴 crontab refused: %s" % p.stderr.strip()); return 4
+    print("⏱️  heartbeat %s" % ("every %d min (cron) — no session needed" % INTERVAL_MIN
+                                if on else "OFF"))
+    if on:
+        print("⚠️ it beats while THIS machine is running — a laptop asleep measures nothing")
+    return 0
+
+
+def main(argv):
+    quiet = "--quiet" in argv
+    args = [a for a in argv if a != "--quiet"]
+    cmd = args[0] if args else "status"
+    if cmd == "status":
+        return cmd_status(quiet)
+    if cmd == "beat":
+        return show(store(measure()), quiet)
+    if cmd == "install-key":
+        return cmd_install_key()
+    if cmd == "timer" and len(args) == 2 and args[1] in ("on", "off"):
+        return cmd_timer(args[1] == "on")
+    print(__doc__.split("\n\n")[1]); return 4
+
+
+if __name__ == "__main__":
+    try:
+        sys.exit(main(sys.argv[1:]))
+    except Exception as e:                                     # noqa: BLE001
+        # CHK-CAU-002 · a crash is a verdict with a non-zero exit, never a stack trace
+        print("🔴 server could not run · %s" % e, file=sys.stderr)
+        sys.exit(1)
