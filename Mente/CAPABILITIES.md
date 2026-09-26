@@ -129,6 +129,7 @@ You do not invoke these. They fire at the moment they matter, and **most of them
 | before an edit | `hooks/gate-no-block.py` — 🔴 work with NO block open · measured: a full run built and published real work while `bin/status` reported no block, because reporting was all anything did · ways out: `MENTE_SCRATCH=1`, or a file inside `Mente/` | 🔴 **blocks** |
 | before an edit | `hooks/gate-critical.py` — destructive SQL with no rollback · an insufficient close | 🔴 **blocks** |
 | before a write | `hooks/gate-secrets.py` — a secret VALUE about to reach disk | 🔴 **blocks** · ⛔ fails CLOSED |
+| before a command that writes | `hooks/gate-protected-writes.py` — a Bash write (`cp` · `sed -i` · `>` · an inline script) to an engine path · the list is the `ask` rules of the settings, read, never copied · measured: the Edit-only rules let every Bash write through | 🟡 **asks** — the owner approves when the edit is meant |
 | before a specialist | `hooks/gate-handoff.py` — one that may WRITE with no declared scope | 🔴 **blocks** |
 | before a push | `hooks/gate-accounts.py` — a destination nobody declared · layer 1 | 🔴 **denies** · ⚠️ can be walked around |
 | ⭐ inside the push | `hooks/pre-push.sh` — layer 2, destination already resolved | 🔴 **aborts** · ⭐ cannot be walked around |
