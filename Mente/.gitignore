@@ -110,6 +110,15 @@ connection/mcp/*
 !connection/tools/
 connection/tools/*
 !connection/tools/README.md
+# the heartbeat's CODE is engine; target.conf and state/ are one machine's facts
+!connection/server/
+connection/server/*
+!connection/server/README.md
+!connection/server/server
+!connection/server/remote-health.sh
+# named although connection/server/* covers them: declared, not inferred
+connection/server/target.conf
+connection/server/state/
 # ⭐ named on its own line although connection/* already covers it: the frontier is
 #    declared, not inferred — the lockfile is instance data and never ships from the engine
 connection/registry.tsv

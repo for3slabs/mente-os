@@ -103,6 +103,14 @@ if [ "$_open" -gt 0 ]; then
 else
   printf '⬜ no piece of work open · ⛔ nothing may be written until one is\n'
 fi
+# ⭐ IS THE SERVER ALIVE? (connection/server/, 2026-09-26) — measured: a server rebooted
+# and nobody knew until someone happened to use it. Cron measures it every 5 min; this
+# only READS the last verdict (no network, milliseconds). Silent in 🟢 and when no
+# server is declared; speaks on 🔴 · 🟡 · ⬜ monitor stopped · or after a reboot.
+_srv="$MENTE/connection/server/server"
+[ -x "$_srv" ] && [ -f "$MENTE/connection/server/target.conf" ] && \
+  "$_srv" status --quiet 2>/dev/null | head -2
+
 # ⚠️ Named, never pasted: a brief the hook prints is a brief nobody re-reads.
 [ -f "$MENTE/memory/RESUME.md" ] && \
   printf '🧭 read Mente/memory/RESUME.md first — where we left off\n'

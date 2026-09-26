@@ -108,6 +108,7 @@ answers exactly one question. None of them decides anything: they check what is 
 | `bin/on` | ⭐ nothing — it deletes that one marker | ⛔ it never installs and never repairs · on a folder that was never set up it says so and stops |
 | `bin/secrets-lease` | the read permission for `secrets/`, and its access log | ⭐ tied to the context load, never to a clock · it hardens the folder before granting |
 | `bin/connection add <git-url> --why "…"` · `activate` · `disable` · `remove` · `sync` | third-party code under `connection/<type>/`, its row in `connection/registry.tsv`, the links the agent reads | ⭐ **`add` stops in quarantine** — fetched and pinned, never exposed until a person runs `activate` · ⛔ the one way in: a skill copied by hand has no row, and `check-connection` calls it an orphan |
+| `connection/server/server install-key` · `timer on` · `beat` | a dedicated heartbeat key (in `secrets/`), its line in the server's `authorized_keys`, a cron entry, `connection/server/state/` | ⭐ **the key can only run `connection/server/remote-health.sh`** — read-only, no shell · `status` writes nothing and is what startup reads · ⚠️ cron beats only while THIS machine is on |
 
 > ⚠️ ⬜ **`bin/check-all` is planned as the single entry point; today the battery is
 > `bin/probes/run-all.py`.** ⭐ The difference matters: the battery proves each validator can

@@ -203,6 +203,9 @@ check-connection	bin/check-connection	engine	executable	is every third-party com
 connection	bin/connection	engine	executable	installs, exposes and removes third-party components — one path, it stops in quarantine
 connection-lib	bin/connection_lib.py	engine	canonical	the ONE definition of what is valid in connection/ — read by the installer and the verifier
 probe-connection	bin/probes/probe-connection.py	engine	executable	proves check-connection and the installer catch what they claim — against real git repos
+server-heartbeat	connection/server/server	engine	executable	is the server alive while nobody uses it — measured by cron, read at startup, names the layer that failed
+remote-health	connection/server/remote-health.sh	engine	executable	the ONLY command the heartbeat key may run on the server — read-only, one line
+probe-server	bin/probes/probe-server.py	engine	executable	proves the heartbeat names the right layer, and asks only what target.conf declares
 probe-session-start	bin/probes/probe-session-start.py	engine	executable	proves the startup hook is silent when healthy, loud when not, and never blocks
 contract-archive	rules/contract-archive.md	engine	canonical	what survives when a block closes — the three files and what goes inside them
 check-archive	bin/check-archive	engine	executable	enforces the lock rules of the archive contract
