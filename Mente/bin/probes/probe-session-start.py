@@ -55,7 +55,15 @@ print("═══ PROBE · session-start ═══\n")
 # fine". ⭐ That is not noise: it is a real thing that cannot be measured, and
 # the hook is right to surface it. The case asserts silence about everything
 # ELSE, which is what "healthy" can mean in a tree without a repository.
-r = run('{"session_id":"abc"}')
+# ⭐ HEALTHY MEANS HEALTHY BY CONSTRUCTION, not by the tree's history. The hook
+# stamps `.heartbeat` FIRST, so check-gates always compares against today — and
+# a tree nobody uses live (the engine's own repo) has gates whose last beat is
+# weeks old. 🔴 Measured 2026-09-26: gate-handoff (fires only on a delegation)
+# made this case red on `main`, and it was only green before because other
+# probes refreshed the beats — which is exactly what hid a dead gate.
+# ⛔ Gate liveness has its own probe; this case asks whether the HOOK stays
+# quiet when nothing is wrong, so the silence window is opened for it alone.
+r = run('{"session_id":"abc"}', env={"MENTE_GATE_SILENT_DAYS": "36500"})
 # ⛔ Filter by the BLOCK a validator emits, not by phrases: its summary line
 # ("N violations · rule: …") carries neither the id nor the validator name, and
 # a phrase filter kept letting it through as if it came from somewhere else.
@@ -177,6 +185,19 @@ try:
 finally:
     if _born and os.path.exists(_res):
         os.remove(_res)
+
+# ⑩ 🔴 ⭐ a probe leaves the liveness record as it found it (harness._keep_liveness)
+# ⛔ Measured 2026-09-26: this very probe stamped `.heartbeat` on the real tree,
+# and check-gates then called gate-handoff SILENT for sessions that never ran.
+_hb = os.path.join(ROOT, ".heartbeat")
+_was = open(_hb, "rb").read() if os.path.exists(_hb) else None
+subprocess.run([sys.executable, "-c",
+                "import sys; sys.path.insert(0, %r); import harness; "
+                "open(%r, 'w').write('1999-01-01')" % (os.path.dirname(os.path.abspath(__file__)), _hb)],
+               capture_output=True, timeout=60)
+_now = open(_hb, "rb").read() if os.path.exists(_hb) else None
+case("⑩ 🔴 ⭐ a probe leaves .heartbeat as it found it", _now == _was,
+     "" if _now == _was else "left: %r" % _now)
 
 good = sum(1 for _, ok in results if ok)
 print("\n  ➜ %d of %d correct" % (good, len(results)))
