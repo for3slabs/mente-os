@@ -34,6 +34,52 @@ ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)
 MARK = "zzprobe"         # every fixture carries it, so the filter cannot be narrower
 
 
+# ⭐ A PROBE NEVER REWRITES THE TREE'S LIVENESS RECORD. `.heartbeat` says when a
+# session last ran and `.beats/` when each gate last fired; `check-gates` reads
+# the gap between them. 🔴 Measured 2026-09-26: probes that run the REAL hooks
+# on the REAL tree wrote both — session-start stamped today, the gates they
+# fired stamped today, and the one no probe fires (gate-handoff) was declared
+# SILENT for 17 days of sessions that never happened. ⛔ And the other direction
+# is worse: a probe that refreshes a dead gate's beat HIDES it. So every probe
+# that imports this file leaves the record exactly as it found it.
+def _keep_liveness(root=ROOT):
+    import atexit
+    hb, bd = os.path.join(root, ".heartbeat"), os.path.join(root, ".beats")
+
+    def _read(p):
+        try:
+            with open(p, "rb") as fh:
+                return fh.read()
+        except OSError:
+            return None     # ⬜ absent is recorded as absent — restored as absent
+
+    saved_hb = _read(hb)
+    saved = {n: _read(os.path.join(bd, n))
+             for n in (os.listdir(bd) if os.path.isdir(bd) else [])}
+
+    def _put(p, data):
+        if data is None:
+            if os.path.exists(p):
+                os.remove(p)
+        else:
+            with open(p, "wb") as fh:
+                fh.write(data)
+
+    def _restore():
+        _put(hb, saved_hb)
+        if os.path.isdir(bd):
+            for n in os.listdir(bd):
+                if n not in saved:
+                    os.remove(os.path.join(bd, n))
+        for n, data in saved.items():
+            _put(os.path.join(bd, n), data)
+
+    atexit.register(_restore)
+
+
+_keep_liveness()
+
+
 class Probe:
     # ⭐ Which checkers replace their walk with the targets they are given.
     # ⛔ Declared, never guessed: a checker that ignores the argument loses
