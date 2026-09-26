@@ -32,7 +32,11 @@ this same interpreter. Seven starts become one.
   · every gate still leaves its own beat, so `check-gates` sees them exactly as
     before
   · stdout, stderr and the exit code are the gate's own — the host cannot tell
-    the difference
+    the difference. ⭐ ONE exception, and it is what keeps that promise: when
+    two gates each print a decision, the host would receive two JSON objects
+    and read NEITHER (measured 2026-09-26: `Extra data: line 2`). So decisions
+    are held and leave as ONE — the strictest (deny > ask > allow), carrying
+    every gate's reason. A single decision leaves byte-for-byte as printed.
 
 Usage (wired by bin/init, not typed):
   gate-run.py <gate> [<gate> ...]        # payload on stdin
@@ -72,6 +76,55 @@ def load(name):
     return mod
 
 
+RANK = {"allow": 1, "ask": 2, "deny": 3}
+
+
+def decision_of(text):
+    """→ the hookSpecificOutput dict when `text` is ONE PreToolUse decision, else None."""
+    try:
+        d = json.loads(text)
+    except ValueError:
+        return None
+    h = d.get("hookSpecificOutput") if isinstance(d, dict) and len(d) == 1 else None
+    if isinstance(h, dict) and h.get("permissionDecision") in RANK:
+        return h
+    return None
+
+
+def emit(held):
+    """Print the held decisions as ONE: the strictest, with every reason."""
+    if not held:
+        return
+    if len(held) == 1:
+        sys.stdout.write(held[0][1])       # ⭐ alone → exactly what the gate printed
+        return
+    hs = sorted((h for h, _ in held), key=lambda h: -RANK[h["permissionDecision"]])
+    out = {"hookEventName": hs[0].get("hookEventName", "PreToolUse"),
+           "permissionDecision": hs[0]["permissionDecision"],
+           "permissionDecisionReason": "\n\n".join(
+               h["permissionDecisionReason"] for h in hs
+               if h.get("permissionDecisionReason"))}
+    ctx = [h["additionalContext"] for h in hs if h.get("additionalContext")]
+    if ctx:
+        out["additionalContext"] = "\n\n".join(ctx)
+    print(json.dumps({"hookSpecificOutput": out}))
+
+
+def run_one(mod):
+    """→ (rc, what it printed). Its stdout is HELD, so decisions can be merged."""
+    buf, real = io.StringIO(), sys.stdout
+    sys.stdout = buf
+    try:
+        try:
+            rc = mod.main()
+        except SystemExit as e:
+            # ⭐ A gate that calls sys.exit() inside main() still decides.
+            rc = e.code if isinstance(e.code, int) else 0
+        return rc, buf.getvalue()
+    finally:
+        sys.stdout = real
+
+
 def main():
     names = [a for a in sys.argv[1:] if not a.startswith("-")]
     if not names:
@@ -83,6 +136,7 @@ def main():
         return 0
 
     raw = sys.stdin.read()
+    held = []
     for name in names:
         # ⭐ EACH GATE GETS ITS OWN stdin, rewound. ⛔ They call
         # `json.load(sys.stdin)` — a stream the previous gate already consumed
@@ -94,10 +148,7 @@ def main():
                 print("⬜ gate-run · %s not found · NOT MEASURED" % name,
                       file=sys.stderr)
                 continue
-            rc = mod.main()
-        except SystemExit as e:
-            # ⭐ A gate that calls sys.exit() inside main() still decides.
-            rc = e.code if isinstance(e.code, int) else 0
+            rc, said = run_one(mod)
         except Exception as e:                        # noqa: BLE001
             # 🔴 CHK-CAU-002 · a crash is a VERDICT, and which verdict depends
             # on what the gate protects. ⛔ Answering the same way for all of
@@ -108,10 +159,17 @@ def main():
             if name in FAILS_CLOSED:
                 return 2
             continue
+        h = decision_of(said) if said.strip() else None
+        if h is not None:
+            held.append((h, said))
+        elif said:
+            sys.stdout.write(said)
         if rc:
             # ⛔ THE FIRST REFUSAL WINS. A gate that refused has decided; the
             # others would print advice about work that is not happening.
+            emit(held)
             return rc
+    emit(held)
     return 0
 
 

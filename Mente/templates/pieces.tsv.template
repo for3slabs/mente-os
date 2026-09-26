@@ -227,6 +227,8 @@ gate-run	hooks/gate-run.py	engine	executable	runs the gates of one action in ONE
 probe-gate-run	bin/probes/probe-gate-run.py	engine	executable	proves the dispatcher gives the same verdicts, and that a later gate is never starved of its payload
 gate-secrets	hooks/gate-secrets.py	engine	executable	refuses a secret VALUE before it reaches disk, and governs secrets/ — ⛔ the only gate that fails CLOSED
 probe-gate-secrets	bin/probes/probe-gate-secrets.py	engine	executable	proves the leak check refuses a real secret and never a placeholder
+gate-protected-writes	hooks/gate-protected-writes.py	engine	executable	a Bash command that WRITES to a path the `ask` rules protect asks, as an Edit would — the list is read from those rules, never kept here
+probe-protected-writes	bin/probes/probe-protected-writes.py	engine	executable	proves the gate asks on every way Bash writes, and stays silent on reading and running
 gate-handoff	hooks/gate-handoff.py	engine	executable	refuses a specialist that may WRITE with no declared scope — ⭐ the level comes from capability, never from a name
 probe-gate-handoff	bin/probes/probe-gate-handoff.py	engine	executable	proves the gate bounds a writer and stays out of a reader's way
 rule-accounts	rules/rule-accounts.md	engine	canonical	which account governs which repo — ⭐ two layers, because a text pattern can be walked around

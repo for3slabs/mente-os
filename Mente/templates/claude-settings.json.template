@@ -58,8 +58,8 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 \"$CLAUDE_PROJECT_DIR/Mente/hooks/gate-run.py\" gate-critical gate-accounts watch-external",
-            "$comment": "gate-critical on the command path — an edit is not the only way to do damage. · gate-accounts is layer 1: it reads the command TEXT; layer 2 is .git/hooks/pre-push, which cannot be walked around. · watch-external looks before an action a stale view would invalidate. ⚡ Three gates, one interpreter: this matcher was the most expensive of all, measured at 2184 ms per command before gate-run."
+            "command": "python3 \"$CLAUDE_PROJECT_DIR/Mente/hooks/gate-run.py\" gate-critical gate-accounts watch-external gate-protected-writes",
+            "$comment": "gate-critical on the command path — an edit is not the only way to do damage. · gate-accounts is layer 1: it reads the command TEXT; layer 2 is .git/hooks/pre-push, which cannot be walked around. · watch-external looks before an action a stale view would invalidate. · gate-protected-writes asks before a Bash command WRITES to a path the `ask` rules below protect — they guard the Edit tool only, and Bash is an edit. ⚡ Four gates, one interpreter: this matcher was the most expensive of all, measured at 2184 ms per command before gate-run."
           }
         ]
       },
@@ -119,6 +119,23 @@
       "  \"deny\": [\"Read(~/another-project/**)\", \"Edit(~/another-project/**)\"]"
     ],
     "deny": [],
-    "ask": []
+    "$ask_comment": [
+      "⭐ THE ENGINE ASKS BEFORE IT IS EDITED. These are `frontier_engine` in mente.config.yml,",
+      "plus the settings that wire the gates. ⛔ The engine is not edited inside an instance",
+      "(CAPABILITIES.md §1): a local patch is lost on the next update and takes its reason with it.",
+      "Nothing is denied — the owner is asked, and says yes when the edit is meant.",
+      "⚠️ Edit(...) rules also cover Write, but NOT Bash: hooks/gate-protected-writes.py reads this",
+      "same list and asks when a command writes there. One list, two doors."
+    ],
+    "ask": [
+      "Edit($CLAUDE_PROJECT_DIR/Mente/bin/**)",
+      "Edit($CLAUDE_PROJECT_DIR/Mente/hooks/**)",
+      "Edit($CLAUDE_PROJECT_DIR/Mente/rules/**)",
+      "Edit($CLAUDE_PROJECT_DIR/Mente/templates/**)",
+      "Edit($CLAUDE_PROJECT_DIR/Mente/memory/principles/**)",
+      "Edit($CLAUDE_PROJECT_DIR/Mente/CAPABILITIES.md)",
+      "Edit($CLAUDE_PROJECT_DIR/.claude/settings.json)",
+      "Edit($CLAUDE_PROJECT_DIR/.claude/settings.local.json)"
+    ]
   }
 }

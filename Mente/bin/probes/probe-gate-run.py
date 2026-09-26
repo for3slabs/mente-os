@@ -141,6 +141,12 @@ try:
          "zzprobe-broken" in (_r.stdout + _r.stderr))
 finally:
     os.remove(_broken)
+    # ⛔ Importing it left `__pycache__/zzprobe-broken.*.pyc` in the REAL hooks/ —
+    # measured 2026-09-26: probe-document then failed on main with a leftover.
+    _pyc = os.path.join(HOOKS, "__pycache__")
+    for _f in (os.listdir(_pyc) if os.path.isdir(_pyc) else []):
+        if _f.startswith("zzprobe-"):
+            os.remove(os.path.join(_pyc, _f))
 
 # ⛔ gate-secrets fails CLOSED, and the dispatcher must honour that.
 _sec = os.path.join(HOOKS, "zzprobe-secrets-like.py")
@@ -188,6 +194,42 @@ _tpl = open(os.path.join(ROOT, "templates",
 case("⑨ ⛔ the shipped wiring actually calls gate-run",
      _tpl.count("gate-run.py") >= 3,
      "%d matcher(s) dispatched" % _tpl.count("gate-run.py"))
+
+# ── ⑩ 🔴 ⭐ TWO DECISIONS LEAVE AS ONE — the host reads a single JSON ─────
+# ⛔ Measured 2026-09-26 before the fix: two gates that each printed a decision
+# gave the host two JSON objects (`Extra data: line 2`) — and it reads neither.
+def _say(name, decision, reason):
+    open(os.path.join(HOOKS, name + ".py"), "w", encoding="utf-8").write(
+        "import json\ndef main():\n    print(json.dumps({'hookSpecificOutput': "
+        "{'hookEventName': 'PreToolUse', 'permissionDecision': %r, "
+        "'permissionDecisionReason': %r}}))\n    return 0\n"
+        "if __name__ == '__main__':\n    main()\n" % (decision, reason))
+_said = [("zzprobe-say-allow", "allow", "note zzA"), ("zzprobe-say-ask", "ask", "question zzB")]
+try:
+    for _n, _d, _why in _said:
+        _say(_n, _d, _why)
+    _r = fire(["zzprobe-say-allow", "zzprobe-say-ask"], _cmd)
+    try:
+        _j = json.loads(_r.stdout)["hookSpecificOutput"]
+    except (ValueError, KeyError, TypeError):
+        _j = {}
+    case("⑩ 🔴 ⭐ two decisions leave as ONE JSON — the strictest",
+         _j.get("permissionDecision") == "ask", "got: %r" % _r.stdout[:80])
+    case("⑩b ⭐ and it carries EVERY gate's reason",
+         "zzA" in _j.get("permissionDecisionReason", "")
+         and "zzB" in _j.get("permissionDecisionReason", ""))
+    _r1 = fire(["zzprobe-say-ask"], _cmd)
+    _alone = one("zzprobe-say-ask", _cmd)
+    case("⑩c ⭐ a single decision leaves byte-for-byte as printed",
+         _r1.stdout == _alone.stdout and _r1.stdout.strip() != "")
+finally:
+    for _n, _, _ in _said:
+        if os.path.exists(os.path.join(HOOKS, _n + ".py")):
+            os.remove(os.path.join(HOOKS, _n + ".py"))
+    _pyc = os.path.join(HOOKS, "__pycache__")
+    for _f in (os.listdir(_pyc) if os.path.isdir(_pyc) else []):
+        if _f.startswith("zzprobe-"):
+            os.remove(os.path.join(_pyc, _f))
 
 plat.rmtree(WORK)
 if os.path.exists(_out):
