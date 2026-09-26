@@ -237,3 +237,18 @@ def rewrite(path, body):
     """
     with open(path, "w", encoding="utf-8", newline="") as fh:
         fh.write(body)
+
+
+def report(results):
+    """The closing tally every probe prints — ONE copy. `results` = [(label, ok)].
+    Returns the exit code: 0 all correct · 1 one is not."""
+    ok = sum(1 for _, k in results if k)
+    print("\n  ➜ %d of %d correct" % (ok, len(results)))
+    bad = [label for label, k in results if not k]
+    if bad:
+        print("  leftovers:")
+        for label in bad:
+            print("     \U0001f534 %s" % label)
+    else:
+        print("  leftovers: none")
+    return 0 if ok == len(results) else 1

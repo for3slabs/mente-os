@@ -92,12 +92,27 @@ Cerebro/*
 Cerebro/vision/*
 !Cerebro/vision/README.md
 
-# the gate — which other trees exist is a fact about ONE machine
+# connection/ — the outward door. Only the READMEs are engine doctrine and ship; everything
+# else is INSTANCE: which other trees exist is a fact about ONE machine, and third-party code
+# (skills/ mcp/ tools/) is never versioned — `bin/connection sync` restores it from the
+# lockfile. The lockfile itself (registry.tsv) is instance data, versioned with `git add -f`.
 connection/*
 !connection/README.md
 !connection/bridges/
 connection/bridges/*
 !connection/bridges/README.md
+!connection/skills/
+connection/skills/*
+!connection/skills/README.md
+!connection/mcp/
+connection/mcp/*
+!connection/mcp/README.md
+!connection/tools/
+connection/tools/*
+!connection/tools/README.md
+# ⭐ named on its own line although connection/* already covers it: the frontier is
+#    declared, not inferred — the lockfile is instance data and never ships from the engine
+connection/registry.tsv
 
 # which account governs which repo — real org and repo names live here
 accounts.tsv

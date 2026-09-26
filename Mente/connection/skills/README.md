@@ -1,0 +1,92 @@
+# connection/skills/ — third-party skills, installed the same way every time
+
+**Status:** current · **Type:** folder-readme · **Updated:** {{date}} · **Owner:** {{owner}}
+**Scope:** ⚠️ **INSTANCE** — the folder and this README travel; ⛔ the skills never do.
+**Governance:** `owner` in `pieces.tsv`
+
+## Purpose
+
+Where every skill that comes from outside lives — from a repo, from a catalog, or written by us
+for a repo that shipped none. The agent uses it like any other; this folder is only where it
+lives and how it is verified.
+
+---
+
+## What this folder is
+
+```
+connection/skills/<name>/     ← the REAL folder: SKILL.md + scripts/ references/ assets/
+        ▲
+        └── ../../.claude/skills/<name>    a symlink — what Claude Code reads
+        └── ../../.agents/skills/<name>    a symlink — what Codex reads
+```
+
+⭐ **The agent never knows the difference.** Claude Code and Codex both follow a symlinked skill
+folder (their docs, read 2026-09-26). 📏 **Measured here the same day**, not assumed: a fresh
+session listed a skill whose `.claude/skills/` entry was a link into this folder, and invoking it
+loaded the body through the link.
+
+⚠️ **Two consequences of the measurement:**
+
+| Found | What it means |
+|---|---|
+| a skill added mid-session is not seen until a **new session** (or `/reload-skills`) | an install is not usable the moment it lands — the installer says so, it does not imply otherwise |
+| `${CLAUDE_SKILL_DIR}` resolves to the **link** path | scripts still run; the checker validates the link's TARGET, never the link |
+
+---
+
+## The standard every skill here meets
+
+The open Agent Skills spec (`agentskills.io/specification`), which both vendors read:
+
+| Field | Rule |
+|---|---|
+| `SKILL.md` | the opening `---` is **line 1** — no blank line, no BOM |
+| `name` | 1-64 chars, `a-z 0-9 -`, no leading/trailing/double hyphen, **equal to the folder name** |
+| `description` | 1-1024 chars — what it does **and when to use it**; it is all the agent sees before loading |
+| body | under 500 lines; detail goes to `references/`, one level deep |
+
+⛔ **A name that differs from its folder does not load** — silently. That is why it is checked.
+
+---
+
+## ⭐ The install path — the only one
+
+```
+fetch ─► quarantine ─► REVIEW ─► expose ─► registry row ─► new session
+pinned    not linked    a person    links      ../registry.tsv
+to a sha  not usable    reads it
+```
+
+1. **Fetch** into `<name>/` pinned to a full commit sha — never a branch that can move under you.
+2. **Quarantine:** the folder exists, nothing links to it, `state: quarantine`.
+3. ⛔ **Review before exposing.** A third-party skill is text the agent will obey and scripts it
+   may run: it is a prompt-injection surface. Read `SKILL.md` and every script. Nothing is
+   activated without a person's yes (`feedback_nada_se_activa_sin_permiso`).
+4. **Expose:** the links in `.claude/skills/` and `.agents/skills/`, `state: active`.
+
+### "Turn this GitHub repo into a skill"
+
+| The repo has… | Goes to |
+|---|---|
+| a `SKILL.md` at its root, or `skills/*/SKILL.md` | here — one folder per skill it ships |
+| no skill, it is a CLI or a library | the code to `../tools/<name>/`; **we write** a `SKILL.md` in `<name>/` that says how to drive it, `source: authored:tools/<name>` |
+
+⭐ **What a third party wrote is never versioned — `sync` restores it; what we wrote is versioned
+with `git add -f`** (`author` does it). An authored skill is our work — losing it on a fresh clone
+would lose the only copy, so `check-connection` goes red if it is not tracked.
+
+---
+
+## What goes in here, and what does not
+
+| ✅ Belongs here | ⛔ Does not |
+|---|---|
+| skills from outside, and skills we wrote to drive something from outside | the engine's own skills — those are born from `templates/skills/` |
+| | a skill with no registry row — `check-connection` reports it as an orphan |
+
+---
+
+Related: `../README.md` (the parent — why outward things live apart) · `../registry.tsv` (the
+lockfile) · `../tools/README.md` (a repo that is not a skill) · `../../templates/skills/` (the
+engine's own skills).

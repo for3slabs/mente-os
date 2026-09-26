@@ -75,6 +75,7 @@ answers exactly one question. None of them decides anything: they check what is 
 | `bin/check-decisions` | is every decision recorded once, and never rewritten |
 | `bin/check-handoff` | is a delegation granted, bounded and accounted for |
 | `bin/check-shipping` | does a change leave the way the rule says it must |
+| `bin/check-connection` | is every third-party component (skill · MCP · tool) exactly what its registry row says — ⬜ with nothing installed, never 🔴 |
 | `bin/check-archive` | does a closed block leave behind what the next reader needs |
 | `bin/check-pending` | is a debt written in the shape somebody else can pick up |
 | `bin/check-patterns` | ⭐ is each imported failure pattern described well enough to BE detected — ⛔ it does not detect them, and says so |
@@ -106,6 +107,7 @@ answers exactly one question. None of them decides anything: they check what is 
 | `bin/off` | one marker file, `Mente/.off` | ⭐ **pauses, never removes** · every gate reads that marker as its first act · ⛔ a switch the gates ignore is a lie about the owner's own machine — `probe-onoff` runs the real hooks to prove it |
 | `bin/on` | ⭐ nothing — it deletes that one marker | ⛔ it never installs and never repairs · on a folder that was never set up it says so and stops |
 | `bin/secrets-lease` | the read permission for `secrets/`, and its access log | ⭐ tied to the context load, never to a clock · it hardens the folder before granting |
+| `bin/connection add <git-url> --why "…"` · `activate` · `disable` · `remove` · `sync` | third-party code under `connection/<type>/`, its row in `connection/registry.tsv`, the links the agent reads | ⭐ **`add` stops in quarantine** — fetched and pinned, never exposed until a person runs `activate` · ⛔ the one way in: a skill copied by hand has no row, and `check-connection` calls it an orphan |
 
 > ⚠️ ⬜ **`bin/check-all` is planned as the single entry point; today the battery is
 > `bin/probes/run-all.py`.** ⭐ The difference matters: the battery proves each validator can

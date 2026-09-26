@@ -1,0 +1,337 @@
+#!/usr/bin/env python3
+"""connection — install, expose and remove third-party components. One path.
+
+    bin/connection add <git-url> --why "<who asked, for what>" [--name N] [--ref R]
+    bin/connection author <tool> <skill-name> --description "<what + when>"
+    bin/connection activate <name>     after a person reviewed it
+    bin/connection disable <name>      unexpose, keep the code
+    bin/connection remove <name>       unexpose, delete the code, drop the row
+    bin/connection list
+    bin/connection sync                restore code + links from the registry
+    bin/connection check               = bin/check-connection
+
+⭐ THE PATH (connection/skills/README.md): pin → quarantine → REVIEW → expose →
+row. `add` stops at quarantine ON PURPOSE: a third-party skill is text an
+agent will obey, and nothing is activated without a person's yes.
+
+What `add` decides from the repo, never from a guess:
+  · SKILL.md at its root          → one skill, in skills/<its name>/
+  · skills/*/SKILL.md             → the repo in tools/, one skill row per skill
+  · no skill at all               → the repo in tools/; then `author` writes the
+                                    SKILL.md that tells the agent how to drive it
+
+Exit: 0 done · 1 refused (the message says why) · 2 usage
+"""
+import os as _os, sys as _sys
+_d = _os.path.dirname(_os.path.abspath(__file__))
+while _d != _os.path.dirname(_d):
+    if _os.path.exists(_os.path.join(_d, "bin", "utf8.py")):
+        _sys.path.insert(0, _os.path.join(_d, "bin")); break
+    _d = _os.path.dirname(_d)
+import utf8                                          # noqa: F401,E402
+import argparse                                                # noqa: E402
+import datetime                                                # noqa: E402
+import os                                                      # noqa: E402
+import re                                                      # noqa: E402
+import shutil                                                  # noqa: E402
+import subprocess                                              # noqa: E402
+import sys                                                     # noqa: E402
+import tempfile                                                # noqa: E402
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import connection_lib as C                                     # noqa: E402
+
+TODAY = datetime.date.today().isoformat()
+NEW_SESSION = ("⚠️ an agent sees a new skill from its NEXT session (or after "
+               "/reload-skills) — measured 2026-09-26")
+
+
+def refuse(msg):
+    print("⛔ " + msg)
+    sys.exit(1)
+
+
+def load():
+    hdr, rows, problems = C.read_registry()
+    if problems:
+        refuse("registry.tsv is malformed (line %d: %s) — fix it before "
+               "installing anything" % problems[0])
+    return hdr, rows
+
+
+def find(rows, name):
+    for r in rows:
+        if r["name"] == name:
+            return r
+    refuse("`%s` is not in the registry · bin/connection list" % name)
+
+
+def row(**kw):
+    r = dict.fromkeys(C.FIELDS, "-")
+    r.update(installed=TODAY, license="unknown", exposes="-")
+    r.update(kw)
+    return r
+
+
+def slug(url):
+    base = re.sub(r"\.git$", "", url.rstrip("/").split("/")[-1].split(":")[-1])
+    s = re.sub(r"[^a-z0-9]+", "-", base.lower()).strip("-")
+    return re.sub(r"-{2,}", "-", s)[:64]
+
+
+def fetch(url, ref, dest):
+    tmp = tempfile.mkdtemp(prefix="mente-conn-")
+    try:
+        r = C.git(["clone", "--quiet", url, tmp], os.getcwd())
+        if r.returncode:
+            refuse("clone failed: %s" % (r.stderr.strip().splitlines() or ["?"])[-1])
+        if ref:
+            r = C.git(["checkout", "--quiet", "--detach", ref], tmp)
+            if r.returncode:
+                refuse("ref `%s` does not exist in %s" % (ref, url))
+        sha = C.head_of(tmp)
+        os.makedirs(os.path.dirname(dest), exist_ok=True)
+        shutil.move(tmp, dest)
+        return sha
+    finally:
+        if os.path.isdir(tmp):
+            shutil.rmtree(tmp, ignore_errors=True)
+
+
+def review_list(folder):
+    """What a person must read before `activate` — the SKILL.md files and scripts."""
+    md, code = [], []
+    for base, dirs, files in os.walk(folder):
+        dirs[:] = [d for d in dirs if d != ".git"]
+        for f in files:
+            p = os.path.relpath(os.path.join(base, f), C.REPO)
+            if f == "SKILL.md":
+                md.append(p)
+            elif f.endswith((".sh", ".py", ".js", ".ts", ".mjs", ".rb", ".pl")) or \
+                    os.access(os.path.join(base, f), os.X_OK):
+                code.append(p)
+    return md, code
+
+
+def cmd_add(a):
+    hdr, rows = load()
+    name = a.name or slug(a.url)
+    taken = {r["name"] for r in rows}
+    tmp_dest = os.path.join(C.CONN, "tools", ".incoming-" + name)
+    if os.path.exists(tmp_dest):
+        shutil.rmtree(tmp_dest)
+    sha = fetch(a.url, a.ref, tmp_dest)
+    lic = C.read_license(tmp_dest)
+
+    root_skill = C.skill_name_of(tmp_dest)
+    inner = []
+    sk = os.path.join(tmp_dest, "skills")
+    if not root_skill and os.path.isdir(sk):
+        inner = sorted(d for d in os.listdir(sk)
+                       if os.path.isfile(os.path.join(sk, d, "SKILL.md")))
+
+    new = []
+    if root_skill:
+        name = root_skill
+        dest = os.path.join(C.CONN, "skills", name)
+        new.append(row(name=name, type="skill", source=a.url, ref=sha,
+                       state="quarantine", license=lic, why=a.why))
+    else:
+        dest = os.path.join(C.CONN, "tools", name)
+        new.append(row(name=name, type="tool", source=a.url, ref=sha,
+                       state="quarantine", license=lic, why=a.why))
+        for s in inner:
+            new.append(row(name=s, type="skill", source="in:tools/%s/skills/%s" % (name, s),
+                           state="quarantine", license=lic, why="shipped by %s" % name))
+    clash = [r["name"] for r in new if r["name"] in taken]
+    if clash or os.path.exists(dest):
+        shutil.rmtree(tmp_dest, ignore_errors=True)
+        refuse("already installed: %s · `bin/connection remove` first" %
+               ", ".join(clash or [os.path.relpath(dest, C.REPO)]))
+    bad = [r["name"] for r in new if not C.valid_name(r["name"])]
+    if bad:
+        shutil.rmtree(tmp_dest, ignore_errors=True)
+        refuse("name(s) break the spec: %s · pass --name" % ", ".join(bad))
+    shutil.move(tmp_dest, dest)
+    write = rows + new
+    C.write_registry(hdr, write)
+
+    md, code = review_list(dest)
+    print("📦 %s → %s  (pinned %s · license %s)" % (
+        a.url, os.path.relpath(dest, C.REPO), sha[:10], lic))
+    for r in new:
+        print("   + %-24s %-6s quarantine" % (r["name"], r["type"]))
+    print("\n🔍 REVIEW before activating — %d SKILL.md · %d script(s):" % (len(md), len(code)))
+    for p in md + code[:20]:
+        print("   " + p)
+    if len(code) > 20:
+        print("   … and %d more" % (len(code) - 20))
+    if not root_skill and not inner:
+        print("\n⬜ no SKILL.md in this repo — the agent cannot reach it yet.\n"
+              "   👉 bin/connection author %s <skill-name> --description \"…\"" % name)
+    print("\n👉 bin/connection activate <name>   (only after the review)")
+
+
+def cmd_author(a):
+    hdr, rows = load()
+    tool = find(rows, a.tool)
+    if tool["type"] != "tool":
+        refuse("`%s` is a %s — `author` writes a skill for a tool" % (a.tool, tool["type"]))
+    if not C.valid_name(a.skill):
+        refuse("`%s` breaks the skill name spec" % a.skill)
+    if any(r["name"] == a.skill for r in rows):
+        refuse("`%s` already exists" % a.skill)
+    if not (0 < len(a.description) <= C.DESC_MAX):
+        refuse("--description must be 1-%d chars" % C.DESC_MAX)
+    folder = os.path.join(C.CONN, "skills", a.skill)
+    os.makedirs(folder)
+    tool_rel = "Mente/connection/tools/%s" % a.tool
+    with open(os.path.join(folder, "SKILL.md"), "w", encoding="utf-8") as fh:
+        fh.write("---\nname: %s\ndescription: %s\n---\n\n# %s\n\n"
+                 "Drives `%s` (%s, pinned `%s`).\n\n"
+                 "The code lives at `${CLAUDE_PROJECT_DIR}/%s` — run it from there.\n\n"
+                 "## ⬜ How to use it\n\n"
+                 "Write the steps after reading the tool's README: install step (if any, "
+                 "run inside its folder), the commands, what each returns, when NOT to use it.\n"
+                 % (a.skill, a.description, a.skill, a.tool, tool["source"],
+                    tool["ref"][:10], tool_rel))
+    C.git(["add", "-f", os.path.join(folder, "SKILL.md")], C.MENTE)
+    rows.append(row(name=a.skill, type="skill", source="authored:tools/%s" % a.tool,
+                    state="quarantine", license="AGPL-3.0",
+                    why="authored to drive %s" % a.tool))
+    C.write_registry(hdr, rows)
+    print("✍️  %s written — authored, VERSIONED (git add -f: ours, the only copy)" %
+          os.path.relpath(folder, C.REPO))
+    print("👉 fill `How to use it`, then bin/connection activate %s" % a.skill)
+
+
+def _link(name, target):
+    made = []
+    for home in C.SKILL_HOMES:
+        base = os.path.join(C.REPO, home)
+        os.makedirs(base, exist_ok=True)
+        p = os.path.join(base, name)
+        if os.path.lexists(p):
+            if os.path.islink(p) and os.path.realpath(p) == os.path.realpath(target):
+                made.append(os.path.join(home, name))
+                continue
+            refuse("%s already exists and is not this skill — refusing to overwrite" %
+                   os.path.join(home, name))
+        os.symlink(os.path.relpath(target, base), p)
+        made.append(os.path.join(home, name))
+    return made
+
+
+def _unlink(r):
+    real = os.path.realpath(C.content_dir(r))
+    for home in C.SKILL_HOMES:
+        p = os.path.join(C.REPO, home, r["name"])
+        if os.path.islink(p) and os.path.realpath(p) == real:
+            os.unlink(p)
+
+
+def cmd_activate(a):
+    hdr, rows = load()
+    r = find(rows, a.name)
+    folder = C.content_dir(r)
+    if not os.path.isdir(folder):
+        refuse("no code on disk for `%s` · bin/connection sync" % a.name)
+    if r["type"] == "skill":
+        reds = [m for lvl, m in C.check_skill(folder) if lvl == "red"]
+        if reds:
+            refuse("`%s` is not a valid skill: %s" % (a.name, "; ".join(reds)))
+        if C.is_authored(r) and "⬜ How to use it" in open(
+                os.path.join(folder, "SKILL.md"), encoding="utf-8").read():
+            refuse("`%s` still has the ⬜ placeholder — write how to use it first" % a.name)
+        r["exposes"] = ",".join(_link(a.name, folder))
+    elif r["type"] == "mcp":
+        r["exposes"] = ".mcp.json:%s" % a.name
+        print("👉 declare it: claude mcp add --scope project %s … (secrets as ${VAR})" % a.name)
+    r["state"] = "active"
+    C.write_registry(hdr, rows)
+    print("✅ %s active · %s" % (a.name, r["exposes"]))
+    if r["type"] == "skill":
+        print(NEW_SESSION)
+
+
+def cmd_disable(a):
+    hdr, rows = load()
+    r = find(rows, a.name)
+    _unlink(r)
+    r["state"], r["exposes"] = "disabled", "-"
+    C.write_registry(hdr, rows)
+    print("⏸️  %s disabled — code kept, no agent sees it" % a.name)
+
+
+def cmd_remove(a):
+    hdr, rows = load()
+    r = find(rows, a.name)
+    gone = [r] + [x for x in rows if x["source"].startswith("in:tools/%s/" % a.name)]
+    for g in gone:
+        _unlink(g)
+    if not C.is_inner(r):
+        shutil.rmtree(C.content_dir(r), ignore_errors=True)
+    names = {g["name"] for g in gone}
+    C.write_registry(hdr, [x for x in rows if x["name"] not in names])
+    print("🗑️  removed: %s" % ", ".join(sorted(names)))
+
+
+def cmd_list(_a):
+    _hdr, rows = load()
+    if not rows:
+        print("⬜ nothing installed — connection/registry.tsv has no rows")
+        return
+    for r in rows:
+        mark = {"active": "🟢", "quarantine": "🟡", "disabled": "⏸️ "}.get(r["state"], "?")
+        print("%s %-24s %-6s %-11s %s" % (mark, r["name"], r["type"], r["state"],
+                                          r["source"][:60]))
+
+
+def cmd_sync(_a):
+    _hdr, rows = load()
+    done = 0
+    for r in rows:
+        folder = C.content_dir(r)
+        if not (C.is_authored(r) or C.is_inner(r)) and not os.path.isdir(folder):
+            fetch(r["source"], r["ref"], folder)
+            print("⬇️  %s restored at %s" % (r["name"], r["ref"][:10]))
+            done += 1
+    for r in rows:
+        if r["state"] == "active" and r["type"] == "skill" and os.path.isdir(C.content_dir(r)):
+            _link(r["name"], C.content_dir(r))
+    print("✅ sync · %d restored · links re-made for every active skill" % done)
+    if done:
+        print(NEW_SESSION)
+
+
+def main():
+    p = argparse.ArgumentParser(prog="connection", add_help=True)
+    sub = p.add_subparsers(dest="cmd")
+    s = sub.add_parser("add"); s.add_argument("url"); s.add_argument("--why", required=True)
+    s.add_argument("--name"); s.add_argument("--ref")
+    s = sub.add_parser("author"); s.add_argument("tool"); s.add_argument("skill")
+    s.add_argument("--description", required=True)
+    for c in ("activate", "disable", "remove"):
+        sub.add_parser(c).add_argument("name")
+    for c in ("list", "sync", "check"):
+        sub.add_parser(c)
+    a = p.parse_args()
+    if not a.cmd:
+        p.print_help()
+        return 2
+    if a.cmd == "check":
+        return subprocess.call([sys.executable, os.path.join(os.path.dirname(
+            os.path.abspath(__file__)), "check-connection")])
+    {"add": cmd_add, "author": cmd_author, "activate": cmd_activate,
+     "disable": cmd_disable, "remove": cmd_remove, "list": cmd_list,
+     "sync": cmd_sync}[a.cmd](a)
+    return 0
+
+
+if __name__ == "__main__":
+    try:
+        sys.exit(main())
+    except Exception as e:                                     # noqa: BLE001
+        # CHK-CAU-002 · a crash is a verdict with a non-zero exit, never a stack trace
+        print("🔴 connection could not run · %s" % e, file=sys.stderr)
+        sys.exit(1)

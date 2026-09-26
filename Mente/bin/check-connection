@@ -1,0 +1,216 @@
+#!/usr/bin/env python3
+"""check-connection — is every third-party component what the registry says?
+
+⭐ THE DEFECT THIS EXISTS FOR. `connection/` installs code other people wrote
+and exposes it to an agent that will OBEY it. Four ways that goes wrong
+without anyone noticing, each one silent:
+
+  · a skill whose `name` differs from its folder does not load — no error
+  · a component exposed before anyone reviewed it (a quarantine with a link)
+  · a folder with no registry row — code nobody decided to carry
+  · a clone that drifted off its pinned sha — "what we reviewed" is not
+    "what runs"
+
+⭐ And one that loses work: a skill WE authored that git ignores is the only
+copy, gone on the next fresh clone.
+
+It reads the rules from `connection_lib.py`, the same file the installer
+writes with — one definition of "valid", never two.
+
+⚠️ A missing folder of a third-party row is 🟡, not 🔴: a fresh clone has the
+rows and none of the code until `bin/connection sync` runs. That is the
+lockfile working, not a fault.
+
+Exit: 0 every row holds · 1 one does not
+"""
+import os as _os, sys as _sys
+_d = _os.path.dirname(_os.path.abspath(__file__))
+while _d != _os.path.dirname(_d):
+    if _os.path.exists(_os.path.join(_d, "bin", "utf8.py")):
+        _sys.path.insert(0, _os.path.join(_d, "bin")); break
+    _d = _os.path.dirname(_d)
+import utf8                                          # noqa: F401,E402
+import json                                                    # noqa: E402
+import os                                                      # noqa: E402
+import re                                                      # noqa: E402
+import sys                                                     # noqa: E402
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import connection_lib as C                                     # noqa: E402
+
+RED, YELLOW = [], []
+
+
+def red(who, msg):
+    RED.append((who, msg))
+
+
+def yellow(who, msg):
+    YELLOW.append((who, msg))
+
+
+def _row(r, names):
+    who = r["name"] or "line %d" % r["_line"]
+    if not C.valid_name(r["name"]):
+        red(who, "name breaks the spec (a-z 0-9 -, ≤64, no edge/double hyphen)")
+    if r["name"] in names:
+        red(who, "declared twice")
+    names.add(r["name"])
+    if r["type"] not in C.TYPES:
+        red(who, "type `%s` — must be one of %s" % (r["type"], "/".join(C.TYPES)))
+        return
+    if r["state"] not in C.STATES:
+        red(who, "state `%s` — must be one of %s" % (r["state"], "/".join(C.STATES)))
+    third = not (C.is_authored(r) or C.is_inner(r))
+    if third:
+        if not C.GIT_RE.match(r["source"]):
+            red(who, "source `%s` is not a git URL, `authored:` or `in:`" % r["source"])
+        if not C.SHA_RE.match(r["ref"]):
+            red(who, "ref `%s` is not a full sha — a branch moves under you" % r["ref"])
+    if r["license"] in ("", "unknown"):
+        yellow(who, "license unknown — read its LICENSE before relying on it")
+
+    folder = C.content_dir(r)
+    if not os.path.isdir(folder):
+        if C.is_authored(r):
+            red(who, "authored content is MISSING — it was the only copy")
+        else:
+            # ⭐ In ANY state: a quarantined row with no code is a review nobody
+            # can do — measured by probe-connection ⑮, which caught this line
+            # speaking only for `active` rows.
+            yellow(who, "not restored on this machine · run `bin/connection sync`")
+        return
+    if third and os.path.isdir(os.path.join(folder, ".git")):
+        head = C.head_of(folder)
+        if head and C.SHA_RE.match(r["ref"]) and head != r["ref"]:
+            red(who, "drifted: HEAD %s ≠ pinned %s — what runs is not what was "
+                     "reviewed" % (head[:10], r["ref"][:10]))
+    if r["type"] == "skill":
+        for lvl, msg in C.check_skill(folder):
+            (red if lvl == "red" else yellow)(who, msg)
+    if C.is_authored(r) and C.is_tracked(os.path.join(folder, "SKILL.md")) is False:
+        red(who, "authored but NOT versioned — our only copy · git add -f its SKILL.md")
+
+    links = [e for e in C.exposes(r) if not e.startswith(".mcp.json:")]
+    real = os.path.realpath(folder)
+    if r["state"] == "active":
+        if r["type"] == "skill" and not any(
+                e.startswith(C.SKILL_HOMES[0]) for e in links):
+            red(who, "active skill not exposed in %s — no agent can see it" %
+                C.SKILL_HOMES[0])
+        for e in links:
+            p = os.path.join(C.REPO, e)
+            if not os.path.islink(p):
+                red(who, "%s is not a link (%s)" % (
+                    e, "missing" if not os.path.lexists(p) else "a real folder"))
+            elif os.path.realpath(p) != real:
+                red(who, "%s points elsewhere — not at %s" % (
+                    e, os.path.relpath(folder, C.REPO)))
+        for e in (x for x in C.exposes(r) if x.startswith(".mcp.json:")):
+            if e.split(":", 1)[1] not in _mcp_servers():
+                red(who, "%s is not declared in .mcp.json" % e)
+    else:
+        for home in C.SKILL_HOMES:
+            p = os.path.join(C.REPO, home, r["name"])
+            if os.path.islink(p) and os.path.realpath(p) == real:
+                red(who, "%s exposes it while it is `%s` — nothing is used "
+                         "before review" % (os.path.join(home, r["name"]), r["state"]))
+
+
+_MCP = None
+
+
+def _mcp_servers():
+    global _MCP
+    if _MCP is None:
+        p = os.path.join(C.REPO, ".mcp.json")
+        try:
+            with open(p, encoding="utf-8") as fh:
+                _MCP = json.load(fh).get("mcpServers", {}) or {}
+        except (OSError, ValueError):
+            _MCP = {}
+    return _MCP
+
+
+SECRETISH = re.compile(r"^(Bearer\s+)?[A-Za-z0-9_\-\.]{20,}$")
+
+
+def _mcp_secrets():
+    """A literal credential in .mcp.json is committed with the repo."""
+    for name, cfg in _mcp_servers().items():
+        for bag in ("headers", "env"):
+            for k, v in (cfg.get(bag) or {}).items():
+                if isinstance(v, str) and "${" not in v and SECRETISH.match(v.strip()):
+                    red(".mcp.json:%s" % name, "%s.%s holds a literal value — "
+                        "write ${VAR}, the value lives in secrets/" % (bag, k))
+
+
+def _orphans(rows):
+    known = {os.path.realpath(C.content_dir(r)) for r in rows}
+    for sub in C.TYPES.values():
+        base = os.path.join(C.CONN, sub)
+        if not os.path.isdir(base):
+            # ⛔ Said out loud, never a silent pass (CHK-CAU-003): a declared
+            # folder that vanished means orphans there were NOT looked for.
+            yellow("connection/%s/" % sub, "folder missing — orphans NOT scanned here")
+            continue
+        for d in sorted(os.listdir(base)):
+            p = os.path.join(base, d)
+            if os.path.isdir(p) and os.path.realpath(p) not in known:
+                red("%s/%s" % (sub, d), "no registry row — code nobody decided to carry")
+    conn = os.path.realpath(C.CONN) + os.sep
+    by_target = {os.path.realpath(C.content_dir(r)): r for r in rows}
+    for home in C.SKILL_HOMES:
+        base = os.path.join(C.REPO, home)
+        # no such folder = no links to judge (a fresh clone has none) — an empty list, not a skip
+        for d in (sorted(os.listdir(base)) if os.path.isdir(base) else []):
+            p = os.path.join(base, d)
+            if not os.path.islink(p):
+                continue
+            tgt = os.path.realpath(p)
+            if not os.path.exists(tgt):
+                red("%s/%s" % (home, d), "dangling link")
+            elif tgt.startswith(conn) and tgt not in by_target:
+                red("%s/%s" % (home, d), "links into connection/ with no registry row")
+
+
+def main():
+    if not os.path.isfile(C.REGISTRY):
+        # ⬜ not 🔴: no registry means nothing third-party was ever installed — a
+        # correct state. A red here would fire at every start of a fresh installation.
+        print("⬜ no connection/registry.tsv yet — no third-party component installed")
+        return 0
+    _hdr, rows, problems = C.read_registry()
+    for n, msg in problems:
+        red("registry line %d" % n, msg)
+    names = set()
+    for r in rows:
+        _row(r, names)
+    _orphans(rows)
+    _mcp_secrets()
+
+    act = sum(1 for r in rows if r["state"] == "active")
+    print("  %d component(s) registered · %d active · %d quarantine · %d disabled" % (
+        len(rows), act, sum(1 for r in rows if r["state"] == "quarantine"),
+        sum(1 for r in rows if r["state"] == "disabled")))
+    if YELLOW:
+        print("\n🟡 %d" % len(YELLOW))
+        for who, msg in YELLOW:
+            print("   %-28s %s" % (who, msg))
+    if not RED:
+        print("✅ every component is what the registry says")
+        return 0
+    print("\n🔴 %d" % len(RED))
+    for who, msg in RED:
+        print("   %-28s %s" % (who, msg))
+    print("\n👉 `bin/connection list` shows the rows · `bin/connection sync` "
+          "restores missing code and links")
+    return 1
+
+
+if __name__ == "__main__":
+    try:
+        sys.exit(main())
+    except Exception as e:                                     # noqa: BLE001
+        print("🔴 check-connection could not run · %s" % e, file=sys.stderr)
+        sys.exit(1)
