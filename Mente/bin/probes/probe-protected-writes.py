@@ -26,7 +26,12 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from harness import ROOT, report                      # noqa: E402
 
 results = []
-WORK = tempfile.mkdtemp(prefix="mente-pw-")
+# 🔴 2026-09-27, the battery on a NATIVE Windows install: 10 of 17 cases here were
+# silent. The gate turned the project path into a regex REPLACEMENT, and on Windows
+# that path is `C:\Users\...` — `\U` is a bad escape, the gate raised, and a gate
+# that breaks never blocks: every protected write went through. ⭐ A POSIX folder name
+# may carry a backslash, so EVERY case below runs under one, on every platform.
+WORK = tempfile.mkdtemp(prefix="mente-pw-" + ("" if os.name == "nt" else "\\Users-"))
 M = os.path.join(WORK, "Mente")
 
 
@@ -44,10 +49,10 @@ def settings(extra=()):
         json.dump({"permissions": {"ask": rules}}, fh)
 
 
-def gate(cmd, cwd=None, tool="Bash"):
+def gate(cmd, cwd=None, tool="Bash", env=None):
     p = {"tool_name": tool, "tool_input": {"command": cmd}, "cwd": cwd or WORK}
     r = subprocess.run([sys.executable, os.path.join(M, "hooks", "gate-protected-writes.py")],
-                       input=json.dumps(p), capture_output=True, text=True, timeout=30)
+                       input=json.dumps(p), capture_output=True, text=True, timeout=30, env=env)
     out = r.stdout.strip()
     return r.returncode, (json.loads(out)["hookSpecificOutput"]["permissionDecision"] if out else "silent"), out
 
@@ -91,6 +96,13 @@ try:
     rc2 = subprocess.run([sys.executable, os.path.join(M, "hooks", "gate-protected-writes.py")],
                          input="}{", capture_output=True, text=True).returncode
     case("⑯ garbage input → exit 0, silent (a broken gate never blocks)", rc2 == 0, "exit %d" % rc2)
+    # ⑰ `~` resolves through the SAME kind of replacement — a HOME carrying `\U`,
+    # as `C:\Users\<name>` always does, must still be protected.
+    settings(["Edit(~/zzprobe-home/**)"])
+    _home = dict(os.environ, HOME=WORK, USERPROFILE=WORK)
+    _, d17, _ = gate("cp /tmp/x ~/zzprobe-home/key", env=_home)
+    case("⑰ a rule under `~`, with a backslash in HOME → ask", d17 == "ask", d17)
+    settings()
 finally:
     shutil.rmtree(WORK, ignore_errors=True)
 

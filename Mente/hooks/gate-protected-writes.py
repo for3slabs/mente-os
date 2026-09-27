@@ -84,8 +84,12 @@ def protected():
             if not m:
                 continue
             g = m.group(1)
-            g = re.sub(r"^\$\{?CLAUDE_PROJECT_DIR\}?", REPO, g)
-            g = re.sub(r"^\$\{?HOME\}?|^~", os.path.expanduser("~"), g)
+            # 🔴 A PATH IS NEVER A REPLACEMENT TEMPLATE. Measured 2026-09-27 on native
+            # Windows: REPO is `C:\Users\...`, re.sub read `\U` as an escape and raised,
+            # and a gate that breaks never blocks — every protected write went through,
+            # silently. ⭐ A function returns the path as it is, backslashes and all.
+            g = re.sub(r"^\$\{?CLAUDE_PROJECT_DIR\}?", lambda _m: REPO, g)
+            g = re.sub(r"^\$\{?HOME\}?|^~", lambda _m: os.path.expanduser("~"), g)
             if g.startswith("//"):
                 g = g[1:]
             deep = g.endswith("/**")
@@ -181,7 +185,9 @@ def main():
             hits.append((p, how, g))
     if not hits:
         return 0
-    lines = ["%s  (%s)" % (os.path.relpath(p, REPO), how) for p, how, _ in hits[:6]]
+    # ⭐ Forward slashes for the person reading it, on every platform (Windows accepts them).
+    lines = ["%s  (%s)" % (os.path.relpath(p, REPO).replace(os.sep, "/"), how)
+             for p, how, _ in hits[:6]]
     return verdict("ask",
                    "✋ This command WRITES to a path protected by the `ask` rules of "
                    "`.claude/settings*.json` — through Bash, where those rules do not reach:\n   "
