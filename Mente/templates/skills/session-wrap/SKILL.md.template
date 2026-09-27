@@ -45,8 +45,15 @@ close in a folder that was never installed.
 Identify the live session and measure it — ⛔ never estimate:
 
 ```bash
-ls -t ~/.claude/projects/*/*.jsonl | head -1
+# ⛔ THIS project's transcripts only. `~/.claude/projects/*/` matches every project on the
+# machine, and the newest transcript there may be ANOTHER project's conversation — measured
+# 2026-09-26 on a real Windows install with 30 projects on it.
+slug=$(git rev-parse --show-toplevel | sed 's/[^A-Za-z0-9]/-/g')
+proj=$(find ~/.claude/projects -maxdepth 1 -type d -iname "$slug" | head -1)
+[ -n "$proj" ] && ls -t "$proj"/*.jsonl | head -1 || echo "no transcript folder for $slug"
 ```
+
+⛔ **If it finds none, say so and skip the measurement** — never fall back to another folder.
 
 Size, turns and peak context come from that `.jsonl` (the `usage` fields of the assistant
 messages). ⭐ **A number you did not measure does not go in the record.**
@@ -121,7 +128,7 @@ It is the **only** file the next session is guaranteed to read.
 
 ## Step 4 · Memories and pending
 
-- **Memories** (`~/.claude/projects/*/memory/`): one fact per file, plus its line in `MEMORY.md`.
+- **Memories** (`"$proj"/memory/` — the folder found in Step 0, ⛔ never another project's): one fact per file, plus its line in `MEMORY.md`.
   ⭐ Prefer **updating** an existing memory over a near-duplicate. Only what matters in *future*
   conversations — ⛔ not what the repo or git already records.
 - **The pending list** — its path is in `Mente/pieces.tsv`. Findings that are real but not
