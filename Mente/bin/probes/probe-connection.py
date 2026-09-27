@@ -91,6 +91,48 @@ try:
     case("⓪ no registry → ⬜, never 🔴 · and `list` still runs",
          rc == 0 and "no connection/registry.tsv yet" in out and rcl == 0,
          "check rc %d · list rc %d" % (rc, rcl))
+
+    # ── cli/ · the CLIs the machine already has — a card each, never a credential ──
+    CLI = os.path.join(M, "connection", "cli")
+    os.makedirs(CLI)
+
+    def card(name, body):
+        with open(os.path.join(CLI, name + ".md"), "w", encoding="utf-8") as fh:
+            fh.write("# cli · %s\n\n%s\n" % (name, body))
+        return os.path.join(CLI, name + ".md")
+
+    # 🔴 THE HOLE THIS CLOSES: with no registry, the checker used to return green
+    # BEFORE looking at anything else — a card carrying a token would pass there.
+    tok = card("gh", "**Binary:** `git` · **For:** open PRs\n"
+                     "**Credential:** ghp_abcdefghijklmnopqrstuvwxyz0123456789")
+    rc, out = check()
+    case("⓪b no registry + a card with a literal token → 🔴, not ⬜",
+         rc == 1 and "CLI-SEC-002" in out, "rc %d" % rc)
+    os.remove(tok)
+    good = card("gh", "**Binary:** `git` · **For:** open PRs on the declared repos\n"
+                      "**Account:** the org account · **Credential:** `host`")
+    rc, out = check()
+    case("⓪c … the same card pointing at `host` → green", rc == 0, "rc %d" % rc)
+    card("vercel", "**Binary:** `vercel` · **For:** deploy previews\n"
+                   "**Credential:** `secrets/vercel.md`")
+    rc, out = check()
+    case("⓪d a card pointing into secrets/ → green", rc == 0, "rc %d" % rc)
+    bad = card("docker", "**Binary:** `docker` · **Credential:** `~/.docker/config.json`")
+    rc, out = check()
+    case("⓪e 🔴 no `For`, and a credential outside secrets/ → 🔴 both",
+         rc == 1 and "CLI-FLD-001" in out and "CLI-SEC-001" in out, "rc %d" % rc)
+    os.remove(bad)
+    card("no-such-cli-zz", "**Binary:** `no-such-cli-zz` · **For:** nothing\n**Credential:** `none`")
+    rc, out = check()
+    case("⓪f a CLI not installed here → 🟡, never 🔴 (the card may come from elsewhere)",
+         rc == 0 and "not installed on THIS machine" in out, "rc %d" % rc)
+    os.makedirs(os.path.join(CLI, "some-repo"))
+    rc, out = check()
+    case("⓪g 🔴 a folder inside cli/ → code does not live here",
+         rc == 1 and "CLI-DIR-001" in out, "rc %d" % rc)
+    shutil.rmtree(CLI)
+    rc, out = check()
+    case("⓪h … and with no cli/ at all → back to ⬜", rc == 0, "rc %d" % rc)
     sys.path.insert(0, os.path.join(M, "bin"))
     import connection_lib                                  # noqa: E402
     with open(REG, "w", encoding="utf-8") as fh:

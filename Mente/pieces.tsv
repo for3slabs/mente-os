@@ -47,6 +47,7 @@ val-suficiencia	bin/check-sufficiency	engine	canonical	a block can be resumed fr
 val-clear	bin/check-clear-ready	engine	canonical	refuses a reset if anything would be lost
 installer	bin/init	engine	canonical	generates the instance files from templates/
 status	bin/status	engine	executable	answers 'is it on' in the owner's words — 🔴 there was no way to ask
+eval-obedience	bin/eval-obedience	engine	executable	does an assistant OBEY what the probes only prove is present — manual, spends the owner's subscription, never automatic
 pause	bin/off	engine	executable	pauses every gate by writing one marker · deletes nothing
 resume	bin/on	engine	executable	removes that marker · the exact inverse of bin/off
 # ── engine · the gates + hooks ──
@@ -181,7 +182,7 @@ sessions-readme	memory/sessions/README.md	engine	canonical	the session history f
 rule-shipping	rules/rule-shipping.md	engine	canonical	how a change leaves the workspace — loop, base, grouping, cleanup, session close
 check-shipping	bin/check-shipping	engine	executable	enforces the lock rows of the shipping rule
 probe-shipping	bin/probes/probe-shipping.py	engine	executable	proves check-shipping detects what the shipping rule claims
-check-connection	bin/check-connection	engine	executable	is every third-party component exactly what connection/registry.tsv says — ⬜ with nothing installed, never 🔴
+check-connection	bin/check-connection	engine	executable	is every third-party component exactly what connection/registry.tsv says, and every CLI card in connection/cli/ names where its credential lives — ⬜ with nothing installed, never 🔴
 connection	bin/connection	engine	executable	installs, exposes and removes third-party components — one path, it stops in quarantine
 connection-lib	bin/connection_lib.py	engine	canonical	the ONE definition of what is valid in connection/ — read by the installer and the verifier
 probe-connection	bin/probes/probe-connection.py	engine	executable	proves check-connection and the installer catch what they claim — against real git repos
@@ -231,6 +232,7 @@ generate-metrics	bin/generate-metrics	engine	executable	🤖 the only place a li
 probe-generators	bin/probes/probe-generators.py	engine	executable	proves a generated file is measured, obeys the contract, and can say NOTHING
 probe-readme	bin/probes/probe-readme.py	engine	executable	proves the front page answers the question instead of listing files, and has not drifted from its source
 probe-start-here	bin/probes/probe-start-here.py	engine	executable	proves the one document a stranger is handed still mandates the chooser, the guide, and no jargon
+probe-eval-obedience	bin/probes/probe-eval-obedience.py	engine	executable	proves the grader of eval-obedience catches disobedience — planted transcripts, every red with its inverse
 probe-init	bin/probes/probe-init.py	engine	executable	proves the installer places, asks, and REFUSES to destroy a configured instance
 update-engine	bin/update-engine	engine	executable	brings a newer engine in and leaves the instance alone — the answer when clone history was replaced
 probe-update-engine	bin/probes/probe-update-engine.py	engine	executable	proves the update takes the engine and never overwrites somebody's memory

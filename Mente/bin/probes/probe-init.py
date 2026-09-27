@@ -797,7 +797,7 @@ case("㉛c 🔴 ⭐ an interpreter path WITH A SPACE survives the stamp",
 # ⭐ Forward slashes, always quoted. Windows accepts `/` in a path, and bash
 # leaves it alone — measured in Git Bash: the backslash form fails, this one
 # answers.
-_bare = "C:\\Users\\Datos\\AppData\\Local\\WindowsApps\\python.exe"
+_bare = "C:\\Users\\someone\\AppData\\Local\\WindowsApps\\python.exe"
 _ok2, _why2 = False, ""
 try:
     _st = _tpl.replace('"bash ', _ns["_cmd"]([_bare]))

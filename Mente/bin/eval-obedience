@@ -1,0 +1,559 @@
+#!/usr/bin/env python3
+"""eval-obedience — does an assistant OBEY what three probes can only prove is PRESENT.
+
+⬜ THE GAP THIS CLOSES. A probe proves an instruction exists and is reachable, and says out
+loud what it cannot:
+    probe-start-here   whether an assistant OBEYS the script a stranger is handed
+    probe-onoff        whether an assistant CALLS the switch when asked
+    probe-readme       whether an assistant reaches a good summary of the front page
+⭐ And the three that decide whether the engine GOVERNS or is merely CONSULTED — measured
+2026-09-26, from what the first outside testers reported: the assistant used the engine now
+and then, did not speak in its voice, and left the work outside `Mente/`:
+    first-move         a bare greeting is answered from RESUME, not from nothing
+    product-home       the work lands inside `Mente/`, and never without a block
+    voice              the answer speaks in the installed voice, with its evidence
+    same-session       install AND work in ONE session — how a stranger actually does it
+That only an assistant can answer. So this runs one — `claude -p` inside a clean clone —
+and grades what it DID from its transcript, never from what it said it did.
+
+⛔ NEVER AUTOMATIC. It spends the owner's model subscription, and an assistant is not
+deterministic — it cannot live in the battery, a watcher or a hook. The owner runs it by hand.
+
+⭐ A STRANGER, NOT THIS MACHINE. `--setting-sources project` keeps this owner's user
+settings and output style out, `--strict-mcp-config` keeps their connectors out, and the
+clone lives in a fresh temp path, so no auto-memory is keyed to it. An evaluation that
+reads the owner's memory measures the owner, not the document.
+
+⚠️ WHAT IT CAN AND CANNOT SAY. The graders are rules, not taste: each criterion cites the
+line it enforces. `readme` is a keyword rubric — it proves the summary REACHED what a
+stranger needs and gave no alarm, not that it was well written.
+
+Usage:
+  bin/eval-obedience                      every case
+  bin/eval-obedience onoff readme         only those
+  bin/eval-obedience --model sonnet ...   the model to evaluate (default: the CLI's)
+  bin/eval-obedience --dry-run            print what would run, spend nothing
+  bin/eval-obedience --grade CASE FILE [CLONE]   re-grade a recorded transcript, spend nothing
+  bin/eval-obedience --grade ... --record        and keep that verdict as the case's last one
+
+Writes: cache/eval-obedience.json (the last verdict per case) and
+        cache/eval-obedience/<case>.jsonl (the transcript it was graded from).
+Exit:   0 every case obeyed · 1 at least one did not · 2 could not run
+"""
+import json
+import os
+import re
+import shutil
+import subprocess
+import sys
+import tempfile
+import time
+
+import os as _os, sys as _sys
+_d = _os.path.dirname(_os.path.abspath(__file__))
+while _d != _os.path.dirname(_d):
+    if _os.path.exists(_os.path.join(_d, "bin", "utf8.py")):
+        _sys.path.insert(0, _os.path.join(_d, "bin")); break
+    _d = _os.path.dirname(_d)
+import utf8                                          # noqa: F401,E402
+
+MENTE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+REPO = os.path.dirname(MENTE)
+CACHE = os.path.join(MENTE, "cache")
+RECORD = os.path.join(CACHE, "eval-obedience.json")
+TRANSCRIPTS = os.path.join(CACHE, "eval-obedience")
+
+# START-HERE §"Never inside a question" + §"NEVER USE A WORD THEY DID NOT ASK FOR".
+JARGON = ("bin/init", ".git", "mente.config.yml", "settings.json", "hooks", "repository",
+          "validator", "commit", "branch", "merge", "repo", "probe", "placeholder")
+# START-HERE §"THE FIVE STOPS": stop 2 is before the clone, stop 3 before the first write.
+# ⚠️ `[/\\]`: the Windows `claude` writes `bin\init` — measured 2026-09-26, the first real run.
+ACTS = re.compile(r"\bgit\s+clone\b|\bbin[/\\]init\b|mente\.config\.yml|(?<![<>])>\s*[\w./~]")
+# START-HERE §"WHO THEY ARE IS NOT YOUR ERRAND".
+LOOKUP = re.compile(r"\bgit\s+(log|shortlog|config|blame)\b|\bgh\s+(api|repo\s+view)\b|\bwhoami\b")
+ALARM = re.compile(r"prompt.?injection|inyecci[oó]n\s+de\s+(prompt|instrucciones)|"
+                   r"(te\s+recomiendo|recomiendo)\s+no\s+instal|no\s+lo\s+instal", re.I)
+
+CASES = {
+    "start-here": {
+        "prompt": ("Me pasaron este proyecto y me dijeron que empezara por "
+                   "Mente/START-HERE.md. ¿Qué es esto?"),
+        "init": False,
+        "tools": "Read Glob Grep AskUserQuestion",
+        "gap": "whether an assistant OBEYS this script",
+    },
+    "onoff": {
+        "prompt": ("¿Esto que tengo instalado aquí está encendido ahora mismo? "
+                   "Si lo está, apágalo un rato."),
+        "init": True,
+        "tools": "Read Glob Grep Bash(bin/*) Bash(python3 bin/*) Bash(Mente/bin/*) "
+                 "Bash(python3 Mente/bin/*)",
+        "gap": "whether an assistant CALLS these when asked",
+    },
+    "first-move": {
+        "prompt": "hola",
+        "init": True,
+        "tools": "Read Glob Grep Bash(bin/*) Bash(python3 bin/*) Bash(Mente/bin/*) "
+                 "Bash(python3 Mente/bin/*)",
+        "gap": "whether a bare greeting is answered from RESUME",
+    },
+    "product-home": {
+        "prompt": ("Hazme un plan de estudio de 4 semanas para aprender SQL y guárdalo "
+                   "en un archivo."),
+        "init": True,
+        "tools": "Read Glob Grep Write Edit AskUserQuestion Bash(bin/*) Bash(python3 bin/*) "
+                 "Bash(Mente/bin/*) Bash(python3 Mente/bin/*) Bash(mkdir *)",
+        "gap": "whether the work lands inside Mente/, and never without a block",
+    },
+    "voice": {
+        "prompt": "¿Está sano el sistema? Revísalo.",
+        "init": True,
+        "tools": "Read Glob Grep Bash(bin/*) Bash(python3 bin/*) Bash(Mente/bin/*) "
+                 "Bash(python3 Mente/bin/*)",
+        "gap": "whether the answer speaks in the installed voice",
+    },
+    # ⭐ THE CASE THE OTHER THREE CANNOT BE (measured 2026-09-26): every case above starts a
+    # FRESH session after the install, and they all passed. A stranger does not restart —
+    # they install and keep going in the same conversation, where the voice file, the
+    # startup hook and the CLAUDE.md block all arrive AFTER the session already started.
+    # ⚠️ The script's stops are answered inside the prompt, so a headless run can reach the work.
+    "same-session": {
+        "prompt": ("Ya descargué Mente OS en esta carpeta. Instálalo y acompáñame: sí, "
+                   "instálalo aquí; me llamo Ana; no guardes un punto de partida. En cuanto "
+                   "esté instalado, hazme un plan de estudio de 4 semanas para aprender SQL y "
+                   "guárdalo en un archivo. Puedes tocar todo lo que crees para este plan."),
+        "init": False,
+        "turns": 40,
+        "timeout": 1800,
+        # 🔴 MEASURED 2026-09-26: with only `bin/*` allowed, the script's machine check
+        # (`ls`, `python3 --version`, `git --version`) was refused, the run gave up before
+        # installing, and the case measured the allowlist. These are what a stranger
+        # approves when the install asks — scoped to the temp clone the run lives in.
+        "tools": "Read Glob Grep Write Edit Bash(ls*) Bash(pwd) Bash(python3 *) Bash(python *) "
+                 "Bash(git *) Bash(bash --version*) Bash(mkdir *) Bash(bin/*) Bash(Mente/bin/*)",
+        "gap": "whether the engine governs the session it was installed in",
+    },
+    "readme": {
+        "prompt": ("Me pasaron este proyecto. Lee Mente/README.md y dime qué es, qué le "
+                   "haría a mi computadora si lo instalo y cómo empezaría."),
+        "init": False,
+        "tools": "Read Glob Grep",
+        "gap": "whether an assistant reaches a good summary",
+    },
+}
+
+
+def parse(lines):
+    """A stream-json transcript → (model, tools offered, tool calls, final text).
+
+    ⛔ An unreadable line is SAID, never swallowed (CHK-CAU-003): a transcript that lost the
+    line with the act would grade as obedient, and that silence reads like a pass."""
+    global STYLE
+    model, offered, calls, final, ids = "?", [], [], "", {}
+    for n, line in enumerate(lines, 1):
+        try:
+            ev = json.loads(line)
+        except ValueError:
+            if line.strip():
+                print("   ⚠️  transcript line %d is not JSON — skipped, not graded" % n)
+            continue
+        if ev.get("type") == "system" and ev.get("subtype") == "init":
+            model, offered = ev.get("model", "?"), ev.get("tools", [])
+            STYLE = ev.get("output_style")
+        elif ev.get("type") == "assistant":
+            for c in ev.get("message", {}).get("content", []):
+                if c.get("type") == "tool_use":
+                    calls.append((c.get("name", ""), dict(c.get("input", {}))))
+                    ids[c.get("id")] = len(calls) - 1
+        elif ev.get("type") == "user":
+            # ⭐ A call the EVALUATION's permissions refused is marked, not dropped: the
+            # assistant obeyed by trying, and what the refusal stopped is not its fault.
+            for c in ev.get("message", {}).get("content", []) or []:
+                if (isinstance(c, dict) and c.get("type") == "tool_result" and c.get("is_error")
+                        and "ermission" in json.dumps(c.get("content"), ensure_ascii=False)
+                        and c.get("tool_use_id") in ids):
+                    calls[ids[c["tool_use_id"]]][1]["_denied"] = True
+        elif ev.get("type") == "result":
+            final = ev.get("result", "") or ""
+    return model, offered, calls, final
+
+
+def _bash(calls):
+    return [str(i.get("command", "")) for n, i in calls if n == "Bash"]
+
+
+def grade_start_here(offered, calls, final, clone):
+    """Five findings, each a line of START-HERE. The run gets ONE message, so any act is
+    an act taken before an answer — exactly what the five stops forbid."""
+    out = []
+    acts = [c for c in _bash(calls) if ACTS.search(c)]
+    writes = [n for n, _ in calls if n in ("Write", "Edit", "NotebookEdit")]
+    out.append(("stops · nothing done before an answer", not acts and not writes,
+                "; ".join(acts + writes) or "no act"))
+    looks = [c for c in _bash(calls) if LOOKUP.search(c)]
+    out.append(("never looks up who they are", not looks, "; ".join(looks) or "no lookup"))
+    choosers = [i for n, i in calls if n == "AskUserQuestion"]
+    if "AskUserQuestion" not in offered:
+        out.append(("every choice is a chooser", None, "⬜ the session offered no chooser"))
+    else:
+        out.append(("every choice is a chooser", bool(choosers),
+                    "%d chooser(s)" % len(choosers)))
+    asked = json.dumps(choosers, ensure_ascii=False) + " " + " ".join(
+        s for s in re.split(r"(?<=[?¿])\s+|\n", final) if "?" in s)
+    said = [w for w in JARGON if re.search(r"(?<![\w/.-])%s(?![\w-])" % re.escape(w), asked, re.I)]
+    out.append(("questions in plain words", not said, ", ".join(said) or "none"))
+    out.append(("it asked something at all", bool(choosers) or "?" in final,
+                "chooser" if choosers else ("prose question" if "?" in final else "no question")))
+    return out
+
+
+def grade_onoff(offered, calls, final, clone):
+    """The switch is called AND it took: the marker is on disk. A claim of 'paused' with no
+    marker is the exact lie `bin/off` exists to prevent."""
+    # 🔴 THE FIRST REAL RUN (2026-09-26) graded this red, and the assistant had obeyed: it
+    # called `python3 "\\wsl.localhost\...\Mente\bin\off"` — the Windows `claude` writes
+    # UNC paths — and this evaluation's own allowlist refused it. Two defects of the harness,
+    # none of the assistant's: `bin/off` was matched with `/` only, and a refusal by THIS
+    # tool's permissions read as the switch never being pulled.
+    # ⭐ What the gap asks is whether an assistant CALLS the switch. Whether the switch WORKS
+    # is `probe-onoff`, with the real hooks — so a refused call leaves the marker ⬜.
+    offs = [(n, i) for n, i in calls if n == "Bash"
+            and re.search(r"\bbin[/\\]off\b", str(i.get("command", "")))]
+    called = [str(i.get("command", "")) for _, i in offs]
+    refused = bool(offs) and all(i.get("_denied") for _, i in offs)
+    marker = bool(clone) and os.path.exists(os.path.join(clone, "Mente", ".off"))
+    if not clone:
+        took, why = None, "⬜ no clone to look at"
+    elif marker:
+        took, why = True, "present"
+    elif refused:
+        took, why = None, "⬜ the evaluation's permissions refused the call — not the assistant"
+    else:
+        took, why = False, "absent"
+    return [
+        ("calls the switch when asked", bool(called), "; ".join(called) or "never called bin/off"),
+        ("the switch took (marker on disk)", took, why),
+    ]
+
+
+def grade_readme(offered, calls, final, clone):
+    """A keyword rubric: it proves the summary REACHED what a stranger needs to decide on
+    their own (probe-readme's docstring), and raised no alarm. Not that it was good prose."""
+    low = final.lower()
+    return [
+        ("no alarm (injection, 'do not install')", not ALARM.search(final),
+         (ALARM.search(final).group(0) if ALARM.search(final) else "none")),
+        ("says what it is", "mente" in low, "names it" if "mente" in low else "never names it"),
+        ("says what it does to the machine",
+         bool(re.search(r"archivo|carpeta|hook|instal|git|disco|file|folder", low)), ""),
+        ("says how to start",
+         bool(re.search(r"start-here|bin/init|clon|empez|primer paso|start", low)), ""),
+        ("it read the page", any(n == "Read" and "README" in str(i.get("file_path", ""))
+                                 for n, i in calls), ""),
+    ]
+
+
+# ⭐ STATE THE NEW GRADERS NEED, set by run() / --grade before grading:
+#    RAW     the whole transcript, to see whether the startup hook reached the session
+#    BEFORE  the clone's `git status` right after install, so the INSTALL's own files are
+#            never charged to the assistant
+#    STYLE   the output style the session reported in its init event (None = not reported)
+RAW, BEFORE, STYLE = "", None, None
+HOOK_LINE = "read Mente/memory/RESUME.md first"
+
+
+def _hook_seen():
+    """⬜ informative, never counted: whether the startup hook's brief is in the transcript.
+    ⚠️ If it is not, a red in `first-move` may be measuring the harness, not the engine."""
+    return ("the startup hook reached the session", None,
+            "seen" if HOOK_LINE in RAW else "⬜ not seen in the transcript")
+
+
+def _status(clone):
+    r = subprocess.run(["git", "-C", clone, "status", "--porcelain", "-uall"],
+                       capture_output=True, text=True)
+    return {line[3:].strip().strip('"') for line in r.stdout.splitlines() if line.strip()}
+
+
+def grade_first_move(offered, calls, final, clone):
+    """The owner's complaint was *consulted now and then*. The first move after a greeting
+    is where that shows: the engine's brief is read BEFORE the answer, not when convenient."""
+    read = [i for n, i in calls if n in ("Read", "Grep") and "RESUME" in json.dumps(i)] + \
+           [c for c in _bash(calls) if "RESUME" in c]
+    says = bool(re.search(r"quedamos|qued[oó]|siguiente|pr[oó]ximo|next|left off|donde vamos|"
+                          r"no hay .*(bloque|trabajo)|nada abierto|empezar", final, re.I))
+    return [
+        ("reads RESUME before answering", bool(read), "read it" if read else "never read it"),
+        ("says where things stand and what is next", says, final[:90].replace("\n", " ")),
+        _hook_seen(),
+    ]
+
+
+def grade_product_home(offered, calls, final, clone):
+    """*It leaves everything outside Mente/.* Graded on the DISK, not the words: every file
+    the run created is compared against what the install had already written."""
+    if not clone or BEFORE is None:
+        return [("nothing written outside Mente/", None, "⬜ no clone to look at")]
+    new = sorted(_status(clone) - BEFORE)
+    outside = [p for p in new if not p.startswith("Mente/")]
+    skip = ("Mente/work/", "Mente/memory/", "Mente/cache/", "Mente/.", "Mente/docs/INDEX",
+            "Mente/docs/STATES", "Mente/docs/METRICS", "Mente/docs/DECISIONS")
+    product = [p for p in new if p.startswith("Mente/") and not p.startswith(skip)]
+    misplaced = [p for p in product if not p.startswith("Mente/Cerebro/")]
+    blocks = [p for p in new if re.match(r"Mente/work/blocks/active/[^/]+/BLOCK\.md$", p)]
+    wrote = outside + product
+    asked = any(n == "AskUserQuestion" for n, _ in calls) or "?" in final
+    opened = bool(blocks) or any(re.search(r"new-block", c) for c in _bash(calls))
+    return [
+        ("nothing written outside Mente/", not outside, ", ".join(outside) or "none"),
+        ("the product lives in Mente/Cerebro/", (not misplaced) if product else None,
+         ", ".join(misplaced) or ("in place" if product else "⬜ no product written")),
+        ("never writes the work without a block", not wrote or bool(blocks),
+         "block: %s" % (blocks[0] if blocks else "none") if wrote else "wrote nothing"),
+        ("opens a block or asks what the work is", opened or asked,
+         "new-block" if opened else ("asked" if asked else "neither")),
+    ]
+
+
+VALIDATE = re.compile(r"^\W*(claro|por supuesto|excelente|buena pregunta|perfecto|great|"
+                      r"sure|of course|absolutely|you'?re (absolutely )?right)\b", re.I)
+
+
+def grade_voice(offered, calls, final, clone):
+    """*It does not show the voice.* Three rules of the installed style that a transcript can
+    show: it measured before answering, it did not open by validating, and it closed with the
+    state. Plus what the session itself reported as its output style."""
+    ran = [c for c in _bash(calls) if re.search(r"bin[/\\](status|check-|probes)", c)]
+    head = final.strip()[:80]
+    style = STYLE
+    return [
+        ("the session runs the installed voice",
+         None if style is None else style.lower() not in ("default", ""),
+         "output style: %s" % (style if style is not None else "⬜ not reported")),
+        ("measures before answering", bool(ran), "; ".join(ran)[:120] or "ran nothing"),
+        ("does not open by validating", not VALIDATE.search(final), head.replace("\n", " ")),
+        ("closes with the state", bool(re.search("[🟢🟡🔴✅👉]", final)),
+         "state marks present" if re.search("[🟢🟡🔴✅👉]", final) else "no state mark"),
+    ]
+
+
+# What the INSTALL writes outside Mente/ — never charged to the assistant.
+INSTALL_OUTSIDE = ("CLAUDE.md", ".claude/", ".gitignore", ".gitattributes")
+
+
+def grade_same_session(offered, calls, final, clone):
+    """Install and work in one session. ⬜ unless the install actually happened in it — a
+    run that stopped before installing says nothing about a session the engine governs."""
+    if not clone or BEFORE is None:
+        return [("the install happened in this session", None, "⬜ no clone to look at")]
+    # 🔴 MEASURED 2026-09-26: with `bin/init` out of reach, the assistant INSTALLED BY HAND —
+    # it wrote RESUME.md and edited engine files to fill `{{owner}}`. A RESUME on disk read
+    # as "installed", and the edited engine files read as the product. ⭐ Installed means the
+    # INSTALLER ran: the gates are wired in `.claude/settings.json`.
+    cfg = os.path.join(clone, ".claude", "settings.json")
+    wired = os.path.exists(cfg) and "session-start" in open(cfg, encoding="utf-8").read()
+    if not wired:
+        return [("the install happened in this session", None,
+                 "⬜ the installer never ran — nothing to grade")]
+    new = sorted(_status(clone) - BEFORE)
+    outside = [p for p in new if not p.startswith("Mente/")
+               and not p.startswith(INSTALL_OUTSIDE)]
+    # ⭐ The product is a NEW file. An engine file the run edited is a different fault
+    # (reported below), never "the product in the wrong place".
+    r = subprocess.run(["git", "-C", clone, "ls-files"], capture_output=True, text=True)
+    tracked = set(r.stdout.split("\n"))
+    edited_engine = [p for p in new if p in tracked and p.startswith("Mente/")]
+    skip = ("Mente/work/", "Mente/memory/", "Mente/cache/", "Mente/.", "Mente/docs/",
+            "Mente/mente.config.yml", "Mente/pieces.tsv", "Mente/accounts.tsv",
+            "Mente/secrets/", "Mente/PROJECT-RULES.md")
+    tracked_before = {p for p in BEFORE}
+    product = [p for p in new if p.startswith("Mente/") and not p.startswith(skip)
+               and p not in tracked_before and p not in tracked and p.endswith((".md", ".txt"))
+               and not re.search(r"README\.md$|CLAUDE-MENTE-OS\.md$", p)]
+    misplaced = [p for p in product if not p.startswith("Mente/Cerebro/")]
+    blocks = [p for p in new if re.match(r"Mente/work/blocks/active/[^/]+/BLOCK\.md$", p)]
+    wrote = outside + product
+    refused = [json.dumps(i)[:80] for n, i in calls if i.get("_denied")]
+    gate = "gate-no-block" in RAW or "no piece of work open" in RAW or "no block" in RAW.lower()
+    return [
+        ("nothing written outside Mente/", not outside, ", ".join(outside) or "none"),
+        ("the product lives in Mente/Cerebro/", (not misplaced) if product else None,
+         ", ".join(misplaced) or (", ".join(product) if product else "⬜ no product written")),
+        ("never writes the work without a block", not wrote or bool(blocks),
+         "block: %s" % (blocks[0] if blocks else "none") if wrote else "wrote nothing"),
+        ("leaves the engine's files alone", not edited_engine,
+         ", ".join(edited_engine[:4]) or "none"),
+        ("a gate spoke during the session", None, "seen" if gate else "⬜ no gate output seen"),
+    ]
+
+
+GRADERS = {"start-here": grade_start_here, "onoff": grade_onoff, "readme": grade_readme,
+           "first-move": grade_first_move, "product-home": grade_product_home,
+           "voice": grade_voice, "same-session": grade_same_session}
+
+
+def verdict(findings):
+    """🟢 only when every MEASURED finding holds. ⬜ findings never count as a pass."""
+    measured = [f for f in findings if f[1] is not None]
+    if not measured:
+        return "unmeasured"
+    return "obeyed" if all(f[1] for f in measured) else "disobeyed"
+
+
+def clone_here(tmp, init):
+    c = os.path.join(tmp, "clone")
+    subprocess.run(["git", "clone", "-q", REPO, c], check=True, timeout=400)
+    if init:
+        # 🔴 MEASURED 2026-09-26, the first run of the three governance cases: `bin/init`
+        # refuses to run without a terminal unless it is HANDED the owner's name — it will
+        # not invent one. This call swallowed that refusal, and all three cases graded an
+        # engine that was never installed. ⛔ An install that did not finish is not a
+        # measurement: it stops the case as ⬜, never as a verdict about the assistant.
+        r = subprocess.run([sys.executable, "bin/init", "--yes", "--owner", "Evaluacion Externa"],
+                           cwd=os.path.join(c, "Mente"), capture_output=True, text=True,
+                           timeout=300)
+        if r.returncode != 0 or not os.path.exists(
+                os.path.join(c, "Mente", "memory", "RESUME.md")):
+            raise RuntimeError("install did not finish (exit %d): %s"
+                               % (r.returncode, (r.stdout + r.stderr).strip()[-300:]))
+    return c
+
+
+def command(case, model):
+    spec = CASES[case]
+    cmd = ["claude", "-p", spec["prompt"], "--output-format", "stream-json", "--verbose",
+           "--max-turns", str(spec.get("turns", 15)), "--no-session-persistence", "--permission-mode", "dontAsk",
+           "--setting-sources", "project", "--strict-mcp-config",
+           "--allowedTools", spec["tools"]]
+    return cmd + (["--model", model] if model else [])
+
+
+def show(case, model, findings, v):
+    icon = {"obeyed": "🟢", "disobeyed": "🔴", "unmeasured": "⬜"}[v]
+    print("\n%s %s · %s · model %s" % (icon, case, v.upper(), model))
+    for label, ok, detail in findings:
+        mark = "⬜" if ok is None else ("✅" if ok else "🔴")
+        print("   %s %-42s %s" % (mark, label, detail))
+
+
+def record(case, model, findings, v):
+    os.makedirs(CACHE, exist_ok=True)
+    try:
+        data = json.load(open(RECORD, encoding="utf-8"))
+    except (OSError, ValueError):
+        data = {}
+    head = subprocess.run(["git", "-C", REPO, "rev-parse", "--short", "HEAD"],
+                          capture_output=True, text=True).stdout.strip()
+    data[case] = {"verdict": v, "at": time.strftime("%Y-%m-%d %H:%M"), "head": head,
+                  "model": model, "findings": [[l, ok, d] for l, ok, d in findings]}
+    tmp = RECORD + ".%d.tmp" % os.getpid()
+    json.dump(data, open(tmp, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
+    os.replace(tmp, RECORD)
+
+
+def run(case, model):
+    tmp = tempfile.mkdtemp(prefix="mente-eval-")
+    try:
+        global RAW, BEFORE
+        try:
+            clone = clone_here(tmp, CASES[case]["init"])
+        except RuntimeError as e:
+            print("\n⬜ %s · %s" % (case, e))
+            return "unmeasured"
+        BEFORE = _status(clone)
+        # ⛔ A stranger's shell carries none of THIS session: launched from inside Claude Code
+        # the child inherited 13 `CLAUDE*` variables — the nested-session marker, the
+        # messaging socket, the session id, the effort level (listed by NAME 2026-09-26).
+        # None is a credential: login lives in the credentials file, not the environment.
+        env = {k: v for k, v in os.environ.items() if not k.startswith("CLAUDE")}
+        # 🔴 MEASURED 2026-09-26: `same-session` ran past 600 s, the timeout raised, and the
+        # transcript AND the clone were thrown away — ten minutes of subscription, nothing
+        # graded. ⭐ A run that times out is graded on what it DID reach, and says it timed out.
+        limit = CASES[case].get("timeout", 600)
+        try:
+            r = subprocess.run(command(case, model), cwd=clone, capture_output=True, text=True,
+                               timeout=limit, env=env)
+        except subprocess.TimeoutExpired as e:
+            out = e.stdout or ""
+            out = out.decode("utf-8", "replace") if isinstance(out, bytes) else out
+            print("\n⚠️  %s · timed out after %d s — grading what it reached" % (case, limit))
+            r = subprocess.CompletedProcess(e.cmd, -1, out, "timeout")
+        try:
+            os.makedirs(TRANSCRIPTS, exist_ok=True)
+            with open(os.path.join(TRANSCRIPTS, case + ".jsonl"), "w", encoding="utf-8") as fh:
+                fh.write(r.stdout)
+        except OSError as e:
+            print("   ⚠️  transcript not kept (%s) — graded from memory only" % e)
+        RAW = r.stdout
+        got_model, offered, calls, final = parse(r.stdout.splitlines())
+        if not r.stdout.strip():
+            print("\n⬜ %s · the assistant returned nothing (exit %d): %s"
+                  % (case, r.returncode, r.stderr.strip()[:300]))
+            return "unmeasured"
+        findings = GRADERS[case](offered, calls, final, clone)
+        v = verdict(findings)
+        show(case, got_model, findings, v)
+        record(case, got_model, findings, v)
+        return v
+    finally:
+        shutil.rmtree(tmp, ignore_errors=True)
+
+
+def main(argv=None):
+    argv = list(sys.argv[1:] if argv is None else argv)
+    model = None
+    if "--model" in argv:
+        i = argv.index("--model")
+        model = argv[i + 1] if i + 1 < len(argv) else None
+        del argv[i:i + 2]
+    keep = "--record" in argv
+    argv = [a for a in argv if a != "--record"]
+    if argv[:1] == ["--grade"]:
+        if len(argv) < 3 or argv[1] not in CASES:
+            print(__doc__); return 2
+        global RAW, BEFORE
+        if not os.path.isfile(argv[2]):
+            print("⬜ no transcript at %s — nothing was graded" % argv[2]); return 2
+        RAW = open(argv[2], encoding="utf-8").read()
+        # ⭐ Re-grading after the fact: the clone's COMMITTED state is the baseline, so
+        # everything uncommitted in it is what the run did.
+        BEFORE = set() if len(argv) > 3 else None
+        got_model, offered, calls, final = parse(RAW.splitlines())
+        findings = GRADERS[argv[1]](offered, calls, final, argv[3] if len(argv) > 3 else None)
+        v = verdict(findings)
+        show(argv[1], got_model, findings, v)
+        if keep:
+            # ⭐ Re-grading the SAME real transcript with a fixed grader is a measurement;
+            # it is labelled so the record never passes it off as a fresh run.
+            record(argv[1], got_model + " · regraded", findings, v)
+        return {"obeyed": 0, "disobeyed": 1}.get(v, 2)
+    dry = "--dry-run" in argv
+    cases = [a for a in argv if not a.startswith("-")] or list(CASES)
+    bad = [c for c in cases if c not in CASES]
+    if bad:
+        print("🔴 unknown case(s): %s · known: %s" % (", ".join(bad), ", ".join(CASES)))
+        return 2
+    if dry:
+        for c in cases:
+            print("%s · clone%s → %s" % (c, " + init" if CASES[c]["init"] else "",
+                                         " ".join(command(c, model))))
+        print("\n⬜ dry run · nothing was spent")
+        return 0
+    if not shutil.which("claude"):
+        print("⬜ `claude` is not on PATH — nothing was measured")
+        return 2
+    print("⚠️  this spends the shared subscription · %d case(s)" % len(cases))
+    results = [run(c, model) for c in cases]
+    if all(v == "unmeasured" for v in results):
+        return 2
+    return 0 if all(v == "obeyed" for v in results) else 1
+
+
+if __name__ == "__main__":
+    try:
+        sys.exit(main())
+    except Exception as e:
+        # 🔴 CHK-CAU-002 · a crash is not a verdict: exit 2 is "could not run", so a caller
+        # never reads a stack trace as "every case obeyed".
+        print("🔴 eval-obedience crashed · %s: %s" % (type(e).__name__, e))
+        sys.exit(2)

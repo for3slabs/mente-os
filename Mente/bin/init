@@ -426,7 +426,7 @@ def wire_gates(dry):
 
             🔴 THE FAILURE, measured 2026-09-07 on a real Windows install. The
             host runs a hook through bash, and bash eats a backslash as an
-            escape: `C:\\Users\\Datos\\...` reached it as `C:UsersDatos...` and
+            escape: `C:\\Users\\<user>\\...` reached it as `C:Users<user>...` and
             every gate died with `command not found`, exit 127. ⛔ The host
             calls that a NON-BLOCKING error, so all five gates failed silently
             **154 times in one session** and the work went through untouched.
@@ -861,8 +861,19 @@ KEEP_BLOCK = """
 !mente.config.yml
 !PROJECT-RULES.md
 !Cerebro/ARCHITECTURE.md
+# ⭐ AND THE PRODUCT'S HOME. START-HERE puts what the person makes in
+# `Cerebro/<name>/`, and `Cerebro/*` above kept every one of those folders out.
+# 🔴 Measured 2026-09-26 on a real install: two study plans were written there,
+# neither could be recorded, and the assistant had to edit this engine file once
+# per plan. ⚠️ A directory rule, with its slash — git never enters a folder it
+# already excluded. ⭐ `bin/update-engine` only takes files the engine SHIPS, so a
+# folder of the person's is never in its reach.
+!Cerebro/*/
+!Cerebro/vision/*
 !docs/WORKSPACE.md
 !connection/bridges/BRIDGES.md
+# ⭐ the CLIs this machine works with — one card each, never a credential
+!connection/cli/*.md
 """ % KEEP_MARK
 
 

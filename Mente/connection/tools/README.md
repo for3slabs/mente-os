@@ -1,4 +1,4 @@
-# connection/tools/ — third-party CLIs and repos that are not skills
+# connection/tools/ — third-party repos that are not skills
 
 **Status:** current · **Type:** folder-readme · **Updated:** {{date}} · **Owner:** {{owner}}
 **Scope:** ⚠️ **INSTANCE** — the folder and this README travel; ⛔ the tools never do.
@@ -41,6 +41,7 @@ and the step is written in the authored skill, so `sync` can redo it on a fresh 
 |---|---|
 | a CLI or library repo, pinned | a repo that already ships a `SKILL.md` — that is `../skills/` |
 | | a local MCP server — that is `../mcp/` |
+| | ⭐ a CLI **already installed on the machine** (`gh`, `docker`…) — that is a card in `../cli/` |
 | | our own scripts — those are `../../bin/` |
 
 ---

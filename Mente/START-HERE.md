@@ -436,7 +436,8 @@ theirs to hear explained, not to be asked about cold:
 > | **Not yet** | Nothing is recorded · you can ask for this at any time |
 
 🔴 **Never ask this before explaining it**, and ⛔ never ask it of somebody who chose *"just tell
-me more"* in §2 — they have not installed anything to record.
+me more"* in §2 — they have not installed anything to record. ⛔ **On yes, commit on a new
+branch** (`git switch -c chore/setup`): `SHP-LCK-001` refuses the base one — 🔴 measured 2026-09-26.
 
 ---
 
