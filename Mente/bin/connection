@@ -40,6 +40,21 @@ import tempfile                                                # noqa: E402
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import connection_lib as C                                     # noqa: E402
+import plat                                                    # noqa: E402
+
+
+def _move(src, dst):
+    """shutil.move, without its cleanup. 🔴 Measured 2026-09-27 on native Windows: when
+    the rename is refused, shutil.move copies and then deletes `src` — and a git clone
+    holds READ-ONLY pack files that Windows will not delete (WinError 5). `add` died
+    there. ⭐ Rename first; if refused, copy and let plat.rmtree clear the read-only bit."""
+    try:
+        os.replace(src, dst)
+        return
+    except OSError:
+        pass
+    shutil.copytree(src, dst, symlinks=True)
+    plat.rmtree(src)
 
 TODAY = datetime.date.today().isoformat()
 NEW_SESSION = ("⚠️ an agent sees a new skill from its NEXT session (or after "
@@ -74,7 +89,9 @@ def row(**kw):
 
 
 def slug(url):
-    base = re.sub(r"\.git$", "", url.rstrip("/").split("/")[-1].split(":")[-1])
+    # 🔴 Windows paths split on `\` too. Measured 2026-09-27 on a native install: a local
+    # repo `C:\...\tool-x` became the name `users-datos-appdata-…` — not `tool-x`.
+    base = re.sub(r"\.git$", "", re.split(r"[/\\]", url.rstrip("/\\"))[-1].split(":")[-1])
     s = re.sub(r"[^a-z0-9]+", "-", base.lower()).strip("-")
     return re.sub(r"-{2,}", "-", s)[:64]
 
@@ -91,11 +108,11 @@ def fetch(url, ref, dest):
                 refuse("ref `%s` does not exist in %s" % (ref, url))
         sha = C.head_of(tmp)
         os.makedirs(os.path.dirname(dest), exist_ok=True)
-        shutil.move(tmp, dest)
+        _move(tmp, dest)
         return sha
     finally:
         if os.path.isdir(tmp):
-            shutil.rmtree(tmp, ignore_errors=True)
+            plat.rmtree(tmp)
 
 
 def review_list(folder):
@@ -104,7 +121,7 @@ def review_list(folder):
     for base, dirs, files in os.walk(folder):
         dirs[:] = [d for d in dirs if d != ".git"]
         for f in files:
-            p = os.path.relpath(os.path.join(base, f), C.REPO)
+            p = os.path.relpath(os.path.join(base, f), C.REPO).replace(os.sep, "/")
             if f == "SKILL.md":
                 md.append(p)
             elif f.endswith((".sh", ".py", ".js", ".ts", ".mjs", ".rb", ".pl")) or \
@@ -119,7 +136,7 @@ def cmd_add(a):
     taken = {r["name"] for r in rows}
     tmp_dest = os.path.join(C.CONN, "tools", ".incoming-" + name)
     if os.path.exists(tmp_dest):
-        shutil.rmtree(tmp_dest)
+        plat.rmtree(tmp_dest)
     sha = fetch(a.url, a.ref, tmp_dest)
     lic = C.read_license(tmp_dest)
 
@@ -145,14 +162,14 @@ def cmd_add(a):
                            state="quarantine", license=lic, why="shipped by %s" % name))
     clash = [r["name"] for r in new if r["name"] in taken]
     if clash or os.path.exists(dest):
-        shutil.rmtree(tmp_dest, ignore_errors=True)
+        plat.rmtree(tmp_dest)
         refuse("already installed: %s · `bin/connection remove` first" %
                ", ".join(clash or [os.path.relpath(dest, C.REPO)]))
     bad = [r["name"] for r in new if not C.valid_name(r["name"])]
     if bad:
-        shutil.rmtree(tmp_dest, ignore_errors=True)
+        plat.rmtree(tmp_dest)
         refuse("name(s) break the spec: %s · pass --name" % ", ".join(bad))
-    shutil.move(tmp_dest, dest)
+    _move(tmp_dest, dest)
     write = rows + new
     C.write_registry(hdr, write)
 
@@ -212,12 +229,12 @@ def _link(name, target):
         os.makedirs(base, exist_ok=True)
         p = os.path.join(base, name)
         if os.path.lexists(p):
-            if os.path.islink(p) and os.path.realpath(p) == os.path.realpath(target):
+            if C.is_link(p) and os.path.realpath(p) == os.path.realpath(target):
                 made.append(os.path.join(home, name))
                 continue
             refuse("%s already exists and is not this skill — refusing to overwrite" %
                    os.path.join(home, name))
-        os.symlink(os.path.relpath(target, base), p)
+        C.make_link(target, p)
         made.append(os.path.join(home, name))
     return made
 
@@ -226,8 +243,8 @@ def _unlink(r):
     real = os.path.realpath(C.content_dir(r))
     for home in C.SKILL_HOMES:
         p = os.path.join(C.REPO, home, r["name"])
-        if os.path.islink(p) and os.path.realpath(p) == real:
-            os.unlink(p)
+        if C.is_link(p) and os.path.realpath(p) == real:
+            C.drop_link(p)
 
 
 def cmd_activate(a):
@@ -270,7 +287,7 @@ def cmd_remove(a):
     for g in gone:
         _unlink(g)
     if not C.is_inner(r):
-        shutil.rmtree(C.content_dir(r), ignore_errors=True)
+        plat.rmtree(C.content_dir(r))
     names = {g["name"] for g in gone}
     C.write_registry(hdr, [x for x in rows if x["name"] not in names])
     print("🗑️  removed: %s" % ", ".join(sorted(names)))

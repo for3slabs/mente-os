@@ -51,6 +51,34 @@ STATES = ("quarantine", "active", "disabled")
 # (their docs, 2026-09-26; measured for Claude Code the same day).
 SKILL_HOMES = (".claude/skills", ".agents/skills")
 
+
+# 🔴 WINDOWS REFUSES A SYMLINK TO A NORMAL ACCOUNT. Measured 2026-09-27 on a native
+# install: `os.symlink` → WinError 1314, and `activate` died before exposing anything.
+# ⭐ A directory JUNCTION needs no privilege and every agent follows it like a link —
+# the same fallback bin/init uses for git hooks. These three are the only way a skill
+# link is made, recognised or removed, so the checker and the command never disagree.
+def is_link(p):
+    """A symlink, or — on Windows — the junction make_link falls back to."""
+    return os.path.islink(p) or bool(getattr(os.path, "isjunction", lambda _p: False)(p))
+
+
+def make_link(target, p):
+    try:
+        os.symlink(os.path.relpath(target, os.path.dirname(p)), p)
+    except OSError:
+        if os.name != "nt":
+            raise
+        import _winapi
+        _winapi.CreateJunction(os.path.abspath(target), p)
+
+
+def drop_link(p):
+    """Remove the link, never what it points at."""
+    if os.path.islink(p):
+        os.unlink(p)
+    else:
+        os.rmdir(p)     # a junction: rmdir removes the link, the target stays
+
 # ── cli/ · the CLIs ALREADY INSTALLED on this machine that the agent works with ──
 # ⭐ Not code: `tools/` holds a fetched repo, `cli/` holds a CARD per CLI the machine already
 # has (`gh`, `vercel`, `docker`…) — what the agent uses it for, with which account, and WHERE

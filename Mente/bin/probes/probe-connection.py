@@ -22,6 +22,7 @@ while _d != _os.path.dirname(_d):
         _sys.path.insert(0, _os.path.join(_d, "bin")); break
     _d = _os.path.dirname(_d)
 import utf8                                          # noqa: F401,E402
+import plat                                          # noqa: E402
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from harness import ROOT, report                      # noqa: E402
@@ -76,7 +77,7 @@ MIT = "MIT License\n\nPermission is hereby granted, free of charge, to any perso
 
 try:
     os.makedirs(os.path.join(M, "bin"))
-    for f in ("connection", "check-connection", "connection_lib.py", "utf8.py"):
+    for f in ("connection", "check-connection", "connection_lib.py", "utf8.py", "plat.py"):
         shutil.copy2(os.path.join(ROOT, "bin", f), os.path.join(M, "bin", f))
     os.makedirs(os.path.join(M, "connection"))
     shutil.copy2(os.path.join(ROOT, "connection", "README.md"),
@@ -130,7 +131,7 @@ try:
     rc, out = check()
     case("⓪g 🔴 a folder inside cli/ → code does not live here",
          rc == 1 and "CLI-DIR-001" in out, "rc %d" % rc)
-    shutil.rmtree(CLI)
+    plat.rmtree(CLI)
     rc, out = check()
     case("⓪h … and with no cli/ at all → back to ⬜", rc == 0, "rc %d" % rc)
     sys.path.insert(0, os.path.join(M, "bin"))
@@ -155,11 +156,11 @@ try:
     case("   … license read from its LICENSE", "license MIT" in out, "")
 
     os.makedirs(os.path.dirname(CL), exist_ok=True)
-    os.symlink(os.path.relpath(SK, os.path.dirname(CL)), CL)
+    connection_lib.make_link(SK, CL)
     rc, out = check()
     case("③ quarantine with a link planted → 🔴", rc == 1 and "before review" in out,
          "rc %d" % rc)
-    os.unlink(CL)
+    connection_lib.drop_link(CL)
 
     rc, out = conn("activate", "demo-skill")
     rc2, _ = check()
@@ -201,12 +202,12 @@ try:
     case("⑨ ref is a branch, not a sha → 🔴", rc == 1 and "full sha" in out, "rc %d" % rc)
     edit(REG, "\tmain\t", "\t%s\t" % sha)
 
-    os.unlink(CL)
+    connection_lib.drop_link(CL)
     rc, out = check()
     rc2, _ = conn("sync")
     rc3, _ = check()
     case("⑩ active skill lost its link → 🔴 · sync re-makes it → green",
-         rc == 1 and rc2 == 0 and rc3 == 0 and os.path.islink(CL), "rc %d/%d/%d" % (rc, rc2, rc3))
+         rc == 1 and rc2 == 0 and rc3 == 0 and connection_lib.is_link(CL), "rc %d/%d/%d" % (rc, rc2, rc3))
 
     u_tool = repo("tool-x", {"README.md": "a cli\n", "main.py": "print(1)\n", "LICENSE": MIT})
     rc, out = conn("add", u_tool, "--why", "probe")
@@ -257,7 +258,7 @@ try:
     rc, _ = check()
     case("   … the same with ${VAR} → green", rc == 0, "rc %d" % rc)
 
-    shutil.rmtree(os.path.join(M, "connection", "tools", "tool-x"))
+    plat.rmtree(os.path.join(M, "connection", "tools", "tool-x"))
     rc, out = check()
     rc2, _ = conn("sync")
     rc3, _ = check()
@@ -274,6 +275,6 @@ try:
          rc == 0 and rc2 == 0 and not os.path.exists(SK) and not os.path.lexists(CL)
          and not os.path.lexists(AG) and not still, "rc %d/%d" % (rc, rc2))
 finally:
-    shutil.rmtree(WORK, ignore_errors=True)
+    plat.rmtree(WORK)
 
 sys.exit(report(results))
