@@ -16,7 +16,9 @@ while _d != _os.path.dirname(_d):
 import utf8                                          # noqa: F401,E402
 import plat                                          # noqa: E402
 import os
+import importlib.machinery
 import shutil
+import types
 import subprocess
 import sys
 import tempfile
@@ -44,6 +46,15 @@ def commit(where, msg):
         "commit", "-q", "--no-verify", "-m", msg)
 
 
+def installer(path, tag):
+    """bin/init loaded as a module — its own functions and marks, never a copy."""
+    ld = importlib.machinery.SourceFileLoader("init_%s" % tag, path)
+    mod = types.ModuleType(ld.name)
+    mod.__file__ = ld.path
+    ld.exec_module(mod)
+    return mod
+
+
 def engine():
     """A bare repository standing in for the published engine.
 
@@ -56,6 +67,20 @@ def engine():
     shutil.copytree(ROOT, os.path.join(src, "Mente"),
                     ignore=shutil.ignore_patterns("__pycache__", ".beats",
                                                   ".git", "cache"))
+    # ⛔ THE PUBLISHED ENGINE NEVER CARRIES bin/init's BLOCK. 🔴 2026-09-27, on a
+    # native Windows install: ROOT was an INSTALLED tree, so this fake engine
+    # "published" `!memory/RESUME.md`… and ③ measured an engine nobody ships.
+    # ⭐ Undo exactly what `keep_memory()` did, with the installer's own marks.
+    _gi = os.path.join(src, "Mente", ".gitignore")
+    _mark = installer(os.path.join(src, "Mente", "bin", "init"), "e").KEEP_MARK
+    _body = open(_gi, encoding="utf-8").read()
+    if _mark in _body:
+        _body = _body.split(_mark)[0].rstrip("\n") + "\n"
+        _body = _body.replace(
+            "\n# ⭐ rewritten by bin/init · this installation keeps its own history\n",
+            "\nmemory/sessions/*\n")
+        with open(_gi, "w", encoding="utf-8", newline="") as fh:
+            fh.write(_body)
     git(src, "init", "-q", ".")
     commit(src, "engine v1")
     # ⭐ A change in the ENGINE half and a template in the INSTANCE half, so
@@ -119,6 +144,16 @@ def user(bare, related):
     # the same removal would overwrite every instance file. ⭐ Since bin/init
     # now versions the memory by default, tracked is the normal state.
     git(d, "add", "-f", "Mente/memory/RESUME.md", "Mente/mente.config.yml")
+    # ⭐ AN INSTALLATION AS bin/init LEAVES IT — its memory re-included with `!`.
+    # 🔴 2026-09-27, the battery on a native Windows install: ③ went red there and
+    # green here, because there the tree under test WAS installed. `keep_memory()`
+    # had appended `!memory/RESUME.md`, `!mente.config.yml`… so the working tree's
+    # .gitignore no longer claimed them, and update-engine took them as the
+    # engine's. ⛔ A fixture that skips the installer measured an installation
+    # nobody has. The installer's own function, not a copy of its lines.
+    installer(os.path.join(d, "Mente", "bin", "init"),
+              "related" if related else "own").keep_memory(False)
+    git(d, "add", "-f", "Mente/.gitignore")
     commit(d, "their memory")
     return d
 
