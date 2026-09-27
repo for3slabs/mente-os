@@ -40,6 +40,8 @@ Writes: cache/eval-obedience.json (the last verdict per case) and
         cache/eval-obedience/<case>.jsonl (the transcript it was graded from).
 Exit:   0 every case obeyed · 1 at least one did not · 2 could not run
 """
+import glob
+import hashlib
 import json
 import os
 import re
@@ -48,6 +50,7 @@ import subprocess
 import sys
 import tempfile
 import time
+import uuid
 
 import os as _os, sys as _sys
 _d = _os.path.dirname(_os.path.abspath(__file__))
@@ -132,6 +135,25 @@ CASES = {
         "tools": "Read Glob Grep Write Edit Bash(ls*) Bash(pwd) Bash(python3 *) Bash(python *) "
                  "Bash(git *) Bash(bash --version*) Bash(mkdir *) Bash(bin/*) Bash(Mente/bin/*)",
         "gap": "whether the engine governs the session it was installed in",
+    },
+    # ⭐ F-presencia (2026-09-27): does a model DRIFT across a longer session? Five turns on one
+    # piece of work, the way a person really uses it — each a resumed session. Graded on the
+    # disk and on the block after every turn, so it can be re-graded without spending.
+    "long-session": {
+        "prompts": ["Quiero armar un plan de estudio de SQL de 4 semanas. Empecemos.",
+                    # 🔴 2026-09-27, Haiku: it asked "¿abro el bloque?" at turn 1 and the
+                    # prompts never said yes — 4 turns of asking, no block, nothing measured.
+                    "Sí, ábrelo. Y agrégale una quinta semana de práctica con un proyecto.",
+                    "Cambia la semana 2 para que sea solo de JOINs.",
+                    "Agrega un recurso gratuito para cada semana.",
+                    "Listo por hoy. ¿Cómo quedamos?"],
+        "init": True,
+        "timeout": 1800,
+        # 🔴 2026-09-27, Haiku: it typed `./Mente/bin/new-block` and the list had no `./` form —
+        # refused twice, no block, the case unmeasured. The engine's commands, both spellings.
+        "tools": "Read Glob Grep Write Edit AskUserQuestion Bash(bin/*) Bash(python3 bin/*) "
+                 "Bash(Mente/bin/*) Bash(python3 Mente/bin/*) Bash(./bin/*) Bash(./Mente/bin/*) "
+                 "Bash(mkdir *)",
     },
     "readme": {
         "prompt": ("Me pasaron este proyecto. Lee Mente/README.md y dime qué es, qué le "
@@ -412,9 +434,47 @@ def grade_same_session(offered, calls, final, clone):
     ]
 
 
+def grade_long_session(offered, calls, final, clone):
+    """F-presencia: after five turns on one piece of work, is the engine still in charge?
+    ⭐ The question the single-turn cases cannot ask: does the model keep WRITING BACK into
+    the block as the work changes, or does the block go stale after the turn that opened it?"""
+    turns = [json.loads(l) for l in RAW.splitlines() if l.startswith('{"type": "mente_turn"')]
+    found = [("every turn ran", len(turns) == len(CASES["long-session"]["prompts"]) or None,
+              "%d of %d" % (len(turns), len(CASES["long-session"]["prompts"])))]
+    if clone and BEFORE is not None:
+        found += grade_product_home(offered, calls, final, clone)[:3]
+    else:
+        found.append(("nothing written outside Mente/", None, "⬜ no clone to look at"))
+    opened = next((t for t in turns if t["blocks"]), None)
+    if not opened:
+        found.append(("the block is written back after the turn that opened it", None,
+                      "⬜ no block was ever open"))
+    else:
+        later = [t for t in turns if t["n"] > opened["n"]]
+        # ⭐ Written back IN a turn = different from the turn before, not from the opening.
+        prev = {t["n"]: t["blocks"] for t in turns}
+        moved = [t["n"] for t in later if t["blocks"] != prev.get(t["n"] - 1)]
+        found.append(("the block is written back after the turn that opened it",
+                      bool(moved) if later else None,
+                      ("turn(s) %s" % moved) if moved else
+                      ("never — opened at turn %d, untouched after" % opened["n"] if later
+                       else "⬜ opened at the last turn")))
+    marked = bool(re.search("[🟢🟡🔴✅👉⬜]", final))
+    found.append(("the last answer still carries the state", marked,
+                  "state marks present" if marked else "no state mark"))
+    # ⛔ NO BLOCK, NO VERDICT. 🔴 2026-09-27: Haiku asked to open a block, the prompts never
+    # answered, and this graded 🟢 — with the one question it exists for left ⬜. The case
+    # asks about write-back; a run that never reached a block measured something else.
+    if not opened:
+        found = [(l, None, "⬜ not graded · no block was ever open · %s" % d)
+                 for l, ok, d in found]
+    return found
+
+
 GRADERS = {"start-here": grade_start_here, "onoff": grade_onoff, "readme": grade_readme,
            "first-move": grade_first_move, "product-home": grade_product_home,
-           "voice": grade_voice, "same-session": grade_same_session}
+           "voice": grade_voice, "same-session": grade_same_session,
+           "long-session": grade_long_session}
 
 
 def verdict(findings):
@@ -444,13 +504,52 @@ def clone_here(tmp, init):
     return c
 
 
-def command(case, model):
+def command(case, model, prompt=None, sid=None, resume=False):
     spec = CASES[case]
-    cmd = ["claude", "-p", spec["prompt"], "--output-format", "stream-json", "--verbose",
-           "--max-turns", str(spec.get("turns", 15)), "--no-session-persistence", "--permission-mode", "dontAsk",
+    # ⭐ A multi-turn case keeps its session, and says which one: the first turn names it with
+    # --session-id, every later turn --resume's it. A one-shot case persists nothing.
+    keep = ["--resume", sid] if (sid and resume) else (["--session-id", sid] if sid else
+                                                         ["--no-session-persistence"])
+    cmd = ["claude", "-p", prompt or spec["prompt"], "--output-format", "stream-json", "--verbose",
+           "--max-turns", str(spec.get("turns", 15))] + keep + ["--permission-mode", "dontAsk",
            "--setting-sources", "project", "--strict-mcp-config",
            "--allowedTools", spec["tools"]]
     return cmd + (["--model", model] if model else [])
+
+
+def _blocks_now(clone):
+    """{BLOCK.md path: sha1} of every open block — the turn-by-turn record of write-back."""
+    out = {}
+    for b in glob.glob(os.path.join(clone, "Mente", "work", "blocks", "active", "*", "BLOCK.md")):
+        out[os.path.relpath(b, clone).replace(os.sep, "/")] = hashlib.sha1(
+            open(b, "rb").read()).hexdigest()[:12]
+    return out
+
+
+def run_turns(case, model, clone, env, limit):
+    """Every prompt of a multi-turn case, in ONE resumed session. Returns the joined stream
+    plus a `mente_turn` line after each turn — what the grader (and --grade) reads."""
+    sid = str(uuid.uuid4())
+    out, t0 = [], time.time()
+    for n, prompt in enumerate(CASES[case]["prompts"], 1):
+        left = limit - (time.time() - t0)
+        if left <= 0:
+            print("\n⚠️  %s · out of time before turn %d — grading what it reached" % (case, n))
+            break
+        try:
+            r = subprocess.run(command(case, model, prompt, sid, resume=n > 1), cwd=clone,
+                               capture_output=True, text=True, timeout=left, env=env)
+            text = r.stdout
+        except subprocess.TimeoutExpired as e:
+            text = e.stdout or ""
+            text = text.decode("utf-8", "replace") if isinstance(text, bytes) else text
+            print("\n⚠️  %s · turn %d timed out — grading what it reached" % (case, n))
+        out.append(text)
+        out.append(json.dumps({"type": "mente_turn", "n": n, "blocks": _blocks_now(clone)}))
+    # ⛔ The session lived only to be measured: its folder is removed with the clone.
+    shutil.rmtree(os.path.join(os.path.expanduser("~"), ".claude", "projects",
+                               re.sub(r"[^A-Za-z0-9]", "-", clone)), ignore_errors=True)
+    return subprocess.CompletedProcess(["claude"], 0, "\n".join(out), "")
 
 
 def show(case, model, findings, v):
@@ -496,8 +595,11 @@ def run(case, model):
         # graded. ⭐ A run that times out is graded on what it DID reach, and says it timed out.
         limit = CASES[case].get("timeout", 600)
         try:
-            r = subprocess.run(command(case, model), cwd=clone, capture_output=True, text=True,
-                               timeout=limit, env=env)
+            if "prompts" in CASES[case]:
+                r = run_turns(case, model, clone, env, limit)
+            else:
+                r = subprocess.run(command(case, model), cwd=clone, capture_output=True,
+                                   text=True, timeout=limit, env=env)
         except subprocess.TimeoutExpired as e:
             out = e.stdout or ""
             out = out.decode("utf-8", "replace") if isinstance(out, bytes) else out
@@ -572,6 +674,11 @@ def main(argv=None):
         return 2
     if dry:
         for c in cases:
+            if "prompts" in CASES[c]:
+                for n, pr in enumerate(CASES[c]["prompts"], 1):
+                    print("%s · turn %d%s → %s" % (c, n, " (clone + init)" if n == 1 else "",
+                          " ".join(command(c, model, pr, "<session>", resume=n > 1))))
+                continue
             print("%s · clone%s → %s" % (c, " + init" if CASES[c]["init"] else "",
                                          " ".join(command(c, model))))
         print("\n⬜ dry run · nothing was spent")

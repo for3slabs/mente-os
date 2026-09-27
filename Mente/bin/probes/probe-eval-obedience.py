@@ -195,6 +195,38 @@ try:
     case("㉓c 🔴 voice · the check RAN and no state closes → still disobeyed",
          code == 1 and "no state mark" in out, "exit=%d" % code)
 
+    # ── long-session (F-presencia, 2026-09-27): is the block written back as the work changes? ──
+    def _long(blocks_per_turn, final):
+        ev = [{"type": "system", "subtype": "init", "model": "probe", "tools": ["Read"]}]
+        lines = [json.dumps(e) for e in ev]
+        for n, b in enumerate(blocks_per_turn, 1):
+            lines.append(json.dumps({"type": "result", "result": final}))
+            lines.append(json.dumps({"type": "mente_turn", "n": n, "blocks": b}))
+        f = os.path.join(WORK, "long%d.jsonl" % len(results))
+        open(f, "w", encoding="utf-8").write("\n".join(lines))
+        r = subprocess.run(plat.script(EVAL, "--grade", "long-session", f),
+                           capture_output=True, text=True, timeout=60)
+        return r.returncode, r.stdout + r.stderr
+    B = "Mente/work/blocks/active/sql/BLOCK.md"
+    code, out = _long([{B: "a"}, {B: "a"}, {B: "b"}, {B: "b"}, {B: "c"}], "🟢 Quedamos en la semana 5.")
+    case("㉔b long-session · the block is written back as the work changes → obeyed",
+         code == 0 and "turn(s) [3, 5]" in out, "exit=%d" % code)
+    code, out = _long([{B: "a"}] * 5, "🟢 Quedamos en la semana 5.")
+    case("㉔c 🔴 long-session · opened at turn 1, never touched again → disobeyed",
+         code == 1 and "untouched after" in out, "exit=%d" % code)
+    code, out = _long([{B: "a"}, {B: "b"}, {B: "c"}, {B: "d"}, {B: "e"}], "Quedamos en la semana 5.")
+    case("㉔d 🔴 long-session · the last answer lost the state → disobeyed",
+         code == 1 and "no state mark" in out, "exit=%d" % code)
+    # 🔴 2026-09-27: Haiku asked "¿abro el bloque?", nobody answered, no block — and it graded 🟢.
+    code, out = _long([{}] * 5, "🟢 Quedamos en la semana 5.")
+    case("㉔f long-session · no block was ever open → ⬜ unmeasured, never 🟢",
+         code == 2 and "not graded" in out, "exit=%d" % code)
+    r = subprocess.run(plat.script(EVAL, "--dry-run", "long-session"), capture_output=True,
+                       text=True, timeout=60)
+    case("㉔e long-session --dry-run lists 5 resumed turns and spends nothing",
+         r.stdout.count("--resume <session>") == 4 and "--session-id <session>" in r.stdout
+         and "nothing was spent" in r.stdout, "exit=%d" % r.returncode)
+
     # A clone whose COMMITTED state is the baseline: what is uncommitted is the run's.
     def repo(name, files):
         d = os.path.join(WORK, name)
