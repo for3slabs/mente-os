@@ -1079,6 +1079,53 @@ _bb2 = open(_bp2, encoding="utf-8").read() if os.path.exists(_bp2) else ""
 case("㊱k ⛔ and with no --in it stays ⬜, never invented",
      "⬜ declare what this block may touch" in _bb2)
 
+# ── ㊲ A MISSING GATE SAYS WHY, AND STILL BLOCKS ────────────────────────────
+# 🔴 2026-09-27, for3s: a `git switch` put another tree under a live session.
+# Every wired gate pointed at a file that was gone, python answered `can't
+# open file` with exit 2, and EVERY tool was refused — Read included — with
+# nothing saying the tree had moved. ⭐ The tail names the file and the likely
+# cause. ⛔ It keeps the exit code: a gate that goes quiet when its code is
+# missing is a gate that is off.
+_tpl = json.load(open(os.path.join(ROOT, "templates",
+                                   "claude-settings.json.template"),
+                      encoding="utf-8"))
+_gates = [h["command"] for _g in _tpl["hooks"].values() for _e in _g
+          for h in _e["hooks"] if "|| true" not in h["command"]]
+case("㊲ every gate in the template carries the missing-hook tail",
+     bool(_gates) and all("hook missing" in c and "exit $r" in c for c in _gates),
+     "%d gate(s)" % len(_gates))
+
+_hd = os.path.join(WORK, "hooktail")
+os.makedirs(os.path.join(_hd, "Mente", "hooks"), exist_ok=True)
+_cmd = next(c for c in _gates if "gate-secrets.py" in c).replace(
+    "python3 ", '"%s" ' % sys.executable.replace("\\", "/"), 1)
+_sh = list(plat.bash(verify=False))
+
+
+def _fire(body):
+    _f = os.path.join(_hd, "Mente", "hooks", "gate-secrets.py")
+    if body is None:
+        if os.path.exists(_f):
+            os.remove(_f)
+    else:
+        open(_f, "w", encoding="utf-8").write(body)
+    return subprocess.run(_sh + ["-c", _cmd], input="{}", capture_output=True,
+                          text=True, timeout=30,
+                          env=dict(os.environ, CLAUDE_PROJECT_DIR=_hd))
+
+
+_r = _fire(None)
+case("㊲b 🔴 the gate's file is gone → it names it, and it STILL blocks",
+     _r.returncode != 0 and "hook missing" in _r.stderr
+     and "gate-secrets.py" in _r.stderr, "exit=%d" % _r.returncode)
+_r = _fire("import sys; sys.exit(2)\n")
+case("㊲c ⭐ a gate that blocks ON PURPOSE keeps exit 2, with no tail message",
+     _r.returncode == 2 and "hook missing" not in _r.stderr,
+     "exit=%d" % _r.returncode)
+_r = _fire("pass\n")
+case("㊲d a gate that lets it through stays silent and exits 0",
+     _r.returncode == 0 and not _r.stderr.strip(), "exit=%d" % _r.returncode)
+
 plat.rmtree(WORK)
 
 good = sum(1 for _, ok in results if ok)
