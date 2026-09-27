@@ -35,8 +35,10 @@ while _d != _os.path.dirname(_d):
     _d = _os.path.dirname(_d)
 import utf8                                          # noqa: F401,E402
 import os
+import shutil
 import subprocess
 import sys
+import tempfile
 
 MENTE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 REPO = os.path.dirname(MENTE)
@@ -159,10 +161,36 @@ def main():
     # it echoes back — `"Mente/memory/RESUME.md\r"`. Three defects from one
     # missing flag, and all three read as "nothing is yours".
     # ⚠️ This is the CRLF bug for the fifth time in this engine.
-    ask = subprocess.run(("git", "check-ignore", "--no-index", "-z",
-                          "--stdin"), cwd=REPO,
-                         input="\0".join(listed), capture_output=True,
-                         text=True, timeout=120)
+    #
+    # 🔴 AND ASKED OF THE ENGINE'S RULES, NOT THIS TREE'S. Measured 2026-09-27:
+    # `bin/init` appends `!memory/RESUME.md`, `!mente.config.yml`,
+    # `!work/blocks/active/`… to this installation's Mente/.gitignore, so the
+    # owner's own repository versions their memory. Asked of THAT file, git
+    # answered "not claimed" for every one of them — and this command took the
+    # owner's RESUME, config and blocks as engine files and overwrote them.
+    # ⭐ "Is it the instance's?" is what the PUBLISHED engine declares: its
+    # .gitignore at `ref`, read in an empty repository where nothing the
+    # installation added can answer instead.
+    rules = git("show", "%s:Mente/.gitignore" % ref)
+    if rules.returncode != 0:
+        print("🔴 could not read the engine's Mente/.gitignore at %s · nothing "
+              "was taken — without it nothing can tell your files from the "
+              "engine's" % ref, file=sys.stderr)
+        return 2
+    scratch = tempfile.mkdtemp(prefix="mente-rules-")
+    try:
+        subprocess.run(("git", "init", "-q", scratch), capture_output=True,
+                       timeout=60)
+        os.makedirs(os.path.join(scratch, "Mente"))
+        with open(os.path.join(scratch, "Mente", ".gitignore"), "w",
+                  encoding="utf-8", newline="") as fh:
+            fh.write(rules.stdout)
+        ask = subprocess.run(("git", "check-ignore", "--no-index", "-z",
+                              "--stdin"), cwd=scratch,
+                             input="\0".join(listed), capture_output=True,
+                             text=True, timeout=120)
+    finally:
+        shutil.rmtree(scratch, ignore_errors=True)
     ignored = set(x for x in ask.stdout.split("\0") if x)
     take = [p for p in listed if p not in ignored]
     held = len(listed) - len(take)
