@@ -37,11 +37,25 @@ def case(label, ok, detail=""):
     results.append((label, ok))
 
 
+def fwd(p):
+    return p.replace("\\", "/")
+
+
+# 🔴 2026-09-27, native Windows: 11 cases red. These stubs are bash scripts, and
+# Windows runs no script by its shebang — so every beat failed to reach the fake
+# ssh, and the paths, handed through `shlex.split`, lost their backslashes.
+# ⭐ There a stub is `"<git bash>" "<script>"`, forward slashes throughout. A
+# real owner is untouched: their ssh is `ssh.exe`, not a script.
+_SH = plat.bash()
+
+
 def stub(name, body):
     p = os.path.join(WORK, name)
-    with open(p, "w") as fh:
+    with open(p, "w", newline="\n") as fh:
         fh.write("#!/usr/bin/env bash\n" + body + "\n")
     os.chmod(p, 0o755)
+    if os.name == "nt" and _SH:
+        return '"%s" "%s"' % (fwd(list(_SH)[0]), fwd(p))
     return p
 
 
@@ -54,8 +68,8 @@ TS = stub("ts", 'case "$1" in status) printf "%b\\n" "${STUB_TS_STATUS}";; '
                 'ping) [ "${STUB_TS_PING}" = pong ] && echo "pong from box" || exit 1;; esac')
 # install-key stubs: every argv they receive is appended to a log, one call per line
 LOG = os.path.join(WORK, "calls.log")
-SSH_REC = stub("ssh-rec", 'printf "%%s\\n" "ssh $*" >> %s' % LOG)
-SCP_REC = stub("scp-rec", 'printf "%%s\\n" "scp $*" >> %s' % LOG)
+SSH_REC = stub("ssh-rec", 'printf "%%s\\n" "ssh $*" >> "%s"' % fwd(LOG))
+SCP_REC = stub("scp-rec", 'printf "%%s\\n" "scp $*" >> "%s"' % fwd(LOG))
 
 listener = socket.socket(); listener.bind(("127.0.0.1", 0)); listener.listen(8)
 OPEN = listener.getsockname()[1]
@@ -169,7 +183,7 @@ try:
     dlog = os.path.join(WORK, "docker.log")
     bindir = os.path.join(WORK, "bin"); os.makedirs(bindir)
     with open(os.path.join(bindir, "docker"), "w") as fh:
-        fh.write('#!/usr/bin/env bash\nprintf "%%s\\n" "$*" >> %s\n' % dlog)
+        fh.write('#!/usr/bin/env bash\nprintf "%%s\\n" "$*" >> "%s"\n' % fwd(dlog))
     os.chmod(os.path.join(bindir, "docker"), 0o755)
     env = dict(os.environ, PATH=bindir + os.pathsep + os.environ.get("PATH", ""))
     BASH = plat.bash()     # ⛔ never the bare name: on Windows it can resolve to WSL
