@@ -460,7 +460,8 @@ bin/status
 
 ⭐ **Show them its output and read it out loud with them.** It answers, in their
 words, whether it is on and what is running. ⛔ Do not summarise it — the point
-is that they see the system answer for itself.
+is that they see the system answer for itself. ⭐ **Then one sentence:** *"from your next session
+I answer in Mente OS's voice — reopen it, or type `/clear`"* (🔴 the host loads it at start).
 
 ### ⛔ THE BATTERY IS RUN AND THEN PUBLISHED — both, or it was not run
 
@@ -640,9 +641,7 @@ person, and an assistant that writes its own limits has written no limit at all.
 
 ## 5b · ⭐ REMIND THEM OF ONE SENTENCE — the rest was given in §4c
 
-⛔ **The interface is NOT taught here.** 🔴 It used to be, opening with *"once one block
-exists"* — so a run that never opened a block taught the person nothing, and that run happened.
-⭐ It moved to **§4c**, right after the setup, where it is reached whatever they choose next.
+⛔ **The interface is NOT taught here** — it lives in **§4c**, reached whatever they choose next.
 
 ⭐ **What belongs here is one sentence, said out loud now that there is work to lose:**
 

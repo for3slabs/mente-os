@@ -271,6 +271,13 @@ _i4c = text.find("4c · ")
 _i5 = text.find("## 5 · THE FIRST THING")
 case("⑮c ⛔ and it comes BEFORE the first block, not after",
      0 < _i4c < _i5, "4c@%d < 5@%d" % (_i4c, _i5))
+# 🔴 2026-09-27, a real install: the voice was selected and still did not speak
+# in that session — the host reads the style at start. ⭐ Said inside §4c, where
+# every install passes, or "no voice" reads as a broken engine.
+_inext = text.find("from your next session")
+case("⑮d ⭐ §4c tells them the voice arrives in the NEXT session",
+     _i4c < _inext < _i5 and "/clear" in text[_inext:_inext + 200],
+     "@%d" % _inext)
 
 # ── ⑯ THE BOUNDARY IS ABOUT WHAT WAS ALREADY THERE ─────────────────────────
 # 🔴 Measured: the owner, standing in a folder they had just installed into, was
