@@ -100,7 +100,7 @@ def _row(r, names):
                 C.SKILL_HOMES[0])
         for e in links:
             p = os.path.join(C.REPO, e)
-            if not os.path.islink(p):
+            if not C.is_link(p):
                 red(who, "%s is not a link (%s)" % (
                     e, "missing" if not os.path.lexists(p) else "a real folder"))
             elif os.path.realpath(p) != real:
@@ -112,7 +112,7 @@ def _row(r, names):
     else:
         for home in C.SKILL_HOMES:
             p = os.path.join(C.REPO, home, r["name"])
-            if os.path.islink(p) and os.path.realpath(p) == real:
+            if C.is_link(p) and os.path.realpath(p) == real:
                 red(who, "%s exposes it while it is `%s` — nothing is used "
                          "before review" % (os.path.join(home, r["name"]), r["state"]))
 
@@ -165,7 +165,7 @@ def _orphans(rows):
         # no such folder = no links to judge (a fresh clone has none) — an empty list, not a skip
         for d in (sorted(os.listdir(base)) if os.path.isdir(base) else []):
             p = os.path.join(base, d)
-            if not os.path.islink(p):
+            if not C.is_link(p):
                 continue
             tgt = os.path.realpath(p)
             if not os.path.exists(tgt):
