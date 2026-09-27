@@ -376,16 +376,32 @@ def data_evidence(dirs, root):
     return ev
 
 
-def pasted_secrets(dirs, root):
+PLANTED = "planted-secret"   # the per-line marker of a probe fixture
+
+
+def pasted_secrets(dirs, root, planted=None):
+    """Secret-shaped values written into the scope, as `file:line`.
+
+    ⭐ A FIXTURE IS DECLARED ON ITS OWN LINE (2026-09-27). The probes that PROVE the secret
+    gates plant secret-shaped values on purpose, and every block touching them graded MVP.
+    ⛔ Only `planted-secret` on the SAME line exempts — never the file, never a line above —
+    and each exemption goes to `planted`, which the report prints: a marker nobody sees
+    would be a hiding place."""
     out = []
     for f in files_in(dirs, root):
         try:
             src = open(f, encoding="utf-8", errors="replace").read()
         except (OSError, UnicodeDecodeError):
             continue          # ⬜ unreadable, skipped · the count says how many
+        lines = src.split("\n")
         for m in SECRET.finditer(src):
-            out.append("%s:%d" % (plat.rel(f, root),
-                                  src[:m.start()].count("\n") + 1))
+            n = src[:m.start()].count("\n") + 1
+            where = "%s:%d" % (plat.rel(f, root), n)
+            if PLANTED in lines[n - 1]:
+                if planted is not None:
+                    planted.append(where)
+                continue
+            out.append(where)
     return out
 
 
@@ -504,7 +520,8 @@ def main():
             elif yel_if:
                 yels.append(label)
 
-    secrets = pasted_secrets(dirs, root)
+    planted = []
+    secrets = pasted_secrets(dirs, root, planted)
     row("secret values written down", len(secrets), red_if=bool(secrets))
 
     detail = {}
@@ -631,6 +648,9 @@ def main():
         print("\n  🔴 SECRETS — reference them, never write the value:")
         for s in secrets[:5]:
             print("     %s" % s)
+    if planted:
+        print("\n  ℹ️  %d fixture(s) marked `%s` — not counted as secrets: %s"
+              % (len(planted), PLANTED, ", ".join(planted)))
     for name, items in detail.items():
         if items:
             print("\n  %s:" % name)

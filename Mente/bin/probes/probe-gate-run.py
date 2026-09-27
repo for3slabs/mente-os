@@ -68,7 +68,7 @@ _write = {"tool_name": "Write",
 _cmd = {"tool_name": "Bash", "tool_input": {"command": "ls"}}
 _leak = {"tool_name": "Write",
          "tool_input": {"file_path": _out,
-                        "content": "api_key: 'sk-zzprobe123456789abc'"}}
+                        "content": "api_key: 'sk-zzprobe123456789abc'"}}  # planted-secret
 
 # ── ① 🔴 THE VERDICT IS IDENTICAL, gate by gate ────────────────────────────
 # ⛔ NOT "it still refuses sometimes". Every gate, alone and through the

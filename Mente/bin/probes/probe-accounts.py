@@ -105,7 +105,7 @@ case("⑧ ⬜ with no template it says it did NOT measure the roles",
 shutil.move(tpl_path + ".hidden", tpl_path)
 
 # ── ACC-REG-003 · the pointer, never the credential ─────────────────────────
-ok, r = detects(GOOD.replace("\t-\n", "\ttoken=ghp_A1b2C3d4E5f6G7h8I9j0K1\n"),
+ok, r = detects(GOOD.replace("\t-\n", "\ttoken=ghp_A1b2C3d4E5f6G7h8I9j0K1\n"),  # planted-secret
                 "ACC-REG-003")
 case("⑨ 🔴 a credential in the row → detected", ok)
 case("⑩ ⭐ and it orders a ROTATION, not a delete", "ROTATED" in r.stdout)

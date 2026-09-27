@@ -133,7 +133,25 @@ case("② with no test file at all",
 
 case("③ a secret written into the code",
      dict(CLEAN, **{"cfg.py": 'from .used import helper\n'
-                              'password = "hunter2supersecret"\n'}),
+                              'password = "hunter2supersecret"\n'}),  # planted-secret
+     "MVP", "secret values written down")
+
+# ⭐ 2026-09-27 · a fixture is declared on ITS line; a marker one line above exempts nothing
+# ⚠️ ③b reads the ROW, not the verdict: `cfg.py` is imported by nobody, so the block is MVP
+# for dead code whatever the secret row says — measured, the verdict alone could not tell.
+plant(dict(CLEAN, **{"cfg.py": 'from .used import helper\n'
+                              'password = "hunter2supersecret"  # planted-secret\n'}))
+_c, _out = run()
+_row = next((l for l in _out.splitlines() if "secret values written down" in l), "")
+_ok = re.search(r"\s0\s", _row) is not None and "🔴" not in _row \
+    and "fixture(s) marked" in _out and "cfg.py:2" in _out
+_lab = "③b a FIXTURE marked on its line: 0 secrets, said"
+print("  %-46s %s %s" % (_lab, "✅" if _ok else "🔴", _row.strip()[-14:]))
+clean()
+results.append((_lab, _ok))
+case("③c 🔴 the marker one line ABOVE the value exempts nothing",
+     dict(CLEAN, **{"cfg.py": 'from .used import helper\n# planted-secret\n'
+                              'password = "hunter2supersecret"\n'}),  # planted-secret
      "MVP", "secret values written down")
 
 case("④ an import cycle",
