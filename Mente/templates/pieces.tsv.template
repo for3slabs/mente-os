@@ -200,7 +200,7 @@ sessions-readme	memory/sessions/README.md	engine	canonical	the session history f
 rule-shipping	rules/rule-shipping.md	engine	canonical	how a change leaves the workspace — loop, base, grouping, cleanup, session close
 check-shipping	bin/check-shipping	engine	executable	enforces the lock rows of the shipping rule
 probe-shipping	bin/probes/probe-shipping.py	engine	executable	proves check-shipping detects what the shipping rule claims
-check-connection	bin/check-connection	engine	executable	is every third-party component exactly what connection/registry.tsv says — ⬜ with nothing installed, never 🔴
+check-connection	bin/check-connection	engine	executable	is every third-party component exactly what connection/registry.tsv says, and every CLI card in connection/cli/ names where its credential lives — ⬜ with nothing installed, never 🔴
 connection	bin/connection	engine	executable	installs, exposes and removes third-party components — one path, it stops in quarantine
 connection-lib	bin/connection_lib.py	engine	canonical	the ONE definition of what is valid in connection/ — read by the installer and the verifier
 probe-connection	bin/probes/probe-connection.py	engine	executable	proves check-connection and the installer catch what they claim — against real git repos

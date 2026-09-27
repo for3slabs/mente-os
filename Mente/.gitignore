@@ -110,6 +110,10 @@ connection/mcp/*
 !connection/tools/
 connection/tools/*
 !connection/tools/README.md
+# cli/ · the README ships; a CARD per CLI is this installation's (`bin/init` versions them)
+!connection/cli/
+connection/cli/*
+!connection/cli/README.md
 # the heartbeat's CODE is engine; target.conf and state/ are one machine's facts
 !connection/server/
 connection/server/*

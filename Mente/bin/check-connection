@@ -174,12 +174,24 @@ def _orphans(rows):
                 red("%s/%s" % (home, d), "links into connection/ with no registry row")
 
 
+def _cli():
+    """⭐ The CLI cards, checked BEFORE the registry and without it: a machine's CLIs are
+    declared whether or not anything third-party was ever installed."""
+    for level, who, msg in C.cli_findings():
+        (red if level == "red" else yellow)(who, msg)
+
+
 def main():
+    _cli()
     if not os.path.isfile(C.REGISTRY):
         # ⬜ not 🔴: no registry means nothing third-party was ever installed — a
         # correct state. A red here would fire at every start of a fresh installation.
         print("⬜ no connection/registry.tsv yet — no third-party component installed")
-        return 0
+        for who, msg in YELLOW:
+            print("🟡 %-28s %s" % (who, msg))
+        for who, msg in RED:
+            print("🔴 %-28s %s" % (who, msg))
+        return 1 if RED else 0
     _hdr, rows, problems = C.read_registry()
     for n, msg in problems:
         red("registry line %d" % n, msg)

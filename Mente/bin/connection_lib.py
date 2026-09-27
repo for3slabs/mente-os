@@ -51,6 +51,74 @@ STATES = ("quarantine", "active", "disabled")
 # (their docs, 2026-09-26; measured for Claude Code the same day).
 SKILL_HOMES = (".claude/skills", ".agents/skills")
 
+# ── cli/ · the CLIs ALREADY INSTALLED on this machine that the agent works with ──
+# ⭐ Not code: `tools/` holds a fetched repo, `cli/` holds a CARD per CLI the machine already
+# has (`gh`, `vercel`, `docker`…) — what the agent uses it for, with which account, and WHERE
+# its credential lives. ⛔ Never the credential itself: that is `secrets/`, or the CLI's own
+# login store (`host`). A card is instance data, versioned by `bin/init`'s keep-block.
+CLI_DIR = os.path.join(CONN, "cli")
+CLI_FIELDS = ("Binary", "For", "Account", "Credential")
+CLI_REQUIRED = ("Binary", "For", "Credential")
+CLI_CRED_WORDS = ("none", "host")
+_CARD_FIELD = re.compile(r"\*\*(%s):\*\*\s*(.+?)(?=\s+·\s+\*\*|$)" % "|".join(CLI_FIELDS))
+# A value that LOOKS like a credential: a known token prefix, or a long mixed run.
+_TOKENISH = re.compile(r"(ghp_|gho_|ghs_|github_pat_|glpat-|sk-|sk_live_|rk_live_|xox[abpr]-|"
+                       r"AKIA[0-9A-Z]{12,}|eyJ[A-Za-z0-9_-]{10,}\.)|"
+                       r"\b(?=[A-Za-z0-9_\-]*\d)(?=[A-Za-z0-9_\-]*[A-Za-z])[A-Za-z0-9_\-]{32,}\b")
+
+
+def read_card(path):
+    """A CLI card → {field: value}, values with their backticks stripped."""
+    out = {}
+    with open(path, encoding="utf-8") as fh:
+        for line in fh:
+            for k, v in _CARD_FIELD.findall(line.strip()):
+                out.setdefault(k, v.strip().strip("`").strip())
+    return out
+
+
+def cli_findings(which=None):
+    """Every card in cli/ against the rules → [(level, who, message)], level 'red'|'yellow'.
+
+    ⭐ Independent of the registry: a card declares a CLI the machine already has, so a
+    fresh install with no registry still has its cards checked."""
+    import shutil
+    which = which or shutil.which
+    found = []
+    if not os.path.isdir(CLI_DIR):
+        return found
+    for entry in sorted(os.listdir(CLI_DIR)):
+        p = os.path.join(CLI_DIR, entry)
+        who = "cli/%s" % entry
+        if os.path.isdir(p):
+            found.append(("red", who, "a folder in cli/ — code does not live here; a fetched "
+                                      "repo belongs to ../tools/ (CLI-DIR-001)"))
+            continue
+        if entry == "README.md" or not entry.endswith(".md"):
+            continue
+        name = entry[:-3]
+        if not valid_name(name):
+            found.append(("red", who, "card name must be [a-z0-9-] like its CLI (CLI-NAM-001)"))
+        card = read_card(p)
+        missing = [f for f in CLI_REQUIRED if not card.get(f)]
+        if missing:
+            found.append(("red", who, "missing %s — a card says what the CLI is for and where "
+                                      "its credential lives (CLI-FLD-001)" % ", ".join(missing)))
+        cred = card.get("Credential", "")
+        if cred and cred.lower() not in CLI_CRED_WORDS and not cred.startswith("secrets/"):
+            found.append(("red", who, "Credential must be `secrets/<file>`, `host` or `none` — "
+                                      "got %r (CLI-SEC-001)" % cred[:40]))
+        text = open(p, encoding="utf-8").read()
+        hit = _TOKENISH.search(text)
+        if hit:
+            found.append(("red", who, "something that looks like a credential is written here "
+                                      "(%s…) — it belongs in secrets/ (CLI-SEC-002)" % hit.group(0)[:6]))
+        binary = card.get("Binary", "")
+        if binary and not which(binary):
+            found.append(("yellow", who, "`%s` is not installed on THIS machine — the card may "
+                                         "come from another one" % binary))
+    return found
+
 NAME_RE = re.compile(r"^[a-z0-9]+(-[a-z0-9]+)*$")
 SHA_RE = re.compile(r"^[0-9a-f]{40}$")
 GIT_RE = re.compile(r"^(https://|http://|git@|ssh://|file://)")

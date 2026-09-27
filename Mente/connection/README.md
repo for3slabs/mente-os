@@ -18,7 +18,8 @@ connection/
 ├── registry.tsv  ⭐ the lockfile — one row per third-party component (versioned; their code is not)
 ├── skills/       🧩 third-party skills, and the ones we write to drive a tool
 ├── mcp/          🔌 local MCP servers — the declaration lives in `.mcp.json`
-├── tools/        🛠️ third-party CLIs and repos that are not skills
+├── tools/        🛠️ third-party repos that are not skills — fetched, pinned, never on the PATH
+├── cli/          ⌨️ the CLIs this machine ALREADY has — one card each: what for, which account, where its credential lives
 ├── server/       🖥️ is your server alive while nobody uses it — a heartbeat every 5 min
 └── bridges/      🌉 the gate to other Mente OS installations
 ```
@@ -103,7 +104,8 @@ the gate again and read the source.
 |---|---|---|
 | `skills/` | where a skill from outside lives, and the one install path | `skills/README.md` |
 | `mcp/` | where an MCP server's code lives, and the credential rule | `mcp/README.md` |
-| `tools/` | where a CLI or repo lives, and how a skill drives it | `tools/README.md` |
+| `tools/` | where a fetched repo lives, and how a skill drives it | `tools/README.md` |
+| `cli/` | which installed CLIs the agent may use, and where each credential lives | `cli/README.md` |
 | `server/` | whether your server is alive, and which layer failed if not | `server/README.md` |
 | `bridges/` | which other installations exist, and the gate to open one | `bridges/README.md` |
 

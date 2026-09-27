@@ -872,6 +872,8 @@ KEEP_BLOCK = """
 !Cerebro/vision/*
 !docs/WORKSPACE.md
 !connection/bridges/BRIDGES.md
+# ⭐ the CLIs this machine works with — one card each, never a credential
+!connection/cli/*.md
 """ % KEEP_MARK
 
 
