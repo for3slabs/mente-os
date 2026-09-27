@@ -185,9 +185,14 @@ case("⑯b ⭐ and says the exclusion is right, not broken",
 # ⭐ Measured by RUNNING it on a tree, never by reading the source: the two
 # cases above assert what the file SAYS, and a walk that never reaches
 # memory/ would satisfy both.
+# ⚠️ A memory file NO installation re-includes. 🔴 2026-09-27, native Windows:
+# the tree under test was INSTALLED, `bin/init` had already versioned RESUME.md
+# (`!memory/RESUME.md`), so the check was RIGHT to stay quiet and this case read
+# red. ⭐ The question is "does it warn about memory git does not keep" — asked
+# with a file that stays excluded on an installed tree and on a pristine one.
 _rp, _tp = make_repo("memcheck")
-open(os.path.join(_tp, "memory", "RESUME.md"), "w", encoding="utf-8",
-     newline="").write("# where we left off\n")
+open(os.path.join(_tp, "memory", "zzprobe-lesson.md"), "w", encoding="utf-8",
+     newline="").write("# a lesson only this disk holds\n")
 _o = run(_tp)
 _said = "does NOT track" in (_o.stdout + _o.stderr)
 case("⑯d 🔴 ⭐ an untracked memory/ file is counted, not only blocks",
