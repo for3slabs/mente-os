@@ -25,7 +25,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash \"$CLAUDE_PROJECT_DIR/Mente/hooks/session-start.sh\"",
+            "command": "bash \"$CLAUDE_PROJECT_DIR/Mente/hooks/session-start.sh\" || { r=$?; [ -f \"$CLAUDE_PROJECT_DIR/Mente/hooks/session-start.sh\" ] || echo \"🔴 Mente OS · hook missing: $CLAUDE_PROJECT_DIR/Mente/hooks/session-start.sh · is this tree on the right branch? (git branch -vv)\" >&2; exit $r; }",
             "$comment": "health + structure. ⛔ Must NEVER block the session: it reports and exits 0."
           }
         ]
@@ -37,7 +37,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 \"$CLAUDE_PROJECT_DIR/Mente/hooks/gate-run.py\" gate-no-block pre-edit-standards",
+            "command": "python3 \"$CLAUDE_PROJECT_DIR/Mente/hooks/gate-run.py\" gate-no-block pre-edit-standards || { r=$?; [ -f \"$CLAUDE_PROJECT_DIR/Mente/hooks/gate-run.py\" ] || echo \"🔴 Mente OS · hook missing: $CLAUDE_PROJECT_DIR/Mente/hooks/gate-run.py · is this tree on the right branch? (git branch -vv)\" >&2; exit $r; }",
             "$comment": "🔴 gate-no-block BLOCKS (exit 2): work with no block open. Measured 2026-09-06 — a full run built and published real work while `bin/status` said no block was open, because reporting it was all anything did. Ways out: MENTE_SCRATCH=1, or a file inside Mente/. · pre-edit-standards injects the owning block's required standards; it informs, never blocks."
           }
         ],
@@ -48,7 +48,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 \"$CLAUDE_PROJECT_DIR/Mente/hooks/gate-run.py\" gate-critical",
+            "command": "python3 \"$CLAUDE_PROJECT_DIR/Mente/hooks/gate-run.py\" gate-critical || { r=$?; [ -f \"$CLAUDE_PROJECT_DIR/Mente/hooks/gate-run.py\" ] || echo \"🔴 Mente OS · hook missing: $CLAUDE_PROJECT_DIR/Mente/hooks/gate-run.py · is this tree on the right branch? (git branch -vv)\" >&2; exit $r; }",
             "$comment": "🔴 BLOCKS (exit 2): destructive change with no rollback · closing an insufficient block."
           }
         ]
@@ -58,7 +58,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 \"$CLAUDE_PROJECT_DIR/Mente/hooks/gate-run.py\" gate-critical gate-accounts watch-external gate-protected-writes",
+            "command": "python3 \"$CLAUDE_PROJECT_DIR/Mente/hooks/gate-run.py\" gate-critical gate-accounts watch-external gate-protected-writes || { r=$?; [ -f \"$CLAUDE_PROJECT_DIR/Mente/hooks/gate-run.py\" ] || echo \"🔴 Mente OS · hook missing: $CLAUDE_PROJECT_DIR/Mente/hooks/gate-run.py · is this tree on the right branch? (git branch -vv)\" >&2; exit $r; }",
             "$comment": "gate-critical on the command path — an edit is not the only way to do damage. · gate-accounts is layer 1: it reads the command TEXT; layer 2 is .git/hooks/pre-push, which cannot be walked around. · watch-external looks before an action a stale view would invalidate. · gate-protected-writes asks before a Bash command WRITES to a path the `ask` rules below protect — they guard the Edit tool only, and Bash is an edit. ⚡ Four gates, one interpreter: this matcher was the most expensive of all, measured at 2184 ms per command before gate-run."
           }
         ]
@@ -68,7 +68,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 \"$CLAUDE_PROJECT_DIR/Mente/hooks/gate-handoff.py\"",
+            "command": "python3 \"$CLAUDE_PROJECT_DIR/Mente/hooks/gate-handoff.py\" || { r=$?; [ -f \"$CLAUDE_PROJECT_DIR/Mente/hooks/gate-handoff.py\" ] || echo \"🔴 Mente OS · hook missing: $CLAUDE_PROJECT_DIR/Mente/hooks/gate-handoff.py · is this tree on the right branch? (git branch -vv)\" >&2; exit $r; }",
             "$comment": "a specialist that can WRITE does not launch without a declared scope. ⚠️ Alone on its matcher, so there is nothing to batch — wired direct."
           }
         ]
@@ -78,7 +78,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 \"$CLAUDE_PROJECT_DIR/Mente/hooks/gate-secrets.py\"",
+            "command": "python3 \"$CLAUDE_PROJECT_DIR/Mente/hooks/gate-secrets.py\" || { r=$?; [ -f \"$CLAUDE_PROJECT_DIR/Mente/hooks/gate-secrets.py\" ] || echo \"🔴 Mente OS · hook missing: $CLAUDE_PROJECT_DIR/Mente/hooks/gate-secrets.py · is this tree on the right branch? (git branch -vv)\" >&2; exit $r; }",
             "$comment": "reading secrets/ asks; writing there ALWAYS asks. Every access is logged. ⚠️ Alone on its matcher — but note it fires on every Read, which is the most frequent action there is: 306 ms each, measured 2026-09-09."
           }
         ]

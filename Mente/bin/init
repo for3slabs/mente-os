@@ -498,7 +498,11 @@ def prove_gates(dry):
     for group in cfg.get("hooks", {}).get("PreToolUse", []):
         for h in group.get("hooks", []):
             cmd = h.get("command", "")
-            name = cmd.rsplit("/", 1)[-1].rstrip('"')
+            # ⚠️ The FIRST hook path, not the last `/`: since 2026-09-27 every gate
+            # carries a tail that names its own file again to say when it is missing.
+            m = re.search(r"/(?:hooks|bin)/([\w.-]+)", cmd)
+            name = (m.group(1) + cmd[m.end():].split("||")[0].rstrip().rstrip('"')
+                    if m else cmd.rsplit("/", 1)[-1].rstrip('"'))
             if not cmd or name in seen:
                 continue
             seen.add(name)
