@@ -598,7 +598,11 @@ def install_voice(dry):
         data["outputStyle"] = "Mente OS"
         os.makedirs(os.path.dirname(cfg), exist_ok=True)
         write(cfg, json.dumps(data, indent=2, ensure_ascii=False) + "\n")
-        out.append("selected")
+        # 🔴 MEASURED 2026-09-27 on a real install: the voice was selected and the
+        # install AND the first job still came out in the assistant's own voice —
+        # the host reads the style when a session STARTS. ⛔ Unsaid, that reads
+        # as "the voice does not work", the testers' exact complaint.
+        out.append("selected · ⭐ it speaks from the NEXT session — reopen it, or /clear")
     except (OSError, ValueError) as e:
         out.append("⚠️ could not select it (%s)" % e.__class__.__name__)
     return "voice (Claude Code): " + " · ".join(out)

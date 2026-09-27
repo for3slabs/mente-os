@@ -256,7 +256,7 @@ case("⑰b 🔴 the base-branch hook is WIRED too", _ok2, _how2)
 # validators on it would measure those, not the install — ⛔ a fixture reused
 # past its purpose reports defects the thing under test never had.
 _repoC, _treeC = fresh()
-run(_treeC, "--owner", "Someone")
+_initC = run(_treeC, "--owner", "Someone")
 _git = ["git", "-c", "user.email=p@p", "-c", "user.name=p"]
 # ⚠️ ON A BRANCH, because the install wires `pre-commit` and that gate refuses
 # the base branch — 🔴 including the repository's FIRST commit, since 2026-09-06.
@@ -677,6 +677,13 @@ if os.path.isfile(_cfg):
         _chosen = ""
 case("㉙b 🔴 ⭐ and SELECTS it — the half that makes the other half real",
      bool(_chosen), _chosen or "not selected")
+
+# 🔴 2026-09-27, a real install: selected, and the install and the first job
+# still spoke in the assistant's own voice — the host reads the style when a
+# session starts. ⭐ Said at the moment it is selected, or it reads as broken.
+_vline = next((l for l in _initC.stdout.splitlines() if "voice (" in l), "")
+case("㉙d ⭐ the install says the voice speaks from the NEXT session",
+     "NEXT session" in _vline, _vline.strip()[:60] or "no voice line")
 
 # ⛔ It must never take a voice the owner already chose. Their file, their call.
 _t2 = os.path.join(tempfile.mkdtemp(prefix="tree-voice-", dir=WORK), "repo")
