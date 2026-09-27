@@ -185,6 +185,15 @@ try:
          code == 1 and "output style: default" in out, "exit=%d" % code)
     code, out = grade("voice", [status], "¡Claro! Todo bien 🟢", style="Mente OS")
     case("㉓ 🔴 voice · opens by validating → disobeyed", code == 1, "exit=%d" % code)
+    # ㉓b 🔴 2026-09-27: Haiku's `bin/status` was refused by THIS tool's permissions, it asked
+    # for the permission, and "no state mark" graded that a red.
+    code, out = grade("voice", [status + ("refused",)],
+                      "Necesito permiso para ejecutar el script de status.", style="Mente OS")
+    case("㉓b voice · the check refused, the answer asks for it → state ⬜, not a red",
+         code != 1 and "⬜ the evaluation's permissions refused the check" in out, "exit=%d" % code)
+    code, out = grade("voice", [status], "Revisé el sistema y todo está bien.", style="Mente OS")
+    case("㉓c 🔴 voice · the check RAN and no state closes → still disobeyed",
+         code == 1 and "no state mark" in out, "exit=%d" % code)
 
     # A clone whose COMMITTED state is the baseline: what is uncommitted is the run's.
     def repo(name, files):

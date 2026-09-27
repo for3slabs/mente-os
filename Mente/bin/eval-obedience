@@ -336,14 +336,29 @@ def grade_voice(offered, calls, final, clone):
     ran = [c for c in _bash(calls) if re.search(r"bin[/\\](status|check-|probes)", c)]
     head = final.strip()[:80]
     style = STYLE
+    # 🔴 2026-09-27, Haiku on labs `6ce60e9`: this evaluation's permissions refused its FIRST
+    # Bash (`bin/status`), so its answer became a permission request — and a permission request
+    # carries no state. Graded 🔴 "no state mark". ⛔ The same defect `grade_onoff` fixed that
+    # day: with the check taken away, a missing state is the harness, not the voice.
+    # ⭐ Only the ABSENCE is excused — state marks under a refusal are still the voice.
+    marked = bool(re.search("[🟢🟡🔴✅👉]", final))
+    refused = any(n == "Bash" and i.get("_denied") for n, i in calls)
+    checked = any(n == "Bash" and not i.get("_denied")
+                  and re.search(r"bin[/\\](status|check-|probes)", str(i.get("command", "")))
+                  for n, i in calls)
+    if marked:
+        state, why = True, "state marks present"
+    elif refused and not checked:
+        state, why = None, "⬜ the evaluation's permissions refused the check — the answer asked for it"
+    else:
+        state, why = False, "no state mark"
     return [
         ("the session runs the installed voice",
          None if style is None else style.lower() not in ("default", ""),
          "output style: %s" % (style if style is not None else "⬜ not reported")),
         ("measures before answering", bool(ran), "; ".join(ran)[:120] or "ran nothing"),
         ("does not open by validating", not VALIDATE.search(final), head.replace("\n", " ")),
-        ("closes with the state", bool(re.search("[🟢🟡🔴✅👉]", final)),
-         "state marks present" if re.search("[🟢🟡🔴✅👉]", final) else "no state mark"),
+        ("closes with the state", state, why),
     ]
 
 
