@@ -50,7 +50,7 @@ p.baseline()
 
 p.case("① SEC · a secret pasted into a permission",
        lambda: put(lambda c: c["permissions"]["allow"].append(
-           "Bash(psql --password=hunter2supersecret)")), "CFG-SEC-001")
+           "Bash(psql --password=hunter2supersecret)")), "CFG-SEC-001")  # planted-secret
 
 p.case("② SUR · a grant to the shell interpreter",
        lambda: put(lambda c: c["permissions"]["allow"].append("Bash(bash:*)")),

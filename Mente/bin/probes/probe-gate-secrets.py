@@ -70,12 +70,12 @@ print("═══ PROBE · gate-secrets + secrets-lease ═══\n")
 
 # ── ② THE LEAK CHECK · what MUST be refused ─────────────────────────────────
 LEAKS = [
-    ('password = "Tr0ub4dor&3x"',            "a real password assigned"),
-    ("api_key: 'a8Kd93jXm2Qp5vNw'",          "a named api key"),
+    ('password = "Tr0ub4dor&3x"',            "a real password assigned"),  # planted-secret
+    ("api_key: 'a8Kd93jXm2Qp5vNw'",          "a named api key"),  # planted-secret
     ('client_secret="xY9$mQ2#pL8w"',         "a client secret"),
-    ("psql --password=Hunter2Real9x",        "a secret in a flag"),
+    ("psql --password=Hunter2Real9x",        "a secret in a flag"),  # planted-secret
     ("key = 'sk-abcd1234efgh5678ijkl'",      "a provider format"),
-    ("token: 'ghp_A1b2C3d4E5f6G7h8I9j0K1'",  "a forge token"),
+    ("token: 'ghp_A1b2C3d4E5f6G7h8I9j0K1'",  "a forge token"),  # planted-secret
     ("-----BEGIN RSA PRIVATE KEY-----",      "a private key pasted inline"),
     # ⭐ Every one below walked straight through the first version, and each was
     # found by attacking the gate with a shape the probe had not been written
@@ -84,9 +84,9 @@ LEAKS = [
     ("export TOKEN=ghp_Zx9Kq2Lm8Pw4Rt6yAb",  "a shell export"),
     ('"pass": "Zx9Kq2Lm8Pw4Rt"',             "the shortened name people type"),
     ('{"password":"Zx9Kq2Lm8Pw4"}',          "inside JSON — how a config gets pasted"),
-    ('PASSWORD = "Zx9Kq2Lm8Pw4"',            "in uppercase"),
+    ('PASSWORD = "Zx9Kq2Lm8Pw4"',            "in uppercase"),  # planted-secret
     ("AWS_SECRET_ACCESS_KEY=wJalrXUtnFEMI",  "a cloud key"),
-    ("postgres://user:Zx9Kq2Lm@host/db",     "⭐ a connection string — with no name beside it"),
+    ("postgres://user:Zx9Kq2Lm@host/db",     "⭐ a connection string — with no name beside it"),  # planted-secret
 ]
 for body, why in LEAKS:
     r = run(file_path="notes.md", content=body)
@@ -97,18 +97,18 @@ for body, why in LEAKS:
 CLEAN = [
     ('password = os.environ["DB_PASSWORD"]',  "an environment read"),
     ('token: "${GITHUB_TOKEN}"',              "a shell variable"),
-    ('api_key: "{{api_key}}"',                "a template placeholder"),
-    ('password: "<your-password-here>"',      "a documentation example"),
-    ('secret = "xxxxxxxxxx"',                 "a redacted value"),
-    ('password: "changeme"',                  "an obvious default"),
-    ('token = "aaaaaaaaaaaa"',                "a value with no variety"),
+    ('api_key: "{{api_key}}"',                "a template placeholder"),  # planted-secret
+    ('password: "<your-password-here>"',      "a documentation example"),  # planted-secret
+    ('secret = "xxxxxxxxxx"',                 "a redacted value"),  # planted-secret
+    ('password: "changeme"',                  "an obvious default"),  # planted-secret
+    ('token = "aaaaaaaaaaaa"',                "a value with no variety"),  # planted-secret
     ('password: null',                        "an empty value"),
     ('const apiKey = process.env.API_KEY',    "a JS environment read"),
     ("# never write a password: value here",  "the doctrine itself, in prose"),
     # ⛔ And these blocked legitimate work — the failure that gets a gate deleted.
     ('password: "$(vault read key)"',         "a lookup through a manager"),
-    ('secret: "arn:aws:iam::12345:role/x"',   "a public resource identifier"),
-    ('api_key: "see secrets/README.md"',      "a pointer in prose · what the rule ASKS FOR"),
+    ('secret: "arn:aws:iam::12345:role/x"',   "a public resource identifier"),  # planted-secret
+    ('api_key: "see secrets/README.md"',      "a pointer in prose · what the rule ASKS FOR"),  # planted-secret
     ('password_hash = "$2b$12$abcdefghij"',   "⭐ a HASH — the safe thing to store"),
     ('token = get_token("service-account")',  "a function call"),
     ('secret = get_secret(name)',             "another call"),
@@ -120,13 +120,13 @@ for body, why in CLEAN:
          "exit=%d" % r.returncode)
 
 # ⭐ the refusal must name WHAT it saw · a block with no cause cannot be acted on
-r = run(file_path="notes.md", content='password = "Tr0ub4dor&3x"')
+r = run(file_path="notes.md", content='password = "Tr0ub4dor&3x"')  # planted-secret
 case("⭐ the refusal names the value AND orders a ROTATION",
      "Tr0ub4dor" in r.stderr and "ROTATED" in r.stderr)
 
 # ⚠️ an Edit carries new_string, not content — a check that only reads one field
 # is blind to the other, and both write to disk
-r = run(tool="Edit", file_path="a.py", new_string='token = "Zx9Kq2Lm8Pw4Rt6y"')
+r = run(tool="Edit", file_path="a.py", new_string='token = "Zx9Kq2Lm8Pw4Rt6y"')  # planted-secret
 case("⚠️ an Edit (new_string) is checked like a Write",
      r.returncode == 2, "exit=%d" % r.returncode)
 

@@ -146,7 +146,7 @@ p.inverse("⑭d IDS · two different ids do not fire",
 
 p.case("⑮ a credential pasted into the body",
        lambda: put(GOOD.replace("Nothing of consequence.",
-                                'Run it with `--token=abc123def456ghi789`.')),
+                                'Run it with `--token=abc123def456ghi789`.')),  # planted-secret
        "DOC-CNT-005")
 p.case("⑯ the filename names a person",
        # ⚠️ DOC-NAM-007 compares the filename against the OWNER, so this case

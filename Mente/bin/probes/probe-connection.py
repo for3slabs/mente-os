@@ -104,7 +104,7 @@ try:
     # 🔴 THE HOLE THIS CLOSES: with no registry, the checker used to return green
     # BEFORE looking at anything else — a card carrying a token would pass there.
     tok = card("gh", "**Binary:** `git` · **For:** open PRs\n"
-                     "**Credential:** ghp_abcdefghijklmnopqrstuvwxyz0123456789")
+                     "**Credential:** ghp_abcdefghijklmnopqrstuvwxyz0123456789")  # planted-secret
     rc, out = check()
     case("⓪b no registry + a card with a literal token → 🔴, not ⬜",
          rc == 1 and "CLI-SEC-002" in out, "rc %d" % rc)

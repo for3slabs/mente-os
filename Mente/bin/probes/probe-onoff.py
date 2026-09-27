@@ -195,7 +195,7 @@ try:
     r = _hook("gate-secrets.py",
               {"tool_name": "Write",
                "tool_input": {"file_path": _target,
-                              "content": "api_key: 'sk-abc123456789xyz'"}})
+                              "content": "api_key: 'sk-abc123456789xyz'"}})  # planted-secret
     case("④f ⛔ but a credential is STILL refused while paused",
          r.returncode == 2, "exit=%d" % r.returncode)
 
