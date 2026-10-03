@@ -139,6 +139,48 @@ def campaign_of(block, target=None):
     return None, []
 
 
+def sugerir_skill(target):
+    """💡 The owner, 2026-10-03: suggest it as a QUESTION — "attach this design skill to this
+    block?".
+
+    Fires when a file of a domain (`connection_lib.DOMAIN_FILES` — `.tsx`, `.css`… for `design`)
+    is edited while the block in FOCUS declares no skill of that domain and connection/ has an
+    on-demand one. ONCE per (block, skill): the answer is the owner's, and asking twice is noise.
+    ⛔ It suggests; it never attaches — `bin/connection attach` runs only after their yes."""
+    try:
+        sys.path.insert(0, os.path.join(MENTE, "bin"))
+        import connection_lib as C
+        ext = os.path.splitext(target)[1].lower()
+        doms = [d for d, exts in C.DOMAIN_FILES.items() if ext in exts]
+        f = C.read_focus()
+        block = f.get("block")
+        if not doms or not block:
+            return
+        _h, rows, _p = C.read_registry()
+        own, inh, _c = C.block_skills(block)
+        have = set(own) | set(inh)
+        if any(r["name"] in have and r["domain"] in doms for r in rows):
+            return
+        cands = [r for r in rows if r["type"] == "skill" and r["state"] == "on-demand"
+                 and r["domain"] in doms]
+        done = set(f.get("suggested") or [])
+        fresh = [r for r in cands if "%s:%s" % (block, r["name"]) not in done]
+        if not fresh:
+            return
+        names = ", ".join("`%s`" % r["name"] for r in fresh[:6]) + (
+            " y %d más (`bin/connection list`)" % (len(fresh) - 6) if len(fresh) > 6 else "")
+        print("💡 SKILL · you are editing `%s` (%s) in the block in focus `%s`, which has no %s "
+              "skill. connection/ has %s on-demand. 👉 ASK THE OWNER, once: «attach %s to "
+              "`%s`? it is for %s and is switched on only while we work on this block». On "
+              "yes: `bin/connection attach <skill> --block %s` + /reload-skills" % (
+                  os.path.basename(target), ext, block, "/".join(doms), names, names, block,
+                  "/".join(doms), block), file=sys.stderr)
+        f["suggested"] = sorted(done | {"%s:%s" % (block, r["name"]) for r in fresh})
+        C.write_focus(f)
+    except Exception:                                          # noqa: BLE001
+        pass                    # a suggestion that fails must never cost the edit
+
+
 def main():
     # ⭐ Proof this hook still fires — see bin/check-gates. An injector that
     # stops running looks exactly like a session where nothing was owned.
@@ -170,6 +212,7 @@ def main():
     target = ti.get("file_path", "") if isinstance(ti, dict) else ""
     if not target:
         return 0
+    sugerir_skill(target)
 
     open_blocks = []
     for bpath in sorted(glob.glob(os.path.join(BLOCKS, "**", "BLOCK.md"),

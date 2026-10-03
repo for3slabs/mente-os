@@ -137,6 +137,7 @@ You do not invoke these. They fire at the moment they matter, and **most of them
 | ⭐ inside the push | `hooks/pre-push.sh` — layer 2, destination already resolved | 🔴 **aborts** · ⭐ cannot be walked around |
 | before a commit | `hooks/pre-commit.sh` — a commit on the base branch | 🔴 **blocks** |
 | before any action | `hooks/watch-external.py` — external state moved while you were working | ⬜ informs |
+| on every message | `hooks/focus-signal.py` — the block a request names becomes the FOCUS, and the on-demand skills follow it (`bin/connection focus`) · silent when nothing moves | ⬜ informs · ⚠️ a skill turned on or off is seen after `/reload-skills` |
 
 ⭐ **The ratio is deliberate: most inform, and only what earned it blocks.** A gate that obstructs
 more than it protects gets switched off, and a switched-off gate protects nothing.

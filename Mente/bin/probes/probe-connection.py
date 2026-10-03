@@ -85,6 +85,12 @@ try:
     shutil.copy2(os.path.join(ROOT, ".gitignore"), os.path.join(M, ".gitignore"))
     sh(["git", "init", "-q"], WORK)
     REG = os.path.join(M, "connection", "registry.tsv")
+    sys.path.insert(0, os.path.join(M, "bin"))
+    import connection_lib                                  # noqa: E402
+    # ⚠️ the credential rule is enforced only where the installation says so — the cases that
+    # plant a MISSING credential expect 🔴 when it is, 🟡 (exit 0) when it is not
+    REQ = connection_lib.CREDENTIAL_REQUIRED
+    MISSING = "🔴" if REQ else "🟡"
 
     # ⓪ a fresh installation has no registry: nothing installed is a correct state
     rc, out = check()
@@ -92,6 +98,14 @@ try:
     case("⓪ no registry → ⬜, never 🔴 · and `list` still runs",
          rc == 0 and "no connection/registry.tsv yet" in out and rcl == 0,
          "check rc %d · list rc %d" % (rc, rcl))
+    with open(REG, "w", encoding="utf-8") as fh:
+        fh.write("\n".join(connection_lib.HEADER) + "\n")
+    CL = os.path.join(WORK, ".claude", "skills", "demo-skill")
+    AG = os.path.join(WORK, ".agents", "skills", "demo-skill")
+    SK = os.path.join(M, "connection", "skills", "demo-skill")
+
+    rc, out = check()
+    case("① empty registry → green", rc == 0, "rc %d" % rc)
 
     # ── cli/ · the CLIs the machine already has — a card each, never a credential ──
     CLI = os.path.join(M, "connection", "cli")
@@ -102,51 +116,112 @@ try:
             fh.write("# cli · %s\n\n%s\n" % (name, body))
         return os.path.join(CLI, name + ".md")
 
-    # 🔴 THE HOLE THIS CLOSES: with no registry, the checker used to return green
-    # BEFORE looking at anything else — a card carrying a token would pass there.
     tok = card("gh", "**Binary:** `git` · **For:** open PRs\n"
                      "**Credential:** ghp_abcdefghijklmnopqrstuvwxyz0123456789")  # planted-secret
     rc, out = check()
-    case("⓪b no registry + a card with a literal token → 🔴, not ⬜",
+    case("⓪b a card with a literal token → 🔴",
          rc == 1 and "CLI-SEC-002" in out, "rc %d" % rc)
     os.remove(tok)
+    # ── the credential rule (block connection-secrets, 2026-09-27): every connection points at
+    # its secret in secrets/ or says `none` AND why. Measured BEFORE writing it: the first three
+    # below all read GREEN — `host` alone, `none` with no reason, a pointer that leaves secrets/.
     good = card("gh", "**Binary:** `git` · **For:** open PRs on the declared repos\n"
                       "**Account:** the org account · **Credential:** `host`")
     rc, out = check()
-    case("⓪c … the same card pointing at `host` → green", rc == 0, "rc %d" % rc)
+    case("⓪c 🔴 `host` alone → it points at no guide in secrets/",
+         rc == 1 and "CON-SEC-004" in out, "rc %d" % rc)
+    card("gh", "**Binary:** `git` · **For:** open PRs\n**Credential:** `none`")
+    rc, out = check()
+    case("⓪c2 🔴 `none` without its why", rc == 1 and "CON-SEC-003" in out, "rc %d" % rc)
+    card("gh", "**Binary:** `git` · **For:** open PRs\n**Credential:** `secrets/../escape.md`")
+    rc, out = check()
+    case("⓪c3 🔴 a pointer that leaves secrets/", rc == 1 and "leaves secrets/" in out,
+         "rc %d" % rc)
+    card("gh", "**Binary:** `git` · **For:** open PRs\n**Credential:** `none` · "
+               "**Why no secret:** it only reads public repositories, anonymously")
+    rc, out = check()
+    case("⓪c4 … `none` WITH its why → green", rc == 0, "rc %d" % rc)
     card("vercel", "**Binary:** `vercel` · **For:** deploy previews\n"
                    "**Credential:** `secrets/vercel.md`")
     rc, out = check()
-    case("⓪d a card pointing into secrets/ → green", rc == 0, "rc %d" % rc)
+    case("⓪d a pointer to a guide missing HERE → 🟡 (secrets/ never travels), not 🔴",
+         rc == 0 and "does not exist on THIS machine" in out, "rc %d" % rc)
+    os.makedirs(os.path.join(M, "secrets"), exist_ok=True)
+    with open(os.path.join(M, "secrets", "vercel.md"), "w", encoding="utf-8") as fh:
+        fh.write("where the login lives — never its value\n")
+    rc, out = check()
+    case("   … with the guide in secrets/ → green and silent",
+         rc == 0 and "does not exist on THIS machine" not in out, "rc %d" % rc)
+    tokv = card("vercel", "**Binary:** `vercel` · **For:** deploy previews\n"
+                          "**Credential:** vcp_abcdefghijklmnopqrstuvwx1234")  # planted-secret
+    rc, out = check()
+    case("⓪d2 🔴 a Vercel token written in a card", rc == 1 and "CLI-SEC-002" in out,
+         "rc %d" % rc)
+    card("vercel", "**Binary:** `vercel` · **For:** deploy previews\n"
+                   "**Credential:** `secrets/vercel.md`")
     bad = card("docker", "**Binary:** `docker` · **Credential:** `~/.docker/config.json`")
     rc, out = check()
     case("⓪e 🔴 no `For`, and a credential outside secrets/ → 🔴 both",
          rc == 1 and "CLI-FLD-001" in out and "CLI-SEC-001" in out, "rc %d" % rc)
     os.remove(bad)
-    card("no-such-cli-zz", "**Binary:** `no-such-cli-zz` · **For:** nothing\n**Credential:** `none`")
+    card("no-such-cli-zz", "**Binary:** `no-such-cli-zz` · **For:** nothing\n"
+                           "**Credential:** `none` · **Why no secret:** a fixture CLI that reaches nothing")
     rc, out = check()
     case("⓪f a CLI not installed here → 🟡, never 🔴 (the card may come from elsewhere)",
          rc == 0 and "not installed on THIS machine" in out, "rc %d" % rc)
     os.makedirs(os.path.join(CLI, "some-repo"))
+    with open(os.path.join(CLI, "some-repo", "main.py"), "w") as fh:
+        fh.write("print(1)\n")
     rc, out = check()
-    case("⓪g 🔴 a folder inside cli/ → code does not live here",
+    case("⓪g 🔴 a folder inside cli/ holding code → code does not live here",
          rc == 1 and "CLI-DIR-001" in out, "rc %d" % rc)
+    plat.rmtree(os.path.join(CLI, "some-repo"))
+    os.makedirs(os.path.join(CLI, "some-repo"))
+    rc, out = check()
+    case("⓪g2 🔴 a folder with no README.md → no card", rc == 1 and "CLI-DIR-002" in out,
+         "rc %d" % rc)
+    plat.rmtree(os.path.join(CLI, "some-repo"))
+    os.makedirs(os.path.join(CLI, "flyctl"))
+    with open(os.path.join(CLI, "flyctl", "README.md"), "w", encoding="utf-8") as fh:
+        fh.write("# cli · flyctl\n\n**Binary:** `git` · **For:** deploy apps\n"
+                 "**Credential:** `secrets/vercel.md`\n\n## Commands\n")
+    rc, out = check()
+    case("⓪g3 a card as `cli/<name>/README.md` — documents only → green (2026-09-27)",
+         rc == 0 and "flyctl" not in out, "rc %d" % rc)
+    with open(os.path.join(CLI, "flyctl.md"), "w", encoding="utf-8") as fh:
+        fh.write("**Binary:** `git` · **For:** x\n**Credential:** `secrets/vercel.md`\n")
+    rc, out = check()
+    case("⓪g4 🔴 two cards for one CLI (`x.md` and `x/README.md`)",
+         rc == 1 and "CLI-DIR-003" in out, "rc %d" % rc)
+    os.remove(os.path.join(CLI, "flyctl.md"))
+    with open(os.path.join(CLI, "flyctl", "README.md"), "w", encoding="utf-8") as fh:
+        fh.write("# cli · flyctl\n\n**Binary:** `git` · **For:** deploy apps\n"
+                 "**Credential:** `host`\n")
+    rc, out = check()
+    case("⓪g5 🔴 … and the folder card answers the credential rule too",
+         rc == 1 and "CON-SEC-004" in out, "rc %d" % rc)
+    plat.rmtree(os.path.join(CLI, "flyctl"))
+
+    # ── the connections that are FOLDERS: server/ and bridges/ declare theirs in the README ──
+    SRV = os.path.join(M, "connection", "server")
+    os.makedirs(SRV)
+    with open(os.path.join(SRV, "README.md"), "w", encoding="utf-8") as fh:
+        fh.write("# connection/server/\n\n**Governance:** x\n")
+    rc, out = check()
+    case("⓪i %s server/ README with no `Credential` → it must answer the rule" % MISSING,
+         rc == (1 if REQ else 0) and "connection/server/" in out and "CON-SEC-001" in out,
+         "rc %d" % rc)
+    with open(os.path.join(SRV, "README.md"), "w", encoding="utf-8") as fh:
+        fh.write("# connection/server/\n\n**Credential:** `secrets/vercel.md`\n")
+    rc, out = check()
+    case("   … pointing at its guide → green", rc == 0, "rc %d" % rc)
+    plat.rmtree(SRV)
     plat.rmtree(CLI)
     rc, out = check()
-    case("⓪h … and with no cli/ at all → back to ⬜", rc == 0, "rc %d" % rc)
-    sys.path.insert(0, os.path.join(M, "bin"))
-    import connection_lib                                  # noqa: E402
-    with open(REG, "w", encoding="utf-8") as fh:
-        fh.write("\n".join(connection_lib.HEADER) + "\n")
-    CL = os.path.join(WORK, ".claude", "skills", "demo-skill")
-    AG = os.path.join(WORK, ".agents", "skills", "demo-skill")
-    SK = os.path.join(M, "connection", "skills", "demo-skill")
-
-    rc, out = check()
-    case("① empty registry → green", rc == 0, "rc %d" % rc)
+    case("⓪h … and with no cli/ at all → back to green", rc == 0, "rc %d" % rc)
 
     u_skill = repo("demo-skill", {"SKILL.md": SKILL, "LICENSE": MIT, "scripts/run.sh": "echo hi\n"})
-    rc, out = conn("add", u_skill, "--why", "probe")
+    rc, out = conn("add", u_skill, "--why", "probe", "--credential", "none: a local fixture repo, it reaches no account")
     rc2, _ = check()
     case("② add → quarantine, NOT exposed, checker green",
          rc == 0 and "quarantine" in out and not os.path.lexists(CL) and rc2 == 0,
@@ -210,7 +285,7 @@ try:
          rc == 1 and rc2 == 0 and rc3 == 0 and connection_lib.is_link(CL), "rc %d/%d/%d" % (rc, rc2, rc3))
 
     u_tool = repo("tool-x", {"README.md": "a cli\n", "main.py": "print(1)\n", "LICENSE": MIT})
-    rc, out = conn("add", u_tool, "--why", "probe")
+    rc, out = conn("add", u_tool, "--why", "probe", "--credential", "none: a local fixture repo, it reaches no account")
     case("⑪ a repo with no SKILL.md → tools/, and it says to author one",
          rc == 0 and os.path.isdir(os.path.join(M, "connection", "tools", "tool-x"))
          and "author" in out, "rc %d" % rc)
@@ -238,7 +313,7 @@ try:
 
     u_multi = repo("multi", {"skills/a-one/SKILL.md": SKILL.replace("demo-skill", "a-one"),
                              "skills/b-two/SKILL.md": SKILL.replace("demo-skill", "b-two")})
-    rc, out = conn("add", u_multi, "--why", "probe")
+    rc, out = conn("add", u_multi, "--why", "probe", "--credential", "none: a local fixture repo, it reaches no account")
     rc2, _ = conn("activate", "a-one")
     rc3, _ = check()
     a1 = os.path.join(WORK, ".claude", "skills", "a-one")
@@ -255,8 +330,169 @@ try:
     with open(os.path.join(WORK, ".mcp.json"), "w") as fh:
         fh.write('{"mcpServers":{"x":{"type":"http","url":"https://x",'
                  '"headers":{"Authorization":"Bearer ${X_TOKEN}"}}}}')
+    rc, out = check()
+    case("   … the same with ${VAR} → no literal-token finding", "literal value" not in out,
+         "rc %d" % rc)
+    case("   … and with no registry row it is an ORPHAN (CON-MCP-004)",
+         rc == 1 and "CON-MCP-004" in out, "rc %d" % rc)
+    os.remove(os.path.join(WORK, ".mcp.json"))
+
+    # ── registry rows answer the credential rule too ──
+    u_nope = repo("nope", {"SKILL.md": SKILL.replace("demo-skill", "nope"), "LICENSE": MIT})
+    rc, out = conn("add", u_nope, "--why", "probe", "--credential", "host")
+    case("⑰ add with a credential that breaks the rule → refused before fetching",
+         rc == 1 and "CON-SEC-004" in out and not os.path.exists(
+             os.path.join(M, "connection", "skills", "nope")), "rc %d" % rc)
+    with open(REG, encoding="utf-8") as fh:
+        reg = fh.read()
+    line = [l for l in reg.splitlines() if l.startswith("tool-x\t")][0]
+    cells = line.split("\t")
+    blank = "\t".join(cells[:8] + ["-"] + cells[9:])
+    edit(REG, line, blank)
+    rc, out = check()
+    case("⑱ %s a row with no credential" % MISSING,
+         rc == (1 if REQ else 0) and "CON-SEC-001" in out, "rc %d" % rc)
+    # A row from before `credential` (2026-09-27) predates `domain` (2026-10-03) too: 9 cells.
+    legacy = "\t".join(cells[:8] + cells[9:10])
+    edit(REG, blank, legacy)
+    rc, out = check()
+    case("⑲ a row from BEFORE the column → read, and told what it lacks (not 'malformed')",
+         rc == (1 if REQ else 0) and "CON-SEC-001" in out and "field(s)" not in out,
+         "rc %d" % rc)
+    edit(REG, legacy, line)
+
+    # ── ON DEMAND · a skill is exposed only while the block in focus declares it (2026-10-03) ──
+    def block(name, conn_lines, state="active"):
+        d = os.path.join(M, "work", "blocks", state, name)
+        os.makedirs(d, exist_ok=True)
+        with open(os.path.join(d, "BLOCK.md"), "w", encoding="utf-8") as fh:
+            fh.write("# BLOCK · %s\n\n## Connections\n- DEPENDS ON: nada\n%s\n"
+                     "<!-- ══ D · STANDARDS ══ -->\n## Required standards\n- x\n" % (name, conn_lines))
+    block("diseno", "")
+    block("otro", "")
+    od_l = os.path.join(WORK, ".claude", "skills", "od-skill")
+    u_od = repo("od", {"SKILL.md": SKILL.replace("demo-skill", "od-skill"), "LICENSE": MIT})
+    conn("add", u_od, "--why", "probe", "--credential", "none: a local fixture repo, it reaches no account")
+    rc, out = conn("activate", "od-skill", "--on-demand", "--domain", "design")
+    rc2, out2 = check()
+    case("⑳ activate --on-demand → NO link, green (nothing declares it)",
+         rc == 0 and rc2 == 0 and not os.path.lexists(od_l) and "on-demand" in out2,
+         "rc %d/%d" % (rc, rc2))
+    rc, out = conn("attach", "od-skill", "--block", "diseno")
+    with open(os.path.join(M, "work", "blocks", "active", "diseno", "BLOCK.md"), encoding="utf-8") as fh:
+        bt = fh.read()
+    rc2, _ = conn("attach", "od-skill", "--block", "diseno")
+    with open(os.path.join(M, "work", "blocks", "active", "diseno", "BLOCK.md"), encoding="utf-8") as fh:
+        bt2 = fh.read()
+    case("㉑ attach writes `- SKILLS:` inside §C, and twice is once",
+         rc == 0 and rc2 == 0 and bt.count("- SKILLS: `od-skill`") == 1 and bt == bt2
+         and bt.index("- SKILLS:") < bt.index("<!-- ══ D"), "rc %d/%d" % (rc, rc2))
+    rc, out = conn("focus", "diseno")
+    rc2, _ = check()
+    case("㉒ focus on the block that declares it → linked, green, says /reload-skills",
+         rc == 0 and rc2 == 0 and os.path.isfile(os.path.join(od_l, "SKILL.md"))
+         and "NEXT session" in out, "rc %d/%d" % (rc, rc2))
+    rc, _ = conn("focus", "otro")
+    case("㉓ focus moves to a block that does not → unlinked",
+         rc == 0 and not os.path.lexists(od_l), "rc %d" % rc)
+    connection_lib.make_link(os.path.join(M, "connection", "skills", "od-skill"), od_l)
+    rc, out = check()
+    case("㉔ 🔴 a link planted while the focus does not declare it (CON-FOC-001)",
+         rc == 1 and "CON-FOC-001" in out, "rc %d" % rc)
+    conn("focus", "otro")
+    block("otro", "- SKILLS: `no-existe`")
+    rc, out = check()
+    case("㉕ 🔴 a block declaring a skill nobody installed (CON-FOC-002)",
+         rc == 1 and "CON-FOC-002" in out and "no-existe" in out, "rc %d" % rc)
+    block("otro", "")
+    camp = os.path.join(M, "work", "campaigns", "c1")
+    os.makedirs(camp, exist_ok=True)
+    with open(os.path.join(camp, "CAMPAIGN.md"), "w", encoding="utf-8") as fh:
+        fh.write("# CAMPAIGN · c1\n\nid: c1\nskills: `od-skill`\n\n## Blocks\n| otro | x | active |\n")
+    rc, _ = conn("focus", "otro")
+    rc2, _ = check()
+    case("㉖ a CAMPAIGN's skill is inherited by its blocks → linked under `otro`",
+         rc == 0 and rc2 == 0 and os.path.lexists(od_l), "rc %d/%d" % (rc, rc2))
+    plat.rmtree(camp)
+    conn("focus", "--none")
+    with open(os.path.join(M, "cache", "focus.json"), "w", encoding="utf-8") as fh:
+        fh.write('{"block": "fantasma"}')
+    rc, out = check()
+    case("㉗ 🔴 a focus on a block that does not exist (CON-FOC-004)",
+         rc == 1 and "CON-FOC-004" in out, "rc %d" % rc)
+    conn("focus", "--none")
+    rc, out = conn("activate", "tool-x", "--on-demand")
+    case("㉘ --on-demand on a tool → refused (CLI/MCP/tools are reached in specific cases)",
+         rc == 1 and "for skills" in out, "rc %d" % rc)
+    u_twin = repo("twin", {".claude/skills/twin/SKILL.md": SKILL.replace("demo-skill", "twin"),
+                           "LICENSE": MIT})
+    rc, out = conn("add", u_twin, "--why", "probe", "--credential", "none: a local fixture repo, it reaches no account")
+    rc2, out2 = conn("add", u_twin, "--name", "twin-src", "--why", "probe",
+                     "--credential", "none: a local fixture repo, it reaches no account")
+    rc3, _ = check()
+    case("㉙ a repo shipping .claude/skills/<its own name> → twins refused · --name → 1 tool + 1 skill",
+         rc == 1 and "twin-src" in out and rc2 == 0 and "twin " in out2.replace("\t", " ")
+         and rc3 == 0, "rc %d/%d/%d" % (rc, rc2, rc3))
+    conn("remove", "twin-src")
+    rc, out = conn("remove", "od-skill")
+    case("㉚ remove a skill a block still declares → it says so at once",
+         rc == 0 and "block diseno still declares" in out, "rc %d" % rc)
+    block("diseno", "")
+
+    # ── MCP servers that are not repos: npm pinned exactly, or remote https (2026-10-03) ──
+    fake = os.path.join(WORK, "fakebin")
+    os.makedirs(fake)
+    with open(os.path.join(fake, "npm"), "w") as fh:
+        fh.write("#!/bin/sh\necho Apache-2.0\n")
+    os.chmod(os.path.join(fake, "npm"), 0o755)
+    ENV["PATH"] = fake + os.pathsep + ENV.get("PATH", "")
+    MJ = os.path.join(WORK, ".mcp.json")
+    rc, out = conn("mcp", "pw", "--npm", "@x/mcp@latest", "--why", "probe",
+                   "--credential", "none: a local fixture server, it reaches no account")
+    case("㉛ mcp --npm with `@latest` → refused (it would move under you)",
+         rc == 1 and "EXACT version" in out, "rc %d" % rc)
+    rc, _ = conn("mcp", "pw", "--npm", "@x/mcp@1.2.3", "--why", "probe",
+                 "--credential", "none: a local fixture server, it reaches no account")
+    rc2, _ = check()
+    case("㉜ mcp --npm exact → quarantine, NOT in .mcp.json, green",
+         rc == 0 and rc2 == 0 and not os.path.exists(MJ), "rc %d/%d" % (rc, rc2))
+    rc, _ = conn("activate", "pw", "--mcp-args", "--headless --isolated")
+    rc2, _ = check()
+    with open(MJ, encoding="utf-8") as fh:
+        mj = fh.read()
+    case("㉝ activate → .mcp.json runs npx @x/mcp@1.2.3 + its options, green",
+         rc == 0 and rc2 == 0 and "@x/mcp@1.2.3" in mj and "--isolated" in mj,
+         "rc %d/%d" % (rc, rc2))
+    edit(MJ, "@x/mcp@1.2.3", "@x/mcp@latest")
+    rc, out = check()
+    case("㉞ 🔴 .mcp.json drifted to @latest — not what was reviewed (CON-MCP-003)",
+         rc == 1 and "CON-MCP-003" in out, "rc %d" % rc)
+    edit(MJ, "@x/mcp@latest", "@x/mcp@1.2.3")
+    rc, _ = conn("mcp", "rem", "--url", "https://mcp.example.com/mcp", "--why", "probe",
+                 "--credential", "none: a fixture url, nothing is ever called")
+    rc2, _ = conn("activate", "rem")
+    edit(MJ, "https://mcp.example.com/mcp", "https://evil.example.com/mcp")
+    rc3, out = check()
+    case("㉟ remote mcp activated · its url changed in .mcp.json → 🔴 CON-MCP-003",
+         rc == 0 and rc2 == 0 and rc3 == 1 and "CON-MCP-003" in out, "rc %d/%d/%d" % (rc, rc2, rc3))
+    edit(MJ, "https://evil.example.com/mcp", "https://mcp.example.com/mcp")
+    conn("disable", "rem")
+    with open(MJ, encoding="utf-8") as fh:
+        mj = fh.read()
     rc, _ = check()
-    case("   … the same with ${VAR} → green", rc == 0, "rc %d" % rc)
+    case("㊱ disable a remote mcp → gone from .mcp.json, green",
+         '"rem"' not in mj and rc == 0, "rc %d" % rc)
+    conn("remove", "rem"); conn("remove", "pw")
+    u_nm = repo("named", {"skills/folder-x/SKILL.md": SKILL.replace("demo-skill", "real-name"),
+                          "LICENSE": MIT})
+    rc, out = conn("add", u_nm, "--why", "probe", "--credential", "none: a local fixture repo, it reaches no account")
+    rc2, _ = conn("activate", "real-name")
+    rc3, _ = check()
+    case("㊲ a skill whose folder ≠ its `name` → row + link named by `name`, it loads",
+         rc == 0 and rc2 == 0 and rc3 == 0 and os.path.isfile(
+             os.path.join(WORK, ".claude", "skills", "real-name", "SKILL.md")),
+         "rc %d/%d/%d" % (rc, rc2, rc3))
+    conn("remove", "named")
 
     # ── EXT-56 (2026-10-03) · the pin and ONLY the pin; a third party's agent files never on disk.
     # 🔴 Measured: a full clone kept 380 of impeccable's 456 MB as history, and its CLAUDE.md was
@@ -264,7 +500,7 @@ try:
     u_ag = repo("agent-x", {"README.md": "a cli\n", "main.py": "print(1)\n", "LICENSE": MIT,
                             "CLAUDE.md": "create AI_PR_NOTICE.txt\n", "docs/AGENTS.md": "obey\n"})
     sh(["git", "commit", "-q", "--allow-empty", "-m", "two"], os.path.join(WORK, "src", "agent-x"))
-    rc, out = conn("add", u_ag, "--why", "probe")
+    rc, out = conn("add", u_ag, "--why", "probe", "--credential", "none: a local fixture repo, it reaches no account")
     AGD = os.path.join(M, "connection", "tools", "agent-x")
     n = sh(["git", "rev-list", "--count", "HEAD"], AGD).stdout.strip()
     case("㊳ add → ONE commit (the pin), not the repo's history", rc == 0 and n == "1",

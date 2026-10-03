@@ -84,6 +84,33 @@ would lose the only copy, so `check-connection` goes red if it is not tracked.
 
 ---
 
+## ⭐ On demand — a skill is ON only while its block is the work
+
+📏 Every linked skill puts its `description` in **every turn** (one design skill's is ~1,000
+chars), and a broad one invites the agent to use it on work that never asked for it. So a skill
+can be **on demand**: reviewed and on disk, but linked only while the block being worked on
+declares it. ⛔ CLI, bridges, MCP and server are the exception: they are reached in very specific
+cases and stay as they are.
+
+```
+activate <s> --on-demand --domain design   reviewed, on disk, NOT linked
+attach <s> --block <b>                      `- SKILLS: \`s\`` in the block's §C  (a campaign: `skills:`)
+focus <b>                                   link what <b> + its campaign declare · unlink the rest
+```
+
+| Piece | What it does |
+|---|---|
+| `hooks/focus-signal.py` (UserPromptSubmit) | the block a request NAMES becomes the focus — *"let's work on the admin panel"* → `admin-panel`. A tie moves nothing and says so. Silent when nothing moves |
+| `hooks/pre-edit-standards.py` | editing a file of a domain (`.tsx` `.css`… = `design`) in a focus with no skill of it → 💡 *ask the owner once* whether to attach the on-demand one |
+| `check-connection` CON-FOC-001..004 | 🔴 an on-demand skill linked outside its block · a block declaring a skill nobody installed · on-demand on a non-skill · a focus on a block that does not exist |
+
+⚠️ A switch is seen from the **next session or after `/reload-skills`** — the hook says so every
+time it changes what is linked. The focus lives in the focus file under `cache/` (this machine, never git).
+⚠️ `focus-signal` fires only once its `UserPromptSubmit` entry from
+`templates/claude-settings.json.template` is merged into your settings.
+
+---
+
 ## What goes in here, and what does not
 
 | ✅ Belongs here | ⛔ Does not |

@@ -20,6 +20,17 @@
     "not break the session."
   ],
   "hooks": {
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$CLAUDE_PROJECT_DIR/Mente/hooks/focus-signal.py\" || { r=$?; [ -f \"$CLAUDE_PROJECT_DIR/Mente/hooks/focus-signal.py\" ] || { echo \"🟡 Mente OS · hook missing: $CLAUDE_PROJECT_DIR/Mente/hooks/focus-signal.py · is this tree on the right branch? (git branch -vv) · it only signals, nothing was blocked\"; exit 0; }; exit $r; }",
+            "$comment": "focus-signal: the block a request names becomes the FOCUS, and the on-demand skills follow it (bin/connection focus). Silent when nothing moves. A SIGNAL, not a gate: if the script is missing it says so and lets the message through — a missing signal must never take the session."
+          }
+        ]
+      }
+    ],
     "SessionStart": [
       {
         "hooks": [
