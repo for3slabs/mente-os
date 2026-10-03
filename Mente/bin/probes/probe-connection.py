@@ -530,6 +530,23 @@ try:
          and os.path.isfile(os.path.join(AGD, "build.out")), "rc %d/%d · commits %s" % (rc, rc2, n))
     rc, out = conn("slim")
     case("   … run again → `already`, nothing touched", rc == 0 and "already" in out, "rc %d" % rc)
+    # ⚠️ THE FALLBACK · a server that refuses an unadvertised sha → the full history, then the
+    # pin: what `add` always did. Git protocol v0 refuses exactly that — measured 2026-10-03:
+    # "Server does not allow request for unadvertised object".
+    first = sh(["git", "rev-list", "--max-parents=0", "HEAD"],
+               os.path.join(WORK, "src", "agent-x")).stdout.strip()
+    v0 = dict(ENV, GIT_CONFIG_COUNT="1", GIT_CONFIG_KEY_0="protocol.version", GIT_CONFIG_VALUE_0="0")
+    r = subprocess.run([sys.executable, os.path.join(M, "bin", "connection"), "add", u_ag,
+                        "--name", "agent-old", "--ref", first, "--why", "probe", "--credential",
+                        "none: a local fixture repo, it reaches no account"],
+                       cwd=WORK, capture_output=True, text=True, env=v0, timeout=120)
+    OLD = os.path.join(M, "connection", "tools", "agent-old")
+    head = sh(["git", "rev-parse", "HEAD"], OLD).stdout.strip() if os.path.isdir(OLD) else ""
+    case("㊶ a server that refuses the sha → full history, lands on the pin, agent files still out",
+         r.returncode == 0 and head == first and os.path.isfile(os.path.join(OLD, "main.py"))
+         and not os.path.exists(os.path.join(OLD, "CLAUDE.md")),
+         "rc %d · %s" % (r.returncode, (r.stdout + r.stderr).strip().splitlines()[-1:]))
+    conn("remove", "agent-old")
     conn("remove", "agent-x")
 
     plat.rmtree(os.path.join(M, "connection", "tools", "tool-x"))

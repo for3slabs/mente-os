@@ -15,6 +15,7 @@ while _d != _os.path.dirname(_d):
     _d = _os.path.dirname(_d)
 import utf8                                          # noqa: F401,E402
 import plat                                          # noqa: E402
+import connection_lib as CL                          # noqa: E402
 from datetime import date
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -102,7 +103,9 @@ def _basename_index():
     if _BASENAMES:
         return _BASENAMES
     for dp, dn, fn in os.walk(ROOT):
-        dn[:] = [d for d in dn if d not in SKIP_DIRS]
+        _r = os.path.relpath(dp, ROOT).replace(os.sep, "/")
+        dn[:] = [d for d in dn if d not in SKIP_DIRS
+                 and not CL.third_party(("" if _r == "." else _r + "/") + d, True, ROOT)]
         for n in fn:
             _BASENAMES.setdefault(n, []).append(
                 os.path.relpath(os.path.join(dp, n), ROOT).replace(os.sep, "/"))
@@ -789,8 +792,10 @@ def _walk(targets):
                 yield path, plat.rel(path, ROOT)
         return
     for dirpath, dirnames, filenames in os.walk(ROOT):
-        dirnames[:] = [d for d in dirnames if d not in SKIP_DIRS]
         _rel = os.path.relpath(dirpath, ROOT).replace(os.sep, "/")
+        # ⛔ third-party repos are not documents of this system (connection_lib.third_party)
+        dirnames[:] = [d for d in dirnames if d not in SKIP_DIRS
+                       and not CL.third_party(("" if _rel == "." else _rel + "/") + d, True, ROOT)]
         if _rel in SKIP_DIR_PATHS:
             continue          # ⬜ governed by contract-adr.md, not by this one
         for name in sorted(filenames):

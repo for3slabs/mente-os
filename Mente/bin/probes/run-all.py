@@ -76,7 +76,10 @@ checkers = sorted(f for f in os.listdir(BIN)
 # whose failure only appears in the real tree.
 ROOT = os.path.dirname(BIN)
 SERIAL = os.environ.get("MENTE_PROBES_SERIAL") == "1"
-_IGNORE = shutil.ignore_patterns(".git", "__pycache__", "cache", "*.pyc")
+# ⭐ third-party repos stay out of the template (EXT-52): it is copied into EVERY probe
+sys.path.insert(0, BIN)
+import connection_lib                                # noqa: E402
+_IGNORE = connection_lib.tree_ignore(ROOT, ".git", "__pycache__", "cache", "*.pyc")
 
 
 def _fix_modes(tree):

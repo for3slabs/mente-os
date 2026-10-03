@@ -13,6 +13,7 @@ it meets something it cannot read.
 """
 import os
 import re
+import shutil
 import subprocess
 import sys
 
@@ -743,3 +744,46 @@ def all_declarations():
         if names:
             out.append(("campaign %s" % os.path.basename(os.path.dirname(cpath)), cpath, names))
     return out
+
+
+# ── third-party code is not a document of this system (EXT-52, 2026-10-03) ─────────────
+# 🔴 WHY: on the instance where the first real tools were fetched (rclone, PyMuPDF · 783 MB ·
+# 226 `.md`), the document validator died on a fixture written with broken unicode ON
+# PURPOSE, counted the tools' READMEs as our broken citations, and every probe copied it all.
+# Measured on the engine 2026-10-03: a planted tool put 8 red findings in check-document.
+# ⛔ Their code is governed by registry.tsv and verified by check-connection — the document
+# contract has nothing to say about it. ⭐ ONE reader, here, for every walker: each excluding
+# it with its own regex is how two of them would disagree about the same folder.
+# ⚠️ `connection/tools/README.md` itself is OURS, and stays audited.
+THIRD_PARTY_ROOTS = ("connection/tools",)
+
+
+def third_party(path, is_dir=False, root=MENTE):
+    """True for a path INSIDE a fetched third-party repo — `connection/tools/<name>/…`
+    (a directory: `connection/tools/<name>` itself). Relative to Mente/ or absolute."""
+    p = path.replace(os.sep, "/")
+    if os.path.isabs(path):
+        p = os.path.relpath(path, root).replace(os.sep, "/")
+    if p.startswith("./"):
+        p = p[2:]
+    for r in THIRD_PARTY_ROOTS:
+        if p.startswith(r + "/"):
+            rest = p[len(r) + 1:]
+            if is_dir or "/" in rest:
+                return True
+    return False
+
+
+def tree_ignore(root, *patterns):
+    """`shutil.copytree(ignore=…)` for a copy of the tree: the given patterns, plus every
+    third-party repo — copied once per battery, it was copied into every probe."""
+    base = shutil.ignore_patterns(*patterns)
+
+    def ignore(d, names):
+        out = set(base(d, names))
+        rel = os.path.relpath(d, root).replace(os.sep, "/")
+        rel = "" if rel == "." else rel + "/"
+        out |= {n for n in names if os.path.isdir(os.path.join(d, n))
+                and third_party(rel + n, is_dir=True)}
+        return out
+    return ignore
