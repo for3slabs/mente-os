@@ -1,13 +1,19 @@
 #!/usr/bin/env python3
 """connection — install, expose and remove third-party components. One path.
 
-    bin/connection add <git-url> --why "<who asked, for what>" [--name N] [--ref R]
+    bin/connection add <git-url> --why "<who asked, for what>" --credential <secrets/F | "none: why">
+                       [--name N] [--ref R]
     bin/connection author <tool> <skill-name> --description "<what + when>"
-    bin/connection activate <name>     after a person reviewed it
+    bin/connection mcp <name> (--npm <pkg>@<x.y.z> | --url https://…) --why … --credential …
+                                       an MCP server that is not a git repo — quarantine, like add
+    bin/connection activate <name> [--on-demand] [--domain D]   after a person reviewed it
+    bin/connection focus [<block> | --none]   expose ONLY the on-demand skills that block declares
+    bin/connection attach <skill> --block <b>  declare a skill in a block's §C (`- SKILLS:`)
     bin/connection disable <name>      unexpose, keep the code
     bin/connection remove <name>       unexpose, delete the code, drop the row
     bin/connection list
     bin/connection sync                restore code + links from the registry
+    bin/connection slim                shrink clones made before EXT-56 to their pin, in place
     bin/connection check               = bin/check-connection
 
 ⭐ THE PATH (connection/skills/README.md): pin → quarantine → REVIEW → expose →
@@ -17,6 +23,7 @@ agent will obey, and nothing is activated without a person's yes.
 What `add` decides from the repo, never from a guess:
   · SKILL.md at its root          → one skill, in skills/<its name>/
   · skills/*/SKILL.md             → the repo in tools/, one skill row per skill
+  · .claude/skills/*/SKILL.md     → the same (a repo that ships its skill BUILT for Claude Code)
   · no skill at all               → the repo in tools/; then `author` writes the
                                     SKILL.md that tells the agent how to drive it
 
@@ -96,16 +103,55 @@ def slug(url):
     return re.sub(r"-{2,}", "-", s)[:64]
 
 
+# ⭐ Third-party agent-instruction files never reach the disk (EXT-56, 2026-10-03).
+# 🔴 Measured: reading ONE file inside `tools/impeccable-src/` made Claude Code load that
+# repo's CLAUDE.md as project instructions — text no review ever read, obeyed because of
+# where it sits. `rclone` ships the same pair. A sparse-checkout keeps them out of the tree:
+# git tracks them, never writes them, and `git status` stays clean.
+AGENT_FILES = ("CLAUDE.md", "CLAUDE.local.md", "AGENTS.md", "GEMINI.md")
+
+
+def keep_out_agent_files(folder):
+    C.git(["config", "core.sparseCheckout", "true"], folder)
+    info = os.path.join(folder, ".git", "info")
+    os.makedirs(info, exist_ok=True)
+    with open(os.path.join(info, "sparse-checkout"), "w", encoding="utf-8") as fh:
+        fh.write("/*\n" + "".join("!%s\n" % f for f in AGENT_FILES))
+
+
+def agent_files_on_disk(folder):
+    """Tracked agent files NOT kept out — `git ls-files -v` tags a kept-out one `S`."""
+    out = C.git(["ls-files", "-v"], folder).stdout.splitlines()
+    return [l[2:] for l in out
+            if os.path.basename(l[2:]) in AGENT_FILES and not l.startswith("S ")]
+
+
 def fetch(url, ref, dest):
+    """The pinned commit, and ONLY it. 🔴 Measured 2026-10-03: a full `git clone` kept
+    1,960 commits of impeccable — 380 of its 456 MB were history nobody reads, and across
+    connection/tools/ history was ~1.03 of 1.43 GB. `--depth 1` of the same sha: 7 MB."""
     tmp = tempfile.mkdtemp(prefix="mente-conn-")
     try:
-        r = C.git(["clone", "--quiet", url, tmp], os.getcwd())
-        if r.returncode:
-            refuse("clone failed: %s" % (r.stderr.strip().splitlines() or ["?"])[-1])
-        if ref:
-            r = C.git(["checkout", "--quiet", "--detach", ref], tmp)
+        C.git(["init", "--quiet"], tmp)
+        C.git(["remote", "add", "origin", url], tmp)
+        keep_out_agent_files(tmp)
+        shallow = C.git(["fetch", "--quiet", "--depth", "1", "origin", ref or "HEAD"],
+                        tmp).returncode == 0
+        if not shallow:
+            # ⚠️ a server may refuse depth or an unadvertised sha: fall back to the full
+            # history — what `add` always did — and resolve the ref locally.
+            r = C.git(["fetch", "--quiet", "--tags", "origin",
+                       "+refs/heads/*:refs/remotes/origin/*"], tmp)
+            if r.returncode == 0 and not ref:
+                r = C.git(["fetch", "--quiet", "origin", "HEAD"], tmp)
             if r.returncode:
-                refuse("ref `%s` does not exist in %s" % (ref, url))
+                refuse("clone failed: %s" % (r.stderr.strip().splitlines() or ["?"])[-1])
+        target = ref if ref and not shallow else "FETCH_HEAD"
+        r = C.git(["checkout", "--quiet", "--detach", target], tmp)
+        if r.returncode and ref and not shallow:
+            r = C.git(["checkout", "--quiet", "--detach", "origin/" + ref], tmp)
+        if r.returncode:
+            refuse("ref `%s` does not exist in %s" % (ref, url))
         sha = C.head_of(tmp)
         os.makedirs(os.path.dirname(dest), exist_ok=True)
         _move(tmp, dest)
@@ -113,6 +159,85 @@ def fetch(url, ref, dest):
     finally:
         if os.path.isdir(tmp):
             plat.rmtree(tmp)
+
+
+def _size(folder):
+    n = 0
+    for base, _dirs, files in os.walk(folder):
+        for f in files:
+            try:
+                n += os.lstat(os.path.join(base, f)).st_size
+            except OSError:
+                pass
+    return n
+
+
+def slim_one(folder, sha, source):
+    """A clone made before EXT-56 → its pinned commit only, agent files out. In place: the
+    working tree is never re-written, so whatever was BUILT inside it (untracked) survives.
+    Returns (state, detail). Nothing is lost on failure: the old .git is put back."""
+    gd = os.path.join(folder, ".git")
+    if os.path.isfile(os.path.join(gd, "shallow")) and \
+            C.git(["config", "core.sparseCheckout"], folder).stdout.strip() == "true":
+        return "slim", "already"
+    head = C.head_of(folder)
+    if head != sha:
+        return "skip", "HEAD %s ≠ pin %s — not touched" % ((head or "?")[:10], sha[:10])
+    if C.git(["status", "--porcelain", "--untracked-files=no"], folder).stdout.strip():
+        return "skip", "tracked files modified — not touched"
+    before = _size(gd)
+    tmp = tempfile.mkdtemp(prefix=".slim-", dir=os.path.dirname(folder))
+    old = os.path.join(tmp, "old-git")
+    ok = False
+    try:
+        new = os.path.join(tmp, "new")
+        os.makedirs(new)
+        C.git(["init", "--quiet"], new)
+        # ⭐ from the LOCAL clone — no network, and the sha is already there
+        r = C.git(["fetch", "--quiet", "--depth", "1", "file://" + os.path.abspath(folder), sha],
+                  new)
+        if r.returncode:
+            return "skip", "local shallow fetch failed — not touched"
+        C.git(["update-ref", "--no-deref", "HEAD", sha], new)
+        C.git(["remote", "add", "origin", source], new)
+        os.replace(gd, old)
+        os.replace(os.path.join(new, ".git"), gd)
+        C.git(["reset", "--quiet"], folder)              # index from HEAD, tree untouched
+        # 🔴 `reset --quiet` skips the stat refresh: without this, read-tree calls every file
+        # "not uptodate", removes none of them — and still exits 0 (measured 2026-10-03).
+        C.git(["update-index", "-q", "--refresh"], folder)
+        keep_out_agent_files(folder)
+        C.git(["read-tree", "-mu", "HEAD"], folder)      # applies the sparse-checkout
+        if C.head_of(folder) != sha or agent_files_on_disk(folder) or C.git(
+                ["status", "--porcelain", "--untracked-files=no"], folder).stdout.strip():
+            return "skip", "verification failed — the old .git was put back"
+        ok = True
+        return "slim", "%.0f MB → %.1f MB" % (before / 1e6, _size(gd) / 1e6)
+    finally:
+        # ⛔ any way out but `ok` puts the old .git back — never a folder left without one
+        if not ok and os.path.isdir(old):
+            if os.path.isdir(gd):
+                plat.rmtree(gd)
+            os.replace(old, gd)
+            # the sparse step may have removed the agent files: bring them back (tracked
+            # files were verified unmodified before starting, so this overwrites nothing)
+            C.git(["checkout", "--quiet", "--", "."], folder)
+        plat.rmtree(tmp)
+
+
+def cmd_slim(_a):
+    _hdr, rows = load()
+    bad = 0
+    for r in rows:
+        folder = C.content_dir(r)
+        if C.is_authored(r) or C.is_inner(r) or not C.has_code(r) or \
+                not os.path.isdir(os.path.join(folder, ".git")):
+            continue
+        state, detail = slim_one(folder, r["ref"], r["source"])
+        bad += state != "slim"
+        print("%s %-22s %s" % ("✅" if state == "slim" else "🟡", r["name"], detail))
+    print("👉 %d not slimmed — each line says why" % bad if bad else "✅ every clone is slim")
+    sys.exit(1 if bad else 0)
 
 
 def review_list(folder):
@@ -132,6 +257,12 @@ def review_list(folder):
 
 def cmd_add(a):
     hdr, rows = load()
+    # ⭐ Before fetching anything: every connection points at its secret or says why not
+    # (block connection-secrets). A row that fails the rule is never written.
+    ptr, why = C.row_credential({"credential": a.credential})
+    bad = [m for lvl, _w, m in C.credential_findings(ptr, why, "--credential") if lvl == "red"]
+    if bad:
+        refuse(bad[0])
     name = a.name or slug(a.url)
     taken = {r["name"] for r in rows}
     tmp_dest = os.path.join(C.CONN, "tools", ".incoming-" + name)
@@ -141,26 +272,45 @@ def cmd_add(a):
     lic = C.read_license(tmp_dest)
 
     root_skill = C.skill_name_of(tmp_dest)
-    inner = []
-    sk = os.path.join(tmp_dest, "skills")
-    if not root_skill and os.path.isdir(sk):
-        inner = sorted(d for d in os.listdir(sk)
-                       if os.path.isfile(os.path.join(sk, d, "SKILL.md")))
+    inner = []                                   # [(skill name, its folder inside the repo)]
+    # ⭐ `.claude/skills/` too (2026-10-03): impeccable ships `skill/SKILL.src.md` (a source to
+    # BUILD) and the built skill in `.claude/skills/impeccable/` — reading only `skills/` filed it
+    # as a tool with no skill. `skills/` wins when a repo has both: it is the portable layout.
+    if not root_skill:
+        for base in C.INNER_SKILL_HOMES:
+            sk = os.path.join(tmp_dest, base)
+            if os.path.isdir(sk):
+                # ⭐ named by the `name` its SKILL.md declares, not by its folder (2026-10-03:
+                # 10 of taste-skill's 13 folders differ from their `name` and would never load)
+                inner = sorted((C.skill_name_of(os.path.join(sk, d)) or d, "%s/%s" % (base, d))
+                               for d in os.listdir(sk)
+                               if os.path.isfile(os.path.join(sk, d, "SKILL.md")))
+            if inner:
+                break
 
     new = []
     if root_skill:
         name = root_skill
         dest = os.path.join(C.CONN, "skills", name)
         new.append(row(name=name, type="skill", source=a.url, ref=sha,
-                       state="quarantine", license=lic, why=a.why))
+                       state="quarantine", license=lic, credential=a.credential, why=a.why))
     else:
         dest = os.path.join(C.CONN, "tools", name)
         new.append(row(name=name, type="tool", source=a.url, ref=sha,
-                       state="quarantine", license=lic, why=a.why))
-        for s in inner:
-            new.append(row(name=s, type="skill", source="in:tools/%s/skills/%s" % (name, s),
-                           state="quarantine", license=lic, why="shipped by %s" % name))
+                       state="quarantine", license=lic, credential=a.credential, why=a.why))
+        for s, rel in inner:
+            new.append(row(name=s, type="skill", source="in:tools/%s/%s" % (name, rel),
+                           state="quarantine", license=lic, credential=a.credential,
+                           why="shipped by %s" % name))
     clash = [r["name"] for r in new if r["name"] in taken]
+    # 🔴 Measured 2026-10-03: impeccable ships a skill named like its repo, and `add` wrote
+    # TWO rows called `impeccable` — the checker then reads one as "declared twice".
+    names_new = [r["name"] for r in new]
+    twins = sorted({n for n in names_new if names_new.count(n) > 1})
+    if twins:
+        plat.rmtree(tmp_dest)
+        refuse("the repo and its skill would share the name `%s` · pass --name %s-src" %
+               (twins[0], twins[0]))
     if clash or os.path.exists(dest):
         plat.rmtree(tmp_dest)
         refuse("already installed: %s · `bin/connection remove` first" %
@@ -189,6 +339,48 @@ def cmd_add(a):
     print("\n👉 bin/connection activate <name>   (only after the review)")
 
 
+def cmd_mcp(a):
+    """Register an MCP server delivered by npm or reachable over HTTP. Stops at quarantine."""
+    hdr, rows = load()
+    ptr, why = C.row_credential({"credential": a.credential})
+    bad = [m for lvl, _w, m in C.credential_findings(ptr, why, "--credential") if lvl == "red"]
+    if bad:
+        refuse(bad[0])
+    if not C.valid_name(a.name):
+        refuse("`%s` breaks the name spec" % a.name)
+    if any(r["name"] == a.name for r in rows):
+        refuse("`%s` already exists" % a.name)
+    if bool(a.npm) == bool(a.url):
+        refuse("give exactly one of --npm <pkg>@<x.y.z> or --url https://…")
+    if a.npm:
+        pkg, _, ver = a.npm.rpartition("@")
+        if not pkg or not C.NPM_VER_RE.match(ver):
+            refuse("--npm needs an EXACT version (`@playwright/mcp@0.0.83`) — `%s` would move "
+                   "under you; what runs must be what was reviewed" % a.npm)
+        # ⭐ Resolved, never bare: on native Windows npm is `npm.cmd`, and a bare name does not
+        # start it (probe-plat ⑩).
+        npm = shutil.which("npm")
+        if not npm:
+            refuse("npm is not installed on this machine — it is how an npm MCP server runs")
+        argv = [npm, "view", "%s@%s" % (pkg, ver), "license"]
+        r = subprocess.run(argv, capture_output=True, text=True, timeout=60)
+        if r.returncode or not r.stdout.strip():
+            refuse("npm does not know %s@%s" % (pkg, ver))
+        new = row(name=a.name, type="mcp", source="npm:" + pkg, ref=ver, state="quarantine",
+                  license=r.stdout.strip(), credential=a.credential, why=a.why)
+    else:
+        if not a.url.startswith("https://"):
+            refuse("--url must be https://")
+        new = row(name=a.name, type="mcp", source="remote:" + a.url, ref="-",
+                  state="quarantine", license=a.license or "unknown", credential=a.credential,
+                  why=a.why)
+    C.write_registry(hdr, rows + [new])
+    print("🔌 %s → mcp · %s %s · license %s · quarantine" % (a.name, new["source"], new["ref"],
+                                                            new["license"]))
+    print("👉 review it, then bin/connection activate %s  (writes .mcp.json, project scope — "
+          "Claude Code asks before its first use)" % a.name)
+
+
 def cmd_author(a):
     hdr, rows = load()
     tool = find(rows, a.tool)
@@ -215,6 +407,7 @@ def cmd_author(a):
     C.git(["add", "-f", os.path.join(folder, "SKILL.md")], C.MENTE)
     rows.append(row(name=a.skill, type="skill", source="authored:tools/%s" % a.tool,
                     state="quarantine", license="AGPL-3.0",
+                    credential=tool["credential"] or "-",   # it drives the tool: same secret
                     why="authored to drive %s" % a.tool))
     C.write_registry(hdr, rows)
     print("✍️  %s written — authored, VERSIONED (git add -f: ours, the only copy)" %
@@ -240,6 +433,12 @@ def _link(name, target):
 
 
 def _unlink(r):
+    if r["type"] == "mcp" and not C.has_code(r):
+        d = C.read_mcp_json()
+        if a_name_in(d, r["name"]):
+            del d["mcpServers"][r["name"]]
+            C.write_mcp_json(d)
+        return
     real = os.path.realpath(C.content_dir(r))
     for home in C.SKILL_HOMES:
         p = os.path.join(C.REPO, home, r["name"])
@@ -250,20 +449,43 @@ def _unlink(r):
 def cmd_activate(a):
     hdr, rows = load()
     r = find(rows, a.name)
+    if a.domain is not None:
+        if a.domain != "-" and not C.valid_name(a.domain):
+            refuse("--domain must be [a-z0-9-] — got %r" % a.domain)
+        r["domain"] = a.domain
+    if a.on_demand and r["type"] != "skill":
+        refuse("--on-demand is for skills — a %s is reached in specific cases, never by "
+               "focus (2026-10-03)" % r["type"])
     folder = C.content_dir(r)
-    if not os.path.isdir(folder):
+    if C.has_code(r) and not os.path.isdir(folder):
         refuse("no code on disk for `%s` · bin/connection sync" % a.name)
     if r["type"] == "skill":
-        reds = [m for lvl, m in C.check_skill(folder) if lvl == "red"]
+        reds = [m for lvl, m in C.check_skill(folder, r["name"]) if lvl == "red"]
         if reds:
             refuse("`%s` is not a valid skill: %s" % (a.name, "; ".join(reds)))
         if C.is_authored(r) and "⬜ How to use it" in open(
                 os.path.join(folder, "SKILL.md"), encoding="utf-8").read():
             refuse("`%s` still has the ⬜ placeholder — write how to use it first" % a.name)
+        if a.on_demand:
+            r["state"], r["exposes"] = "on-demand", "-"
+            C.write_registry(hdr, rows)
+            print("✅ %s on-demand · exposed only while the block in focus declares it" % a.name)
+            print("   👉 bin/connection attach %s --block <block>" % a.name)
+            _apply_focus(rows)
+            return
         r["exposes"] = ",".join(_link(a.name, folder))
     elif r["type"] == "mcp":
         r["exposes"] = ".mcp.json:%s" % a.name
-        print("👉 declare it: claude mcp add --scope project %s … (secrets as ${VAR})" % a.name)
+        if C.has_code(r):
+            print("👉 declare it: claude mcp add --scope project %s … (secrets as ${VAR})" % a.name)
+        else:
+            d = C.read_mcp_json()
+            entry = C.mcp_entry(r)
+            if a.mcp_args and C.is_npm(r):
+                entry["args"] += a.mcp_args.split()
+            d.setdefault("mcpServers", {})[a.name] = entry
+            C.write_mcp_json(d)
+            print("📝 .mcp.json ← %s (project scope · approved per session in /mcp)" % a.name)
     r["state"] = "active"
     C.write_registry(hdr, rows)
     print("✅ %s active · %s" % (a.name, r["exposes"]))
@@ -286,11 +508,123 @@ def cmd_remove(a):
     gone = [r] + [x for x in rows if x["source"].startswith("in:tools/%s/" % a.name)]
     for g in gone:
         _unlink(g)
-    if not C.is_inner(r):
+    if not C.is_inner(r) and C.has_code(r):
         plat.rmtree(C.content_dir(r))
     names = {g["name"] for g in gone}
     C.write_registry(hdr, [x for x in rows if x["name"] not in names])
     print("🗑️  removed: %s" % ", ".join(sorted(names)))
+    _still_declared(names)
+
+
+def _still_declared(names):
+    """A block or campaign that still declares a skill that is gone → said NOW, not at check."""
+    for who, path, declared in C.all_declarations():
+        left = sorted(set(declared) & set(names))
+        if left:
+            print("⚠️  %s still declares %s — drop it from %s (check-connection: CON-FOC-002)" %
+                  (who, ", ".join("`%s`" % n for n in left), os.path.relpath(path, C.REPO)))
+
+
+def _apply_focus(rows, quiet=False):
+    """Link every on-demand skill the focus declares, unlink every other one → (on, off)."""
+    block, want = C.focus_set()
+    on, off = [], []
+    for r in rows:
+        if r["type"] != "skill" or r["state"] != "on-demand":
+            continue
+        folder = C.content_dir(r)
+        if r["name"] in want and os.path.isdir(folder):
+            _link(r["name"], folder)
+            on.append(r["name"])
+        else:
+            _unlink(r)
+            off.append(r["name"])
+    if not quiet:
+        print("🎯 focus: %s" % (block or "— none"))
+        print("   🟢 on : %s" % (", ".join(on) or "—"))
+        print("   ⚪ off: %s" % (", ".join(off) or "—"))
+        missing = sorted(want - set(on))
+        if missing:
+            print("   ⚠️  declared but not on-demand here: %s · bin/connection list" %
+                  ", ".join(missing))
+    return on, off
+
+
+def cmd_focus(a):
+    _hdr, rows = load()
+    if a.none:
+        f = C.read_focus()
+        f.update(block=None, since=TODAY, by=a.by)
+        C.write_focus(f)
+    elif a.block:
+        if not C.block_file(a.block):
+            refuse("no block `%s` in work/blocks/{active,blocked,archive}/" % a.block)
+        f = C.read_focus()
+        changed = f.get("block") != a.block
+        f.update(block=a.block, since=TODAY, by=a.by)
+        C.write_focus(f)
+    else:
+        changed = False
+    before = {r["name"] for r in rows if r["state"] == "on-demand" and any(
+        C.is_link(os.path.join(C.REPO, h, r["name"])) for h in C.SKILL_HOMES)}
+    on, _off = _apply_focus(rows)
+    if set(on) != before:
+        print(NEW_SESSION.replace("a new skill", "a skill switched on or off"))
+    return 0
+
+
+def cmd_attach(a):
+    hdr, rows = load()
+    r = find(rows, a.skill)
+    if r["type"] != "skill":
+        refuse("`%s` is a %s — only skills are attached to a block" % (a.skill, r["type"]))
+    bf = C.block_file(a.block)
+    if not bf:
+        refuse("no block `%s`" % a.block)
+    try:
+        with open(bf, encoding="utf-8") as fh:
+            text = fh.read()
+    except OSError as e:
+        refuse("%s unreadable (%s)" % (os.path.relpath(bf, C.REPO), type(e).__name__))
+    m = re.search(r"^## Connections\s*\n", text, re.M)
+    if not m:
+        refuse("%s has no `## Connections` (§C) — the declaration lives there" %
+               os.path.relpath(bf, C.REPO))
+    own = C._skills_in(bf, connections_only=True)
+    if a.skill in own:
+        print("✅ `%s` already declared in %s §C" % (a.skill, a.block))
+    else:
+        start = m.end()
+        end_m = re.search(r"^(## |<!-- ══)", text[start:], re.M)
+        sec = text[start:start + end_m.start()] if end_m else text[start:]
+        line = re.search(r"^\s*-\s*SKILLS:.*$", sec, re.M)
+        if line:
+            names = own + [a.skill]
+            new_sec = sec[:line.start()] + "- SKILLS: " + ", ".join(
+                "`%s`" % n for n in names) + sec[line.end():]
+        else:
+            body = sec.rstrip("\n")
+            new_sec = body + "\n- SKILLS: `%s` — on demand, exposed only while this block is " \
+                "in focus (`bin/connection focus`)\n" % a.skill + sec[len(body):].lstrip("\n") \
+                if body else "- SKILLS: `%s`\n" % a.skill
+            if not new_sec.endswith("\n\n") and end_m:
+                new_sec += "\n"
+        text = text[:start] + new_sec + text[start + len(sec):]
+        with open(bf, "w", encoding="utf-8") as fh:
+            fh.write(text)
+        print("📎 `%s` attached to block `%s` (§C · %s)" % (a.skill, a.block,
+                                                         os.path.relpath(bf, C.REPO)))
+    if r["state"] == "quarantine":
+        print("⚠️  `%s` is still in quarantine — review it, then "
+              "bin/connection activate %s --on-demand" % (a.skill, a.skill))
+    if C.read_focus().get("block") == a.block:
+        _apply_focus(rows)
+        print(NEW_SESSION)
+    return 0
+
+
+def a_name_in(d, name):
+    return name in (d.get("mcpServers") or {})
 
 
 def cmd_list(_a):
@@ -299,7 +633,8 @@ def cmd_list(_a):
         print("⬜ nothing installed — connection/registry.tsv has no rows")
         return
     for r in rows:
-        mark = {"active": "🟢", "quarantine": "🟡", "disabled": "⏸️ "}.get(r["state"], "?")
+        mark = {"active": "🟢", "quarantine": "🟡", "disabled": "⏸️ ",
+                "on-demand": "🎯"}.get(r["state"], "?")
         print("%s %-24s %-6s %-11s %s" % (mark, r["name"], r["type"], r["state"],
                                           r["source"][:60]))
 
@@ -309,14 +644,17 @@ def cmd_sync(_a):
     done = 0
     for r in rows:
         folder = C.content_dir(r)
-        if not (C.is_authored(r) or C.is_inner(r)) and not os.path.isdir(folder):
+        if not (C.is_authored(r) or C.is_inner(r)) and C.has_code(r) and \
+                not os.path.isdir(folder):
             fetch(r["source"], r["ref"], folder)
             print("⬇️  %s restored at %s" % (r["name"], r["ref"][:10]))
             done += 1
     for r in rows:
         if r["state"] == "active" and r["type"] == "skill" and os.path.isdir(C.content_dir(r)):
             _link(r["name"], C.content_dir(r))
-    print("✅ sync · %d restored · links re-made for every active skill" % done)
+    on, _off = _apply_focus(rows, quiet=True)
+    print("✅ sync · %d restored · links re-made for every active skill · on-demand by focus: %s"
+          % (done, ", ".join(on) or "none"))
     if done:
         print(NEW_SESSION)
 
@@ -325,12 +663,26 @@ def main():
     p = argparse.ArgumentParser(prog="connection", add_help=True)
     sub = p.add_subparsers(dest="cmd")
     s = sub.add_parser("add"); s.add_argument("url"); s.add_argument("--why", required=True)
+    s.add_argument("--credential", required=C.CREDENTIAL_REQUIRED, default="",
+                   help='secrets/<file> — or "none: <why it needs no secret>"')
     s.add_argument("--name"); s.add_argument("--ref")
     s = sub.add_parser("author"); s.add_argument("tool"); s.add_argument("skill")
     s.add_argument("--description", required=True)
-    for c in ("activate", "disable", "remove"):
+    s = sub.add_parser("activate"); s.add_argument("name")
+    s.add_argument("--on-demand", action="store_true",
+                   help="exposed only while the block in focus declares it")
+    s.add_argument("--domain", help="what kind of work it serves (design …) — drives the "
+                                    "suggestion to attach it")
+    s.add_argument("--mcp-args", help='an npm MCP server\'s options: "--headless --isolated"')
+    s = sub.add_parser("mcp"); s.add_argument("name"); s.add_argument("--npm")
+    s.add_argument("--url"); s.add_argument("--license", help="for --url: SPDX id if known")
+    s.add_argument("--why", required=True); s.add_argument("--credential", required=C.CREDENTIAL_REQUIRED, default="")
+    for c in ("disable", "remove"):
         sub.add_parser(c).add_argument("name")
-    for c in ("list", "sync", "check"):
+    s = sub.add_parser("focus"); s.add_argument("block", nargs="?")
+    s.add_argument("--none", action="store_true"); s.add_argument("--by", default="manual")
+    s = sub.add_parser("attach"); s.add_argument("skill"); s.add_argument("--block", required=True)
+    for c in ("list", "sync", "check", "slim"):
         sub.add_parser(c)
     a = p.parse_args()
     if not a.cmd:
@@ -341,7 +693,7 @@ def main():
             os.path.abspath(__file__)), "check-connection")])
     {"add": cmd_add, "author": cmd_author, "activate": cmd_activate,
      "disable": cmd_disable, "remove": cmd_remove, "list": cmd_list,
-     "sync": cmd_sync}[a.cmd](a)
+     "sync": cmd_sync, "slim": cmd_slim, "focus": cmd_focus, "attach": cmd_attach, "mcp": cmd_mcp}[a.cmd](a)
     return 0
 
 

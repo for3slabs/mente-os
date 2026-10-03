@@ -10,6 +10,9 @@ without anyone noticing, each one silent:
   · a folder with no registry row — code nobody decided to carry
   · a clone that drifted off its pinned sha — "what we reviewed" is not
     "what runs"
+  · an ON-DEMAND skill switched on outside the block that declares it — its
+    description rides in every turn of work that never asked for it
+    (2026-10-03) · and a block declaring a skill nobody installed
 
 ⭐ And one that loses work: a skill WE authored that git ignores is the only
 copy, gone on the next fresh clone.
@@ -62,6 +65,9 @@ def _row(r, names):
     if r["state"] not in C.STATES:
         red(who, "state `%s` — must be one of %s" % (r["state"], "/".join(C.STATES)))
     third = not (C.is_authored(r) or C.is_inner(r))
+    if not C.has_code(r):
+        _mcp_row(r, who)
+        return
     if third:
         if not C.GIT_RE.match(r["source"]):
             red(who, "source `%s` is not a git URL, `authored:` or `in:`" % r["source"])
@@ -69,6 +75,9 @@ def _row(r, names):
             red(who, "ref `%s` is not a full sha — a branch moves under you" % r["ref"])
     if r["license"] in ("", "unknown"):
         yellow(who, "license unknown — read its LICENSE before relying on it")
+    ptr, why = C.row_credential(r)
+    for lvl, _w, msg in C.credential_findings(ptr, why, who):
+        (red if lvl == "red" else yellow)(who, msg)
 
     folder = C.content_dir(r)
     if not os.path.isdir(folder):
@@ -86,7 +95,7 @@ def _row(r, names):
             red(who, "drifted: HEAD %s ≠ pinned %s — what runs is not what was "
                      "reviewed" % (head[:10], r["ref"][:10]))
     if r["type"] == "skill":
-        for lvl, msg in C.check_skill(folder):
+        for lvl, msg in C.check_skill(folder, r["name"]):
             (red if lvl == "red" else yellow)(who, msg)
     if C.is_authored(r) and C.is_tracked(os.path.join(folder, "SKILL.md")) is False:
         red(who, "authored but NOT versioned — our only copy · git add -f its SKILL.md")
@@ -109,12 +118,52 @@ def _row(r, names):
         for e in (x for x in C.exposes(r) if x.startswith(".mcp.json:")):
             if e.split(":", 1)[1] not in _mcp_servers():
                 red(who, "%s is not declared in .mcp.json" % e)
+    elif r["state"] == "on-demand":
+        if r["type"] != "skill":
+            red(who, "on-demand is for skills — a %s is reached in specific cases "
+                     "(CON-FOC-003)" % r["type"])
+        block, want = C.focus_set()
+        for home in C.SKILL_HOMES:
+            p = os.path.join(C.REPO, home, r["name"])
+            linked = C.is_link(p) and os.path.realpath(p) == real
+            if linked and r["name"] not in want:
+                red(who, "%s is ON but the block in focus (%s) does not declare it — "
+                         "`bin/connection focus` (CON-FOC-001)" % (
+                             os.path.join(home, r["name"]), block or "none"))
+            elif not linked and r["name"] in want:
+                yellow(who, "%s declares it and it is OFF · `bin/connection focus`" % block)
     else:
         for home in C.SKILL_HOMES:
             p = os.path.join(C.REPO, home, r["name"])
             if C.is_link(p) and os.path.realpath(p) == real:
                 red(who, "%s exposes it while it is `%s` — nothing is used "
                          "before review" % (os.path.join(home, r["name"]), r["state"]))
+    dom = (r.get("domain") or "-").strip()
+    if dom != "-" and not C.valid_name(dom):
+        red(who, "domain `%s` — must be [a-z0-9-] or `-`" % dom)
+
+
+def _mcp_row(r, who):
+    """An MCP that is not a repo: npm pinned EXACTLY, or remote https — and `.mcp.json` must run
+    exactly what the row says (CON-MCP-001..003)."""
+    if r["type"] != "mcp":
+        red(who, "`npm:`/`remote:` sources are for MCP servers only (CON-MCP-001)")
+        return
+    if C.is_npm(r) and not C.NPM_VER_RE.match(r["ref"]):
+        red(who, "npm ref `%s` is not an exact version — `latest`/ranges move under you "
+                 "(CON-MCP-002)" % r["ref"])
+    if C.is_remote(r) and not r["source"][7:].startswith("https://"):
+        red(who, "remote MCP must be https:// (CON-MCP-002)")
+    declared = (_mcp_servers() or {}).get(r["name"])
+    if r["state"] == "active":
+        if declared is None:
+            red(who, "active but not declared in .mcp.json")
+        elif C.mcp_drift(r, declared):
+            red(who, ".mcp.json %s · what runs is not what was reviewed (CON-MCP-003)" %
+                C.mcp_drift(r, declared))
+    elif declared is not None:
+        red(who, "declared in .mcp.json while it is `%s` — nothing is used before review" %
+            r["state"])
 
 
 _MCP = None
@@ -143,6 +192,36 @@ def _mcp_secrets():
                 if isinstance(v, str) and "${" not in v and SECRETISH.match(v.strip()):
                     red(".mcp.json:%s" % name, "%s.%s holds a literal value — "
                         "write ${VAR}, the value lives in secrets/" % (bag, k))
+
+
+def _mcp_orphans(rows):
+    """⛔ `connection/mcp/README.md` promised it: a server in `.mcp.json` with no registry row is an
+    orphan — a door to the outside nobody decided to open. 📏 Until 2026-10-03 nothing checked it."""
+    known = {r["name"] for r in rows if r["type"] == "mcp"}
+    for name in _mcp_servers():
+        if name not in known:
+            red(".mcp.json:%s" % name, "declared with no registry row — `bin/connection mcp` "
+                                       "registers it (CON-MCP-004)")
+
+
+def _declarations(rows):
+    """⭐ A block or campaign that declares a skill must point at a real one (CON-FOC-002)."""
+    by = {r["name"]: r for r in rows}
+    for who, path, names in C.all_declarations():
+        for n in names:
+            r = by.get(n)
+            if r is None or r["type"] != "skill":
+                red(who, "declares skill `%s` — not in connection/registry.tsv "
+                         "(CON-FOC-002)" % n)
+            elif r["state"] == "quarantine":
+                yellow(who, "declares `%s`, still in quarantine — review, then "
+                            "`bin/connection activate %s --on-demand`" % (n, n))
+            elif r["state"] == "disabled":
+                yellow(who, "declares `%s`, which is disabled" % n)
+    f = C.read_focus().get("block")
+    if f and not C.block_file(f):
+        red("cache/focus.json", "focus is `%s`, a block that does not exist "
+                                "(CON-FOC-004)" % f)
 
 
 def _orphans(rows):
@@ -176,8 +255,9 @@ def _orphans(rows):
 
 def _cli():
     """⭐ The CLI cards, checked BEFORE the registry and without it: a machine's CLIs are
-    declared whether or not anything third-party was ever installed."""
-    for level, who, msg in C.cli_findings():
+    declared whether or not anything third-party was ever installed. ⭐ And the connections
+    that are folders (`server/`, `bridges/`): every connection answers the credential rule."""
+    for level, who, msg in C.cli_findings() + C.folder_findings():
         (red if level == "red" else yellow)(who, msg)
 
 
@@ -199,12 +279,17 @@ def main():
     for r in rows:
         _row(r, names)
     _orphans(rows)
+    _declarations(rows)
+    _mcp_orphans(rows)
     _mcp_secrets()
 
     act = sum(1 for r in rows if r["state"] == "active")
-    print("  %d component(s) registered · %d active · %d quarantine · %d disabled" % (
-        len(rows), act, sum(1 for r in rows if r["state"] == "quarantine"),
-        sum(1 for r in rows if r["state"] == "disabled")))
+    print("  %d component(s) registered · %d active · %d on-demand · %d quarantine · "
+          "%d disabled · focus: %s" % (
+              len(rows), act, sum(1 for r in rows if r["state"] == "on-demand"),
+              sum(1 for r in rows if r["state"] == "quarantine"),
+              sum(1 for r in rows if r["state"] == "disabled"),
+              C.read_focus().get("block") or "none"))
     if YELLOW:
         print("\n🟡 %d" % len(YELLOW))
         for who, msg in YELLOW:

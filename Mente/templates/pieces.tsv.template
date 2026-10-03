@@ -75,6 +75,8 @@ pre-edit-standards	hooks/pre-edit-standards.py	engine	executable	names a block's
 gate-no-block	hooks/gate-no-block.py	engine	canonical	🔴 refuses work with no block open — measured: a run built and published real work while status reported none
 gate-critical	hooks/gate-critical.py	engine	executable	the few actions that BLOCK — ⬜ what is irreversible is the installation's
 watch-external	hooks/watch-external.py	engine	executable	notices that external state moved before acting on a stale view — ⬜ what to watch is declared
+focus-signal	hooks/focus-signal.py	engine	executable	moves the FOCUS to the block a request names, so on-demand skills follow the work — never blocks
+probe-focus	bin/probes/probe-focus.py	engine	executable	proves the focus follows the request, ties move nothing, and a skill is suggested ONCE per block
 probe-watch-external	bin/probes/probe-watch-external.py	engine	executable	proves the watcher looks when it matters and respects its truce otherwise
 probe-plat	bin/probes/probe-plat.py	engine	executable	proves the platform answers stay right when the platform lies — 🔴 43 false failures on Windows while the battery here was green
 probe-gate-critical	bin/probes/probe-gate-critical.py	engine	executable	proves the gate blocks what it must and NOTHING else — 5 inverses to 4 blocks
