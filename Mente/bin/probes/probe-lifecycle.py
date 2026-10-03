@@ -280,7 +280,7 @@ for _nm, _g, _tail, _rc in (("probe-zzfail", 1, 'print("     🔴 the case that 
 # descendant.
 _mini = os.path.join(_pd, "mini", "bin")
 os.makedirs(os.path.join(_mini, "probes"), exist_ok=True)
-for _mod in ("utf8.py", "plat.py"):
+for _mod in ("utf8.py", "plat.py", "connection_lib.py"):
     shutil.copy(os.path.join(TREE, "bin", _mod), os.path.join(_mini, _mod))
 for _nm in ("probe-zzfail", "probe-zzquiet", "probe-zzpass"):
     shutil.copy(os.path.join(_pd, _nm + ".py"),
