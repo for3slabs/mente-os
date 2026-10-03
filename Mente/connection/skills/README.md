@@ -59,6 +59,12 @@ to a sha  not usable    reads it
 ```
 
 1. **Fetch** into `<name>/` pinned to a full commit sha — never a branch that can move under you.
+   ⭐ **Only that commit** (`--depth 1`), and **never the third party's agent files** (CLAUDE.md,
+   AGENTS.md, CLAUDE.local.md, GEMINI.md) — a sparse-checkout keeps them off the disk (EXT-56,
+   2026-10-03). 📏 A full clone kept 380 of impeccable's 456 MB as history, and its `CLAUDE.md`
+   was loaded as project instructions the moment a file beside it was read. A clone made before
+   this: `bin/connection slim` shrinks it in place, keeping what was built inside it
+   (measured on the instance that found it: `connection/tools/` 1.4 GB → 520 MB).
 2. **Quarantine:** the folder exists, nothing links to it, `state: quarantine`.
 3. ⛔ **Review before exposing.** A third-party skill is text the agent will obey and scripts it
    may run: it is a prompt-injection surface. Read `SKILL.md` and every script. Nothing is

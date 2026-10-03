@@ -8,6 +8,7 @@
     bin/connection remove <name>       unexpose, delete the code, drop the row
     bin/connection list
     bin/connection sync                restore code + links from the registry
+    bin/connection slim                shrink clones made before EXT-56 to their pin, in place
     bin/connection check               = bin/check-connection
 
 ⭐ THE PATH (connection/skills/README.md): pin → quarantine → REVIEW → expose →
@@ -96,16 +97,55 @@ def slug(url):
     return re.sub(r"-{2,}", "-", s)[:64]
 
 
+# ⭐ Third-party agent-instruction files never reach the disk (EXT-56, 2026-10-03).
+# 🔴 Measured: reading ONE file inside `tools/impeccable-src/` made Claude Code load that
+# repo's CLAUDE.md as project instructions — text no review ever read, obeyed because of
+# where it sits. `rclone` ships the same pair. A sparse-checkout keeps them out of the tree:
+# git tracks them, never writes them, and `git status` stays clean.
+AGENT_FILES = ("CLAUDE.md", "CLAUDE.local.md", "AGENTS.md", "GEMINI.md")
+
+
+def keep_out_agent_files(folder):
+    C.git(["config", "core.sparseCheckout", "true"], folder)
+    info = os.path.join(folder, ".git", "info")
+    os.makedirs(info, exist_ok=True)
+    with open(os.path.join(info, "sparse-checkout"), "w", encoding="utf-8") as fh:
+        fh.write("/*\n" + "".join("!%s\n" % f for f in AGENT_FILES))
+
+
+def agent_files_on_disk(folder):
+    """Tracked agent files NOT kept out — `git ls-files -v` tags a kept-out one `S`."""
+    out = C.git(["ls-files", "-v"], folder).stdout.splitlines()
+    return [l[2:] for l in out
+            if os.path.basename(l[2:]) in AGENT_FILES and not l.startswith("S ")]
+
+
 def fetch(url, ref, dest):
+    """The pinned commit, and ONLY it. 🔴 Measured 2026-10-03: a full `git clone` kept
+    1,960 commits of impeccable — 380 of its 456 MB were history nobody reads, and across
+    connection/tools/ history was ~1.03 of 1.43 GB. `--depth 1` of the same sha: 7 MB."""
     tmp = tempfile.mkdtemp(prefix="mente-conn-")
     try:
-        r = C.git(["clone", "--quiet", url, tmp], os.getcwd())
-        if r.returncode:
-            refuse("clone failed: %s" % (r.stderr.strip().splitlines() or ["?"])[-1])
-        if ref:
-            r = C.git(["checkout", "--quiet", "--detach", ref], tmp)
+        C.git(["init", "--quiet"], tmp)
+        C.git(["remote", "add", "origin", url], tmp)
+        keep_out_agent_files(tmp)
+        shallow = C.git(["fetch", "--quiet", "--depth", "1", "origin", ref or "HEAD"],
+                        tmp).returncode == 0
+        if not shallow:
+            # ⚠️ a server may refuse depth or an unadvertised sha: fall back to the full
+            # history — what `add` always did — and resolve the ref locally.
+            r = C.git(["fetch", "--quiet", "--tags", "origin",
+                       "+refs/heads/*:refs/remotes/origin/*"], tmp)
+            if r.returncode == 0 and not ref:
+                r = C.git(["fetch", "--quiet", "origin", "HEAD"], tmp)
             if r.returncode:
-                refuse("ref `%s` does not exist in %s" % (ref, url))
+                refuse("clone failed: %s" % (r.stderr.strip().splitlines() or ["?"])[-1])
+        target = ref if ref and not shallow else "FETCH_HEAD"
+        r = C.git(["checkout", "--quiet", "--detach", target], tmp)
+        if r.returncode and ref and not shallow:
+            r = C.git(["checkout", "--quiet", "--detach", "origin/" + ref], tmp)
+        if r.returncode:
+            refuse("ref `%s` does not exist in %s" % (ref, url))
         sha = C.head_of(tmp)
         os.makedirs(os.path.dirname(dest), exist_ok=True)
         _move(tmp, dest)
@@ -113,6 +153,85 @@ def fetch(url, ref, dest):
     finally:
         if os.path.isdir(tmp):
             plat.rmtree(tmp)
+
+
+def _size(folder):
+    n = 0
+    for base, _dirs, files in os.walk(folder):
+        for f in files:
+            try:
+                n += os.lstat(os.path.join(base, f)).st_size
+            except OSError:
+                pass
+    return n
+
+
+def slim_one(folder, sha, source):
+    """A clone made before EXT-56 → its pinned commit only, agent files out. In place: the
+    working tree is never re-written, so whatever was BUILT inside it (untracked) survives.
+    Returns (state, detail). Nothing is lost on failure: the old .git is put back."""
+    gd = os.path.join(folder, ".git")
+    if os.path.isfile(os.path.join(gd, "shallow")) and \
+            C.git(["config", "core.sparseCheckout"], folder).stdout.strip() == "true":
+        return "slim", "already"
+    head = C.head_of(folder)
+    if head != sha:
+        return "skip", "HEAD %s ≠ pin %s — not touched" % ((head or "?")[:10], sha[:10])
+    if C.git(["status", "--porcelain", "--untracked-files=no"], folder).stdout.strip():
+        return "skip", "tracked files modified — not touched"
+    before = _size(gd)
+    tmp = tempfile.mkdtemp(prefix=".slim-", dir=os.path.dirname(folder))
+    old = os.path.join(tmp, "old-git")
+    ok = False
+    try:
+        new = os.path.join(tmp, "new")
+        os.makedirs(new)
+        C.git(["init", "--quiet"], new)
+        # ⭐ from the LOCAL clone — no network, and the sha is already there
+        r = C.git(["fetch", "--quiet", "--depth", "1", "file://" + os.path.abspath(folder), sha],
+                  new)
+        if r.returncode:
+            return "skip", "local shallow fetch failed — not touched"
+        C.git(["update-ref", "--no-deref", "HEAD", sha], new)
+        C.git(["remote", "add", "origin", source], new)
+        os.replace(gd, old)
+        os.replace(os.path.join(new, ".git"), gd)
+        C.git(["reset", "--quiet"], folder)              # index from HEAD, tree untouched
+        # 🔴 `reset --quiet` skips the stat refresh: without this, read-tree calls every file
+        # "not uptodate", removes none of them — and still exits 0 (measured 2026-10-03).
+        C.git(["update-index", "-q", "--refresh"], folder)
+        keep_out_agent_files(folder)
+        C.git(["read-tree", "-mu", "HEAD"], folder)      # applies the sparse-checkout
+        if C.head_of(folder) != sha or agent_files_on_disk(folder) or C.git(
+                ["status", "--porcelain", "--untracked-files=no"], folder).stdout.strip():
+            return "skip", "verification failed — the old .git was put back"
+        ok = True
+        return "slim", "%.0f MB → %.1f MB" % (before / 1e6, _size(gd) / 1e6)
+    finally:
+        # ⛔ any way out but `ok` puts the old .git back — never a folder left without one
+        if not ok and os.path.isdir(old):
+            if os.path.isdir(gd):
+                plat.rmtree(gd)
+            os.replace(old, gd)
+            # the sparse step may have removed the agent files: bring them back (tracked
+            # files were verified unmodified before starting, so this overwrites nothing)
+            C.git(["checkout", "--quiet", "--", "."], folder)
+        plat.rmtree(tmp)
+
+
+def cmd_slim(_a):
+    _hdr, rows = load()
+    bad = 0
+    for r in rows:
+        folder = C.content_dir(r)
+        if C.is_authored(r) or C.is_inner(r) or \
+                not os.path.isdir(os.path.join(folder, ".git")):
+            continue
+        state, detail = slim_one(folder, r["ref"], r["source"])
+        bad += state != "slim"
+        print("%s %-22s %s" % ("✅" if state == "slim" else "🟡", r["name"], detail))
+    print("👉 %d not slimmed — each line says why" % bad if bad else "✅ every clone is slim")
+    sys.exit(1 if bad else 0)
 
 
 def review_list(folder):
@@ -330,7 +449,7 @@ def main():
     s.add_argument("--description", required=True)
     for c in ("activate", "disable", "remove"):
         sub.add_parser(c).add_argument("name")
-    for c in ("list", "sync", "check"):
+    for c in ("list", "sync", "check", "slim"):
         sub.add_parser(c)
     a = p.parse_args()
     if not a.cmd:
@@ -341,7 +460,7 @@ def main():
             os.path.abspath(__file__)), "check-connection")])
     {"add": cmd_add, "author": cmd_author, "activate": cmd_activate,
      "disable": cmd_disable, "remove": cmd_remove, "list": cmd_list,
-     "sync": cmd_sync}[a.cmd](a)
+     "sync": cmd_sync, "slim": cmd_slim}[a.cmd](a)
     return 0
 
 
